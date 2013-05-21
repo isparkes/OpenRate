@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<!-- Properties file for supporting unit tests. This is not a Typical properties
+     file and should not be taken as a general example because it won't work
+     outside of the context of unit tests!!! -->
+<config>
+	<Application>
+    DBTest
+  </Application>
+
+	<PipelineList>
+		<DBTestPipe>
+			<Active>True</Active>
+		</DBTestPipe>
+		<DBRTTestPipe>
+			<Active>True</Active>
+		</DBRTTestPipe>
+	</PipelineList>
+	<DBTestPipe>
+		<Process>
+			<AbstractRegexMatchTest>
+				<DataCache>RegexMatchTestCache</DataCache>
+				<BatchSize>5000</BatchSize>
+			</AbstractRegexMatchTest>
+
+			<AbstractBestMatchTest>
+				<DataCache>BestMatchTestCache</DataCache>
+				<BatchSize>5000</BatchSize>
+			</AbstractBestMatchTest>
+
+			<AbstractMultipleValidityMatchTest>
+				<DataCache>MultipleValidityMatchTestCache</DataCache>
+				<BatchSize>5000</BatchSize>
+			</AbstractMultipleValidityMatchTest>
+
+			<AbstractDuplicateCheckTest>
+				<DataCache>DuplicateCheckTestCache</DataCache>
+				<BatchSize>5000</BatchSize>
+			</AbstractDuplicateCheckTest>
+		</Process>
+	</DBTestPipe>
+
+	<Resource>
+		<LogFactory>
+			<ClassName>OpenRate.logging.LogFactory</ClassName>
+			<Properties>src/test/resources/logUnitTest.properties</Properties>
+			<DefaultCategory>RatingTest</DefaultCategory>
+		</LogFactory>
+
+		<ECI>
+			<ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+			<Port>8086</Port>
+			<MaxConnection>2</MaxConnection>
+		</ECI>
+
+		<TransactionManagerFactory>
+			<ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+		</TransactionManagerFactory>
+
+		<DataSourceFactory>
+			<ClassName>OpenRate.resource.DataSourceFactory</ClassName>
+			<DataSourceBuilder>
+				<ClassName>OpenRate.db.C3P0DataSource</ClassName>
+			</DataSourceBuilder>
+			<DataSource>
+				<TestDB>
+					<db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
+					<driver>com.mysql.jdbc.Driver</driver>
+					<username>root</username>
+					<password>cpr</password>
+					<ValidationQuery>select 1 from dual</ValidationQuery>
+					<InitQuery>select 1 from dual</InitQuery>
+					<TestConnectionPeriod>60</TestConnectionPeriod>
+				</TestDB>
+			</DataSource>
+		</DataSourceFactory>
+
+		<CacheFactory>
+			<ClassName>OpenRate.resource.CacheFactory</ClassName>
+			<CacheableClass>
+				<RegexMatchTestCache>
+					<ClassName>OpenRate.cache.RegexMatchCache</ClassName>
+					<DataSourceType>DB</DataSourceType>
+					<DataSource>TestDB</DataSource>
+					<SelectStatement>select MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_REGEX order by RANK</SelectStatement>
+					<KeyFields>2</KeyFields>
+				</RegexMatchTestCache>
+
+				<BestMatchTestCache>
+					<ClassName>OpenRate.cache.BestMatchCache</ClassName>
+					<DataSourceType>DB</DataSourceType>
+					<DataSource>TestDB</DataSource>
+					<SelectStatement>select MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_BEST_MATCH</SelectStatement>
+				</BestMatchTestCache>
+
+				<MultipleValidityMatchTestCache>
+					<ClassName>OpenRate.cache.MultipleValidityCache</ClassName>
+					<DataSourceType>DB</DataSourceType>
+					<DataSource>TestDB</DataSource>
+					<SelectStatement>select MAP_GROUP,INPUT_VAL,START_DATE,END_DATE,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_MULT_VALIDITY_MATCH</SelectStatement>
+					<DateFormat>yyyyMMddhhmmss</DateFormat>
+				</MultipleValidityMatchTestCache>
+
+				<DuplicateCheckTestCache>
+					<ClassName>OpenRate.cache.DuplicateCheckCache</ClassName>
+					<DataSourceType>DB</DataSourceType>
+					<DataSource>TestDB</DataSource>
+					<SelectStatement>select CDR_KEY,CDR_DATE from TEST_DUPLICATE_CHECK</SelectStatement>
+					<InsertStatement>insert into TEST_DUPLICATE_CHECK (CDR_KEY,CDR_DATE) values (?,?)</InsertStatement>
+					<PurgeStatement>delete from TEST_DUPLICATE_CHECK where CDR_DATE &lt; ?</PurgeStatement>
+				</DuplicateCheckTestCache>
+			</CacheableClass>
+		</CacheFactory>
+	</Resource>
+</config>

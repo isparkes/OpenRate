@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    File adapters read data from files and write data back to files. This is
+    perhaps the easiest and fastest way to manage external data in OpenRate.
+
+    File adapaters are able to work in a multi-transaction mode, meaning that
+    the framework is able to open many files at once (and therefore also manage
+    many transactions at once, as each file runs in its own transaction) in
+    order to maintain the processing performance through the pipeline. (Recall
+    that maximum performance will be reached when ALL plugins are running at the
+    same moment, something that is not possible with single transactions and
+    small files.
+  </body>
+</html>

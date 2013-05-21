@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    Buffers are used in OpenRate to link modules together in a chain - the buffer
+    is used as the way of ensuring that plugins are kept under load during 
+    processing, by making sure that the output of the <i>supplier</i> plug in 
+    and the input of the <i>consumer</i> plug in are decoupled. <p>
+    The buffer that is used is a standard FIFO, which preserves order between
+    the records.<p>
+    
+    More information is available in <A HREF="http://www.openrate.de/mediawiki-1.6.12/index.php/FIFO" TARGET="_top">FIFO</A>
+  </body>
+</html>

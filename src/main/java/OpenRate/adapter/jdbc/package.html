@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    JDBC adapters read and write data from databases using JDBC connections using
+    a standard processing strategy. The processing strategy is carefully chosen
+    in order to ensure that records can be written to the input table in a
+    continuous flow, and these will eb excluded from the processing transaction
+    until it is time for a new transaction to start. This means that the
+    transaction size is held constant by the framework, and concurrency issues
+    are reduced to a minimum.
+
+    Input strategy:
+     - Search to see if any records are available for processing in the source table
+     - If records are available, mark then as belonging to a transaction
+     - Process all records in the transaction.
+     - If the transaction completed correctly, marks the records as "read", or remove them
+     - If the transaction went badly, leave the records where they are or mark them as errored
+  </body>
+</html>

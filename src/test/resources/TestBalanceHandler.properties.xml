@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!-- Properties file for supporting unit tests. This is not a Typical properties
+     file and should not be taken as a general example because it won't work
+     outside of the context of unit tests!!! -->
+<config>
+	<Application>
+    DBTest
+  </Application>
+
+	<PipelineList>
+		<DBTestPipe>
+			<Active>True</Active>
+		</DBTestPipe>
+	</PipelineList>
+	
+	<DBTestPipe>
+		<Process>
+			<AbstractBalanceHandlerPlugInTest>
+				<DataCache>BalCache</DataCache>
+				<BatchSize>5000</BatchSize>
+			</AbstractBalanceHandlerPlugInTest>
+		</Process>
+	</DBTestPipe>
+
+	<Resource>
+		<LogFactory>
+			<ClassName>OpenRate.logging.LogFactory</ClassName>
+			<Properties>src/test/resources/logUnitTest.properties</Properties>
+			<DefaultCategory>RatingTest</DefaultCategory>
+		</LogFactory>
+
+		<ECI>
+			<ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+			<Port>8086</Port>
+			<MaxConnection>2</MaxConnection>
+		</ECI>
+
+		<TransactionManagerFactory>
+			<ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+		</TransactionManagerFactory>
+
+		<DataSourceFactory>
+			<ClassName>OpenRate.resource.DataSourceFactory</ClassName>
+			<DataSourceBuilder>
+				<ClassName>OpenRate.db.C3P0DataSource</ClassName>
+			</DataSourceBuilder>
+			<DataSource>
+				<TestDB>
+					<db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
+					<driver>com.mysql.jdbc.Driver</driver>
+					<username>root</username>
+					<password>cpr</password>
+					<ValidationQuery>select 1 from dual</ValidationQuery>
+					<InitQuery>select 1 from dual</InitQuery>
+					<TestConnectionPeriod>60</TestConnectionPeriod>
+				</TestDB>
+			</DataSource>
+		</DataSourceFactory>
+
+		<CacheFactory>
+			<ClassName>OpenRate.resource.CacheFactory</ClassName>
+			<CacheableClass>
+        <!-- Balance counter values -->
+				<BalCache>
+					<ClassName>OpenRate.cache.BalanceCache</ClassName>
+					<DataSourceType>DB</DataSourceType>
+					<DataSource>TestDB</DataSource>
+					<DateFormat>Integer</DateFormat>
+					<SelectStatement>select BALANCE_GROUP,COUNTER_ID,RECORD_ID,VALID_FROM,VALID_TO,CURRENT_BAL from TEST_COUNTER_BALS</SelectStatement>
+				</BalCache>
+			</CacheableClass>
+		</CacheFactory>
+	</Resource>
+</config>

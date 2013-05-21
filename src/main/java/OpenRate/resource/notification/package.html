@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    The Notification package contains the OpenRate notification infrastructure,
+    which can be used to asyncronously trigger notifications to external
+    systems. A common use of this is for triggering fraud notifications
+    when a daily spend balance is crossed. In order to maintain processing
+    performance, notifications are queued for delivery and delivered 
+    asynchronously.
+    
+    A synchronous notification method is also implemented for the case that
+    the delivery of the notification is absolutely essential. This therefore
+    blocks the processing until the notification is delivered.
+  </body>
+</html>
