@@ -119,9 +119,8 @@ public class OpenRate
              Runnable
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
+   * VCS version info - Automatically captured and written to the Framework
+   * log at Framework startup.
    */
   public static String SVN_MODULE_INFO = "OpenRate, $Id$, $Rev$, $Date$";
 
