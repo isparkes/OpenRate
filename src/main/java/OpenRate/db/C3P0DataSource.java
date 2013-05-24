@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -67,19 +71,12 @@ import javax.sql.DataSource;
 /**
  * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Data_Source_Manager'>click here</a> to go to wiki page.
  * <br>
- * <p> 
+ * <p>
  * DataSourceBuilderImpl
  *
  */
 public class C3P0DataSource implements IDBDataSource
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: C3P0DataSource.java,v $, $Revision: 1.10 $, $Date: 2013-05-13 18:12:12 $";
-
  /**
   * The data source is a a pooled collection of connections that can be used
   * by elements of the framework, taken more or less intact from Apache
@@ -115,7 +112,7 @@ public class C3P0DataSource implements IDBDataSource
   public C3P0DataSource()
   {
     // Log ourselves to the audit map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO, this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**
@@ -141,7 +138,7 @@ public class C3P0DataSource implements IDBDataSource
     String validationSQL;
     String  testConnPeriodStr;
     int     testConnPeriod;
-    
+
     ComboPooledDataSource dataSource = new ComboPooledDataSource();
 
     FWlog.debug("Creating new DataSource <" + dataSourceName + ">");
@@ -197,14 +194,14 @@ public class C3P0DataSource implements IDBDataSource
     try
     {
       dataSource.setDriverClass(driver);
-    } 
+    }
     catch (PropertyVetoException ex)
     {
       String Message = "Property veto for driver  <" + driver + "> for data source <" + dataSourceName + ">";
       FWlog.error(Message);
       throw new InitializationException(Message);
     }
-    
+
     validationSQL = PropertyUtils.getPropertyUtils().getDataSourcePropertyValue(dataSourceName, VALIDATION_QUERY_KEY);
 
     boolean testOnBorrow  = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,TEST_ON_BORROW, DEFAULT_TEST_ON_BORROW).equalsIgnoreCase("true");
@@ -219,13 +216,13 @@ public class C3P0DataSource implements IDBDataSource
     // Pool culling management
     String maxIdleTimeStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,MAX_IDLE_KEY, DEFAULT_MAX_IDLE);
     int    maxIdleTime    = Integer.parseInt(maxIdleTimeStr);
-    
+
     // Options with defaults
     maxStatementsStr      = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, MAX_STMTS_KEY,DEFAULT_MAX_STMTS);
     maxStatements         = Integer.parseInt(maxStatementsStr);
     testConnPeriodStr     = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, TEST_CONN_KEY,DEFAULT_TEST_CONN);
     testConnPeriod        = Integer.parseInt(testConnPeriodStr);
-      
+
     maxStatementPerConnectionStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, MAX_STMTS_PER_CONNECTION_KEY ,DEFAULT_MAX_STMTS);
     maxStatementPerConnection    = Integer.parseInt(maxStatementPerConnectionStr);
 
@@ -256,9 +253,9 @@ public class C3P0DataSource implements IDBDataSource
     else
     {
       dataSource.setPreferredTestQuery(validationSQL);
-      
+
       // Test the data source
-      try 
+      try
       {
         try (Connection testConn = dataSource.getConnection(); PreparedStatement stmt = testConn.prepareStatement(validationSQL)) {
           stmt.executeQuery();
@@ -267,14 +264,14 @@ public class C3P0DataSource implements IDBDataSource
         FWlog.debug("Data source <" + dataSourceName + "> num_connections: " + dataSource.getNumConnectionsDefaultUser());
         FWlog.debug("Data source <" + dataSourceName + "> max_pool:        " + dataSource.getMaxPoolSize());
         FWlog.debug("Data source <" + dataSourceName + "> min_pool:        " + dataSource.getMinPoolSize());
-      } 
-      catch (SQLException ex) 
+      }
+      catch (SQLException ex)
       {
         String Message = "Connection test failed for connection <" + dataSourceName + ">";
         throw new InitializationException(Message);
       }
     }
-    
+
     return dataSource;
   }
 

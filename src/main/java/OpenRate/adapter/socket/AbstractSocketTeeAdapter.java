@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -72,35 +76,28 @@ import java.util.Iterator;
  * In particular, this is useful for adding persistence to a real time pipeline
  * where the writing to a table or file should happen after real time processing
  * has happened.
- * 
+ *
  * This module tees into a Real Time pipeline and takes a feed of the events
  * for putting into a batch pipeline. This is usually used for persistence
  * of RT events in a batch mode, however, it can also be used for balance
  * updates in a batch pipeline.
- * 
+ *
  * Socket Input Adapter
  * --------------------
  * The output of the socket tee adapter allows you to "sniff" events out of
- * a pipeline (realtime or batch) and put them into another pipeline (batch)
+ * a pipeline (real time or batch) and put them into another pipeline (batch)
  * for further processing.
- * 
+ *
  * Input >->->- Pipeline 1 ->->->- Socket Tee Adapter ->->-> Output
  *                                     |
  *   +------------- TCPIP -------------+
  *   |
  *   +-> Socket Input Adapter >->- Pipeline 2 ->->->-> Output
- * 
+ *
  */
-public abstract class AbstractSocketTeeAdapter 
+public abstract class AbstractSocketTeeAdapter
         extends AbstractTeeAdapter
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractSocketTeeAdapter.java,v $, $Revision: 1.15 $, $Date: 2013-05-13 18:12:13 $";
-  
   private final static String SERVICE_BATCHHOST  = "BatchHost";
   private final static String SERVICE_BATCHPORT  = "BatchPort";
 

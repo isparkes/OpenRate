@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,28 +55,20 @@
 
 package OpenRate.process;
 
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.cache.NumberRangeCache;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.IRecord;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
 /**
- * This class looks up the APN Type using the APN, and is mapped as a series
- * of validity periods. If an APN Type for the date given is not found, the
- * record is errored.
+ * This class looks up a number out of a series of ranges (from - to). The
+ * ranges may not overlap.
  */
 public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractNumberRangeMatch.java,v $, $Revision: 1.12 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the object will be using the find the cache manager
   private ICacheManager CMNR = null;
 
@@ -152,7 +148,7 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
  /**
   * This returns the validity segment match
   *
-  * @param Group The regualar expression group to search
+  * @param Group The regular expression group to search
   * @param rangeSearchValue The value to search for in the ranges
   * @param EventTime the UTC event date to match for
   * @return The returned value, or NOMATCH if none was found
@@ -165,7 +161,7 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
  /**
   * This returns the regular expression match
   *
-  * @param Group The regualar expression group to search
+  * @param Group The regular expression group to search
   * @param rangeSearchValue The value to search for in the ranges
   * @param EventTime The UTC event time to search at
   * @return The returned value, or NOMATCH if none was found
@@ -174,10 +170,10 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
   {
     return NR.getEntryWithChildData(Group, rangeSearchValue, EventTime);
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -187,18 +183,18 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
     {
       return false;
     }
-    
+
     if ( resultToCheck.get(0).equals(NumberRangeCache.NO_RANGE_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -208,12 +204,12 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
     {
       return false;
     }
-    
+
     if (resultToCheck.equalsIgnoreCase(NumberRangeCache.NO_RANGE_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
 }

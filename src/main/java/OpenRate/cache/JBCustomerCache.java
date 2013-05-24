@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -78,7 +82,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *  - StartDate   (yyyy-MM-dd HH:mm:ss.S)
  *  - EndDate     (yyyy-MM-dd HH:mm:ss.S)
  *  - Quantity    (integer)
- * 
+ *
  * The "invalidate on duplicate" configuration will remove a whole alias key
  * from the cache in the case that a duplicate is found. This will mean that all
  * rating for the alias key will be rejected until the contention is removed.
@@ -86,13 +90,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class JBCustomerCache
     extends AbstractSyncLoaderCache
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: JBCustomerCache.java,v $, $Revision: 1.38 $, $Date: 2013-05-13 18:12:10 $";
-
   // Used to allow alias maps - takes an alias and maps to a poid.
   private ConcurrentHashMap<String, validityNode> aliasCache;
 
@@ -120,11 +117,11 @@ public abstract class JBCustomerCache
 
   // Setting if we invalidate existing value if a duplicate is found
   private boolean invalidateOnDuplicate = false;
-  
+
   // List of Services that this Client supports
   private final static String SERVICE_INVALIDATE_DUPLICATE = "InvalidateDuplicates";
   private final static String SERVICE_DATE_FORMAT = "DateFormat";
-  
+
  /**
   * The CustInfo structure holds the information about the customer account,
   * including the validity dates, the product list and the balance group
@@ -198,7 +195,7 @@ public abstract class JBCustomerCache
   {
     return custIDCache.containsKey(custID);
   }
-  
+
  /**
   * Recover a customer ID from the cache using the alias.
   *
@@ -389,8 +386,8 @@ public abstract class JBCustomerCache
 
     // process it
     processControlEvent(SERVICE_INVALIDATE_DUPLICATE,true,tmpHelper);
-    
-    
+
+
     // load the value of the invalidate duplicates setting
     tmpHelper = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                      CacheName,
@@ -399,7 +396,7 @@ public abstract class JBCustomerCache
 
     // Initialise the conversion object
     conv.setInputDateFormat(tmpHelper);
-    
+
     // Do the parent processing
     super.loadCache(ResourceName, CacheName);
   }
@@ -518,7 +515,7 @@ public abstract class JBCustomerCache
         {
           getFWLog().error("End Date format for record <" + custLoaded + "> are not correct. Date <" + tmpEndDate + ">, format <" + conv.getInputDateFormat() + "> order <" + orderId + ">. Data discarded." );
         }
-        
+
         // parse the Quantity
         quantity = Integer.parseInt(tmpQuantity);
 
@@ -771,16 +768,16 @@ public abstract class JBCustomerCache
   *
   * @param descriptionString The string to parse
   * @return The product name
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public abstract String getProduct(String descriptionString) throws InitializationException;
 
- /**  
+ /**
   * Get the Alias from the descriptor string
   *
   * @param descriptionString
   * @return The alias
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public abstract String getAlias(String descriptionString) throws InitializationException;
 
@@ -789,7 +786,7 @@ public abstract class JBCustomerCache
   *
   * @param descriptionString
   * @return The Service
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public abstract String getService(String descriptionString) throws InitializationException;
 
@@ -798,7 +795,7 @@ public abstract class JBCustomerCache
   *
   * @param descriptionString
   * @return The Subscription
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public abstract String getSubscription(String descriptionString) throws InitializationException;
 
@@ -899,7 +896,7 @@ public abstract class JBCustomerCache
       {
         // Set the value
         invalidateOnDuplicate = false;
-        
+
         // done
         ResultCode = 0;
       }

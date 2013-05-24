@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -72,13 +76,6 @@ import java.util.logging.Level;
 public class TeeBatchConverter implements Runnable
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, TeeBatchConverter.java,v, 1.1, 2010/02/09 22:44:39";
-
-  /**
    * The PipeLog is the logger which should be used for all pipeline level
    * messages. This is instantiated during pipe startup, because at this
    * point we don't know the name of the pipe and therefore the logger to use.
@@ -92,7 +89,7 @@ public class TeeBatchConverter implements Runnable
 
   // the current batch size
   private int outputCounter = 0;
-  
+
   // the target batch size - we purge a batch when it gets this big
   private int targetBatchSize = 5000;
 
@@ -107,7 +104,7 @@ public class TeeBatchConverter implements Runnable
   public void BatchConverter()
   {
     // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**
@@ -245,8 +242,8 @@ public class TeeBatchConverter implements Runnable
   }
 
   /**
-   * 
-   * 
+   *
+   *
    * @param aThis
    */
   public void setParentAdapter(AbstractTeeAdapter aThis)

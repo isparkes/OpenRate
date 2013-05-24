@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -92,13 +96,6 @@ public class CacheFactory
              IEventInterface,
              ISyncPoint
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: CacheFactory.java,v $, $Revision: 1.1 $, $Date: 2013-05-13 18:12:12 $";
-
  /**
   * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
   * from resources or caches) should go into this log, as well as startup
@@ -129,7 +126,7 @@ public class CacheFactory
 
   // controls whether resources are loaded sequentially or in parallel
   private boolean   sequentialLoading;
-  
+
   // reference to the exception handler
   private ExceptionHandler handler;
 
@@ -147,7 +144,7 @@ public class CacheFactory
   public CacheFactory()
   {
     // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**
@@ -170,7 +167,7 @@ public class CacheFactory
     String            tmpCacheableClass;
     long              loadStartTime;
     long              loadEndTime;
-    
+
     Iterator<String>  cacheableClassIter;
     String            configHelper;
 
@@ -179,7 +176,7 @@ public class CacheFactory
 
     // Start timer for loading
     loadStartTime = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
-          
+
     FWLog.info("Starting CacheFactory initialisation");
     symbolicName = resourceName;
 
@@ -198,14 +195,14 @@ public class CacheFactory
 
     // Get the loading strategy
     sequentialLoading = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(RESOURCE_KEY, "SequentialLoading", "true").equalsIgnoreCase("true");
-    
+
     // and the iterator we will be using to cycle through them
     cacheableClassIter = cacheableClassList.iterator();
 
     // Create a thread group for holding the cache objects while they are
     // being created
     ThreadGroup tmpGrpCaches = new ThreadGroup("Caches");
-      
+
     // Iterate for the loading
     while (cacheableClassIter.hasNext())
     {
@@ -220,7 +217,7 @@ public class CacheFactory
 
         // This is where we will launch the resources as separate classes if
         // necessary
-        if (tmpCacheableClassName.equalsIgnoreCase("None") || 
+        if (tmpCacheableClassName.equalsIgnoreCase("None") ||
            (tmpCacheableClass.equalsIgnoreCase("None")))
         {
           throw new InitializationException("Configuration for <" + tmpCacheableClassName + ">:<" + tmpCacheableClass + "> not complete.");
@@ -229,7 +226,7 @@ public class CacheFactory
         {
           FWLog.info("Loading Cacheable Class <" + tmpCacheableClassName + ">...");
           System.out.println("    Loading Cacheable Class <" + tmpCacheableClassName + ">...");
-              
+
           //Add the CacheManager to the manager list.
           cacheManager = new CacheManager();
           managers.put(tmpCacheableClassName, cacheManager);
@@ -239,7 +236,7 @@ public class CacheFactory
           cacheableObject = (ICacheable) cacheableClass.newInstance();
           cacheableObject.setHandler(handler);
           cacheManager.put(tmpCacheableClassName, cacheableObject);
-          
+
           /*
            * Check if the cacheable instance is implementing
            * CacheLoader, if yes, then call its loadCache() method
@@ -331,7 +328,7 @@ public class CacheFactory
 
       // Set the auto reload parameter
       configHelper = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(resourceName,SERVICE_AUTO_RELOAD,"None");
-      
+
       if (configHelper.equals("None") == false)
       {
         try
@@ -348,19 +345,19 @@ public class CacheFactory
         }
       }
     }
-    
+
     // Join the loading threads we launched
     while (tmpGrpCaches.activeCount() > 0)
     {
-      try 
+      try
       {
         Thread.sleep(1000);
-      } 
-      catch (InterruptedException ex) 
+      }
+      catch (InterruptedException ex)
       {
         // Nothing
       }
-      
+
       // Check for errors
       if (OpenRate.getOpenRateExceptionHandler().hasError())
       {
@@ -368,13 +365,13 @@ public class CacheFactory
         return;
       }
     }
-    
+
     // destroy the thread group
     tmpGrpCaches.destroy();
-    
+
     // reset the iterator
     cacheableClassIter = cacheableClassList.iterator();
-    
+
     // Iterate for the other set ups
     while (cacheableClassIter.hasNext())
     {
@@ -389,7 +386,7 @@ public class CacheFactory
         /*
           * Reloadable cache
           *
-          * check if its a cache that can be reloadable, and if is then get the value of 
+          * check if its a cache that can be reloadable, and if is then get the value of
           * property and store it in this cache object to be used,
           * later in the pipeline, the autorelaodPeriod is known for this specific cache
           */
@@ -406,8 +403,8 @@ public class CacheFactory
           }
           catch (NumberFormatException nfe)
           {
-            String Message = "Expected a numeric value for <" + SERVICE_AUTO_RELOAD + 
-                              ">, in cache <" + getSymbolicName() + "> but got <" + 
+            String Message = "Expected a numeric value for <" + SERVICE_AUTO_RELOAD +
+                              ">, in cache <" + getSymbolicName() + "> but got <" +
                               autoLoadPeriod + ">";
             throw new InitializationException(Message);
           }
@@ -462,7 +459,7 @@ public class CacheFactory
 
       // Set the auto reload parameter
       configHelper = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(resourceName,SERVICE_AUTO_RELOAD,"None");
-      
+
       if (configHelper.equals("None") == false)
       {
         try
@@ -479,7 +476,7 @@ public class CacheFactory
         }
       }
     }
-    
+
     loadEndTime = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
     FWLog.info("CacheFactory initialised in " + (loadEndTime-loadStartTime) + "ms.");
   }
@@ -642,7 +639,7 @@ public class CacheFactory
       tmpSyncIntf.setSyncStatus(newStatus);
     }
   }
-  
+
   /**
    * Pass through method for managing sync points for the data caches that the
    * cache manager is handling. Pass the received value to all managed data
@@ -651,7 +648,7 @@ public class CacheFactory
    * @param newStatus The new sync status to set
    * @param cacheName The name of the cache to set for
    */
-   
+
    public void setSyncStatus(int newStatus, String cacheName)
    {
      ISyncPoint       tmpSyncIntf;
@@ -810,7 +807,7 @@ public class CacheFactory
 	  {
       // get the reference to the cache
       tmpCacheableClassName = CacheableClassIter.next();
-		  
+
       Object tmpCacheableClass = getManager(tmpCacheableClassName).get(tmpCacheableClassName);
       if (tmpCacheableClass instanceof ICacheAutoReloadable)
       {

@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,7 +55,6 @@
 
 package OpenRate.cache;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -86,13 +89,6 @@ public abstract class AbstractSyncLoaderCache
                       ISyncPoint,
                       ICacheAutoReloadable
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractSyncLoaderCache.java,v $, $Revision: 1.64 $, $Date: 2013-05-13 18:12:11 $";
-
   /**
    * This is the source type of the data to load
    */
@@ -164,23 +160,20 @@ public abstract class AbstractSyncLoaderCache
 
   // the last time we did a reload
   private long lastReloadUTC = 0;
-  
+
   // if we are to be excluded from auto-reload
   private boolean excludeFromAutoReload;
-  
+
  /**
   * the frequency with which we update the log progress messages on loading
   */
   protected long loadingLogNotificationStep = 1000;
-  
+
  /**
   * Constructor
   */
   public AbstractSyncLoaderCache()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
-
     // Initialise the store of pending commands
     pendingCommands = new ArrayList<>();
 
@@ -221,7 +214,7 @@ public abstract class AbstractSyncLoaderCache
 
     // Get the type of source we are to read from
     tmpCacheSource = initGetCacheSourceType(ResourceName, CacheName);
-    
+
     if (tmpCacheSource.equalsIgnoreCase("File") |
         tmpCacheSource.equalsIgnoreCase("DB") |
         tmpCacheSource.equalsIgnoreCase("Method"))
@@ -243,7 +236,7 @@ public abstract class AbstractSyncLoaderCache
     {
       processControlEvent(SERVICE_DATE_FORMAT, true, tmpDateFormat);
     }
-    
+
     // Get the loading step, if one is defined
     loadingLogNotificationStep = initGetLoadingStep(ResourceName, CacheName);
 
@@ -252,7 +245,7 @@ public abstract class AbstractSyncLoaderCache
     {
       // get the data statement(s)
       foundStatements = getDataFiles(ResourceName,CacheName);
-      
+
       if (foundStatements == false)
       {
         String Message = "Data files not found for cache <" +
@@ -330,7 +323,7 @@ public abstract class AbstractSyncLoaderCache
       // Just call the method directly
       loadDataFromMethod();
     }
-    
+
     // Get the auto reload exclusion
     excludeFromAutoReload = initGetExcludeFromReload(ResourceName, CacheName);
   }
@@ -898,10 +891,10 @@ public abstract class AbstractSyncLoaderCache
                                                        CacheName,
                                                        "DataSourceType",
                                                        "None");
-    
+
     return tmpValue;
   }
-  
+
  /**
   * Temporary function to gather the information from the properties file. Will
   * be removed with the introduction of the new configuration model.
@@ -915,7 +908,7 @@ public abstract class AbstractSyncLoaderCache
                                                        CacheName,
                                                        SERVICE_LOAD_LOG_STEP,
                                                        "1000");
-    
+
     // try to convert it
     try
     {
@@ -923,13 +916,13 @@ public abstract class AbstractSyncLoaderCache
     }
     catch (NumberFormatException nfe)
     {
-      throw new InitializationException("Value provided for property <" + SERVICE_LOAD_LOG_STEP + 
+      throw new InitializationException("Value provided for property <" + SERVICE_LOAD_LOG_STEP +
                                         "> was not numeric. Received value <" + tmpValue + ">.");
     }
-    
+
     return tmpLoadStep;
   }
-  
+
  /**
   * Temporary function to gather the information from the properties file. Will
   * be removed with the introduction of the new configuration model.
@@ -942,15 +935,15 @@ public abstract class AbstractSyncLoaderCache
                                                        CacheName,
                                                        SERVICE_NO_AUTORELOAD,
                                                        "False");
-    
+
     // try to convert it
-    if (tmpValue.equalsIgnoreCase("true") || tmpValue.equalsIgnoreCase("false")) 
+    if (tmpValue.equalsIgnoreCase("true") || tmpValue.equalsIgnoreCase("false"))
     {
       return Boolean.valueOf(tmpValue);
     }
     else
     {
-      throw new InitializationException("Value provided for property <" + SERVICE_NO_AUTORELOAD + 
+      throw new InitializationException("Value provided for property <" + SERVICE_NO_AUTORELOAD +
                                         "> was not boolean. Received value <" + tmpValue + ">.");
     }
   }

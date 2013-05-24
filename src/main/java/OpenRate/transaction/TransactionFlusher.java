@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -56,36 +60,36 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * This class is responsible for closing flushed transactions. Flushed 
+ * This class is responsible for closing flushed transactions. Flushed
  * transactions have finished traversing the pipeline, and need only to have the
  * final commit and closing done on them. This is externalised into a separate
  * thread for performance reasons.
- * 
+ *
  * @author tgdspia1
  */
 public class TransactionFlusher implements Runnable
 {
   // used for managing overlaid transactions
   private ReentrantReadWriteLock clientLock = new ReentrantReadWriteLock();
-  
+
   // The list of the transactions we are closing
   private ArrayList<TransactionInfo>transFlushedList   = new ArrayList<>();
 
   // Common Definitions for the transaction manager
   private TMDefs TMD = new TMDefs();
-  
+
   // Callback to the TM
   TransactionManager TM;
-  
+
   // The name of the pipe we are working for
   private String pipelineName;
-  
+
   // Our logger
   private ILogger pipeLog;
-  
+
   // Scheduler
   private int sleepTime;
-  
+
   @Override
   public void run()
   {
@@ -102,11 +106,11 @@ public class TransactionFlusher implements Runnable
       }
       /*try {
         Thread.sleep(sleepTime);
-      } catch (InterruptedException ex) 
+      } catch (InterruptedException ex)
       {
         // Ignore
       }*/
-      
+
       // If not marked for shutdown, wait for notification from the
       // suppler that new records are available for processing.
       try
@@ -122,11 +126,11 @@ public class TransactionFlusher implements Runnable
       }
     }
   }
-  
+
  /**
   * Put a transaction into the flush list
-  * 
-  * @param trans 
+  *
+  * @param trans
   */
   public synchronized void addTransactionToFlushList(TransactionInfo trans)
   {
@@ -134,7 +138,7 @@ public class TransactionFlusher implements Runnable
     pipeLog.debug("Added transaction <"+trans.getTransactionNumber()+"> to flusher for pipe <"+pipelineName+">");
     this.notify();
   }
-          
+
  /**
   * Update the overall status and in the case that we have a state change (for
   * example during the asynchronous closing portion of the transaction) deal
@@ -147,12 +151,12 @@ public class TransactionFlusher implements Runnable
     int     NewOverallStatus;
     TransactionInfo cachedTrans;
     Integer transNumber;
-    
+
     if (clientLock.isWriteLocked())
     {
       return;
     }
-    
+
     try
     {
       // Get the lock
@@ -187,7 +191,7 @@ public class TransactionFlusher implements Runnable
               }
 
               // Update the status
-              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);        
+              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);
             }
           }
           else if (NewOverallStatus == TMD.TM_FINISHED_OK)
@@ -201,7 +205,7 @@ public class TransactionFlusher implements Runnable
               cachedTrans.setClientStatus(i, TMD.TM_CLOSING);
 
               // Update the status
-              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);        
+              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);
             }
           }
           else if (NewOverallStatus == TMD.TM_FINISHED_ERR)
@@ -215,7 +219,7 @@ public class TransactionFlusher implements Runnable
               cachedTrans.setClientStatus(i, TMD.TM_CLOSING);
 
               // Update the status
-              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);        
+              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);
             }
           }
           else if (NewOverallStatus == TMD.TM_CLOSING)
@@ -229,7 +233,7 @@ public class TransactionFlusher implements Runnable
               cachedTrans.setClientStatus(i, TMD.TM_CLOSED);
 
               // Update the status
-              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);        
+              NewOverallStatus = TM.getOverallStatus(transNumber,cachedTrans);
             }
           }
           else if (NewOverallStatus == TMD.TM_CLOSED)
@@ -254,21 +258,21 @@ public class TransactionFlusher implements Runnable
       clientLock.writeLock().unlock();
     }
   }
-  
+
  /**
   * Get the number of transactions which have been flushed but not yet
   * finalsed.
-  * 
+  *
   * @return the count.
   */
   public int getFlushedTransactionCount()
   {
     return transFlushedList.size();
   }
-  
+
  /**
   * Set the reference for sending updates back to the transaction manager.
-  * 
+  *
   * @param newTM The TM we are serving.
   */
   public void setTMReference(TransactionManager newTM)
@@ -278,7 +282,7 @@ public class TransactionFlusher implements Runnable
 
  /**
   * Set the pipeline name for use in the log.
-  * 
+  *
   * @param newPipelineName The pipeline name
   */
   void setPipelineName(String newPipelineName)
@@ -288,12 +292,12 @@ public class TransactionFlusher implements Runnable
 
  /**
   * Set the logger we are using for this flusher.
-  * 
+  *
   * @param newPipeLog The pipe log we are logging to
   */
   void setLogger(ILogger newPipeLog)
   {
     pipeLog = newPipeLog;
   }
-   
+
 }

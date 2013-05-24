@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -80,13 +84,6 @@ import java.util.Iterator;
  */
 public class FlexRecord extends AbstractRecord
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: FlexRecord.java,v $, $Revision: 1.1 $, $Date: 2013-05-13 18:12:13 $";
-
   private static final long serialVersionUID = -4654007386889558251L;
 
  /**
@@ -168,8 +165,8 @@ public class FlexRecord extends AbstractRecord
     super();
 
     // Prepare the block index
-    BlockIndex = new HashMap<String, RecordBlock>(10);
-    BlockCount = new HashMap<String, Integer>(10);
+    BlockIndex = new HashMap<>(10);
+    BlockCount = new HashMap<>(10);
   }
 
   private RecordBlockDef FindBlock(String BlockName) throws InitializationException
@@ -330,16 +327,16 @@ public class FlexRecord extends AbstractRecord
     }
 
     // Initialise the child definition map
-    tmpRecordBlock.ChildTemplates = new HashMap<String, RecordBlockDef>(5);
+    tmpRecordBlock.ChildTemplates = new HashMap<>(5);
 
     // Initialise the child instance map
     //tmpRecordBlock.Children = new HashMap(5);
 
     // Initialise the child instance map
-    tmpRecordBlock.FieldNameIndex = new HashMap<String, Integer>(10);
+    tmpRecordBlock.FieldNameIndex = new HashMap<>(10);
 
     // Create the mapping definition ArrayList
-    tmpRecordBlock.Mapping = new ArrayList<MapElement>();
+    tmpRecordBlock.Mapping = new ArrayList<>();
 
     if (NewBlockName.equalsIgnoreCase("ROOT"))
     {
@@ -487,7 +484,7 @@ public class FlexRecord extends AbstractRecord
 
       // Create the block
       tmpRecordBlock = new RecordBlock();
-      tmpRecordBlock.FieldMap = new HashMap<String, Integer>(10);
+      tmpRecordBlock.FieldMap = new HashMap<>(10);
       tmpRecordBlock.Fields = new Object[tmpRecordBlockDef.NumberOfFields];
 
       // Now try the mapping
@@ -597,7 +594,7 @@ public class FlexRecord extends AbstractRecord
   public ArrayList<String> getDumpInfo()
   {
     ArrayList<String> tmpDumpList;
-    tmpDumpList = new ArrayList<String>();
+    tmpDumpList = new ArrayList<>();
 
     if (this != null)
     {
@@ -625,7 +622,7 @@ public class FlexRecord extends AbstractRecord
     String             FieldType = null;
 
     ArrayList<String> tmpDumpList;
-    tmpDumpList = new ArrayList<String>();
+    tmpDumpList = new ArrayList<>();
 
     for (i=0 ; i < Level ; i++)
     {

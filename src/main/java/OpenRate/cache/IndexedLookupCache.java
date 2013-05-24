@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -120,15 +124,7 @@ public class IndexedLookupCache
      extends AbstractSyncLoaderCache
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: IndexedLookupCache.java,v $, $Revision: 1.62 $, $Date: 2013-05-13 18:12:11 $";
-
-  // This stores the index to all the groups.
-  /**
-   *
+   * This stores the index to all the groups.
    */
   protected HashMap<String, String[]> ObjectCache;
 
@@ -188,7 +184,7 @@ public class IndexedLookupCache
   *
   * @param ObjectKeyFields The key fields to validate or manipulate
   * @return the modified or checked key fields
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public String[] validateKeyFields(String[] ObjectKeyFields) throws InitializationException
   {
@@ -202,7 +198,7 @@ public class IndexedLookupCache
   *
   * @param ObjectSplitFields The fiels that we are to check
   * @return the modified or checked key fields
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public String[] validateMapFields(String[] ObjectSplitFields) throws InitializationException
   {
@@ -291,7 +287,7 @@ public class IndexedLookupCache
     // Check that we have sensible values for the index and object field values
     if (ObjectFields < 2)
     {
-      String Message = "ObjectFields entry for cache <" + getSymbolicName() + 
+      String Message = "ObjectFields entry for cache <" + getSymbolicName() +
                        "> must be greater than 1. Found value <" + ObjectFields + ">";
       throw new InitializationException(Message);
     }
@@ -323,7 +319,7 @@ public class IndexedLookupCache
       {
         // We can't find the index field we were told exists
         String Message = "IndexField <Index" + i + "> entry for cache <" + getSymbolicName() + "> not found.";
-        
+
         throw new InitializationException(Message);
       }
       else
@@ -344,9 +340,9 @@ public class IndexedLookupCache
         }
       }
     }
-    
+
     // Perform the base initialisation
-    super.loadCache(ResourceName, CacheName);    
+    super.loadCache(ResourceName, CacheName);
  }
 
   /**
@@ -354,7 +350,7 @@ public class IndexedLookupCache
    *
    * @param inputKeys The keys to add to the map
    * @param inputResult The resutls array
-   * @throws InitializationException 
+   * @throws InitializationException
    */
   public void addEntry(String[] inputKeys, String[] inputResult)
     throws InitializationException
@@ -415,7 +411,7 @@ public class IndexedLookupCache
 
     if (Index > KeyFormFactor)
     {
-      String Message = "ObjectCache does not contain a key with index <" + Index + 
+      String Message = "ObjectCache does not contain a key with index <" + Index +
                        "> in module <" + getSymbolicName() + ">";
       throw new ProcessingException(Message);
     }
@@ -456,7 +452,7 @@ public class IndexedLookupCache
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      String Message = "Application is not able to read file : <" + CacheDataFile + 
+      String Message = "Application is not able to read file : <" + CacheDataFile +
                        "> in module <" + getSymbolicName() + ">";
       throw new InitializationException(Message, exFileNotFound);
     }
@@ -480,7 +476,7 @@ public class IndexedLookupCache
 
           if (ObjectSplitFields.length != ObjectFields)
           {
-            String Message = "Line <" + ObjectLinesLoaded + 
+            String Message = "Line <" + ObjectLinesLoaded +
                              "> does not conform to defined form factor of <" +
                              ObjectFields + "> in module <" + getSymbolicName() + ">";
             throw new InitializationException(Message);
@@ -504,14 +500,14 @@ public class IndexedLookupCache
     catch (IOException ex)
     {
       String Message =  "Error reading input file <" + CacheDataFile +
-                        "> in record <" + ObjectLinesLoaded + "> in module <" + 
+                        "> in record <" + ObjectLinesLoaded + "> in module <" +
                         getSymbolicName() + ">. IO Error.";
       throw new InitializationException(Message, ex);
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       String Message = "Error reading input file <" + CacheDataFile +
-                       "> in record <" + ObjectLinesLoaded + "> in module <" + 
+                       "> in record <" + ObjectLinesLoaded + "> in module <" +
                        getSymbolicName() + ">. Malformed Record.";
       throw new InitializationException(Message, ex);
     }
@@ -523,7 +519,7 @@ public class IndexedLookupCache
       }
       catch (IOException ex)
       {
-        String Message = "Error closing input file <" + CacheDataFile + 
+        String Message = "Error closing input file <" + CacheDataFile +
                          "> in module <" + getSymbolicName() + ">";
         throw new InitializationException(Message, ex);
       }
@@ -566,7 +562,7 @@ public class IndexedLookupCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Indexed Match data in module <" + 
+      String Message = "Error performing SQL for retieving Indexed Match data in module <" +
                        getSymbolicName() + ">";
       throw new InitializationException(Message, ex);
     }
@@ -617,7 +613,7 @@ public class IndexedLookupCache
     catch (SQLException ex)
     {
       String Message = "Error closing Search Map Data connection for <" +
-                       cacheDataSourceName + "> in module <" + 
+                       cacheDataSourceName + "> in module <" +
                        getSymbolicName() + ">";
       throw new InitializationException(Message, ex);
     }
@@ -707,7 +703,7 @@ public class IndexedLookupCache
     // Clear out the object cache
     ObjectCache.clear();
 
-    // iterate through the hash indexes, clearing them, but leaving the 
+    // iterate through the hash indexes, clearing them, but leaving the
     // structure intact
     indexIter = IndexList.iterator();
 

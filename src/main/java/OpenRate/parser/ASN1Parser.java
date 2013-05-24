@@ -1,6 +1,14 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -60,13 +68,6 @@ import OpenRate.exception.ASN1Exception;
  */
 public class ASN1Parser implements IBinaryParser
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ASN1Parser.java,v $, $Revision: 1.12 $, $Date: 2013-05-13 18:12:12 $";
-
   /* Own types - used to make sure the right parsing is used */
 
  /**
@@ -216,7 +217,7 @@ public class ASN1Parser implements IBinaryParser
 
  /**
   * Find out whether the reader is ready for another call
-  * 
+  *
   * @return true if ready, otherwise false
   */
   public boolean ready()
@@ -296,10 +297,10 @@ public class ASN1Parser implements IBinaryParser
       return newhead;
     }
   }
-  
+
   /**
    * Set the data to be parsed
-   * 
+   *
    * @param data The data to be parsed
    */
   @Override
@@ -374,7 +375,7 @@ public class ASN1Parser implements IBinaryParser
 
   /**
    * Parse an integer out
-   * 
+   *
    * @param tag The tag to get the value for
    * @param value The value to parse
    * @return The parsed value
@@ -472,7 +473,7 @@ public class ASN1Parser implements IBinaryParser
 
   /**
    * Reads the next element in the parsing sequence
-   * 
+   *
    * @return The next element
    * @throws Exception
    */
@@ -480,10 +481,11 @@ public class ASN1Parser implements IBinaryParser
   {
     Asn1Class output = new Asn1Class();
     int tag;
-    int length = 0;
+    int length;
+
     /* Local variables */
     int index = 0;
-    int value = 0;
+    int value;
     byte[] header = new byte[5];
 
     output.setTag(reader.readByte());
@@ -558,12 +560,12 @@ public class ASN1Parser implements IBinaryParser
 
   /**
    * Reads the next tag
-   * 
+   *
    * @param tag
    * @throws Exception
    */
   public void readNextTag(int tag) throws Exception {
-    Asn1Class item = new Asn1Class();
+    Asn1Class item;
 
     item = readNextElement();
     long endOfTag = item.getLength() + reader.bytePosition;

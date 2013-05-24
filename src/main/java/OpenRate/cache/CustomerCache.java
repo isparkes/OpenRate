@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -173,13 +177,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CustomerCache
     extends AbstractSyncLoaderCache
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: CustomerCache.java,v $, $Revision: 1.43 $, $Date: 2013-05-13 18:12:10 $";
-
   // Used to allow alias maps - takes a alias and maps to a poid.
   private ConcurrentHashMap<String, String> aliasCache;
 
@@ -322,7 +319,7 @@ public class CustomerCache
         getFWLog().error("Customer ID <" + CustId + "> valid from <" + ValidFrom + "> is after valid to <" + ValidTo + ">. Add failed.");
         return;
       }
-      
+
       // Create the new entry for the customer ID
       tmpCustInfo = new CustInfo();
       tmpCustInfo.CPI = new ArrayList<>();
@@ -373,7 +370,7 @@ public class CustomerCache
         getFWLog().error("Customer ID <" + CustId + "> product <" + ProdID + "> valid from <" + ValidFrom + "> is after valid to <" + ValidTo + ">. Add failed.");
         return;
       }
-      
+
       // Create the new entry for the customer ID
       tmpCustInfo = CustIDCache.get(CustId);
       tmpCPI = new CustProductInfo();
@@ -585,7 +582,7 @@ public class CustomerCache
       // Create the new entry for the customer ID
       tmpCustInfo = CustIDCache.get(CustId);
       keyList.addAll(tmpCustInfo.ERAList.keySet());
-      
+
       return keyList;
     }
     else
@@ -1083,9 +1080,9 @@ public class CustomerCache
     if (aliasSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<AliasSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     customerSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                         CacheName,
                                                                         "CustomerSelectStatement",
@@ -1094,9 +1091,9 @@ public class CustomerCache
     if (customerSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<CustomerSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     productSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                        CacheName,
                                                                        "ProductSelectStatement",
@@ -1105,9 +1102,9 @@ public class CustomerCache
     if (productSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<ProductSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     eraSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                    CacheName,
                                                                    "ERASelectStatement",
@@ -1116,9 +1113,9 @@ public class CustomerCache
     if (eraSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<ERASelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     // Normally we should not get here - we should have thrown an exception already
     // if anything was missing
     if ((aliasSelectQuery.equals("None")) |

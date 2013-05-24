@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -81,13 +85,6 @@ public abstract class AbstractOutputAdapter
              IEventInterface,
              IMonitor
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractOutputAdapter.java,v $, $Revision: 1.79 $, $Date: 2013-05-13 18:12:11 $";
-
   // This is the symbolic name that we use to identify individual instances
   private String SymbolicName;
 
@@ -214,7 +211,7 @@ public abstract class AbstractOutputAdapter
     catch (ProcessingException pe)
     {
       handler.reportException(pe);
-    }    
+    }
   }
 
   /**
@@ -232,7 +229,7 @@ public abstract class AbstractOutputAdapter
    *    the output batch.
    * 5) If this is an output terminator, any record which was not consumed is written to
    *    the PipeLog file.
-   * @throws ProcessingException 
+   * @throws ProcessingException
    */
   public void write() throws ProcessingException
   {
@@ -337,7 +334,7 @@ public abstract class AbstractOutputAdapter
               if (r.getOutput(OutputName))
               {
                 ThisBatchRecordsWritten++;
-                
+
                 try
                 {
                   r = prepErrorRecord(r);
@@ -385,13 +382,13 @@ public abstract class AbstractOutputAdapter
                 {
                   handler.reportException(new ProcessingException(e));
                 }
-                
+
                 // Process the trailer and pass it on
                 procTrailer(r);
                 out.add(r);
-                
+
                 // Mark that we have finished this stream
-                inTransaction = false;                
+                inTransaction = false;
               }
             }
           }
@@ -401,7 +398,7 @@ public abstract class AbstractOutputAdapter
         // We have to be a bit careful with flushing, as there is a difference
         // between the way that file streams and DB streams. The difference
         // comes from the fact that we allow 1 block to hold many file streams
-        // but only 1 DB stream. If we flushed the stream, we can't flush the 
+        // but only 1 DB stream. If we flushed the stream, we can't flush the
         // block for DB streams (the flush causes the DB connection to close).
         try
         {
@@ -411,7 +408,7 @@ public abstract class AbstractOutputAdapter
         {
           handler.reportException(pe);
         }
-        
+
         // clean up the input buffer
         in.clear();
 
@@ -546,9 +543,9 @@ public abstract class AbstractOutputAdapter
   }
 
   /**
-   * Do any required processing prior to completing the stream. The flushStream() 
-   * method is called for transaction stream. This differs from the flushBlock(), 
-   * which is called at the end of each block and the cleanup() method, which 
+   * Do any required processing prior to completing the stream. The flushStream()
+   * method is called for transaction stream. This differs from the flushBlock(),
+   * which is called at the end of each block and the cleanup() method, which
    * is called only once upon application shutdown.
    *
    * @throws OpenRate.exception.ProcessingException
@@ -559,7 +556,7 @@ public abstract class AbstractOutputAdapter
   }
 
   /**
-   * Do any required processing prior to completing the batch block. The 
+   * Do any required processing prior to completing the batch block. The
    * flushBlock() method is called for block processed and is intended for
    * batch commit control.
    *
@@ -701,7 +698,7 @@ public abstract class AbstractOutputAdapter
   *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   public abstract IRecord prepValidRecord(IRecord r) throws ProcessingException;
 
@@ -713,7 +710,7 @@ public abstract class AbstractOutputAdapter
   *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   public abstract IRecord prepErrorRecord(IRecord r) throws ProcessingException;
 
@@ -725,7 +722,7 @@ public abstract class AbstractOutputAdapter
   *
   * @param r The record we are working on
   * @return The processed record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   public abstract IRecord procHeader(IRecord r) throws ProcessingException;
 
@@ -737,7 +734,7 @@ public abstract class AbstractOutputAdapter
   *
   * @param r The record we are working on
    * @return The collection of processed records
-   * @throws ProcessingException  
+   * @throws ProcessingException
   */
   public abstract Collection<IRecord> procValidRecord(IRecord r) throws ProcessingException;
 
@@ -748,7 +745,7 @@ public abstract class AbstractOutputAdapter
   *
   * @param r The record we are working on
    * @return The collection of processed records
-   * @throws ProcessingException  
+   * @throws ProcessingException
   */
   public abstract Collection<IRecord> procErrorRecord(IRecord r) throws ProcessingException;
 
@@ -760,7 +757,7 @@ public abstract class AbstractOutputAdapter
   *
   * @param r The record we are working on
    * @return The processed record
-   * @throws ProcessingException  
+   * @throws ProcessingException
   */
   public abstract IRecord procTrailer(IRecord r)  throws ProcessingException;
 
@@ -1015,7 +1012,8 @@ public abstract class AbstractOutputAdapter
   // -----------------------------------------------------------------------------
 
   /**
-  * Temporary function to gather the information from the properties file. Will
+  * Temporary function to gather the information from the properties file. Will
+
   * be removed with the introduction of the new configuration model.
   */
   private String initGetBatchSize() throws InitializationException
@@ -1091,7 +1089,7 @@ public abstract class AbstractOutputAdapter
 
     return tmpParam;
   }
-  
+
  /**
   * Set if we are a terminating output adapter or not
   *

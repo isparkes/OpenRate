@@ -72,38 +72,31 @@ import java.util.Iterator;
  * In particular, this is useful for adding persistence to a real time pipeline
  * where the writing to a table or file should happen after real time processing
  * has happened.
- * 
+ *
  * This module tees into a Real Time pipeline and takes a feed of the events
  * for putting into a batch pipeline. This is usually used for persistence
  * of RT events in a batch mode, however, it can also be used for balance
  * updates in a batch pipeline.
- * 
+ *
  * Buffer Input Adapter
  * --------------------
  * The output of the buffer tee adapter allows you to "sniff" events out of
  * a pipeline (real time or batch) and put them into another pipeline (batch)
  * for persistence or further processing. This converts synchronous events into
- * asynchronous events. The coupling between the two pipelines is a normal FIFO 
- * buffer. The buffer is accessed using a "LinkedBufferCache" which allows the 
+ * asynchronous events. The coupling between the two pipelines is a normal FIFO
+ * buffer. The buffer is accessed using a "LinkedBufferCache" which allows the
  * FIFO to be set up and accessed by name.
- * 
+ *
  * Input >->->- Pipeline 1 ->->->- Buffer Tee Adapter ->->-> Output
  *                                     |
  *   +------------- Buffer ------------+
  *   |
  *   +-> Buffer Input Adapter >->- Pipeline 2 ->->->-> Output
- * 
+ *
  */
 public abstract class BufferInputAdapter
   extends AbstractTransactionalInputAdapter
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: BufferInputAdapter.java,v $, $Revision: 1.15 $, $Date: 2013-05-13 18:12:12 $";
-
   /**
    * Used to track the status of the number of the record we are processing
    */

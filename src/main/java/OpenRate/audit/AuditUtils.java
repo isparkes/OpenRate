@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -70,23 +74,23 @@ import java.util.TreeSet;
 public class AuditUtils
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
+   * VCS version info - Automatically captured and written to the Framework
    * Version Audit log at Framework startup. For more information
    * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
    */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AuditUtils.java,v $, $Revision: 1.18 $, $Date: 2013-05-13 18:12:12 $";
+  public static String VCS_MODULE_INFO = "OpenRate, $Id$, $Rev$, $Date$";
 
   // Get the utilities for handling the XML configuration
   private static AuditUtils auditUtilsObj = null;
 
-  // The key we are using to recover the CVS info
-  final static String CVS_INFO_KEY="CVS_MODULE_INFO";
-  
   // Whether we log custom classes as well
   private static boolean auditCoreOnly = false;
 
   // Whether we do logging at all (used for test)
   private static boolean auditLogging = true;
+
+  // This stores the classes we are using
+  private static HashMap<String,String> versionMap;
 
  /**
   * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
@@ -97,18 +101,24 @@ public class AuditUtils
   protected static AstractLogger FWLog = LogUtil.getStaticLogger("Framework");
 
   // The internal map of the version information
-  private static HashMap<String,AuditInfoRecord> versionMap;
+  private static String versionString;
 
-  private class AuditInfoRecord
-  {
-    String elementName;
-    String version;
-    String releaseDate;
-    String packageName;
+  /**
+   * @return the versionString
+   */
+  public static String getVersionString() {
+    return versionString;
+  }
+
+  /**
+   * @param aVersionString the versionString to set
+   */
+  public static void setVersionString(String aVersionString) {
+    versionString = aVersionString;
   }
 
  /**
-  * Audit utils provides utility functions for logging and tracing the internal
+  * AuditUtils provides utility functions for logging and tracing the internal
   * version numbers of key modules in the OpenRate core framework. This allows
   * us to know the CVS version number of the setup that a framework is using
   * and therefore aids in the management of defects.
@@ -129,7 +139,7 @@ public class AuditUtils
     versionMap = new HashMap<>();
 
     // Add ourselves
-    buildVersionMap(CVS_MODULE_INFO, this.getClass());
+    buildVersionMap(this.getClass());
   }
 
   /**
@@ -140,41 +150,17 @@ public class AuditUtils
    * @param myVersion the version information passed from the module
    * @param myClass The class that we are adding
    */
-  public void buildVersionMap(String myVersion, Class myClass)
+  public void buildVersionMap(Class myClass)
   {
-    // split up the information
-    String formatString = myVersion.replaceAll("OpenRate, \\$RCSfile: ", "");
-    formatString = formatString.replaceAll(",v \\$, \\$Revision: ", ";");
-    formatString = formatString.replaceAll("\\$, \\$Date: ", ";");
-    formatString = formatString.replaceAll("\\$", "");
-
-    // Split the fields
-    String[] versionFields = formatString.split(";");
-
-    if (versionFields.length != 3)
-    {
-      FWLog.error("Unable to parse version info <" + myVersion + ">");
-      return;
-    }
-
-    // See if we already have this element in the map
-    if (versionMap.containsKey(versionFields[0].trim()))
-    {
-      // we already have this logged, exit
-      return;
-    }
-
-    // prepare the version info
-    AuditInfoRecord tmpRecord = new AuditInfoRecord();
-    tmpRecord.elementName = versionFields[0].replace(".java", "").trim();
-    tmpRecord.version = versionFields[1].trim();
-    tmpRecord.releaseDate = versionFields[2].trim();
-    
     // Prepare the package name to remove the class name
-    tmpRecord.packageName = myClass.getCanonicalName().replace("."+tmpRecord.elementName, "");
+    String packageName = myClass.getCanonicalName();
 
     // add it to the map
-    versionMap.put(tmpRecord.elementName,tmpRecord);
+    // See if we already have this element in the map
+    if (versionMap.containsKey(packageName) == false)
+    {
+      versionMap.put(packageName,packageName);
+    }
   }
 
   /**
@@ -191,12 +177,12 @@ public class AuditUtils
     Iterator<String> mapIter = sortedSet.iterator();
     while (mapIter.hasNext())
     {
-      AuditInfoRecord tmpRecord = versionMap.get(mapIter.next());
+      String tmpRecord = versionMap.get(mapIter.next());
 
-      formatString = "  " + (tmpRecord.elementName + "                                                            ").substring(0, 60) +
-                     (tmpRecord.version + "          ").substring(0, 10) +
-                     tmpRecord.releaseDate + "  (" +
-                     tmpRecord.packageName + ")";
+      formatString = "  " + (tmpRecord + "                                                            ").substring(0, 60) +
+                     ("xxxxx" + "          ").substring(0, 10) +
+                     "yyyy-mm-dd" + "  (" +
+                     "packageName" + ")";
 
       FWLog.info(formatString);
     }
@@ -219,42 +205,9 @@ public class AuditUtils
     {
       return;
     }
-    
-    // get the information for the base class
-    try
-    {
-      String info = (String)sup.getField(CVS_INFO_KEY).get(this.getClass());
-      class_name=sup.getSimpleName();
 
-      // detect the case that we inherited a super CVS_INFO entry
-      if (!info.contains(class_name))
-      {
-        throw new NoSuchFieldException();
-      }
-
-      // Add the field to be audited
-      buildVersionMap(info,sup);
-    }
-    catch (NoSuchFieldException ex)
-    {
-      if (class_name == null)
-      {
-        FWLog.error("Class <" + sup.getSimpleName() + "> is null");
-      }
-      else
-      {
-        String className = ourClass.toString().toUpperCase();
-        if ((auditCoreOnly == false) || className.startsWith("CLASS OPENRATE"))
-        {
-          // Log core classes only
-          FWLog.warning("Class <" + class_name + "> does not have version information");
-        }    
-      }
-    }
-    catch (IllegalAccessException ex)
-    {
-      FWLog.error("Access error getting version information for Class <" + class_name + ">");
-    }
+    // Add the field to be audited
+    buildVersionMap(sup);
 
     // now get the info for all the superclasses
     while ((sup=sup.getSuperclass()) != null)
@@ -264,29 +217,8 @@ public class AuditUtils
       // we don't care about Object
       if (!name.equals("java.lang.Object"))
       {
-        try
-        {
-          String info = (String)sup.getField(CVS_INFO_KEY).get(this.getClass());
-          class_name=sup.getSimpleName();
-          if (!info.contains(class_name))
-            throw new NoSuchFieldException();
-
           // Add the field to be audited
-          buildVersionMap(info,sup);
-        }
-        catch (NoSuchFieldException ex)
-        {
-          String className = ourClass.toString().toUpperCase();
-          if ((auditCoreOnly == false) || className.startsWith("CLASS OPENRATE"))
-          {
-            // Log core classes only
-            FWLog.warning("Class <" + class_name + "> does not have version information");
-          }    
-        }
-        catch (IllegalAccessException ex)
-        {
-          FWLog.error("Access error getting version information for Class <" + class_name + ">");
-        }
+          buildVersionMap(sup);
       }
     }
   }
@@ -306,34 +238,34 @@ public class AuditUtils
 
     return auditUtilsObj;
   }
-  
+
   /**
-   * Get the status of the setting to audit module only to audit OpenRate core 
+   * Get the status of the setting to audit module only to audit OpenRate core
    * classes (no custom classes)
-   * 
+   *
    * @return the current value
    */
-  public boolean getAuditCoreOnly() 
+  public boolean getAuditCoreOnly()
   {
     return auditCoreOnly;
   }
 
   /**
    * Set the audit module only to audit OpenRate core classes (no custom classes)
-   * 
+   *
    * @param newValue the new value to use
    */
-  public void setAuditCoreOnly(boolean newValue) 
+  public void setAuditCoreOnly(boolean newValue)
   {
     auditCoreOnly = newValue;
   }
-  
+
   /**
    * Set the audit module to audit or not. (Used for testing)
-   * 
+   *
    * @param newValue the new value to use
    */
-  public void setAuditLogging(boolean newValue) 
+  public void setAuditLogging(boolean newValue)
   {
     auditLogging = newValue;
   }

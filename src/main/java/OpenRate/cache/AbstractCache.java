@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -115,6 +119,7 @@ public abstract class AbstractCache
   /**
    * @param handler the handler to set
    */
+    @Override
   public void setHandler(ExceptionHandler handler) {
     this.handler = handler;
   }

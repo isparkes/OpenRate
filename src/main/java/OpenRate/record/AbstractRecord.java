@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -69,17 +73,9 @@ public abstract class AbstractRecord implements IRecord
   /**
    * Default UID for Serializable class
    */
-	private static final long serialVersionUID = -1971022798790808812L;
-
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractRecord.java,v $, $Revision: 1.47 $, $Date: 2013-05-13 18:12:11 $";
-
+  private static final long serialVersionUID = -1971022798790808812L;
   // Errors that this record has
-  private List<IError> errors = new ArrayList<IError>();
+  private List<IError> errors = new ArrayList<>();
 
   /**
    * The record number is the sequential number of the record in the stream.
@@ -87,7 +83,7 @@ public abstract class AbstractRecord implements IRecord
   public int RecordNumber;
 
  /**
-  * the record type - intger for speed
+  * the record type - integer for speed
   * The record type is what allows us to determine what the records to handle
   * are, and what to ignore. This is the internal version of the information
   * which basically tells us if this record is a detail CDR or a header or
@@ -110,7 +106,7 @@ public abstract class AbstractRecord implements IRecord
   /**
    * Outputs that this record should go to
    */
-  public ArrayList<String> outputs = new ArrayList<String>();
+  public ArrayList<String> outputs = new ArrayList<>();
 
   // These are for the tracking of the outputting via the output adapter chain
   // Each time we add an output, we increment the OutputsAssigned, each time
@@ -141,7 +137,7 @@ public abstract class AbstractRecord implements IRecord
 
  /**
   * Is the Record valid. This is a flag that, when true, means that processing
-  * modules should do their thing with the record. The resons for this being
+  * modules should do their thing with the record. The reasons for this being
   * false are that it is not a real record (e.g. it is a control record) or
   * that it is a record that has an error attached to it that means it is
   * not worth the effort of processing.
@@ -264,7 +260,7 @@ public abstract class AbstractRecord implements IRecord
       // get the name of the calling class
       error.setModuleName(new Throwable().fillInStackTrace().getStackTrace()[1].getClassName());
     }
-            
+
     // Add the error to the list
     errors.add(error);
 
@@ -359,7 +355,7 @@ public abstract class AbstractRecord implements IRecord
   /**
    * Return a list of all the outputs that we are to write to.
    *
-   * @return Arraylist of the outputs
+   * @return Array list of the outputs
    */
   public ArrayList<String> getOutputs()
   {
@@ -465,7 +461,7 @@ public abstract class AbstractRecord implements IRecord
   {
     return getErrorDump(24, false);
   }
-  
+
  /**
   * Get the Error dump information for the errors associated with this record
   * with a specified padding
@@ -477,7 +473,7 @@ public abstract class AbstractRecord implements IRecord
   {
     return getErrorDump(padding, false);
   }
-          
+
  /**
   * Get the Error dump information for the errors associated with this record
   * with a specified padding and control of whether module name is shown
@@ -490,12 +486,12 @@ public abstract class AbstractRecord implements IRecord
   {
     int i;
     RecordError tmpError;
-    ArrayList<String> tmpDumpList = new ArrayList<String>();
-    
+    ArrayList<String> tmpDumpList = new ArrayList<>();
+
     // set up the padding
     if (padding < 19) padding = 19;
     String pad = "                                                  ".substring(1, padding - 18);
-    
+
     int tmpErrorCount = this.getErrors().size();
     tmpDumpList.add("  Errors           " + pad + "= <" + tmpErrorCount + ">");
     if (tmpErrorCount>0)
@@ -505,7 +501,7 @@ public abstract class AbstractRecord implements IRecord
       {
         tmpError = (RecordError) this.getErrors().get(i);
         tmpDumpList.add("    Error          " + pad + "= <" + tmpError.getMessage() + ">");
-        
+
         if (showFullInfo && (tmpError.getModuleName().isEmpty() == false))
         {
           tmpDumpList.add("    Module         " + pad + "= <" + tmpError.getModuleName() + ">");

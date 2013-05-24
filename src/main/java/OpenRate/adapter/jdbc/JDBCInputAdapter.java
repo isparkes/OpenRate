@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -72,7 +76,7 @@ import java.util.logging.Logger;
 
 /**
  * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=JDBC_Input_Adapter'>click here</a> to go to wiki page.
- * 
+ *
  * <p>Generic JDBC InputAdapter.<br>This module is a little more complicated than the
  * file input adapter, because we are more restricted about the way that we
  * deal with done records, which will depend on the limitations of the upstream
@@ -125,13 +129,6 @@ public abstract class JDBCInputAdapter
   extends AbstractTransactionalInputAdapter
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: JDBCInputAdapter.java,v $, $Revision: 1.80 $, $Date: 2013-05-13 18:12:12 $";
-
-  /**
    * This is the statement we use to validate the connection
    */
   protected String ValidateQuery;
@@ -140,22 +137,22 @@ public abstract class JDBCInputAdapter
    * Count the number of records waiting for processing
    */
   protected String CountQuery;
-  
+
   /**
    * Prepare the records for processing
    */
   protected String InitQuery;
-  
+
   /**
    * Get the prepared records
    */
   protected String SelectQuery;
-  
+
   /**
    * Commit the processed records if the transaction ended correctly
    */
   protected String CommitQuery;
-  
+
   /**
    * Rollback the changes if the transaction did not end correctly
    */
@@ -170,22 +167,22 @@ public abstract class JDBCInputAdapter
    * Prepared count query
    */
   protected PreparedStatement StmtCountQuery;
-  
+
   /**
    * Prepared Init Query
    */
   protected PreparedStatement StmtInitQuery;
-  
+
   /**
    * Prepared Select Query
    */
   protected PreparedStatement StmtSelectQuery;
-  
+
   /**
    * Prepared Commit Query
    */
   protected PreparedStatement StmtCommitQuery;
-  
+
   /**
    * Prepared Rollback Query
    */
@@ -486,7 +483,7 @@ public abstract class JDBCInputAdapter
 
           // Notify the transaction layer that we have finished
           setTransactionFlushed(transactionNumber);
-          
+
           // Close the connection
           // Connection will be closed after commit or rollback
           closeSelectStatement();
@@ -522,15 +519,15 @@ public abstract class JDBCInputAdapter
  /**
   * Get the transaction id for the transaction. Intended to be overwritten
   * in the case that you want another transaction ID format.
-  * 
+  *
   * @param transactionNumber The number of the transaction
   * @return The calculated transaction id
   */
-  public String getTransactionID(int transactionNumber) 
+  public String getTransactionID(int transactionNumber)
   {
     return ""+new Date().getTime();
   }
-  
+
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
@@ -734,7 +731,7 @@ public abstract class JDBCInputAdapter
   * Perform any processing that needs to be done when we are flushing the
   * transaction
   *
-  * @param TransactionNumber 
+  * @param TransactionNumber
   * @return 0 if everything flushed OK, otherwise -1
   */
   @Override
@@ -775,7 +772,7 @@ public abstract class JDBCInputAdapter
   /**
   * Perform any processing that needs to be done when we are rolling back the
   * transaction;
-  * 
+  *
   * @param transactionNumber The transaction to roll back
   */
   @Override
@@ -862,7 +859,7 @@ public abstract class JDBCInputAdapter
     {
       // Get the connection
       openConnection();
-      
+
       // prepare the SQL for the TestStatement
       StmtCountQuery = JDBCcon.prepareStatement(CountQuery,
                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -921,7 +918,7 @@ public abstract class JDBCInputAdapter
     {
       // Get the connection
       openConnection();
-      
+
       // prepare the SQL for the TestStatement
       if(CommitQuery == null || CommitQuery.isEmpty()){
           StmtCommitQuery = null;
@@ -956,7 +953,7 @@ public abstract class JDBCInputAdapter
       throw new ProcessingException(Message);
     }
   }
-  
+
  /**
   * CloseStatements closes the statements from the SQL expressions
   */
@@ -974,7 +971,7 @@ public abstract class JDBCInputAdapter
         PipeLog.error(Message);
       }
     }
-      
+
     // close the connection
     closeConnection();
   }
@@ -997,7 +994,7 @@ public abstract class JDBCInputAdapter
         PipeLog.error(Message);
       }
     }
-      
+
     // close the connection
     closeConnection();
   }
@@ -1019,7 +1016,7 @@ public abstract class JDBCInputAdapter
         PipeLog.error(Message);
       }
     }
-      
+
     // close the connection
     closeConnection();
   }
@@ -1054,11 +1051,11 @@ public abstract class JDBCInputAdapter
         PipeLog.error(Message);
       }
     }
-      
+
     // close the connection
     closeConnection();
   }
-  
+
   /**
   * Open the connection
   */
@@ -1120,7 +1117,7 @@ public abstract class JDBCInputAdapter
     {
       // prepare the count query
       prepareCountStatement();
-    
+
       if (StmtCountQuery.execute())
       {
         Trs = StmtCountQuery.getResultSet();
@@ -1139,7 +1136,7 @@ public abstract class JDBCInputAdapter
 
         Trs.close();
       }
-      
+
       // close the statement
       closeCountStatement();
     }
@@ -1165,10 +1162,10 @@ public abstract class JDBCInputAdapter
     {
       // prepare the statement
       prepareInitStatement();
-      
+
       // Execute it
       StmtInitQuery.execute();
-      
+
       // Close the statement
       closeInitStatement();
     }
@@ -1217,12 +1214,12 @@ public abstract class JDBCInputAdapter
     {
       // prepare the statement
       prepareCommitRollbackStatement();
-      
+
       // deinit the records so that we don't have to read them ever again
       if(StmtCommitQuery != null){
         perfomCommit();
       }
-      
+
       // Close down the connection and return to the pool
       closeCommitRollbackStatement();
     }
@@ -1246,12 +1243,12 @@ public abstract class JDBCInputAdapter
      {
       // prepare the statement
       prepareCommitRollbackStatement();
-      
+
        // deinit the records so that we don't have to read them ever again
        if(StmtRollbackQuery != null){
          perfomRollback();
        }
-       
+
       // Close down the connection and return to the pool
       closeCommitRollbackStatement();
      }
@@ -1265,24 +1262,24 @@ public abstract class JDBCInputAdapter
 
   /**
    * Overridable commit block for allowing the addition of parameters
-   * 
-   * @throws SQLException 
+   *
+   * @throws SQLException
    */
   public void perfomCommit() throws SQLException
   {
     StmtCommitQuery.execute();
   }
-  
+
   /**
    * Overridable rollback block for allowing the addition of parameters
-   * 
-   * @throws SQLException 
+   *
+   * @throws SQLException
    */
   public void perfomRollback() throws SQLException
   {
     StmtRollbackQuery.execute();
   }
-  
+
   // -----------------------------------------------------------------------------
   // --------------- Start of custom initialisation functions ---------------------
   // -----------------------------------------------------------------------------
@@ -1302,7 +1299,7 @@ public abstract class JDBCInputAdapter
     String query;
 
     // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(), 
+    query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
                                                           INIT_QUERY_KEY,
                                                           "None");
 

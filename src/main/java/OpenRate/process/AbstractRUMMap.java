@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,11 +55,11 @@
 
 package OpenRate.process;
 
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.cache.RUMMapCache;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.*;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
@@ -73,21 +77,14 @@ import java.util.ArrayList;
  * that multiple resources have been impacted.
  *
  * No roll-up of charges is performed in this module. You can use the module
- * "GatherRUMImpacts" to collect and summarise the CP impacts.
+ * "GatherRUMImpacts" to collect and create a summary of the CP impacts.
  *
  * You can obtain a rating breakdown (which provides exact details of the steps
- * and tiers used to calculate the carge) by enabling the standard ratingrecord
+ * and tiers used to calculate the charge) by enabling the standard rating record
  * field "CreateBreakdown" boolean value to true.
  */
 public abstract class AbstractRUMMap extends AbstractPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractRUMMap.java,v $, $Revision: 1.23 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the object will be using the find the cache manager
   private ICacheManager CMRM = null;
 
@@ -299,7 +296,7 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
     ArrayList<RUMMapCache.RUMMapEntry> tmpRUMMap;
     RUMMapCache.RUMMapEntry tmpRUMMapEntry;
     String PriceGroup;
-    ArrayList<ChargePacket> tmpCPList = new ArrayList<ChargePacket>();
+    ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
     boolean Replace = false;
 
     // Loop over the charge packets

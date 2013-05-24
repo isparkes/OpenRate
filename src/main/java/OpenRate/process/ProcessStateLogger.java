@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -61,18 +65,11 @@ import java.util.LinkedList;
 
 /**
  * Logger for process states
- * 
+ *
  * @author TGDSPIA1
  */
 public class ProcessStateLogger extends AbstractPlugIn implements Runnable
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ProcessStateLogger.java,v $, $Revision: 1.10 $, $Date: 2013-05-13 18:12:10 $";
-
   private LinkedList<Object> logQueue;
 
   private boolean isClientAvailable = false;
@@ -95,7 +92,7 @@ public class ProcessStateLogger extends AbstractPlugIn implements Runnable
   public void init(String PipelineName, String ModuleName)
     throws InitializationException
   {
-    logQueue = new LinkedList<Object>();
+    logQueue = new LinkedList<>();
     SocketOutputThread thread = new SocketOutputThread();
     thread.start();
 
@@ -106,7 +103,7 @@ public class ProcessStateLogger extends AbstractPlugIn implements Runnable
 //    CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(PipelineName,
 //       ModuleName,"DataCache");
 
-    
+
   }
 
  /**
@@ -134,7 +131,7 @@ public class ProcessStateLogger extends AbstractPlugIn implements Runnable
 // -----------------------------------------------------------------------------
 
  /**
-  * 
+  *
   * @param data
   * @throws ProcessingException
   */
@@ -147,7 +144,7 @@ public class ProcessStateLogger extends AbstractPlugIn implements Runnable
 //            System.out.println(" added to Queue"+logQueue.size());
           }
       }
-      
+
   }
 
 
@@ -189,7 +186,7 @@ private class SocketOutputThread extends Thread {
             clientSocket = serverSocket.accept();
             isClientAvailable = true;
             out = new DataOutputStream(clientSocket.getOutputStream());
-            
+
             // get a task to run
             Object dataToLog;
             try {

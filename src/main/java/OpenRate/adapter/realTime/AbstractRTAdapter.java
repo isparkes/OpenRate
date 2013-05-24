@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -76,13 +80,6 @@ import java.util.Iterator;
  */
 public abstract class AbstractRTAdapter implements IRTAdapter
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractRTAdapter.java,v $, $Revision: 1.17 $, $Date: 2013-05-13 18:12:12 $";
-
   // The symbolic name is used in the management of the pipeline (control and
   // thread monitoring) and logging.
   private String SymbolicName;
@@ -127,7 +124,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   protected boolean debugging = false;
 
  /**
-  * Contructor
+  * Constructor
   */
   public void AbstractRTAdapter()
   {
@@ -368,7 +365,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
           throws ProcessingException
   {
     Iterator<IPlugIn> pluginIter = PlugInList.iterator();
-    IRecord tmpRecord = recordToProcess;
+    IRecord tmpRecord;
 
     IPlugIn tmpPlugin;
 
@@ -572,7 +569,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   * and publishes the commands that the plug in understands. The listener is
   * responsible for delivering only these commands to the plug in.
   *
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public void RegisterClientManager() throws InitializationException
   {

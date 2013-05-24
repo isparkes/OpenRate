@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -77,10 +81,10 @@ import org.apache.oro.text.GlobCompiler;
  * the input XML stream into record sized chunks and then processing the chunks.
  * For the adapter to work, the XML must be formatted with line breaks at the
  * end of each element.
- * 
+ *
  * To use the adapter, you have to define the tag which is to be used as the
  * record separation tag. For example:
- * 
+ *
  *   <customer customerId="20978">
  *    <account>
  *      <number></number>
@@ -130,7 +134,7 @@ public abstract class XMLFileInputAdapter
   * processing.
   */
   private String recordIdentifier;
-  
+
  /**
   * The input path of the prefix (strategy 2) input file
   */
@@ -237,15 +241,15 @@ public abstract class XMLFileInputAdapter
  /**
   * Constructor - set the default recr identifier. Override this to change the
   * behaviour.
-  * 
+  *
   * Set the default stream identifier. (Almost always this will have to be
   * set in the implementation class).
   */
   public XMLFileInputAdapter()
   {
     recordIdentifier = DEFAULT_RECORD_IDENTIFIER;
-  }        
-         
+  }
+
   // -----------------------------------------------------------------------------
   // --------------- Start of inherited Input Adapter functions ------------------
   // -----------------------------------------------------------------------------
@@ -397,26 +401,26 @@ public abstract class XMLFileInputAdapter
         	while(reader.ready())
           {
         		tmpRecordLine = reader.readLine();
-            
+
             // Start of record
         		if((tmpRecordLine.contains("<"+recordIdentifier+">")) ||
                (tmpRecordLine.contains("<"+recordIdentifier+" ")))
             {
               inRecord = true;
             }
-            
+
             // if we are in a record, then append the line data to the record
             if (inRecord)
             {
         		  tmpFileRecord.append(tmpRecordLine);
             }
-            
+
             // End of record
         		if(tmpRecordLine.contains("</"+recordIdentifier+">"))
             {
               // reset to say that we are no longer in a record
               inRecord = false;
-              
+
               // We are ready to submit the record to xml parser
         			try
               {
@@ -424,7 +428,7 @@ public abstract class XMLFileInputAdapter
         			}
         			catch (Exception exRecordError)
               {
-                String Message = "Application is not able to parse the record : '" + 
+                String Message = "Application is not able to parse the record : '" +
                         getProcName(transactionNumber) + "' ";
                 PipeLog.error(Message);
                 throw new ProcessingException(Message, exRecordError);
@@ -1126,14 +1130,14 @@ public abstract class XMLFileInputAdapter
 
  /**
   * Set the record identifier for splitting the records up.
-  * 
+  *
   * @param newRecordIdentifier The new record identifier to set
   */
   public void setRecordIdentifier(String newRecordIdentifier)
-  {        
+  {
     recordIdentifier = newRecordIdentifier;
   }
-  
+
   // -----------------------------------------------------------------------------
   // ---------------------- Start stream handling functions ----------------------
   // -----------------------------------------------------------------------------
@@ -1484,7 +1488,7 @@ public abstract class XMLFileInputAdapter
   {
 	  xmlValues.put(key, value);
   }
-  
+
   /**
    * Provides a second level file name filter for files - may be overridden
    * by the implementation class
@@ -1500,12 +1504,12 @@ public abstract class XMLFileInputAdapter
 
  /**
   * Order the list of files. This is can be overridden so that the sure may define their own rules.
-  * 
+  *
   * @param dir The directory to scan
   * @param filter The filter we are using
   * @return A list of files to process, first in list gets processed first
   */
-  public String[] getOrderedFileListForProcessing(File dir, FilenameFilter filter) 
+  public String[] getOrderedFileListForProcessing(File dir, FilenameFilter filter)
   {
 	// standard: no ordering
 	return dir.list(filter);

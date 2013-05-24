@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -66,19 +70,12 @@ import java.util.Iterator;
  * <p>JDBC Batch Output Adapter.<br>
  *
  * This is a higher performance version of the JDBC output adapter, which
- * performs batch commits. The rest of the operation is the same as the 
+ * performs batch commits. The rest of the operation is the same as the
  * parent version JDBC output adapter, "JDBCOutputAdapter".
  */
 public abstract class JDBCBatchOutputAdapter
   extends JDBCOutputAdapter
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: JDBCBatchOutputAdapter.java,v $, $Revision: 1.26 $, $Date: 2013-05-13 18:12:12 $";
-
   /**
    * Default constructor
    */
@@ -94,7 +91,7 @@ public abstract class JDBCBatchOutputAdapter
  /**
   * Initialise the module. Called during pipeline creation.
   * Initialise the Logger, and load the SQL statements.
-  * 
+  *
   * @param PipelineName The name of the pipeline this module is in
   * @param ModuleName The module symbolic name of this module
   * @throws OpenRate.exception.InitializationException
@@ -105,7 +102,7 @@ public abstract class JDBCBatchOutputAdapter
   {
     // perform the initialisation
     super.init(PipelineName, ModuleName);
-        
+
     try
     {
       // see if we can do batch commits
@@ -116,7 +113,7 @@ public abstract class JDBCBatchOutputAdapter
         pipeLog.fatal(Message);
         throw new InitializationException(Message);
       }
-      
+
       // Done the check, close it
       JDBCcon.close();
     }
@@ -128,13 +125,13 @@ public abstract class JDBCBatchOutputAdapter
     }
   }
 
-      
+
  /**
   * Process the stream header. Get the file base name and open the transaction.
   *
   * @param r The record we are working on
   * @return The processed record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord procHeader(IRecord r) throws ProcessingException
@@ -155,16 +152,16 @@ public abstract class JDBCBatchOutputAdapter
       getExceptionHandler().reportException(new ProcessingException(Sex));
       this.setTransactionAbort(getTransactionNumber());
     }
-    
+
     return r;
   }
-      
+
  /**
   * Prepare good records for writing to the defined output stream.
-  * 
+  *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord prepValidRecord(IRecord r) throws ProcessingException
@@ -173,7 +170,7 @@ public abstract class JDBCBatchOutputAdapter
     Collection<IRecord> outRecCol = null;
     DBRecord            outRec;
     Iterator<IRecord>   outRecIter;
-    
+
     try
     {
       outRecCol = procValidRecord(r);
@@ -208,7 +205,7 @@ public abstract class JDBCBatchOutputAdapter
       getExceptionHandler().reportException(new ProcessingException(Message, ex));
       setTransactionAbort(getTransactionNumber());
     }
-    
+
     // Null return means "do not bother to process"
     if (outRecCol != null)
     {
@@ -327,10 +324,10 @@ public abstract class JDBCBatchOutputAdapter
 
  /**
   * Prepare bad records for writing to the defined output stream.
-  * 
+  *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException
@@ -374,7 +371,7 @@ public abstract class JDBCBatchOutputAdapter
       getExceptionHandler().reportException(new ProcessingException(Message, ex));
       setTransactionAbort(getTransactionNumber());
     }
-    
+
     // Null return means "do not bother to process"
     if (outRecCol != null)
     {
@@ -489,9 +486,9 @@ public abstract class JDBCBatchOutputAdapter
 
     return r;
   }
-  
+
   /**
-   * Do any required processing prior to completing the batch block. The 
+   * Do any required processing prior to completing the batch block. The
    * flushBlock() method is called for block processed and is intended for
    * batch commit control.
    *
@@ -501,7 +498,7 @@ public abstract class JDBCBatchOutputAdapter
   public void flushBlock() throws ProcessingException
   {
     // We have to determine between the case of a normal block flush and the
-    // block flush at the end of the transaction. We want to flush at the 
+    // block flush at the end of the transaction. We want to flush at the
     // block boundaries, but not at the end of the stream, because flushStream()
     // already did that. We make this decision based on the fact that there
     // is a transaction open or not
@@ -542,9 +539,9 @@ public abstract class JDBCBatchOutputAdapter
   }
 
   /**
-   * Do any required processing prior to completing the stream. The flushStream() 
-   * method is called for transaction stream. This differs from the flushBlock(), 
-   * which is called at the end of each block and the cleanup() method, which 
+   * Do any required processing prior to completing the stream. The flushStream()
+   * method is called for transaction stream. This differs from the flushBlock(),
+   * which is called at the end of each block and the cleanup() method, which
    * is called only once upon application shutdown.
    *
    * @throws OpenRate.exception.ProcessingException
@@ -583,5 +580,5 @@ public abstract class JDBCBatchOutputAdapter
     }
 
     super.flushStream();
-  }  
+  }
 }

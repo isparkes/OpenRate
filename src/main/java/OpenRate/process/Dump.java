@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -78,13 +82,6 @@ import java.util.Iterator;
 public class Dump
   extends AbstractTransactionalPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: Dump.java,v $, $Revision: 1.66 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the dump info that the record returns
   private ArrayList<String> DumpInfo;
 
@@ -414,7 +411,7 @@ public class Dump
   {
     TrailerRecord tmpTrailer;
     int tmpTransactionID;
-    
+
     switch (CurrentDumpType)
     {
       case NONE:
@@ -429,7 +426,7 @@ public class Dump
         // Get the base name and the transaction number
         tmpTrailer = (TrailerRecord)r;
         tmpTransactionID = tmpTrailer.getTransactionNumber();
-        
+
         DumpInfo = r.getDumpInfo();
 
         // dump it
@@ -574,7 +571,7 @@ public class Dump
         else
         {
           // Unknown dump type
-          Message = "Unknown " + SERVICE_DUMPTYPE + " <" + Parameter + ">. Command ignored."; 
+          Message = "Unknown " + SERVICE_DUMPTYPE + " <" + Parameter + ">. Command ignored.";
           pipeLog.error(Message);
         }
     }
@@ -683,7 +680,7 @@ public class Dump
   {
     // Set the client reference and the base services first
     super.registerClientManager();
-    
+
     //Register this Client
     ClientManager.registerClient(pipeName,getSymbolicName(), this);
 
@@ -730,7 +727,7 @@ public class Dump
   /**
   * Called when the underlying transaction is commanded to commit that means to
   * fix any data and finish.
-  * 
+  *
   * @param transactionNumber The number of the transaction
   */
   @Override
@@ -762,7 +759,7 @@ public class Dump
   /**
   * Called when the underlying transaction is commanded to roll bick that means
   * to undo any data and finish.
-  * 
+  *
   * @param transactionNumber The number of the transaction
   */
   @Override

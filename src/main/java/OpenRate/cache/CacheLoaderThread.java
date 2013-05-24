@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -58,7 +62,7 @@ import OpenRate.utils.ConversionUtils;
 
 /**
  * Runnable container for threaded resource loading.
- * 
+ *
  * @author tgdspia1
  */
 public class CacheLoaderThread extends Thread
@@ -74,29 +78,29 @@ public class CacheLoaderThread extends Thread
 
   /**
    * Constructor for creating the loader thread.
-   * 
+   *
    * @param tmpGrpResource The thread group we assign to.
    * @param tmpResourceName The resource we are creating for.
    */
-  public CacheLoaderThread(ThreadGroup tmpGrpResource, String tmpResourceName) 
+  public CacheLoaderThread(ThreadGroup tmpGrpResource, String tmpResourceName)
   {
     super(tmpGrpResource,tmpResourceName);
   }
-  
+
   /**
    * Setter for the name of the cache. Used to get configuration properties.
-   * 
+   *
    * @param cacheName The name of the cache
    */
   public void setCacheName(String cacheName)
   {
     this.cacheName = cacheName;
   }
-  
+
   /**
-   * Setter for the exception handler. Used to pass up exceptions for 
+   * Setter for the exception handler. Used to pass up exceptions for
    * correct management.
-   * 
+   *
    * @param handler The exception handler.
    */
   public void setExceptionHandler(ExceptionHandler handler)
@@ -105,7 +109,7 @@ public class CacheLoaderThread extends Thread
   }
 
  /**
-  * Runs the loading 
+  * Runs the loading
   */
   @Override
   public void run()
@@ -118,31 +122,31 @@ public class CacheLoaderThread extends Thread
     tmpCacheableIntf.setHandler(handler);
 
     // Try to load the cache
-    try 
+    try
     {
       tmpCacheLoaderIntf = (ICacheLoader)cacheableObject;
       tmpCacheLoaderIntf.loadCache(resourceName, cacheName);
-    } 
-    catch (InitializationException ie) 
+    }
+    catch (InitializationException ie)
     {
       // report the exception up
       handler.reportException(ie);
     }
-    
+
     // Get the load end time
     loadEndTime = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
-    
+
     // Calculate the load time
     loadTime = loadEndTime - loadStartTime;
-    
+
     // display it
     FWLog.info("Loaded  Cacheable Class <" + cacheName + "> in <" + loadTime + "ms>...");
-    System.out.println("    Loaded  Cacheable Class <" + cacheName + "> in <" + loadTime + "ms>...");   
+    System.out.println("    Loaded  Cacheable Class <" + cacheName + "> in <" + loadTime + "ms>...");
   }
 
   /**
    * Setter for the cacheable object.
-   * 
+   *
    * @param cacheableObject
    */
   public void setCacheObject(ICacheable cacheableObject)
@@ -153,17 +157,17 @@ public class CacheLoaderThread extends Thread
   /**
    * Setter for the name of the resource we are managing. Needed to access the
    * properties configuration.
-   * 
+   *
    * @param resourceName The resource name
    */
-  public void setResourceName(String resourceName) 
+  public void setResourceName(String resourceName)
   {
     this.resourceName = resourceName;
   }
 
   /**
    * Setter for the Framework Log.
-   * 
+   *
    * @param FWLog The framework log
    */
   public void setLog(ILogger FWLog)
@@ -173,7 +177,7 @@ public class CacheLoaderThread extends Thread
 
   /**
    * Setter for the load start time.
-   * 
+   *
    * @param loadStartTime The loading start time
    */
   public void setLoadStartTime(long loadStartTime)

@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,12 +55,12 @@
 
 package OpenRate.process;
 
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.cache.RUMRateCache;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.record.*;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
@@ -77,21 +81,14 @@ import java.util.ArrayList;
  * that multiple resources have been impacted.
  *
  * No roll-up of charges is performed in this module. You can use the module
- * "GatherRUMImpacts" to collect and summarise the CP impacts.
+ * "GatherRUMImpacts" to collect and create a summary of the CP impacts.
  *
  * You can obtain a rating breakdown (which provides exact details of the steps
- * and tiers used to calculate the carge) by enabling the standard ratingrecord
+ * and tiers used to calculate the charge) by enabling the standard rating record
  * field "CreateBreakdown" boolean value to true.
  */
 public abstract class AbstractRUMRateCalc extends AbstractRateCalc
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractRUMRateCalc.java,v $, $Revision: 1.46 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the object will be using the find the cache manager
   private ICacheManager CMRR = null;
 
@@ -200,7 +197,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
     ArrayList<RUMRateCache.RUMMapEntry> tmpRUMMap;
     RUMRateCache.RUMMapEntry tmpRUMMapEntry;
     double RUMValue;
-    ArrayList<ChargePacket> tmpCPList = new ArrayList<ChargePacket>();
+    ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
     boolean CPUpdated = false;
     RatingResult tmpRatingResult;
 
@@ -497,12 +494,11 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
     return tmpRatingResult;
   }
 
-
   /**
   * This method is used to calculate the number of RUM units (e.g. seconds)
   * which can be purchased for the available credit. The credit is calculated
   * from the difference between the current balance and the credit limit. In
-  * prepaid scenarios, the current balance will tend to be > 0 and the credit
+  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
   * limit will tend to be 0. In post paid scenarios, both values will tend to
   * be negative.
   *
@@ -512,19 +508,16 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
   *
   * This method uses the TIERED rating model.
   *
-  * @param  priceModel The price model to use
-  * @param currentBalance The current balance the user has
-  * @param creditLimit The credit limit the user has
+  * @param priceModel The price model to use
+  * @param availableBalance The current balance the user has available to them, positive
   * @param CDRDate The date to rate at
   * @return The number of RUM units that can be purchased for the available balance
   * @throws ProcessingException
   */
     @Override
-  public double authCalculateTiered(String priceModel, double currentBalance, double creditLimit, long CDRDate)
+  public double authCalculateTiered(String priceModel, double availableBalance, long CDRDate)
     throws ProcessingException
   {
-
-    double availableBalance = currentBalance+creditLimit;
     if(availableBalance <= 0){
        return 0;
     }
@@ -538,6 +531,47 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
 
     // perform the calculation using the selected rate model
     tmpcalculationResult = performAuthEvaluationTiered(priceModel, tmpRateModel, availableBalance, CDRDate);
+
+    return tmpcalculationResult;
+  }
+
+  /**
+  * This method is used to calculate the number of RUM units (e.g. seconds)
+  * which can be purchased for the available credit. The credit is calculated
+  * from the difference between the current balance and the credit limit. In
+  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+  * limit will tend to be 0. In post paid scenarios, both values will tend to
+  * be negative.
+  *
+  * The clever thing about this method is the fact that it uses the standard
+  * rating price model in order to arrive at the value, simplifying greatly the
+  * management of pre-paid balances.
+  *
+  * This method uses the THRESHOLD rating model.
+  *
+  * @param priceModel The price model to use
+  * @param availableBalance The current balance the user has available to them, positive
+  * @param CDRDate The date to rate at
+  * @return The number of RUM units that can be purchased for the available balance
+  * @throws ProcessingException
+  */
+  @Override
+  public double authCalculateThreshold(String priceModel, double availableBalance, long CDRDate)
+    throws ProcessingException
+  {
+    if(availableBalance <= 0){
+       return 0;
+    }
+
+      ArrayList<RateMapEntry>  tmpRateModel;
+
+      double tmpcalculationResult;
+
+    // Look up the rate model to use
+    tmpRateModel = RRC.getPriceModel(priceModel);
+
+    // perform the calculation using the selected rate model
+    tmpcalculationResult = performAuthEvaluationThreshold(priceModel, tmpRateModel, availableBalance, CDRDate);
 
     return tmpcalculationResult;
   }

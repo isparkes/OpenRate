@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -98,13 +102,6 @@ import java.util.ArrayList;
 public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractRUMTimeMatch.java,v $, $Revision: 1.28 $, $Date: 2013-05-13 18:12:10 $";
-
-  /**
    * Perform no splitting
    */
   public static final int TIME_SPLITTING_NO_CHECK        = 0;
@@ -155,7 +152,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
     boolean      Errored = false;
     ArrayList<TimePacket> TimeZones;
     ChargePacket tmpCPNew;
-    ArrayList<ChargePacket> tmpCPList = new ArrayList<ChargePacket>();
+    ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
 
     if (RecordToMatch instanceof RatingRecord)
     {
@@ -194,7 +191,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
           	{
           		break;
           	}
-            
+
             // We do not need to split - base the time zone on the start date
             case TIME_SPLITTING_NO_CHECK:
             {
@@ -244,9 +241,9 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
               break;
             }
 
-            // perform splitting - we need to split the event over the 
+            // perform splitting - we need to split the event over the
             // Period Start Date -> End date
-            case TIME_SPLITTING_CHECK_SPLITTING: 
+            case TIME_SPLITTING_CHECK_SPLITTING:
             {
               try
               {
@@ -266,7 +263,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                     throw new ProcessingException("Event end date not found");
                   }
                 }
-                
+
                 // Use the time zoning from AbstractTimeMatch on this charge packet
                 TimeZones = getTimeZone(tmpCP.timeModel,CurrentRecord.EventStartDate,CurrentRecord.EventEndDate);
 
@@ -397,7 +394,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
   * @param Record The record we are to fill
   * @param tmpCP The Charge Packet we are working on
    * @param TimeZone The time zone
-   * @param splittingFactor the splitting factor, i.e. how much of the period was in this time zone 
+   * @param splittingFactor the splitting factor, i.e. how much of the period was in this time zone
   */
   protected void fillCPWithTimeMatchChildData(RatingRecord Record, ChargePacket tmpCP, String TimeZone, Double splittingFactor)
   {

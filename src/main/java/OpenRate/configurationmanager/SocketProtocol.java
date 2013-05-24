@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -62,21 +66,14 @@ import OpenRate.logging.LogUtil;
  */
 public class SocketProtocol implements ISocketProtocol
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: SocketProtocol.java,v $, $Revision: 1.5 $, $Date: 2013-05-13 18:12:12 $";
-
   // get the log
   private ILogger log = LogUtil.getLogUtil().getLogger("Framework");
 
   // holds if we are in GUI mode or not
   private boolean GUIMode = false;
-  
+
   // Create a client manager we are going to work with
-  ClientManager clMan = new ClientManager();    
+  ClientManager clMan = new ClientManager();
 
   /**
    * This method processes the command issued by the user or admin. It
@@ -97,7 +94,7 @@ public class SocketProtocol implements ISocketProtocol
     IEventInterface ClientEvent;
     ClientContainer clCon;
     Object ClientObject;
-    
+
     // make sure that input string does not contain any non-ASCII chars
     // some terminals, like putty, prefix some weird chars to the input string
     input = input.replaceAll("[^a-zA-Z0-9= \\:\\._]", "").trim();

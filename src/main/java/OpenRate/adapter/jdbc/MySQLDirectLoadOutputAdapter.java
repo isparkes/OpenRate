@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -85,19 +89,12 @@ public abstract class MySQLDirectLoadOutputAdapter
   extends AbstractTransactionalSTOutputAdapter
   implements IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: MySQLDirectLoadOutputAdapter.java,v $, $Revision: 1.7 $, $Date: 2013-05-13 18:12:12 $";
-
   // The buffer size is the size of the buffer in the buffered reader
   private static final int BUF_SIZE = 65536;
-  
+
   // File writers
   private BufferedWriter   validWriter;
-  
+
   private String           filePath;
   private String           filePrefix;
   private String           fileSuffix;
@@ -133,12 +130,12 @@ public abstract class MySQLDirectLoadOutputAdapter
    * The query that is used to prepare the database for record insert
    */
   protected String InitQuery;
-  
+
   /**
    * The insert query via direct load command
    */
   protected String LoadQuery;
-  
+
   /**
    * This is the name of the data source
    */
@@ -230,13 +227,13 @@ public abstract class MySQLDirectLoadOutputAdapter
     // JDBC adapters to work properly using 1 configuration file.
     ConfigHelper = initDataSourceName();
     processControlEvent(DATASOURCE_KEY, true, ConfigHelper);
-    
+
     // Check the parameters we received
     initFileName();
 
     // create the structure for storing filenames
     currentFileNames = new HashMap <>(10);
-    
+
     // prepare the data source - this does not open a connection
     if(DBUtil.initDataSource(dataSourceName) == null)
     {
@@ -251,7 +248,7 @@ public abstract class MySQLDirectLoadOutputAdapter
   *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord procHeader(IRecord r) throws ProcessingException
@@ -294,7 +291,7 @@ public abstract class MySQLDirectLoadOutputAdapter
   *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord prepValidRecord(IRecord r) throws ProcessingException
@@ -334,7 +331,7 @@ public abstract class MySQLDirectLoadOutputAdapter
   *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException
@@ -475,7 +472,7 @@ public abstract class MySQLDirectLoadOutputAdapter
 
  /**
   * Load the output file using the SQL direct load.
-  * 
+  *
   * @param transactionNumber Transaction to load
   * @return true if it as good, otherwise false
   */
@@ -484,7 +481,7 @@ public abstract class MySQLDirectLoadOutputAdapter
     // get the file name we are to load
     String loadFileName = getProcOutputName(transactionNumber);
     String FQFileName = System.getProperty("user.dir") + "/" +  loadFileName;
-      
+
     // Correct the separators
     FQFileName = FQFileName.replaceAll("\\\\", "/");
     pipeLog.info("Load of file <" + FQFileName + "> in module <" + getSymbolicName() + "> for transaction <" + transactionNumber + ">");
@@ -511,37 +508,37 @@ public abstract class MySQLDirectLoadOutputAdapter
       this.setTransactionAbort(getTransactionNumber());
     }
     try
-    {      
+    {
       // Really do the load
       statsLog.info("Output <" + getSymbolicName() + "> start load of file for transaction <" + transactionNumber + ">");
       stmtLoadQuery.executeUpdate();
       statsLog.info("Output <" + getSymbolicName() + "> end load of file for transaction <" + transactionNumber + ">");
-      
+
       // Clean up
       stmtLoadQuery.close();
       JDBCcon.close();
-    } 
-    catch (SQLException ex) 
+    }
+    catch (SQLException ex)
     {
       pipeLog.error("Load for transaction <" + transactionNumber + "> failed. Message = <" + ex.getMessage() + ">");
       try
-      {  
+      {
         // Clean up
         stmtLoadQuery.close();
-        JDBCcon.close();  
-      } 
-      catch (SQLException ex1) 
+        JDBCcon.close();
+      }
+      catch (SQLException ex1)
       {
         // Sliently drop it
       }
-      
+
       return false;
     }
-    
+
     // Everything went well
     return true;
   }
-  
+
   // -----------------------------------------------------------------------------
   // --------------- Start of custom implementation functions --------------------
   // -----------------------------------------------------------------------------
@@ -549,12 +546,12 @@ public abstract class MySQLDirectLoadOutputAdapter
   /**
    * Checks if the valid output file is empty. This method is intended to be
    * overwritten in the case that you wish to modify the behaviour of the
-   * output file deletion. 
-   * 
-   * The default behaviour is that we check to see if any bytes have been 
-   * written to the output file, but sometimes this is not the right way, for 
+   * output file deletion.
+   *
+   * The default behaviour is that we check to see if any bytes have been
+   * written to the output file, but sometimes this is not the right way, for
    * example if a file has a header/trailer but no detail records.
-   * 
+   *
    * @param transactionNumber The number of the transaction to check for
    * @return true if the file is empty, otherwise false
    */
@@ -570,7 +567,7 @@ public abstract class MySQLDirectLoadOutputAdapter
       return false;
     }
   }
-  
+
   // -----------------------------------------------------------------------------
   // --------------- Start of transactional layer functions ----------------------
   // -----------------------------------------------------------------------------
@@ -1040,7 +1037,7 @@ public abstract class MySQLDirectLoadOutputAdapter
 
     return tmpFileNames.OutputFileName;
   }
-  
+
  /**
   * The InitQuery is the query that will be executed at the beginning of a
   * new stream of data. This is executed once, and should be used to prepare

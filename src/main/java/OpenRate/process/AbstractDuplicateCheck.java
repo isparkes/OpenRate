@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -69,13 +73,6 @@ import java.util.GregorianCalendar;
 public abstract class AbstractDuplicateCheck
   extends AbstractTransactionalPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractDuplicateCheck.java,v $, $Revision: 1.24 $, $Date: 2013-05-13 18:12:10 $";
-
   // this is the key we are looking for in the configuration of the module
   private static final String CACHE_KEY = "DataCache";
 
@@ -155,7 +152,7 @@ public abstract class AbstractDuplicateCheck
   {
     // perform the super processing that starts the transaction
     super.procHeader(r);
-    
+
     return r;
   }
 
@@ -164,10 +161,10 @@ public abstract class AbstractDuplicateCheck
   {
     // perform the super processing that closes the transaction
     super.procTrailer(r);
-    
+
     return r;
   }
-  
+
   // -----------------------------------------------------------------------------
   // -------------------------- Start of custom functions ------------------------
   // -----------------------------------------------------------------------------
@@ -178,7 +175,7 @@ public abstract class AbstractDuplicateCheck
    * @param CDRDate The date of the CDR
    * @param IDData The Call Reference ID
    * @return false if the call is not a duplicate
-   * @throws ProcessingException  
+   * @throws ProcessingException
    */
   public boolean CheckDuplicate(Date CDRDate, String IDData) throws ProcessingException
   {

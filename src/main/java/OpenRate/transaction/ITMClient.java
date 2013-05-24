@@ -1,6 +1,14 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -62,13 +70,6 @@ package OpenRate.transaction;
  */
 public interface ITMClient
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ITMClient.java,v $, $Revision: 1.12 $, $Date: 2013-05-13 18:12:11 $";
-
  /**
   * This is used to inform the client that an update has taken place to the
   * status of the transaction, and that we are now in the flush phase
@@ -77,7 +78,7 @@ public interface ITMClient
   * @return true if the flush was ok, otherwise false if there was an error
   */
   public boolean updateTransactionStatusFlush(int transactionNumber);
-  
+
  /**
   * This is used to inform the client that an update has taken place to the
   * status of the transaction, and that we are now in the commit/rollback phase
@@ -86,7 +87,7 @@ public interface ITMClient
   * @param transactionNumber The number of the transaction to update
   */
   public void updateTransactionStatusCommit(int transactionNumber);
-  
+
  /**
   * This is used to inform the client that an update has taken place to the
   * status of the transaction, and that we are now in the close phase
@@ -95,7 +96,7 @@ public interface ITMClient
   * @param transactionNumber The number of the transaction to update
   */
   public void updateTransactionStatusRollback(int transactionNumber);
-  
+
  /**
   * This is used to inform the client that an update has taken place to the
   * status of the transaction, and that we are now in the close phase

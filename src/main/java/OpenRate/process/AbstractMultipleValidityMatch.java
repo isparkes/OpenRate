@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,29 +55,23 @@
 
 package OpenRate.process;
 
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.cache.MultipleValidityCache;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.IRecord;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class looks up the APN Type using the APN, and is mapped as a series
- * of validity periods. If an APN Type for the date given is not found, the
- * record is errored.
+ * This class looks up which periods of validity cover the given key at a
+ * given date and time. It is possible to locate the first match, or all
+ * matches.
+ *
  */
 public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractMultipleValidityMatch.java,v $, $Revision: 1.3 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the object will be using the find the cache manager
   private ICacheManager CMV = null;
 
@@ -153,7 +151,7 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
  /**
   * This returns the validity segment match
   *
-  * @param Group The regualar expression group to search
+  * @param Group The regular expression group to search
   * @param ResourceID The resource id to get the match for
   * @param EventTime the UTC event date to match for
   * @return The returned value, or NOMATCH if none was found
@@ -166,7 +164,7 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
  /**
   * This returns the regular expression match
   *
-  * @param Group The regualar expression group to search
+  * @param Group The regular expression group to search
   * @param ResourceID The resource ID to search for
   * @param EventTime The UTC event time to search at
   * @return The returned value, or NOMATCH if none was found
@@ -175,11 +173,11 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
   {
     return MV.getFirstValidityMatchWithChildData(Group, ResourceID, EventTime);
   }
-  
+
  /**
   * This returns the validity segment match
   *
-  * @param Group The regualar expression group to search
+  * @param Group The regular expression group to search
   * @param ResourceID The resource id to get the match for
   * @param EventTime the UTC event date to match for
   * @return The returned value, or NOMATCH if none was found
@@ -192,7 +190,7 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
  /**
   * This returns the regular expression match
   *
-  * @param Group The regualar expression group to search
+  * @param Group The regular expression group to search
   * @param ResourceID The resource ID to search for
   * @param EventTime The UTC event time to search at
   * @return The returned value, or NOMATCH if none was found
@@ -201,10 +199,10 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
   {
     return MV.getAllValidityMatchesWithChildData(Group, ResourceID, EventTime);
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -215,12 +213,12 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
     {
       return false;
     }
-    
+
     // if there is an inner container, check it
     if (resultToCheck.get(0) instanceof List)
     {
       List tmpResult = (List) resultToCheck.get(0);
-      
+
       if ( tmpResult == null || tmpResult.isEmpty())
       {
         return false;
@@ -244,13 +242,13 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
         return false;
       }
     }
-    
+
     return true;
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -260,12 +258,12 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
     {
       return false;
     }
-    
+
     if (resultToCheck.equalsIgnoreCase(MultipleValidityCache.NO_VALIDITY_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
 }

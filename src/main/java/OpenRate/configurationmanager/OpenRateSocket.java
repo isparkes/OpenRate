@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -72,16 +76,9 @@ import java.net.Socket;
  */
 public final class OpenRateSocket implements Runnable, IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: OpenRateSocket.java,v $, $Revision: 1.6 $, $Date: 2013-05-13 18:12:12 $";
-
   // The port we listen on
   private int port;
-  
+
   // The maximum number of connections we will serve
   private int maxConnections;
 
@@ -100,10 +97,10 @@ public final class OpenRateSocket implements Runnable, IEventInterface
 
   // module symbolic name: set during initalisation
   private String SymbolicName = "OpenRateListener";
-  
+
   // This is the socket for the ECI
   private ServerSocket serverSocket;
-  
+
   /**
    * Default constructor with Properties object as a parameter. This
    * sets the configured maximum number of allowed connection at a time
@@ -122,7 +119,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
 
       ConfigHelper = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"MaxConnections",DEFAULT_MAX_CON);
       processControlEvent(SERVICE_CONNECTIONS,true,ConfigHelper);
-      
+
       // Get the socket
       serverSocket = getServerSocket();
     }
@@ -196,7 +193,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   {
     // Try to get the socket
     serverSocket = new ServerSocket(this.port);
-    
+
     return serverSocket;
   }
 
@@ -295,7 +292,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   * and publishes the commands that the plug in understands. The listener is
   * responsible for delivering only these commands to the plug in.
   *
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   @Override
   public void registerClientManager() throws InitializationException
@@ -370,7 +367,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
       return "Command Not Understood";
     }
   }
-  
+
  /**
   * return the symbolic name
   *

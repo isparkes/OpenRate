@@ -1,5 +1,9 @@
-/* ===================================================================
+/* ====================================================================
  * Limited Evaluation License:
+ *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
@@ -175,13 +179,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CustomerCacheAudited
     extends AbstractSyncLoaderCache
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: CustomerCacheAudited.java,v $, $Revision: 1.67 $, $Date: 2013-05-13 18:12:10 $";
-
   // Get access to the FWlog
   protected ILogger FWlog = LogUtil.getLogUtil().getLogger("Framework");
 
@@ -495,7 +492,7 @@ public class CustomerCacheAudited
       tmpAuditSegment.setAuditSegmentID(auditSegId);
       tmpAuditSegment.setUTCAccountValidFrom(custValidFrom);
       tmpAuditSegment.setUTCAccountValidTo(custValidTo);
-      
+
       // put the information into the contruction cache
       auditSegmentCache.put(auditSegId,tmpAuditSegment);
     }
@@ -790,7 +787,7 @@ public class CustomerCacheAudited
     // return the id
     return null;
   }
-  
+
  /**
   * Gets the internal custIDs for a given alias (there can be more than one)
   *
@@ -1603,7 +1600,7 @@ public class CustomerCacheAudited
     {
       // We pass through this block in any case - whether an Exception was
       // thrown or not, to perform clean up
-      
+
       // Close down result sets
       DBUtil.close(crs);
       DBUtil.close(ars);
@@ -1795,7 +1792,7 @@ public class CustomerCacheAudited
       {
         getFWLog().error("Error writing dump file", ioe);
       }
-      
+
       // Get a list of all the Cust IDs that have used the alias
       custIds = getAllCustId(alias);
       IDIter = custIds.iterator();
@@ -1989,11 +1986,11 @@ public class CustomerCacheAudited
                                                                      CacheName,
                                                                      "AliasSelectStatement",
                                                                      "None");
-    
+
     if (aliasSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<AliasSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
 
     auditSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -2004,9 +2001,9 @@ public class CustomerCacheAudited
     if (auditSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<AuditSegmentSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     productSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                        CacheName,
                                                                        "ProductSelectStatement",
@@ -2015,9 +2012,9 @@ public class CustomerCacheAudited
     if (productSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<ProductSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     eraSelectQuery         = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                        CacheName,
                                                                        "ERASelectStatement",
@@ -2026,9 +2023,9 @@ public class CustomerCacheAudited
     if (eraSelectQuery.equalsIgnoreCase("None"))
     {
       String Message = "<ERASelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);      
+      throw new InitializationException(Message);
     }
-    
+
     if (aliasSelectQuery.equals("None")  |
         auditSelectQuery.equals("None")  |
         productSelectQuery.equals("None")|
@@ -2100,7 +2097,7 @@ public class CustomerCacheAudited
         eraSelectQuery + ">");
     }
   }
-  
+
  /**
   * closeStatements closes down the the statements from the SQL expressions.
   *
@@ -2119,7 +2116,7 @@ public class CustomerCacheAudited
     // prepare the SQL for the ERA Statement
     DBUtil.close(stmtERASelectQuery);
   }
-  
+
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------

@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -81,7 +85,7 @@ public class XMLParser extends DefaultHandler
 	private static SAXParserFactory factory = SAXParserFactory.newInstance();
 
   //	Used to store xml tag names
-  private ArrayList<String> tmpQNames = new ArrayList<String>(5);
+  private ArrayList<String> tmpQNames = new ArrayList<>(5);
   private StringBuffer tmpValue;
 
   //	Header Identifier to Skip calling SetAttribute of IXMLparser interface
@@ -122,7 +126,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Add a start element
- * 
+ *
  * @param uri
  * @param local
  * @param qname
@@ -151,7 +155,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Add an end element
- * 
+ *
  * @param uri
  * @param local
  * @param qname
@@ -170,7 +174,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Add characters
- * 
+ *
  * @param ch
  * @param start
  * @param length
@@ -187,7 +191,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Start of document
- * 
+ *
  * @throws SAXException
  */
 @Override
@@ -198,7 +202,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * End of document
- * 
+ *
  * @throws SAXException
  */
 @Override
@@ -209,7 +213,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Start of prefix mapping
- * 
+ *
  * @param prefix
  * @param uri
  * @throws SAXException
@@ -222,7 +226,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * End of prefix mapping
- * 
+ *
  * @param prefix
  * @throws SAXException
  */
@@ -233,7 +237,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
   }
 /**
  * Ignorable whiltespace
- * 
+ *
  * @param ch
  * @param start
  * @param length
@@ -247,7 +251,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Processing instruction
- * 
+ *
  * @param target
  * @param data
  * @throws SAXException
@@ -260,7 +264,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Skipped entity
- * 
+ *
  * @param name
  * @throws SAXException
  */
@@ -272,7 +276,7 @@ public void parseXML(String xmlToParse, String headerIdentifier) throws Exceptio
 
 /**
  * Set document locator
- * 
+ *
  * @param locator
  */
 @Override

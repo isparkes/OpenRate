@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -68,42 +72,35 @@ import java.util.*;
  */
 public class ClientManager
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ClientManager.java,v $, $Revision: 1.35 $, $Date: 2013-05-13 18:12:12 $";
-
   // This is the map of the clients we know, indexed by the symbolic name
   private static HashMap<String, ClientContainer> HMClientMap;
-  
+
   /**
    * None of MANDATORY, DYNAMIC or SYNC
    */
   public static int PARAM_NONE      = 0x00;
-  
+
   /**
-   * Indicates that the parameter is a mandatory paramter which must be 
+   * Indicates that the parameter is a mandatory parameter which must be
    * loaded on startup
    */
   public static int PARAM_MANDATORY = 0x01;
-  
+
   /**
    * Indicates that this is a parameter which can be changed at run time
    */
   public static int PARAM_DYNAMIC   = 0x02;
-  
+
   /**
    * Indicates that this is a parameter which will trigger a sync point
    */
   public static int PARAM_SYNC      = 0x04;
-  
+
   /**
    * Madatory and Dynamic
    */
   public static int PARAM_MANDATORY_DYNAMIC = 0x03;
-          
+
   /**
    * Dynamic and Sync
    */
@@ -162,10 +159,10 @@ public class ClientManager
  /** registerClient registers the client module to the ClientManager.  This also caches the
   * client module object that can be accessed and executed.
   *
-  * @param pipelineName 
+  * @param pipelineName
   * @param symbolicName - symbolic name of the client module to add
   * @param objClient - instance of the client module
-  * @throws InitializationException  
+  * @throws InitializationException
   */
   public static void registerClient(String pipelineName, String symbolicName, Object objClient) throws InitializationException
   {
@@ -173,12 +170,12 @@ public class ClientManager
     {
       throw new InitializationException("Pipeline Name cannot be empty.");
     }
-    
+
     if (symbolicName == null)
     {
       throw new InitializationException("Symbolic Name cannot be empty.");
     }
-    
+
     ClientContainer clCont = new ClientContainer(pipelineName,symbolicName, objClient);
     put(symbolicName, clCont);
     LogUtil.getStaticLogger("Framework").debug("Registered Client <" + symbolicName + ">");
@@ -197,11 +194,11 @@ public class ClientManager
                                            int    paramFlags)
   {
     ClientContainer clCont = get(symbolicName);
-    
+
     boolean Mandatory = (paramFlags & PARAM_MANDATORY) == PARAM_MANDATORY;
     boolean Dynamic = (paramFlags & PARAM_DYNAMIC) == PARAM_DYNAMIC;
     boolean RequireSync = (paramFlags & PARAM_SYNC) == PARAM_SYNC;
-    
+
     clCont.addService(commandName, Mandatory, Dynamic, RequireSync);
     LogUtil.getStaticLogger("Framework").debug("Registered Client Service <" + commandName  + ">");
   }
@@ -334,10 +331,10 @@ public class ClientManager
           (strSymbolicName.equals(strSymbolicKey)))
       {
         clCont = HMClientMap.get(strSymbolicKey);
-        
+
         // get the pipe name for this container
         pipelineName = clCont.getClientPipelineName();
-        
+
         HashMap<String,ServiceContainer> HMSvcList = clCont.getService();
 
         // Sort the commands within the module
@@ -368,11 +365,11 @@ public class ClientManager
           strCommandName = iterSvcList.next();
 
           svCont = HMSvcList.get(strCommandName);
-                    
+
           if (ClientObject instanceof IEventInterface)
           {
             ClientEvent = (IEventInterface) ClientObject;
-            
+
             try
             {
               strCurrentValue = ClientEvent.processControlEvent(strCommandName, false, "");
@@ -602,11 +599,11 @@ public class ClientManager
     String strHelperMandatory;
     String strHelperDynamic;
     String strHelperReqSync;
-    
+
     strHelperName = "|  - " + symbolicName + ":" + command +
                     "                                                                  ";
     strHelperName = strHelperName.substring(0, 66) + "|";
-    
+
     if (mandatory)
     {
       strHelperMandatory = " X |";

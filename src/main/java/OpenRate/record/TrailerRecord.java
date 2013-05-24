@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -60,13 +64,6 @@ import java.util.ArrayList;
  */
 public class TrailerRecord extends AbstractRecord
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: TrailerRecord.java,v $, $Revision: 1.26 $, $Date: 2013-05-13 18:12:11 $";
-
   private static final long serialVersionUID = -3471178671328078800L;
 
   // record check sum at the end of processing
@@ -97,8 +94,7 @@ public class TrailerRecord extends AbstractRecord
   @Override
   public ArrayList<String> getDumpInfo()
   {
-    ArrayList<String> tmpDumpList = null;
-    tmpDumpList = new ArrayList<String>();
+    ArrayList<String> tmpDumpList = new ArrayList<>();
 
     // Format the fields
     tmpDumpList.add("============ STREAM TRAILER ==========");

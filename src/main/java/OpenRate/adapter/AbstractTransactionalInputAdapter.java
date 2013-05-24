@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -69,13 +73,6 @@ public abstract class AbstractTransactionalInputAdapter
   extends AbstractInputAdapter
   implements ITMClient
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractTransactionalInputAdapter.java,v $, $Revision: 1.51 $, $Date: 2013-05-13 18:12:11 $";
-
   // Get the Transaction Manager
   private TransactionManager TM;
 
@@ -321,7 +318,7 @@ public abstract class AbstractTransactionalInputAdapter
   * @param transactionNumber The transaction we are working on
   */
   public abstract void rollbackTransaction(int transactionNumber);
-  
+
  /**
   * Close Transaction is the trigger to clean up transaction related information
   * such as variables, status etc.

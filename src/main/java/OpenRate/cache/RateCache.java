@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -101,13 +105,6 @@ import java.util.Iterator;
 public class RateCache
      extends AbstractSyncLoaderCache
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: RateCache.java,v $, $Revision: 1.43 $, $Date: 2013-05-13 18:12:10 $";
-
  /**
   * This stores all the cacheable data necessary for the definition of the
   * rate plans.
@@ -139,7 +136,7 @@ public class RateCache
   * @param Beat The granularity of the charging
   * @param Charge The factor (price)
   * @param ChargeBase The number of units for which the charge applies
-  * @throws InitializationException 
+  * @throws InitializationException
   */
   public void addPriceModel(String PriceModel, int Step, double From, double To,
                        double Beat, double Charge, double ChargeBase)
@@ -313,10 +310,10 @@ public class RateCache
             tmpBeat = Double.valueOf(RateFields[4]);
             tmpFactor = Double.valueOf(RateFields[5]);
             tmpChargeBase = Double.valueOf(RateFields[6]);
-            
+
             // Add the entry to the cache
             addPriceModel(PriceModel, tmpTier, tmpFrom, tmpTo, tmpBeat, tmpFactor, tmpChargeBase);
-            
+
             // Update to the log file
             if ((RatesLoaded % loadingLogNotificationStep) == 0)
             {
@@ -324,7 +321,7 @@ public class RateCache
                     "> configurations loaded for <" + getSymbolicName() + "> from <" +
                     CacheDataFile + ">";
               getFWLog().info(Message);
-            }            
+            }
           }
         }
       }
@@ -408,7 +405,7 @@ public class RateCache
 
         // Add the map
         addPriceModel(PriceModel, tmpTier, tmpFrom, tmpTo, tmpBeat, tmpFactor, tmpChargeBase);
-        
+
         // Update to the log file
         if ((RatesLoaded % loadingLogNotificationStep) == 0)
         {
@@ -416,7 +413,7 @@ public class RateCache
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
           getFWLog().info(Message);
-        }            
+        }
       }
     }
     catch (SQLException ex)

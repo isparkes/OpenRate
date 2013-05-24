@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -74,13 +78,6 @@ import java.util.ArrayList;
  */
 public abstract class AbstractRateCalc extends AbstractPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractRateCalc.java,v $, $Revision: 1.52 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the object will be using the find the cache manager
   private ICacheManager CMR = null;
 
@@ -263,7 +260,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   * @return the price for the rated record
   * @throws OpenRate.exception.ProcessingException
   */
-  public double rateCalculateEvent(String priceModel, long CDRDate, long valueToRate)
+  public double rateCalculateEvent(String priceModel, long valueToRate, long CDRDate)
     throws ProcessingException
   {
     ArrayList<RateMapEntry>  tmpRateModel;
@@ -283,90 +280,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   * This method is used to calculate the number of RUM units (e.g. seconds)
   * which can be purchased for the available credit. The credit is calculated
   * from the difference between the current balance and the credit limit. In
-  * prepaid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the FLAT rating model.
-  *
-  * @param  priceModel The price model to use
-  * @param currentBalance The current balance the user has
-  * @param creditLimit The credit limit the user has
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
-  public double authCalculateFlat(String priceModel, double currentBalance, double creditLimit, long CDRDate)
-    throws ProcessingException
-  {
-
-    double availableBalance = currentBalance+creditLimit;
-    if(availableBalance <= 0){
-       return 0;
-    }
-
-      ArrayList<RateMapEntry>  tmpRateModel;
-      double tmpcalculationResult;
-
-    // Look up the rate model to use
-    tmpRateModel = RC.getPriceModel(priceModel);
-
-    // perform the calculation using the selected rate model
-    tmpcalculationResult = performAuthEvaluationFlat(priceModel, tmpRateModel, availableBalance, CDRDate);
-
-    return tmpcalculationResult;
-  }
-
- /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * prepaid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the EVENT rating model.
-  *
-  * @param  priceModel The price model to use
-  * @param currentBalance The current balance the user has
-  * @param creditLimit The credit limit the user has
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
-  public boolean authCalculateEvent(String priceModel, double currentBalance, double creditLimit, long CDRDate)
-    throws ProcessingException
-  {
-
-    double availableBalance = currentBalance+creditLimit;
-    if(availableBalance <= 0){
-       return false;
-    }
-    ArrayList<RateMapEntry>  tmpRateModel;
-    boolean tmpRatingResult;
-
-    // Look up the rate model to use
-    tmpRateModel = RC.getPriceModel(priceModel);
-
-    // perform the calculation using the selected rate model
-    tmpRatingResult = performAuthEvaluationEvent(priceModel, tmpRateModel, availableBalance, CDRDate);
-
-    return tmpRatingResult;
-  }
-
- /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * prepaid scenarios, the current balance will tend to be > 0 and the credit
+  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
   * limit will tend to be 0. In post paid scenarios, both values will tend to
   * be negative.
   *
@@ -376,18 +290,16 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   *
   * This method uses the TIERED rating model.
   *
-  * @param  priceModel The price model to use
-  * @param currentBalance The current balance the user has
-  * @param creditLimit The credit limit the user has
+  * @param priceModel The price model to use
+  * @param availableBalance The current balance the user has available to them, positive
   * @param CDRDate The date to rate at
   * @return The number of RUM units that can be purchased for the available balance
   * @throws ProcessingException
   */
-  public double authCalculateTiered(String priceModel, double currentBalance, double creditLimit, long CDRDate)
+  public double authCalculateTiered(String priceModel, double availableBalance, long CDRDate)
     throws ProcessingException
   {
 
-    double availableBalance = currentBalance+creditLimit;
     if(availableBalance <= 0){
        return 0;
     }
@@ -409,7 +321,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   * This method is used to calculate the number of RUM units (e.g. seconds)
   * which can be purchased for the available credit. The credit is calculated
   * from the difference between the current balance and the credit limit. In
-  * prepaid scenarios, the current balance will tend to be > 0 and the credit
+  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
   * limit will tend to be 0. In post paid scenarios, both values will tend to
   * be negative.
   *
@@ -419,18 +331,15 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   *
   * This method uses the THRESHOLD rating model.
   *
-  * @param  priceModel The price model to use
-  * @param currentBalance The current balance the user has
-  * @param creditLimit The credit limit the user has
+  * @param priceModel The price model to use
+  * @param availableBalance The current balance the user has available to them, positive
   * @param CDRDate The date to rate at
   * @return The number of RUM units that can be purchased for the available balance
   * @throws ProcessingException
   */
-  public double authCalculateThreshold(String priceModel, double currentBalance, double creditLimit, long CDRDate)
+  public double authCalculateThreshold(String priceModel, double availableBalance, long CDRDate)
     throws ProcessingException
   {
-
-    double availableBalance = currentBalance+creditLimit;
     if(availableBalance <= 0){
        return 0;
     }
@@ -449,9 +358,86 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   }
 
  /**
+  * This method is used to calculate the number of RUM units (e.g. seconds)
+  * which can be purchased for the available credit. The credit is calculated
+  * from the difference between the current balance and the credit limit. In
+  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+  * limit will tend to be 0. In post paid scenarios, both values will tend to
+  * be negative.
+  *
+  * The clever thing about this method is the fact that it uses the standard
+  * rating price model in order to arrive at the value, simplifying greatly the
+  * management of pre-paid balances.
+  *
+  * This method uses the FLAT rating model.
+  *
+  * @param priceModel The price model to use
+  * @param availableBalance The current balance the user has available to them, positive
+  * @param CDRDate The date to rate at
+  * @return The number of RUM units that can be purchased for the available balance
+  * @throws ProcessingException
+  */
+  public double authCalculateFlat(String priceModel, double availableBalance, long CDRDate)
+    throws ProcessingException
+  {
+    if(availableBalance <= 0){
+       return 0;
+    }
+
+      ArrayList<RateMapEntry>  tmpRateModel;
+      double tmpcalculationResult;
+
+    // Look up the rate model to use
+    tmpRateModel = RC.getPriceModel(priceModel);
+
+    // perform the calculation using the selected rate model
+    tmpcalculationResult = performAuthEvaluationFlat(priceModel, tmpRateModel, availableBalance, CDRDate);
+
+    return tmpcalculationResult;
+  }
+
+ /**
+  * This method is used to calculate the number of RUM units (e.g. seconds)
+  * which can be purchased for the available credit. The credit is calculated
+  * from the difference between the current balance and the credit limit. In
+  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+  * limit will tend to be 0. In post paid scenarios, both values will tend to
+  * be negative.
+  *
+  * The clever thing about this method is the fact that it uses the standard
+  * rating price model in order to arrive at the value, simplifying greatly the
+  * management of pre-paid balances.
+  *
+  * This method uses the EVENT rating model.
+  *
+  * @param priceModel The price model to use
+  * @param availableBalance The current balance the user has available to them, positive
+  * @param CDRDate The date to rate at
+  * @return The number of RUM units that can be purchased for the available balance
+  * @throws ProcessingException
+  */
+  public double authCalculateEvent(String priceModel, double availableBalance, long CDRDate)
+    throws ProcessingException
+  {
+    if(availableBalance <= 0){
+       return 0;
+    }
+    ArrayList<RateMapEntry>  tmpRateModel;
+    double tmpRatingResult;
+
+    // Look up the rate model to use
+    tmpRateModel = RC.getPriceModel(priceModel);
+
+    // perform the calculation using the selected rate model
+    tmpRatingResult = performAuthEvaluationEvent(priceModel, tmpRateModel, availableBalance, CDRDate);
+
+    return tmpRatingResult;
+  }
+
+ /**
   * Performs the rating calculation of the value given at the CDR date
   * using the given rating model. Tiered splits the value to be rated up into
-  * segements according to the steps defined and rates each step individually,
+  * segments according to the steps defined and rates each step individually,
   * summing up the charges from all steps.
   *
   * TIERED       Calculation
@@ -684,7 +670,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
       ThisTierValue = 0;
 
       // See if this event crosses the lower tier threshold
-      if (valueToRate >= tmpEntry.getFrom())
+      if (valueToRate > tmpEntry.getFrom())
       {
         // see if we are in this tier
         if (valueToRate < tmpEntry.getTo())
@@ -938,7 +924,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
       ThisTierValue = 0;
 
       // See if this event crosses the lower tier threshold
-      if (valueToRate >= tmpEntry.getFrom())
+      if (valueToRate > tmpEntry.getFrom())
       {
         // see if we use all of the tier
         if (valueToRate >= tmpEntry.getTo())
@@ -1059,93 +1045,10 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpRatingResult;
   }
 
-
  /**
   * Performs the authorisation calculation of the value given at the CDR date.
-  *
-  * Matches the rating in performRateEvaluationFlat
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param availableBalance The balance available
-  * @param CDRDate The date to rate at
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected double performAuthEvaluationFlat(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
-  {
-    RateMapEntry tmpEntry;
-    double tmpcalculationResult;
-
-    // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
-    }
-
-    // Get just the first tier
-    tmpEntry = tmpRateModel.get(0);
-
-    // Get the validty for this cdr
-    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-    if (tmpEntry == null || tmpEntry.getFactor() == 0 || tmpEntry.getChargeBase() == 0)
-    {
-      Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
-                PriceModel + ">, factor <"+tmpEntry.getFactor()+"and charge base <"+tmpEntry.getChargeBase()+">";
-      throw new ProcessingException(Message);
-    }
-
-    // Calculate the value of the entry - there should be no others
-    tmpcalculationResult = (availableBalance / tmpEntry.getFactor()) * tmpEntry.getChargeBase();
-
-    return tmpcalculationResult;
-  }
-
- /**
-  * Performs the authorisation calculation of the value given at the CDR date.
-  *
-  * Matches the rating in performRateEvaluationEvent
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param availableBalance The balance available
-  * @param CDRDate The date to rate at
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected boolean performAuthEvaluationEvent(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
-  {
-    boolean isAllowed = false;
-    RateMapEntry tmpEntry;
-
-    // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
-    }
-
-    // Get just the first tier
-    tmpEntry = tmpRateModel.get(0);
-
-    // Get the validity for this cdr
-    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-    if (tmpEntry == null)
-    {
-      Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
-                PriceModel + ">";
-      throw new ProcessingException(Message);
-    }
-
-    if(availableBalance >= tmpEntry.getFactor())
-    {
-        isAllowed = true;
-    }
-
-    return isAllowed;
-  }
-
- /**
-  * Performs the authorisation calculation of the value given at the CDR date.
+  * Evaluates all the tiers in the model one at a time, and accumulates the
+  * contribution from the tier into the final result.
   *
   * Matches the rating in performRateEvaluationTiered
   *
@@ -1243,6 +1146,10 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
 
  /**
   * Performs the authorisation calculation of the value given at the CDR date.
+  * We have to perform an evaluation for each of the threshold steps in the
+  * model and find the lowest non-zero result. When the authorisation runs out,
+  * the same process can happen again with less available balance. Not very
+  * beautiful, but functional given the non-linear nature of the model.
   *
   * Matches the rating in performRateEvaluationThreshold
   *
@@ -1266,15 +1173,18 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
       throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
     }
 
-    // We need to loop through all the tiers until we have finished
-    // consuming all the rateable input
+    // We need to loop through all the tiers and evaluate them, then return the
+    // shortest.
     while (Index < tmpRateModel.size())
     {
       tmpEntry = tmpRateModel.get(Index);
       Index++;
       tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
+
       ThisTierBeatCount = Math.round( (availableBalance * tmpEntry.getChargeBase()) / (tmpEntry.getFactor() * tmpEntry.getBeat()));
       ThisTierRUMUsed = tmpEntry.getBeat() * ThisTierBeatCount;
+
+      // is this a better non-zero result
       if( RUMValueUsed == 0){
           RUMValueUsed = ThisTierRUMUsed;
       }else if(RUMValueUsed > 0 && ThisTierRUMUsed > 0
@@ -1283,10 +1193,90 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
 
               RUMValueUsed = ThisTierRUMUsed;
       }
-
     }
 
     return RUMValueUsed;
+  }
+
+ /**
+  * Performs the authorisation calculation of the value given at the CDR date.
+  *
+  * Matches the rating in performRateEvaluationFlat
+  *
+  * @param PriceModel The price model name we are using
+  * @param tmpRateModel The price model definition
+  * @param availableBalance The balance available
+  * @param CDRDate The date to rate at
+  * @return The rating result
+  * @throws OpenRate.exception.ProcessingException
+  */
+  protected double performAuthEvaluationFlat(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
+  {
+    RateMapEntry tmpEntry;
+    double tmpcalculationResult;
+
+    // check that we have something to work on
+    if (tmpRateModel == null)
+    {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+    }
+
+    // Get just the first tier
+    tmpEntry = tmpRateModel.get(0);
+
+    // Get the validty for this cdr
+    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
+    if (tmpEntry == null || tmpEntry.getFactor() == 0 || tmpEntry.getChargeBase() == 0)
+    {
+      Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
+                PriceModel + ">, factor <"+tmpEntry.getFactor()+"and charge base <"+tmpEntry.getChargeBase()+">";
+      throw new ProcessingException(Message);
+    }
+
+    // Calculate the value of the entry - there should be no others
+    tmpcalculationResult = (availableBalance / tmpEntry.getFactor()) * tmpEntry.getChargeBase();
+
+    return tmpcalculationResult;
+  }
+
+ /**
+  * Performs the authorisation calculation of the value given at the CDR date.
+  *
+  * Matches the rating in performRateEvaluationEvent
+  *
+  * @param PriceModel The price model name we are using
+  * @param tmpRateModel The price model definition
+  * @param availableBalance The balance available
+  * @param CDRDate The date to rate at
+  * @return The rating result
+  * @throws OpenRate.exception.ProcessingException
+  */
+  protected double performAuthEvaluationEvent(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
+  {
+    double tmpcalculationResult;
+    RateMapEntry tmpEntry;
+
+    // check that we have something to work on
+    if (tmpRateModel == null)
+    {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+    }
+
+    // Get just the first tier
+    tmpEntry = tmpRateModel.get(0);
+
+    // Get the validity for this cdr
+    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
+    if (tmpEntry == null)
+    {
+      Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
+                PriceModel + ">";
+      throw new ProcessingException(Message);
+    }
+
+    tmpcalculationResult = availableBalance / tmpEntry.getFactor();
+
+    return tmpcalculationResult;
   }
 
  /**

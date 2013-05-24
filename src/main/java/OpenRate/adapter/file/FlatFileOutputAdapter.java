@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -79,23 +83,16 @@ public abstract class FlatFileOutputAdapter
   extends AbstractTransactionalSTOutputAdapter
   implements IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: FlatFileOutputAdapter.java,v $, $Revision: 1.67 $, $Date: 2013-05-13 18:12:11 $";
-
   // The buffer size is the size of the buffer in the buffered reader
   private static final int BUF_SIZE = 65536;
-  
+
   // File writers
   private BufferedWriter   validWriter;
   private BufferedWriter   errorWriter;
-  
+
   // If we are using a single writer
   private boolean          singleWriter     = false;
-  
+
   private String           filePath;
   private String           filePrefix;
   private String           fileSuffix;
@@ -239,7 +236,7 @@ public abstract class FlatFileOutputAdapter
   *
   * @param r The record we are working on
   * @return The processed record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord procHeader(IRecord r) throws ProcessingException
@@ -582,12 +579,12 @@ public abstract class FlatFileOutputAdapter
   /**
    * Checks if the valid output file is empty. This method is intended to be
    * overwritten in the case that you wish to modify the behaviour of the
-   * output file deletion. 
-   * 
-   * The default behaviour is that we check to see if any bytes have been 
-   * written to the output file, but sometimes this is not the right way, for 
+   * output file deletion.
+   *
+   * The default behaviour is that we check to see if any bytes have been
+   * written to the output file, but sometimes this is not the right way, for
    * example if a file has a header/trailer but no detail records.
-   * 
+   *
    * @param transactionNumber The number of the transaction to check for
    * @return true if the file is empty, otherwise false
    */
@@ -603,19 +600,19 @@ public abstract class FlatFileOutputAdapter
       return false;
     }
   }
-  
+
   /**
    * Checks if the error output file is empty. This method is intended to be
    * overwritten in the case that you wish to modify the behaviour of the
-   * output file deletion. 
-   * 
-   * The default behaviour is that we check to see if any bytes have been 
-   * written to the output file, but sometimes this is not the right way, for 
+   * output file deletion.
+   *
+   * The default behaviour is that we check to see if any bytes have been
+   * written to the output file, but sometimes this is not the right way, for
    * example if a file has a header/trailer but no detail records.
-   * 
+   *
    * Note that this method is not called if the "single output file mode" has
    * been selected by not defining an error output file in the output adapter.
-   * 
+   *
    * @param transactionNumber The number of the transaction to check for
    * @return true if the file is empty, otherwise false
    */
@@ -631,7 +628,7 @@ public abstract class FlatFileOutputAdapter
       return false;
     }
   }
-  
+
   // -----------------------------------------------------------------------------
   // --------------- Start of transactional layer functions ----------------------
   // -----------------------------------------------------------------------------
@@ -702,7 +699,7 @@ public abstract class FlatFileOutputAdapter
     // Clean up the file names
     CurrentFileNames.remove(transactionNumber);
   }
-  
+
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------

@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -52,7 +56,6 @@
 package OpenRate.process;
 
 import OpenRate.cache.AggregationCache;
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.exception.InitializationException;
@@ -60,6 +63,7 @@ import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,13 +86,6 @@ import java.util.HashMap;
 public abstract class AbstractAggregation
   extends AbstractTransactionalPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractAggregation.java,v $, $Revision: 1.32 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the aggregation cache that stores the data that is aggregated
   private ICacheManager CMAggCache = null;
 
@@ -166,18 +163,18 @@ public abstract class AbstractAggregation
     aggCache = (AggregationCache)CMAggCache.get(CacheObjectName);
 
     // initialise the file name object
-    currentFileNames = new HashMap <Integer, TransControlStructure>(10);
+    currentFileNames = new HashMap <>(10);
 
     // see if we want to initialise the write result frequency
     helper = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(PipelineName,
                                                            ModuleName,
                                                           SERVICE_WRITE_EVERY_N_TRANS,
                                                           "None");
-    
+
     if (helper.equals("None") == false)
     {
       int tmpFreq = 0;
-      
+
       try
       {
         tmpFreq = Integer.parseInt(helper);
@@ -187,7 +184,7 @@ public abstract class AbstractAggregation
         Message = "Invalid value <" + helper + "> for <" + SERVICE_WRITE_EVERY_N_TRANS + ">";
         throw new InitializationException(Message);
       }
-      
+
       // negative values not allowed
       if (tmpFreq < 1)
       {
@@ -341,10 +338,10 @@ public abstract class AbstractAggregation
   {
     aggCache.aggregate(fieldList, keysToAggregate, getTransactionNumber());
   }
-  
+
  /**
   * Utility function to get the base name of the stream.
-  * 
+  *
   * @param transactionNumber the transaction number to get for
   * @return The base name for the transaction
   */

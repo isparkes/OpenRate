@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -77,13 +81,6 @@ public class DuplicateCheckCache
   implements ICacheLoader,
              IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: DuplicateCheckCache.java,v $, $Revision: 1.56 $, $Date: 2013-05-13 18:12:10 $";
-
   // the only supported one is Database
   private String DataSourceType = null;
 
@@ -94,7 +91,7 @@ public class DuplicateCheckCache
   * This stores all the Record IDs for CDRs which have been processed so far
   */
   protected HashMap<String, Long> recordList;
-  
+
   /**
    * This stores all the Record IDs for CDRs which have been processed so far in
    * the current transaction
@@ -105,32 +102,32 @@ public class DuplicateCheckCache
   * This stores the DB insert connection per transaction for inserts/speculative inserts
   */
   protected HashMap<Integer, Connection> insertConnection;
-  
+
   // Purge the internal memory
   private final static String SERVICE_PURGE   = "Purge";
-  
+
   // Count the objects in the memory
   private final static String SERVICE_OBJECT_COUNT = "ObjectCount";
-  
+
   // The buffer limit is the date of the oldest CDR we will store in memory
   private final static String SERVICE_BUFFER  = "BufferLimit";
-  
+
   // The store limit is the date of the oldest CDR we will try to look for in the DB
   private final static String SERVICE_STORE   = "StoreLimit";
 
   // Log every n records loaded
   private final static String SERVICE_LOAD_LOG_STEP = "LoadLogStep";
-  
+
   // default values for BufferLimit and StoreLimit
   private static final int    DEFAULT_BUFFER_LIMIT_DAYS = 90;
   private static final int    DEFAULT_STORE_LIMIT_DAYS = 180;
-  
+
   // this is used to age old duplicate data in memory
   private long bufferLimit;
   private long storeLimit;
 
   /**
-   * This is our connection object for changes to the DB via purge or 
+   * This is our connection object for changes to the DB via purge or
    */
   protected Connection JDBCcon;
 
@@ -138,12 +135,12 @@ public class DuplicateCheckCache
    * The query that is used to insert records
    */
   protected String InsertQuery = null;
-  
+
   /**
    * The query that purges old records
    */
   protected String PurgeQuery = null;
-  
+
   /**
    * The query that selects existing records from the table
    */
@@ -153,7 +150,7 @@ public class DuplicateCheckCache
    * the statement that will be used to try to purge from the DB
    */
   protected static PreparedStatement StmtPurgeQuery;
-  
+
   /**
    * the statement that will be used to try to see if a record exists in the DB
    */
@@ -163,17 +160,17 @@ public class DuplicateCheckCache
   * The number of days we buffer
   */
   protected int bufferLimitDays;
-  
+
  /**
   * The number of days we store
   */
   protected int storeLimitDays;
-  
+
  /**
   * the frequency with which we update the log progress messages on loading
   */
   protected long loadingLogNotificationStep = 10000;
-  
+
   /**
    * The duplicate check cache is used to detect and identify duplicate records
    * based on a unique record key
@@ -181,14 +178,14 @@ public class DuplicateCheckCache
   public DuplicateCheckCache()
   {
     // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
 
     // This is the in-memory duplicate table
     recordList = new HashMap<>(50000);
 
     // This is the in-memory duplicate table for the current transaction
     TransRecordList = new HashMap<>(100);
-    
+
     // initialise the inser connection array
     insertConnection = new HashMap<>(10);
   }
@@ -210,11 +207,11 @@ public class DuplicateCheckCache
   public void loadCache(String ResourceName, String CacheName)
                  throws InitializationException
   {
-    // Variable declarations    
+    // Variable declarations
     String            strBufferLimit,strStoreLimit;
 
     getFWLog().info("Starting Duplicate Check Cache Loading");
-  
+
     setSymbolicName(CacheName);
 
     // Get the source of the data to load
@@ -290,7 +287,7 @@ public class DuplicateCheckCache
         getFWLog().debug("Found Duplicate Check Insert statement Configuration:" +
               InsertQuery);
       }
-      
+
       PurgeQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                              CacheName,
                                                                              "PurgeStatement",
@@ -332,7 +329,7 @@ public class DuplicateCheckCache
       try
       {
         bufferLimitDays = Integer.parseInt(strBufferLimit);
-        
+
         // calculate the buffer limit cutoff date
         bufferLimit = Calendar.getInstance().getTimeInMillis()/1000 - bufferLimitDays * 86400;
 
@@ -344,7 +341,7 @@ public class DuplicateCheckCache
         throw new InitializationException(Message);
       }
     }
-    
+
     // **************************** Store Limit ********************************
     strStoreLimit = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                                CacheName,
@@ -362,10 +359,10 @@ public class DuplicateCheckCache
       try
       {
         storeLimitDays = Integer.parseInt(strStoreLimit);
-        
+
         // calculate the store limit cutoff date
         storeLimit = Calendar.getInstance().getTimeInMillis()/1000 - storeLimitDays * 86400;
-        
+
         getFWLog().info("Set value for <" + SERVICE_STORE + "> to <" + new Date(storeLimit*1000) + ">");
       }
       catch (NumberFormatException nfe)
@@ -375,20 +372,20 @@ public class DuplicateCheckCache
       }
     }
 
-    // perform some plausibility 
+    // perform some plausibility
     if (bufferLimitDays <= 1)
     {
       String Message = "Value given for <" + SERVICE_BUFFER + "> was less than <1> for cache <" + getSymbolicName() + ">";
       throw new InitializationException(Message);
     }
-    
-    // perform some plausibility 
+
+    // perform some plausibility
     if (storeLimitDays <= 1)
     {
       String Message = "Value given for <" + SERVICE_STORE + "> was less than <1> for cache <" + getSymbolicName() + ">";
       throw new InitializationException(Message);
     }
-    
+
     // Get the loading step, if one is defined
     loadingLogNotificationStep = initGetLoadingStep(ResourceName, CacheName);
 
@@ -418,13 +415,13 @@ public class DuplicateCheckCache
   * @param TimeStamp
   * @param TransactionNumber
    * @return True if the record is a duplicate, otherwise false
-   * @throws ProcessingException  
+   * @throws ProcessingException
   */
   public boolean DuplicateCheck(String RecordKey, long TimeStamp, int TransactionNumber) throws ProcessingException
   {
     Connection tmpInsertConnection;
     PreparedStatement tmpInsertStatement = null;
-    
+
     if (TimeStamp > bufferLimit)
     {
       // look only in the HashMap
@@ -452,7 +449,7 @@ public class DuplicateCheckCache
     else if (TimeStamp > storeLimit)
     {
       // the key won't be in the HashMap, we need to check directly in the database
-      
+
       try
       {
         // Get the connection
@@ -511,7 +508,7 @@ public class DuplicateCheckCache
   */
   public void CreateTransaction(int TransactionNumber)
   {
-    TransRecordList.put(TransactionNumber, new HashMap<String,Long>(5000));    
+    TransRecordList.put(TransactionNumber, new HashMap<String,Long>(5000));
   }
 
  /**
@@ -540,7 +537,7 @@ public class DuplicateCheckCache
         // we are going to insert something, get the connection and statement
         Connection tmpInsertConnection = getTransactionInsertConnection(TransactionNumber);
         PreparedStatement tmpInsertStatement = getInsertStatement(tmpInsertConnection);
-        
+
         try
         {
           // Get the keys to insert
@@ -577,21 +574,21 @@ public class DuplicateCheckCache
         finally
         {
           // Close the statement
-          DBUtil.close(tmpInsertStatement);          
+          DBUtil.close(tmpInsertStatement);
         }
 
         recordList.putAll(TransRecordList.get(TransactionNumber));
       }
 
-          
+
       // and close the connection now that we have finished with it
       closeTransactionInsertConnection(TransactionNumber);
-          
+
       // remove the transaction
       TransRecordList.remove(TransactionNumber);
 
       // Log what we did
-      String Message = "Inserted <" + recordCount + "> records into duplicate check table" + 
+      String Message = "Inserted <" + recordCount + "> records into duplicate check table" +
                         " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
       getFWLog().info(Message);
     }
@@ -602,7 +599,7 @@ public class DuplicateCheckCache
   *
   * @param TransactionNumber
   */
-  public void RollbackTransaction(int TransactionNumber) 
+  public void RollbackTransaction(int TransactionNumber)
   {
     // We just discard the keys from the transaction
     TransRecordList.remove(TransactionNumber);
@@ -689,7 +686,7 @@ public class DuplicateCheckCache
   }
 
   /**
-  * Purge the data in the duplicate list (no actual saving is performed, just 
+  * Purge the data in the duplicate list (no actual saving is performed, just
   * working on the in-memory data.
   */
   public void purgeCache()
@@ -702,8 +699,8 @@ public class DuplicateCheckCache
   * Recover the duplicate check data from database storage. This will filter the
   * data to remove any items that are older than the buffer date. This is run
   * on framework startup
-  * 
-  * @throws InitializationException 
+  *
+  * @throws InitializationException
   */
   public void retrieveDupChkDataFromDB() throws InitializationException
   {
@@ -774,7 +771,7 @@ public class DuplicateCheckCache
         {
           recordsDiscarded++;
         }
-        
+
         // Update to the log file
         if ((RecordsProcessed % loadingLogNotificationStep) == 0)
         {
@@ -782,7 +779,7 @@ public class DuplicateCheckCache
                 "> records buffered and <" + recordsDiscarded + "> records in duplicate data table for <" +
                 getSymbolicName() + ">";
           getFWLog().info(Message);
-        }        
+        }
       }
     }
     catch (SQLException ex)
@@ -805,7 +802,7 @@ public class DuplicateCheckCache
   }
 
  /**
-  * Purge the duplicate check data removing records that are older than the 
+  * Purge the duplicate check data removing records that are older than the
   * cutoff date. After the cache has been running for some time, it will
   * accumulate records that are older than the store limit and the buffer limit,
   * because time is always moving forward, but the limits are managed as fixed
@@ -829,17 +826,17 @@ public class DuplicateCheckCache
 
     // re-calculate the buffer limit cutoff date
     bufferLimit = Calendar.getInstance().getTimeInMillis()/1000 - bufferLimitDays * 86400;
-    
+
     // re-calculate the store limit cutoff date
     storeLimit = Calendar.getInstance().getTimeInMillis()/1000 - storeLimitDays * 86400;
-    
+
     try
     {
       // **** Clean up the memory ****
       // Create a new HashMap that will replace the current one. We cannot simply
       // remove the items from the current one due to the ConcurrentModificationException
       HashMap<String, Long> NewRecordList = new HashMap<>(50000);
-      
+
       // Dump the contents of the current hashmap
       Set<String> keySet = recordList.keySet();
 
@@ -858,7 +855,7 @@ public class DuplicateCheckCache
           NewRecordList.put(dupKey,recordDate);
         }
       }
-      
+
       // Swap the existing and new record list over
       recordList = NewRecordList;
 
@@ -875,7 +872,7 @@ public class DuplicateCheckCache
       {
         getHandler().reportException(ex);
       }
-            
+
       // Now prepare the purge statement
       try
       {
@@ -946,7 +943,7 @@ public class DuplicateCheckCache
       throw new InitializationException(Message);
     }
   }
-  
+
  /**
   * preparePurgeStatement creates the statements from the SQL expressions
   * so that they can be run to purge old records from the DB
@@ -976,7 +973,7 @@ public class DuplicateCheckCache
       throw new InitializationException(Message);
     }
   }
-  
+
   /**
   * Temporary function to gather the information from the properties file. Will
   * be removed with the introduction of the new configuration model.
@@ -990,7 +987,7 @@ public class DuplicateCheckCache
                                                        CacheName,
                                                        SERVICE_LOAD_LOG_STEP,
                                                        "1000");
-    
+
     // try to convert it
     try
     {
@@ -998,24 +995,24 @@ public class DuplicateCheckCache
     }
     catch (NumberFormatException nfe)
     {
-      throw new InitializationException("Value provided for property <" + SERVICE_LOAD_LOG_STEP + 
+      throw new InitializationException("Value provided for property <" + SERVICE_LOAD_LOG_STEP +
                                         "> was not numeric. Received value <" + tmpValue + ">.");
     }
-    
+
     return tmpLoadStep;
   }
-  
+
  /**
   * Gets a connection for use in the insert processing module. If the connection
   * is not available, we create it.
-  * 
+  *
   * @param TransactionNumber The transaction number we are creating for
   * @return The created connection
   */
   public Connection getTransactionInsertConnection(int TransactionNumber)
   {
     Connection tmpConn = null;
-    
+
     if (insertConnection.containsKey(TransactionNumber))
     {
       return insertConnection.get(TransactionNumber);
@@ -1034,7 +1031,7 @@ public class DuplicateCheckCache
 
       // store it for later
       insertConnection.put(TransactionNumber, tmpConn);
-      
+
       return tmpConn;
     }
   }
@@ -1042,7 +1039,7 @@ public class DuplicateCheckCache
  /**
   * Closes the connection for use in the insert processing module. If the connection
   * is not available, we create it.
-  * 
+  *
   * @param TransactionNumber The transaction number we are closing for
   */
   public void closeTransactionInsertConnection(int TransactionNumber)
@@ -1051,24 +1048,24 @@ public class DuplicateCheckCache
     {
       // Close the connection
       DBUtil.close(insertConnection.get(TransactionNumber));
-      
+
       // Clean the hash
       insertConnection.remove(TransactionNumber);
     }
   }
-  
+
  /**
   * getInsertStatement creates the statement from the SQL insert expression
-  * so that it can be run for updating the database on transaction commit or 
+  * so that it can be run for updating the database on transaction commit or
   * in processing commit.
   *
   * @param JDBCconInsert The connection to create for
-  * @return The prepared insert statement 
+  * @return The prepared insert statement
   */
   public PreparedStatement getInsertStatement(Connection JDBCconInsert)
   {
     PreparedStatement tmpStatement = null;
-    
+
     try
     {
       // prepare the SQL for the InsertStatement
@@ -1087,7 +1084,7 @@ public class DuplicateCheckCache
                        ">. Message: " + ex.getMessage();
       getFWLog().error(Message);
     }
-    
+
     return tmpStatement;
   }
 }

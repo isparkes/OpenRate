@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -70,13 +74,6 @@ import java.util.TimeZone;
  */
 public class ConversionUtils
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ConversionUtils.java,v $, $Revision: 1.21 $, $Date: 2013-05-13 18:12:12 $";
-
   // This is the format used for converting dates on input
   private String InputDateFormat = CommonConfig.OR_DEFAULT_DATE_FORMAT;
 
@@ -103,10 +100,10 @@ public class ConversionUtils
 
   // Used to cache access to the conversion objects
   private static ConversionCache tmpConvCache = null;
-  
+
   // Singleton instance
   private static ConversionUtils convUtilsObj;
-  
+
  /**
   * constructor - initialise the internal formatting object
   */
@@ -157,7 +154,7 @@ public class ConversionUtils
 
     return convUtilsObj;
   }
-  
+
 //------------------------------------------------------------------------------
 //---------------------------- Date Utilities ----------------------------------
 //------------------------------------------------------------------------------
@@ -554,7 +551,7 @@ public class ConversionUtils
   {
     Date roundedDate = getDayEnd(EventStartDate);
     cal.setTime(roundedDate);
-    
+
     long validityDayEnd = cal.getTimeInMillis() / 1000;
 
     return validityDayEnd;
@@ -676,10 +673,10 @@ public class ConversionUtils
   {
     return getCurrentUTCms() / 1000;
   }
-  
+
  /**
    * Add seconds to a date to get a new date
-   * 
+   *
    * @param inputDate The date to adjust
    * @param duration The number of seconds offset
    * @return The adjusted date
@@ -688,13 +685,13 @@ public class ConversionUtils
   {
     cal.setTime(inputDate);
     cal.add(Calendar.SECOND, duration);
-    
+
     return cal.getTime();
   }
-  
+
  /**
    * Add seconds to a date to get a new date
-   * 
+   *
    * @param inputDate The date to adjust
    * @param duration The number of seconds offset
    * @return The adjusted date
@@ -703,13 +700,13 @@ public class ConversionUtils
   {
     cal.setTime(inputDate);
     cal.add(Calendar.SECOND, (int) duration);
-    
+
     return cal.getTime();
   }
-  
+
  /**
    * Add seconds to a date to get a new date
-   * 
+   *
    * @param inputDate The date to adjust
    * @param duration The number of seconds offset
    * @return The adjusted date
@@ -718,7 +715,7 @@ public class ConversionUtils
   {
     cal.setTime(inputDate);
     cal.add(Calendar.SECOND, (int) duration);
-    
+
     return cal.getTime();
   }
 

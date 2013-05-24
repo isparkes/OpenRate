@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -70,9 +74,9 @@ import java.util.Iterator;
 
 /**
  * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=JDBC_Output_Adapter'>click here</a> to go to wiki page.
- * 
+ *
  * <p>JDBC Output Adapter.<br>
- * 
+ *
  * This module writes records into a table using JDBC.
  * The processing needs to be a little more complicated than is first obvious
  * to allow for the case that a transaction is rolled back. We therefore have
@@ -80,7 +84,7 @@ import java.util.Iterator;
  * the records from previous transactions. Only when we reach the commit point
  * do we make the new records like all the others, and in the case that we
  * encounter a rollback, we have to remove the inserted records.<br>
- * 
+ *
  * The management of the connection and statements is dynamic: When a connection
  * is needed, it is created out of the framework managed pool. When the
  * processing is finished, the connection is released.<br>
@@ -100,27 +104,20 @@ public abstract class JDBCOutputAdapter
   extends AbstractTransactionalSTOutputAdapter
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: JDBCOutputAdapter.java,v $, $Revision: 1.89 $, $Date: 2013-05-13 18:12:12 $";
-
-  /**
    * The query that is used to prepare the database for record insert
    */
   protected String initQuery;
-  
+
   /**
    * The insert query
    */
   protected String insertQuery;
-  
+
   /**
    * The commit query if the transaction ended correctly
    */
   protected String commitQuery;
-  
+
   /**
    * The rollback query if the transaction did not end correctly
    */
@@ -171,7 +168,7 @@ public abstract class JDBCOutputAdapter
   // This tells us if we should look for new work or continue with something
   // that is going on at the moment
   private boolean OutputStreamOpen = false;
-  
+
   // used for controlling if statements are used
   private boolean useInit;
   private boolean useCommit;
@@ -247,7 +244,7 @@ public abstract class JDBCOutputAdapter
       pipeLog.error(Message);
       throw new InitializationException(Message);
     }
-    
+
     // Set up the optional statements
     useInit     = ((initQuery == null || initQuery.isEmpty()) == false);
     useCommit   = ((commitQuery == null || commitQuery.isEmpty()) == false);
@@ -259,7 +256,7 @@ public abstract class JDBCOutputAdapter
   *
   * @param r The record we are working on
   * @return The processed record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord procHeader(IRecord r) throws ProcessingException
@@ -327,16 +324,16 @@ public abstract class JDBCOutputAdapter
         setTransactionAbort(getTransactionNumber());
       }
     }
-    
+
     return r;
   }
 
  /**
   * Prepare good records for writing to the defined output stream.
-  * 
+  *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord prepValidRecord(IRecord r) throws ProcessingException
@@ -364,7 +361,7 @@ public abstract class JDBCOutputAdapter
     {
       // Not good. Abort the transaction
       String Message = "Column Index preparing valid record in module <" +
-                       getSymbolicName() + ">. Message <" + aiex.getMessage() + 
+                       getSymbolicName() + ">. Message <" + aiex.getMessage() +
                        ">. Aborting transaction.";
       pipeLog.fatal(Message);
       getExceptionHandler().reportException(new ProcessingException(Message, aiex));
@@ -374,7 +371,7 @@ public abstract class JDBCOutputAdapter
     {
       // Not good. Abort the transaction
       String Message = "Unexpected Exception preparing valid record in module <" +
-                        getSymbolicName() + ">. Message <" + ex.getMessage() + 
+                        getSymbolicName() + ">. Message <" + ex.getMessage() +
                         ">. Aborting transaction.";
       pipeLog.fatal(Message);
       getExceptionHandler().reportException(new ProcessingException(Message, ex));
@@ -510,10 +507,10 @@ public abstract class JDBCOutputAdapter
 
  /**
   * Prepare bad records for writing to the defined output stream.
-  * 
+  *
   * @param r The current record we are working on
   * @return The prepared record
-  * @throws ProcessingException  
+  * @throws ProcessingException
   */
   @Override
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException
@@ -710,7 +707,7 @@ public abstract class JDBCOutputAdapter
                                                   ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                   ResultSet.CONCUR_READ_ONLY);
     }
-    
+
     if (useInit)
     {
       // prepare the SQL for the Rollback Statement
@@ -921,7 +918,7 @@ public abstract class JDBCOutputAdapter
     }
 
     if (Command.equalsIgnoreCase(SERVICE_STATUS_KEY))
-    {      
+    {
       return "OK";
     }
 
@@ -967,7 +964,7 @@ public abstract class JDBCOutputAdapter
   * When a transaction is started, the transactional layer calls this method to
   * see if we have any reson to stop the transaction being started, and to do
   * any preparation work that may be necessary before we start.
-  * 
+  *
   * @param transactionNumber The transaction to start
   */
   @Override
@@ -981,7 +978,7 @@ public abstract class JDBCOutputAdapter
  /**
   * Perform any processing that needs to be done when we are flushing the
   * transaction;
-  * 
+  *
   * @param transactionNumber The transaction to flush
   */
   @Override
@@ -996,7 +993,7 @@ public abstract class JDBCOutputAdapter
   /**
   * Perform any processing that needs to be done when we are committing the
   * transaction;
-  * 
+  *
   * @param transactionNumber The transaction to commit
   */
   @Override
@@ -1008,7 +1005,7 @@ public abstract class JDBCOutputAdapter
   /**
   * Perform any processing that needs to be done when we are rolling back the
   * transaction;
-  * 
+  *
   * @param transactionNumber The transaction to rollback
   */
   @Override
@@ -1024,7 +1021,7 @@ public abstract class JDBCOutputAdapter
   * Close down the statements we opened. Because the commit and rollback
   * statements are optional, we check if they have been defined before we ry
   * to close them.
-  * 
+  *
   * @param transactionNumber The transaction we are working on
   */
   @Override
@@ -1044,7 +1041,7 @@ public abstract class JDBCOutputAdapter
     {
       DBUtil.close(stmtRollbackQuery);
     }
-    
+
     // Close the connection
     DBUtil.close(JDBCcon);
   }

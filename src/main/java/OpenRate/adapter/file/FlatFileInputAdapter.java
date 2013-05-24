@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -140,13 +144,6 @@ public abstract class FlatFileInputAdapter
   extends AbstractTransactionalInputAdapter
   implements IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: FlatFileInputAdapter.java,v $, $Revision: 1.86 $, $Date: 2013-05-13 18:12:11 $";
-
   // The buffer size is the size of the buffer in the buffered reader
   private static final int BUF_SIZE = 65536;
 
@@ -368,7 +365,7 @@ public abstract class FlatFileInputAdapter
         // we don't have anything open, so get something from the head of the
         // waiting list
         transactionNumber = fileTransactionNumbers.get(0);
-        
+
         // And remove the transaction from the list
         fileTransactionNumbers.remove(0);
 
@@ -387,7 +384,7 @@ public abstract class FlatFileInputAdapter
           tmpHeader = new HeaderRecord();
           tmpHeader.setStreamName(getBaseName(transactionNumber));
           tmpHeader.setTransactionNumber(transactionNumber);
-          
+
           // Increment the stream counter
           incrementStreamCount();
 
@@ -599,7 +596,7 @@ public abstract class FlatFileInputAdapter
   /**
   * Perform any processing that needs to be done when we are committing the
   * transaction;
-  * 
+  *
   * @param transactionNumber The transaction to commit
   */
   @Override
@@ -1019,7 +1016,7 @@ public abstract class FlatFileInputAdapter
                                  throws InitializationException
   {
     String tmpProcPrefix;
-    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(), 
+    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
                                                                   "tmp");
 
@@ -1176,7 +1173,7 @@ public abstract class FlatFileInputAdapter
     filter = new GlobFilenameFilter(InputFilePrefix + "*" +
                                     InputFileSuffix,
                                     GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
-    
+
     // sort files
     fileNames = getOrderedFileListForProcessing(dir,filter);
 
@@ -1198,7 +1195,7 @@ public abstract class FlatFileInputAdapter
             // Create the new transaction to hold the information. This is done in
             // The transactional layer - we just trigger it here
             tmpTransNumber = createNewTransaction();
-            
+
             // trace it
             PipeLog.info("Input File name is <" + fileName + "> for transaction <" + tmpTransNumber + ">");
 
@@ -1270,7 +1267,7 @@ public abstract class FlatFileInputAdapter
           break;
         }
       }
-      
+
       // Log the number of files we effectively got
       PipeLog.debug("Assigned <" + filesAssigned + "> files in input adapter");
     }
@@ -1519,12 +1516,12 @@ public abstract class FlatFileInputAdapter
 
  /**
   * Order the list of files. This is can be overridden so that the sure may define their own rules.
-  * 
+  *
   * @param dir The directory to scan
   * @param filter The filter we are using
   * @return A list of files to process, first in list gets processed first
   */
-  public String[] getOrderedFileListForProcessing(File dir, FilenameFilter filter) 
+  public String[] getOrderedFileListForProcessing(File dir, FilenameFilter filter)
   {
 	// standard: no ordering
 	return dir.list(filter);

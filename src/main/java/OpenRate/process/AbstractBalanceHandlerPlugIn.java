@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -70,13 +74,6 @@ import OpenRate.utils.PropertyUtils;
  */
 public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactionalPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $Id$";
-
   // get the Cache manager for the balance cache
   private ICacheManager BG;
 
@@ -129,25 +126,25 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   *  - The references to any cache objects that are used in the processing
   *  - The symbolic name of the module
   *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The name of this module in the pipeline
+  * @param pipelineName The name of the pipeline this module is in
+  * @param moduleName The name of this module in the pipeline
   * @throws OpenRate.exception.InitializationException
   */
   @Override
-  public void init(String PipelineName, String ModuleName)
+  public void init(String pipelineName, String moduleName)
     throws InitializationException
   {
     String CacheObjectName;
 
     // Register ourself with the client manager
-    setSymbolicName(ModuleName);
+    setSymbolicName(moduleName);
 
     // do the inherited initialisation
-    super.init(PipelineName,ModuleName);
+    super.init(pipelineName,moduleName);
 
     // Get the cache object reference
-    CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(PipelineName,
-                                                           ModuleName,
+    CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(pipelineName,
+                                                           moduleName,
                                                            "DataCache");
 
     // Load up the customer information held in the Cached Object
@@ -179,10 +176,10 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * Called when the underlying transaction is commanded to start.
   * This should return 0 if everything was OK, otherwise -1.
   *
-  * @param TransactionNumber
+  * @param transactionNumber
   */
   @Override
-  public int startTransaction(int TransactionNumber)
+  public int startTransaction(int transactionNumber)
   {
     return 0;
   }
@@ -244,36 +241,36 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
  /**
   * Get a balance group from the cache
   *
-  * @param BalanceGroupId The balance group to recover
+  * @param balanceGroupId The balance group to recover
   * @return The balance group, or null if not found
   */
-  public BalanceGroup getBalanceGroup(long BalanceGroupId)
+  public BalanceGroup getBalanceGroup(long balanceGroupId)
   {
-    return BC.getBalanceGroup(BalanceGroupId);
+    return BC.getBalanceGroup(balanceGroupId);
   }
 
  /**
   * Add a new balance group to the cache
   *
-  * @param BalanceGroupId The Id of the group to add
+  * @param balanceGroupId The Id of the group to add
   * @return The newly created balance group
   */
-  public BalanceGroup addBalanceGroup(long BalanceGroupId)
+  public BalanceGroup addBalanceGroup(long balanceGroupId)
   {
-    return BC.addBalanceGroup(BalanceGroupId);
+    return BC.addBalanceGroup(balanceGroupId);
   }
 
  /**
   * Check if a balance exists at the given date
   *
-  * @param BalanceGroupId The id of the balance group
-  * @param CounterId The id of the counter
-  * @param UTCEventDate The date to check for
+  * @param balanceGroupId The id of the balance group
+  * @param counterId The id of the counter
+  * @param utcEventDate The date to check for
   * @return True if the balance exists, otherwise false
   */
-  public Counter checkCounterExists(long BalanceGroupId, int CounterId, long UTCEventDate)
+  public Counter checkCounterExists(long balanceGroupId, int counterId, long utcEventDate)
   {
-    return BC.checkCounterExists(BalanceGroupId, CounterId, UTCEventDate);
+    return BC.checkCounterExists(balanceGroupId, counterId, utcEventDate);
   }
 
  /**
@@ -281,29 +278,29 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * Intended for use by user applications, as it lets the counter group manage
   * the record id.
   *
-  * @param BalanceGroupId The id of the balance group
-  * @param CounterId The ID of the counter in the balance group
-  * @param ValidFrom The start of the validity period for the counter period
-  * @param ValidTo The end of the validity period for the counter period
-  * @param CurrentBal The current bal to assign to the counter period
+  * @param balanceGroupId The id of the balance group
+  * @param counterId The ID of the counter in the balance group
+  * @param validFrom The start of the validity period for the counter period
+  * @param validTo The end of the validity period for the counter period
+  * @param currentBal The current balance to assign to the counter period
   * @return The created counter
   */
-  public Counter addCounter(long BalanceGroupId, int CounterId, long ValidFrom, long ValidTo, double CurrentBal)
+  public Counter addCounter(long balanceGroupId, int counterId, long validFrom, long validTo, double currentBal)
   {
-    return BC.addCounter(BalanceGroupId, CounterId, ValidFrom, ValidTo, CurrentBal);
+    return BC.addCounter(balanceGroupId, counterId, validFrom, validTo, currentBal);
   }
 
  /**
   * Gets a counter from a balance group by counter id and UTC date
   *
-  * @param balanceGroup The balance group to retrieve for
+  * @param balanceGroup The balance group we are dealing with
   * @param counterId The counter id to retrieve for
-  * @param UTCEventDate The date to retrieve for
+  * @param utcEventDate The date to retrieve for
   * @return The counter or null
   */
-  public Counter getCounter(long BalanceGroup, int counterId, long UTCEventDate)
+  public Counter getCounter(long balanceGroup, int counterId, long utcEventDate)
   {
-    return BC.getCounter(BalanceGroup, counterId, UTCEventDate);
+    return BC.getCounter(balanceGroup, counterId, utcEventDate);
   }
 
  /**
@@ -311,14 +308,14 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   *
   * @param balanceGroup The balance group to retrieve for
   * @param counterId The counter id to retrieve for
-  * @param UTCEventDate The date to retrieve for
+  * @param utcEventDate The date to retrieve for
   * @param initialValue The initial value of the counter in the case we create it
   * @return The counter or null
   */
-  public double getCounterBalance(long BalanceGroup, int counterId, long UTCEventDate, double initialValue)
+  public double getCounterBalance(long balanceGroup, int counterId, long utcEventDate, double initialValue)
   {
     Counter tmpCounterReq;
-    tmpCounterReq = BC.getCounter(BalanceGroup, counterId, UTCEventDate);
+    tmpCounterReq = BC.getCounter(balanceGroup, counterId, utcEventDate);
 
     if (tmpCounterReq == null)
     {
@@ -361,17 +358,17 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * Some parameters are only used if the counter bucket is created. These are
   * marked with (*).
   *
-  * @param CurrentRecord The record to be discounted, inherited from IRatingRecord
-  * @param DiscountName The name of the discount
-  * @param BalanceGroupId The ID of the balance group
-  * @param RUMToUse The RUM to consume
+  * @param currentRecord The record to be discounted, inherited from IRatingRecord
+  * @param discountName The name of the discount
+  * @param balanceGroupId The ID of the balance group
+  * @param rumToUse The RUM to consume
   * @param counterId The ID of the counter to impact
   * @param initialBalance The initial value of the counter (*)
-  * @param UTCBalanceStartValidity The start of bucket validity (*)
+  * @param utcBalanceStartValidity The start of bucket validity (*)
   * @param UTCBalanceEndValidity The end of bucket validity (*)
   * @return The DiscountInformation summary object
   */
-  public DiscountInformation discountConsumeRUM(IRatingRecord CurrentRecord, String DiscountName, long BalanceGroupId, String RUMToUse, int counterId, double initialBalance, long UTCBalanceStartValidity, long UTCBalanceEndValidity)
+  public DiscountInformation discountConsumeRUM(IRatingRecord currentRecord, String discountName, long balanceGroupId, String rumToUse, int counterId, double initialBalance, long utcBalanceStartValidity, long UTCBalanceEndValidity)
   {
     BalanceImpact tmpBalImpact;
     double tmpRUMValue;
@@ -379,32 +376,32 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
     DiscountInformation tmpReturnInfo = new DiscountInformation();
 
-    tmpRUMValue = CurrentRecord.getRUMValue(RUMToUse);
-    Counter tmpCounter = checkCounterExists(BalanceGroupId, counterId, CurrentRecord.getUTCEventDate());
+    tmpRUMValue = currentRecord.getRUMValue(rumToUse);
+    Counter tmpCounter = checkCounterExists(balanceGroupId, counterId, currentRecord.getUTCEventDate());
 
     if (tmpCounter == null)
     {
-      tmpCounter = addCounter(BalanceGroupId,counterId,UTCBalanceStartValidity,UTCBalanceEndValidity,initialBalance);
+      tmpCounter = addCounter(balanceGroupId,counterId,utcBalanceStartValidity,UTCBalanceEndValidity,initialBalance);
 
       // Add the balance impact
       tmpBalImpact = new BalanceImpact();
       tmpBalImpact.type = "D";
-      tmpBalImpact.balanceGroup = BalanceGroupId;
-      tmpBalImpact.cpiName = DiscountName;
+      tmpBalImpact.balanceGroup = balanceGroupId;
+      tmpBalImpact.cpiName = discountName;
       tmpBalImpact.ruleName = "CREATION";
-      tmpBalImpact.rumUsed = RUMToUse;
+      tmpBalImpact.rumUsed = rumToUse;
       tmpBalImpact.counterID = counterId;
       tmpBalImpact.recID = tmpCounter.RecId;
       tmpBalImpact.rumValueAfter = 0.0;
       tmpBalImpact.rumValueUsed = 0;
       tmpBalImpact.balanceAfter = initialBalance;
       tmpBalImpact.balanceDelta = initialBalance;
-      tmpBalImpact.startDate = UTCBalanceStartValidity;
+      tmpBalImpact.startDate = utcBalanceStartValidity;
       tmpBalImpact.endDate = UTCBalanceEndValidity;
 
       if (tmpBalImpact.balanceDelta != 0)
       {
-        CurrentRecord.addBalanceImpact(tmpBalImpact);
+        currentRecord.addBalanceImpact(tmpBalImpact);
 
         tmpReturnInfo.setBalanceCreated(true);
       }
@@ -421,19 +418,19 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
       {
         // we are crossing a threshold
         tmpDiscount = tmpCounter.CurrentBalance;
-        CurrentRecord.updateRUMValue(RUMToUse,-tmpCounter.CurrentBalance);
+        currentRecord.updateRUMValue(rumToUse,-tmpCounter.CurrentBalance);
         tmpCounter.CurrentBalance = 0;
 
         // Add the balance impact
         tmpBalImpact = new BalanceImpact();
         tmpBalImpact.type = "D";
-        tmpBalImpact.balanceGroup = BalanceGroupId;
-        tmpBalImpact.cpiName = DiscountName;
-        tmpBalImpact.ruleName = "Consume" + RUMToUse;
-        tmpBalImpact.rumUsed = RUMToUse;
+        tmpBalImpact.balanceGroup = balanceGroupId;
+        tmpBalImpact.cpiName = discountName;
+        tmpBalImpact.ruleName = "Consume" + rumToUse;
+        tmpBalImpact.rumUsed = rumToUse;
         tmpBalImpact.counterID = counterId;
         tmpBalImpact.recID = tmpCounter.RecId;
-        tmpBalImpact.rumValueAfter = CurrentRecord.getRUMValue(RUMToUse);
+        tmpBalImpact.rumValueAfter = currentRecord.getRUMValue(rumToUse);
         tmpBalImpact.rumValueUsed = tmpDiscount;
         tmpBalImpact.balanceAfter = 0;
         tmpBalImpact.balanceDelta = -tmpDiscount;
@@ -442,7 +439,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
         if (tmpBalImpact.balanceDelta != 0)
         {
-          CurrentRecord.addBalanceImpact(tmpBalImpact);
+          currentRecord.addBalanceImpact(tmpBalImpact);
 
           // Prepare the return value
           tmpReturnInfo.setDiscountApplied(true);
@@ -467,16 +464,16 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
         // we are just decrementing the counter, using all of the impact
         tmpCounter.CurrentBalance -= tmpRUMValue;
         tmpDiscount = tmpRUMValue;
-        CurrentRecord.updateRUMValue(RUMToUse,-CurrentRecord.getRUMValue(RUMToUse));
+        currentRecord.updateRUMValue(rumToUse,-currentRecord.getRUMValue(rumToUse));
         tmpReturnInfo.setDiscountApplied(true);
 
         // Add the balance impact
         tmpBalImpact = new BalanceImpact();
         tmpBalImpact.type = "D";
-        tmpBalImpact.balanceGroup = BalanceGroupId;
-        tmpBalImpact.cpiName = DiscountName;
-        tmpBalImpact.ruleName = "Consume" + RUMToUse;
-        tmpBalImpact.rumUsed = RUMToUse;
+        tmpBalImpact.balanceGroup = balanceGroupId;
+        tmpBalImpact.cpiName = discountName;
+        tmpBalImpact.ruleName = "Consume" + rumToUse;
+        tmpBalImpact.rumUsed = rumToUse;
         tmpBalImpact.counterID = counterId;
         tmpBalImpact.recID = tmpCounter.RecId;
         tmpBalImpact.rumValueAfter = 0.0;
@@ -488,7 +485,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
         if (tmpBalImpact.balanceDelta != 0)
         {
-          CurrentRecord.addBalanceImpact(tmpBalImpact);
+          currentRecord.addBalanceImpact(tmpBalImpact);
 
           // Prepare the return value
           tmpReturnInfo.setDiscountApplied(true);
@@ -525,14 +522,15 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * In addition the following fields from the IRatingRecord are used:
   *   - UTCEventDate
   *
-  * @param CurrentRecord The record to be discounted, inherited fro IRatingRecord
-  * @param DiscountName The name of the discount
-  * @param BalanceGroupId The ID of the balance group
-  * @param RUMToUse The RUM to consume
+  * @param currentRecord The record to be discounted, inherited fro IRatingRecord
+  * @param discountName The name of the discount
+  * @param balanceGroupId The ID of the balance group
+  * @param rumToUse The RUM to consume
   * @param counterId The ID of the counter to impact
+  * @param initialBalance The initial balance the counter had, serves as a maximum limit in refunds
   * @return The DiscountInformation summary object
   */
-  public DiscountInformation refundConsumeRUM(IRatingRecord CurrentRecord, String DiscountName, long BalanceGroupId, String RUMToUse, int counterId, double initialBalance)
+  public DiscountInformation refundConsumeRUM(IRatingRecord currentRecord, String discountName, long balanceGroupId, String rumToUse, int counterId, double initialBalance)
   {
     BalanceImpact tmpBalImpact;
     double tmpRUMValue;
@@ -540,8 +538,8 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
     DiscountInformation tmpReturnInfo = new DiscountInformation();
 
-    tmpRUMValue = CurrentRecord.getRUMValue(RUMToUse);
-    Counter tmpCounter = checkCounterExists(BalanceGroupId, counterId, CurrentRecord.getUTCEventDate());
+    tmpRUMValue = currentRecord.getRUMValue(rumToUse);
+    Counter tmpCounter = checkCounterExists(balanceGroupId, counterId, currentRecord.getUTCEventDate());
 
     if (tmpCounter == null)
     {
@@ -562,14 +560,14 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
     // Add the balance impact
     tmpBalImpact = new BalanceImpact();
     tmpBalImpact.type = "D";
-    tmpBalImpact.balanceGroup = BalanceGroupId;
-    tmpBalImpact.cpiName = DiscountName;
-    tmpBalImpact.ruleName = "Refund" + RUMToUse;
-    tmpBalImpact.rumUsed = RUMToUse;
+    tmpBalImpact.balanceGroup = balanceGroupId;
+    tmpBalImpact.cpiName = discountName;
+    tmpBalImpact.ruleName = "Refund" + rumToUse;
+    tmpBalImpact.rumUsed = rumToUse;
     tmpBalImpact.counterID = counterId;
     tmpBalImpact.recID = tmpCounter.RecId;
     tmpBalImpact.rumValueAfter = tmpCounter.CurrentBalance;
-    tmpBalImpact.rumValueUsed = CurrentRecord.getRUMValue(RUMToUse);
+    tmpBalImpact.rumValueUsed = currentRecord.getRUMValue(rumToUse);
     tmpBalImpact.balanceAfter = tmpCounter.CurrentBalance;
     tmpBalImpact.balanceDelta = tmpDiscount;
     tmpBalImpact.startDate = tmpCounter.validFrom;
@@ -579,7 +577,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
     {
       tmpReturnInfo.setDiscountApplied(true);
 
-      CurrentRecord.addBalanceImpact(tmpBalImpact);
+      currentRecord.addBalanceImpact(tmpBalImpact);
 
       // Prepare the return value
       tmpReturnInfo.setDiscountApplied(true);
@@ -618,17 +616,17 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * Some parameters are only used if the counter bucket is created. These are
   * marked with (*).
   *
-  * @param CurrentRecord The record to be discounted, inherited fro IRatingRecord
-  * @param DiscountName The name of the discount
-  * @param BalanceGroupId The ID of the balance group
-  * @param RUMToUse The RUM to consume
+  * @param currentRecord The record to be discounted, inherited fro IRatingRecord
+  * @param discountName The name of the discount
+  * @param balanceGroupId The ID of the balance group
+  * @param rumToUse The RUM to consume
   * @param counterId The ID of the counter to impact
-  * @param initialBalance The inital value of the counter (*)
-  * @param UTCBalanceStartValidity The start of bucket validity (*)
+  * @param initialBalance The initial value of the counter (*)
+  * @param utcBalanceStartValidity The start of bucket validity (*)
   * @param UTCBalanceEndValidity The end of bucket validity (*)
   * @return The DiscountInformation summary object
   */
-  public DiscountInformation discountAggregateRUM(IRatingRecord CurrentRecord, String DiscountName, long BalanceGroupId, String RUMToUse, int counterId, double initialBalance, long UTCBalanceStartValidity, long UTCBalanceEndValidity)
+  public DiscountInformation discountAggregateRUM(IRatingRecord currentRecord, String discountName, long balanceGroupId, String rumToUse, int counterId, double initialBalance, long utcBalanceStartValidity, long UTCBalanceEndValidity)
   {
     BalanceImpact tmpBalImpact;
     double tmpRUMValue;
@@ -636,30 +634,30 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
     DiscountInformation tmpReturnInfo = new DiscountInformation();
 
-    tmpRUMValue = CurrentRecord.getRUMValue(RUMToUse);
-    Counter tmpCounter = checkCounterExists(BalanceGroupId, counterId, CurrentRecord.getUTCEventDate());
+    tmpRUMValue = currentRecord.getRUMValue(rumToUse);
+    Counter tmpCounter = checkCounterExists(balanceGroupId, counterId, currentRecord.getUTCEventDate());
 
     if (tmpCounter == null)
     {
-      tmpCounter = addCounter(BalanceGroupId,counterId,UTCBalanceStartValidity,UTCBalanceEndValidity,initialBalance);
+      tmpCounter = addCounter(balanceGroupId,counterId,utcBalanceStartValidity,UTCBalanceEndValidity,initialBalance);
 
       // Add the balance impact
       tmpBalImpact = new BalanceImpact();
       tmpBalImpact.type = "D";
-      tmpBalImpact.balanceGroup = BalanceGroupId;
-      tmpBalImpact.cpiName = DiscountName;
+      tmpBalImpact.balanceGroup = balanceGroupId;
+      tmpBalImpact.cpiName = discountName;
       tmpBalImpact.ruleName = "CREATION";
-      tmpBalImpact.rumUsed = RUMToUse;
+      tmpBalImpact.rumUsed = rumToUse;
       tmpBalImpact.counterID = counterId;
       tmpBalImpact.recID = tmpCounter.RecId;
       tmpBalImpact.rumValueAfter = 0.0;
       tmpBalImpact.rumValueUsed = 0;
       tmpBalImpact.balanceAfter = initialBalance;
       tmpBalImpact.balanceDelta = initialBalance;
-      tmpBalImpact.startDate = UTCBalanceStartValidity;
+      tmpBalImpact.startDate = utcBalanceStartValidity;
       tmpBalImpact.endDate = UTCBalanceEndValidity;
 
-      CurrentRecord.addBalanceImpact(tmpBalImpact);
+      currentRecord.addBalanceImpact(tmpBalImpact);
 
       tmpReturnInfo.setBalanceCreated(true);
     }
@@ -672,10 +670,10 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
     // Add the balance impact
     tmpBalImpact = new BalanceImpact();
     tmpBalImpact.type = "D";
-    tmpBalImpact.balanceGroup = BalanceGroupId;
-    tmpBalImpact.cpiName = DiscountName;
-    tmpBalImpact.ruleName = "Aggregate" + RUMToUse;
-    tmpBalImpact.rumUsed = RUMToUse;
+    tmpBalImpact.balanceGroup = balanceGroupId;
+    tmpBalImpact.cpiName = discountName;
+    tmpBalImpact.ruleName = "Aggregate" + rumToUse;
+    tmpBalImpact.rumUsed = rumToUse;
     tmpBalImpact.counterID = counterId;
     tmpBalImpact.recID = tmpCounter.RecId;
     tmpBalImpact.rumValueAfter = tmpRUMValue;
@@ -687,7 +685,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
     if (tmpBalImpact.balanceDelta != 0)
     {
-      CurrentRecord.addBalanceImpact(tmpBalImpact);
+      currentRecord.addBalanceImpact(tmpBalImpact);
 
       // Prepare the return value
       tmpReturnInfo.setDiscountApplied(true);

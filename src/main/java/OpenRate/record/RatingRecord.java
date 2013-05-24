@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -93,16 +97,9 @@ import java.util.Iterator;
 public abstract class RatingRecord extends AbstractRecord implements IRatingRecord
 {
   /**
-   * Serial UID for serialised object 
+   * Serial UID for serialised object
    */
-	private static final long serialVersionUID = 5417534942969198413L;
-
-/**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: RatingRecord.java,v $, $Revision: 1.33 $, $Date: 2013-05-13 18:12:11 $";
+  private static final long serialVersionUID = 5417534942969198413L;
 
   /**
    * The split fields of the record
@@ -175,7 +172,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   public RatingRecord(String originalData)
   {
     super();
-    
+
     // Set the data
     this.setOriginalData(originalData);
   }
@@ -502,7 +499,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   }
 
  /**
-  * Get the total impacts for a given resource and Packet Type. Excludes invalid 
+  * Get the total impacts for a given resource and Packet Type. Excludes invalid
   * charge packets
   *
   * @param resourceToGet The name of the resource to recover the total for
@@ -593,7 +590,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   {
     return getChargePacketsDump(24);
   }
-  
+
  /**
   * Get the formatted dump of the charge packets associated with this record.
   *
@@ -676,7 +673,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   {
     return getBalanceImpactsDump(24);
   }
-  
+
  /**
   * Get the Balance Impact dump information for the balance impacts associated
   * with this record. Allows the padding to be defined.
@@ -687,7 +684,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   public ArrayList<String> getBalanceImpactsDump(int padding)
   {
     BalanceImpact tmpBalImp;
-    
+
     // set up the padding
     if (padding < 19) padding = 19;
     String pad = "                                                  ".substring(1, padding - 18);

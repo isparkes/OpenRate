@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -96,13 +100,6 @@ public class Pipeline
              IEventInterface,
              ISyncPoint
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: Pipeline.java,v $, $Revision: 1.93 $, $Date: 2013-05-13 18:12:12 $";
-
   // Get the logs, for this and all child classes. The pipe log will be
   // intialised during the init, up until then, all logging will go to the
   // framework FWLog, or the default logger (console).
@@ -275,7 +272,7 @@ public class Pipeline
       TM.setMaxTransactions(maxTransTM);
 
     // Perform the version audit
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
 
     // set up the logger
     PipeLog = LogUtil.getLogUtil().getLogger(Name);
@@ -305,7 +302,7 @@ public class Pipeline
     // used in setting up the pipe
     String strActiveState;
     String strHaltOnExcp;
-    
+
     // Initialise the default polling sleep time
     SleepTime = 5000;
 
@@ -323,7 +320,7 @@ public class Pipeline
       strHaltOnExcp = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList."+symbolicName+"."+SERVICE_HALT_ON_EXCP,
                                                           "True");
 
-      // Get the transaction controller configuration    
+      // Get the transaction controller configuration
       // Validate what we got for the pipe type
       if (pipelineType.equalsIgnoreCase("Batch"))
       {
@@ -396,13 +393,13 @@ public class Pipeline
     catch (Exception ex)
     {
       // Unexpected exception. Wrap it and pass it up, nesting the original message
-      String Message = "Unexpected exception configuring pipeline <" + ex.getMessage() + ">";
+      String Message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
       throw new InitializationException(Message, ex);
     }
     catch (Throwable ex)
     {
       // Unexpected exception. Wrap it and pass it up, nesting the original message
-      String Message = "Unexpected exception configuring pipeline <" + ex.getMessage() + ">";
+      String Message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
       throw new InitializationException(Message, ex);
     }
   }
@@ -511,7 +508,7 @@ public class Pipeline
                          ex.getMessage() + ">";
         throw new InitializationException(Message);
       }
-    
+
       // Now that we have the input adapter, initialise it using the index 0 (we
       // have only one input adapter)
       batchInputAdapter.init(symbolicName, PluginName);
@@ -528,7 +525,7 @@ public class Pipeline
 
  /**
   * Get and initialise the adapter for real time pipelines
-  * 
+  *
   * @return The initialised RT adapter
   * @throws InitializationException
   */
@@ -964,7 +961,7 @@ public class Pipeline
         {
           tmpSleepTime = SleepTime;
         }
-        
+
         // **** Manage pipeline state changes ****
         if (TM == null)
         {
@@ -1778,7 +1775,7 @@ public class Pipeline
  /**
   * Returns true if the pipeline aborted - used to cascade the abort to
   * stop the system in frameworks with multiple pipes
-  * 
+  *
   * @return true if the pipe aborted and the framework should stop
   */
   @Override

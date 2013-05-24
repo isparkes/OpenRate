@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -58,13 +62,6 @@ import OpenRate.exception.InitializationException;
  */
 public class PropertyUtils extends PropertyReader
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: PropertyUtils.java,v $, $Revision: 1.17 $, $Date: 2013-05-13 18:12:12 $";
-
   // Get the utilities for handling the XML configuration
   private static PropertyUtils propUtilsObj;
 
@@ -398,7 +395,7 @@ public class PropertyUtils extends PropertyReader
    * @param dataSourceName The name of the data source to get the value for
    * @param propertyName - the attribute name which is being requested.
    * @return String - the value of the request attribute.
-   * @throws InitializationException  
+   * @throws InitializationException
    */
   public String getDataSourcePropertyValue(String dataSourceName, String propertyName) throws InitializationException
   {
@@ -418,7 +415,7 @@ public class PropertyUtils extends PropertyReader
    * @param propertyName - the attribute name which is being requested.
    * @param defaultValue The default value to return if no configuration is found
    * @return String - the value of the request attribute.
-   * @throws InitializationException  
+   * @throws InitializationException
    */
   public String getDataSourcePropertyValueDef(String dataSourceName, String propertyName, String defaultValue) throws InitializationException
   {
@@ -431,13 +428,13 @@ public class PropertyUtils extends PropertyReader
 
       return valueFound;
   }
-  
+
   /**
    * helper method for retrieving a property for the framework.
    *
    * @param propertyName - the attribute name which is being requested.
    * @return String - the value of the request attribute.
-   * @throws InitializationException  
+   * @throws InitializationException
    */
   public String getFrameworkPropertyValue(String propertyName) throws InitializationException
   {
@@ -454,7 +451,7 @@ public class PropertyUtils extends PropertyReader
    * @param propertyName - the attribute name which is being requested.
    * @param defaultValue The default value to return if no configuration is found
    * @return String - the value of the request attribute.
-   * @throws InitializationException  
+   * @throws InitializationException
    */
   public String getFrameworkPropertyValueDef(String propertyName, String defaultValue) throws InitializationException
   {

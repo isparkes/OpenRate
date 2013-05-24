@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,28 +55,20 @@
 
 package OpenRate.process;
 
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.cache.ValiditySegmentCache;
 import OpenRate.exception.InitializationException;
-import OpenRate.utils.PropertyUtils;
 import OpenRate.record.IRecord;
+import OpenRate.resource.CacheFactory;
+import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
 /**
- * This class looks up the APN Type using the APN, and is mapped as a series
- * of validity periods. If an APN Type for the date given is not found, the
- * record is errored.
+ * This class looks up a match from a series of validity segments (segments
+ * with a from date and a to date). The segments may not overlap.
  */
 public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractValiditySegmentMatch.java,v $, $Revision: 1.19 $, $Date: 2013-05-13 18:12:10 $";
-
   // This is the object will be using the find the cache manager
   private ICacheManager CMV = null;
 
@@ -100,7 +96,7 @@ public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
             throws InitializationException
   {
     // Variable for holding the cache object name
-    String CacheObjectName = null;
+    String CacheObjectName;
 
     super.init(PipelineName,ModuleName);
 
@@ -174,10 +170,10 @@ public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
   {
     return VS.getValiditySegmentMatchWithChildData(Group, ResourceID, EventTime);
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -187,18 +183,18 @@ public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
     {
       return false;
     }
-    
+
     if ( resultToCheck.get(0).equals(ValiditySegmentCache.NO_VALIDITY_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -208,12 +204,12 @@ public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
     {
       return false;
     }
-    
+
     if (resultToCheck.equalsIgnoreCase(ValiditySegmentCache.NO_VALIDITY_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
 }

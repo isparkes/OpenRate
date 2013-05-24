@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -100,13 +104,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TransactionManager implements ITransactionManager, IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: TransactionManager.java,v $, $Revision: 1.65 $, $Date: 2013-05-13 18:12:11 $";
-
   // Get access to the log
   private ILogger FWLog    = LogUtil.getLogUtil().getLogger("Framework");
   private ILogger StatsLog = LogUtil.getLogUtil().getLogger("Statistics");
@@ -117,7 +114,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
 
   private ConcurrentHashMap<Integer, TransactionInfo> transactionList;  // This is the map of the transactions in progress
   private static int   nextTransactionNumber   = 0;           // The transaction number sequence generator
-  
+
   private int          numberOfClients         = 0;           // The number of clients we are dealing with
   private ITMClient[]  clients;                               // This is the map of the client objects
   private int[]        clientTypeArray;                       // This is the map of the client objects
@@ -151,17 +148,17 @@ public class TransactionManager implements ITransactionManager, IEventInterface
 
   // Common Definitions for the transaction manager
   private TMDefs TMD = TMDefs.getTMDefs();
-  
+
   // Transaction Flusher Thread
   TransactionFlusher tmf;
-  
+
   /**
    * Constructor
    */
   public TransactionManager()
   {
     // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**
@@ -192,18 +189,18 @@ public class TransactionManager implements ITransactionManager, IEventInterface
 
     // Set the initial status of the transaction manager
     requestTMStart();
-    
+
     // Start the TM Flusher thread
     tmf = new TransactionFlusher();
     ThreadGroup flusher = new ThreadGroup("TransactionFlusher");
-    
+
     Thread flusherThread = new Thread(flusher, tmf, "TransFlusher."+pipelineName+"-Inst-0");
     tmf.setTMReference(this);
     tmf.setPipelineName(pipelineName);
     tmf.setLogger(PipeLog);
     flusherThread.setDaemon(true);
     flusherThread.start();
-    
+
     System.out.println("    Started 1 Transaction Flusher Thread for pipeline <"+pipelineName+">");
 
     FWLog.info("TransactionManager initialised");
@@ -448,10 +445,10 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       // Print something to the log, so we can understand the state changes
       PipeLog.debug("Client <" + clientNumber+ "> set status <" + newStatus + "> " +
                 " for transaction <" + transNumber + ">");
-      
+
       // Store away the transaction number
       clientTransNumber[clientNumber] = transNumber;
-      
+
       // Set the transaction into the "finish transaction list" (if it is ready)
       if ((clientNumber==numberOfClients) && (newStatus==TMD.TM_FLUSHED))
       {
@@ -460,8 +457,8 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     }
     catch (NullPointerException npe)
     {
-      String Message = "Error setting client status <" + newStatus + 
-                       "> for client <" + clientNumber + "> in transaction <" + 
+      String Message = "Error setting client status <" + newStatus +
+                       "> for client <" + clientNumber + "> in transaction <" +
                        transNumber + ">";
       FWLog.error(Message);
     }
@@ -475,20 +472,20 @@ public class TransactionManager implements ITransactionManager, IEventInterface
 
  /**
   * The the client reference.
-  * 
+  *
   * @param i The index of the client to get
   * @return The client reference
   */
   public ITMClient getClient(int i)
   {
     return clients[i];
-  }        
-          
+  }
+
  /**
   * Return the transaction a client is working on. This is required because the
   * management of overlaid transactions means that clients are not able to track
   * this correctly.
-  * 
+  *
   * @param clientNumber The client who is requesting the information
   * @return The current transaction number
   */
@@ -496,21 +493,21 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   {
     return clientTransNumber[clientNumber];
   }
-  
+
   /**
    * Get the next transaction number. This is a synchronised method to ensure
    * that we never return the same transaction number twice, nor leave a gap.
-   * 
+   *
    * @return the nextTransactionNumber
    */
   public synchronized static int getNextTransactionNumber() {
     nextTransactionNumber++;
     return nextTransactionNumber;
-  }  
-  
+  }
+
  /**
   * Calculates the new overall status for this transaction
-  * 
+  *
   * @param transNumber The transaction we are working on
   * @param cachedTrans The information object for the transaction
   * @return the new overall status
@@ -522,7 +519,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     boolean AllClosed        = true;
     boolean ErrFlag          = false;
     int     i;
-    
+
     // Calculate the new overall status for this transaction. This will be:
     // The maximum value of statuses up to TM_PROCESSING
     // TM_PROCESSING until the last client goes to TM_FLUSHED
@@ -566,11 +563,11 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     }
 
     // Mark if we had a state change
-    cachedTrans.setStateChange(cachedTrans.getTransactionStatus() != newOverallStatus);    
-    
+    cachedTrans.setStateChange(cachedTrans.getTransactionStatus() != newOverallStatus);
+
     // Store it in the transaction
     cachedTrans.setTransactionStatus(newOverallStatus);
-    
+
     // log if we need to
     if (PipeLog.isDebugEnabled())
     {
@@ -580,11 +577,11 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     // return it
     return newOverallStatus;
   }
-  
+
  /**
   * Put an overview of the transaction status into the log. This is a costly
   * operation and should be used with care for performance reasons.
-  * 
+  *
   * @param transNumber the transaction number
   */
   private void logTransactionStatus(int transNumber)
@@ -592,7 +589,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     int i;
     String  ClientType       = "";
     String  ClientStatus     = "";
-    
+
     if (transactionList.containsKey(transNumber))
     {
       TransactionInfo CachedTrans = transactionList.get(transNumber);
@@ -615,7 +612,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       PipeLog.debug("  " + ClientStatus);
     }
   }
-  
+
  /**
   * Get the current status of a transaction client
   *
@@ -855,7 +852,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     if (Command.equalsIgnoreCase(SERVICE_CLIENT_STATUS))
     {
       int tmpTransNumber;
-      
+
       try
       {
         tmpTransNumber = Integer.parseInt(Parameter);
@@ -889,12 +886,12 @@ public class TransactionManager implements ITransactionManager, IEventInterface
 
     if (Command.equalsIgnoreCase(SERVICE_FLUSH_STATUS))
     {
-      result = "Flusher has <" + tmf.getFlushedTransactionCount() + 
+      result = "Flusher has <" + tmf.getFlushedTransactionCount() +
                "> transactions waiting";
 
       return result;
     }
-    
+
     // Set the maximum number of transactions
     if (Command.equalsIgnoreCase(SERVICE_MAX_TRANSACTIONS))
     {
@@ -959,7 +956,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       return "Command Not Understood";
     }
   }
-  
+
  /**
   * return the symbolic name
   *

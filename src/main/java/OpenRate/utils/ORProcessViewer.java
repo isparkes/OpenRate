@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -64,18 +68,11 @@ import javax.swing.text.*;
 /**
  * Process viewer id a GUI for viewing the internal processing of the OpenRate
  * framework.
- * 
+ *
  * @author afzaal
  */
-public class ORProcessViewer implements Runnable 
+public class ORProcessViewer implements Runnable
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ORProcessViewer.java,v $, $Revision: 1.8 $, $Date: 2013-05-13 18:12:12 $";
-	
    private final static int NULL = 0;
    private final static int DISCONNECTED = 1;
    private final static int DISCONNECTING = 2;
@@ -85,7 +82,7 @@ public class ORProcessViewer implements Runnable
 
    public final static String statusMessages[] = {
       " Unable to Connect, please check your network or firewall settings!", " Disconnected",
-      " Disconnecting...", " Waiting for Client...", 
+      " Disconnecting...", " Waiting for Client...",
       " Trying to Connect to Server....", " Connected"
    };
    public final static ORProcessViewer tcpObj = new ORProcessViewer();
@@ -100,7 +97,7 @@ public class ORProcessViewer implements Runnable
    private static StringBuffer toSend = new StringBuffer("");
 
    public static JFrame mainFrame = null;
-   public static JTextPane chatText = null;  
+   public static JTextPane chatText = null;
    public static StyledDocument docTextArea = null;
    public static JTextField chatLine = null;
    public static JPanel statusBar = null;
@@ -119,10 +116,10 @@ public class ORProcessViewer implements Runnable
    public static PrintWriter out = null;
    private static final String TEXT_LINE_TERMINATOR = "\n\n";
    private static Boolean toggledColor = false;
-   public static final String[] initStyles =  { "regular_blue", "italic_blue", 
-                                                "bold_blue", "regular_black", 
-                                                "italic_black", "bold_black"   };   
-   
+   public static final String[] initStyles =  { "regular_blue", "italic_blue",
+                                                "bold_blue", "regular_black",
+                                                "italic_black", "bold_black"   };
+
    private final static int REGULAR_BLUE = 0;
    private final static int ITALIC_BLUE = 1;
    private final static int BOLD_BLUE = 2;
@@ -292,9 +289,9 @@ public class ORProcessViewer implements Runnable
       mainFrame = new JFrame("Process State Viewer");
       mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       mainFrame.setContentPane(mainPane);
-      Toolkit tk = Toolkit.getDefaultToolkit();  
-      int xSize = ((int) tk.getScreenSize().getWidth());  
-      int ySize = ((int) tk.getScreenSize().getHeight());      
+      Toolkit tk = Toolkit.getDefaultToolkit();
+      int xSize = ((int) tk.getScreenSize().getWidth());
+      int ySize = ((int) tk.getScreenSize().getHeight());
       mainFrame.setSize(xSize, ySize);
       mainFrame.setVisible(true);
    }
@@ -376,7 +373,7 @@ public class ORProcessViewer implements Runnable
          out = null;
       }
    }
-   
+
   @Override
    public void run() {
       switch (connectionStatus) {
@@ -424,7 +421,7 @@ public class ORProcessViewer implements Runnable
          chatLine.grabFocus();
          statusColor.setBackground(Color.orange);
          break;
-         
+
        case BEGIN_CONNECT_CLIENT:
           connectButton.setEnabled(false);
           disconnectButton.setEnabled(false);
@@ -436,7 +433,7 @@ public class ORProcessViewer implements Runnable
           chatLine.grabFocus();
           statusColor.setBackground(Color.orange);
           break;
-         
+
       }
 
       ipField.setText(hostIP);
@@ -450,7 +447,7 @@ public class ORProcessViewer implements Runnable
     	  }else {
     		  docTextArea.insertString(docTextArea.getLength(), toAppend.toString(), docTextArea.getStyle(initStyles[ITALIC_BLUE]));
     	  }
-      } catch (BadLocationException e) { 
+      } catch (BadLocationException e) {
 		    e.printStackTrace();
       }
       toAppend.setLength(0);
@@ -459,7 +456,7 @@ public class ORProcessViewer implements Runnable
    }
 
    /**
-    * 
+    *
     * @param args
     */
    public static void main(String args[]) {
@@ -468,7 +465,7 @@ public class ORProcessViewer implements Runnable
       initGUI();
 
       while (true) {
-         try { 
+         try {
             Thread.sleep(10);
          }
          catch (InterruptedException e) {}
@@ -487,9 +484,9 @@ public class ORProcessViewer implements Runnable
                changeStatusTS(DISCONNECTED, false);
             }
             break;
-            
+
          case BEGIN_CONNECT_CLIENT:
-             try {                
+             try {
                    socket = new Socket(hostIP, port);
                    in = new DataInputStream(socket.getInputStream());
                    out = new PrintWriter(socket.getOutputStream(), true);
@@ -535,20 +532,20 @@ public class ORProcessViewer implements Runnable
          }
       }
    }
-   
+
    /**
     * To Display text in styles
-    * 
+    *
     * @param doc
     */
    private static void addStylesToDocument(StyledDocument doc) {
        //Initialize some styles.
        Style style = StyleContext.getDefaultStyleContext().
                        getStyle(StyleContext.DEFAULT_STYLE);
-       
+
        Style regular = doc.addStyle("regular", style);
        StyleConstants.setFontFamily(style, "SansSerif");
-       
+
        Style regular_blue = doc.addStyle("regular_blue", regular);
        StyleConstants.setForeground(regular_blue, Color.blue);
 
@@ -557,7 +554,7 @@ public class ORProcessViewer implements Runnable
 
        temp = doc.addStyle("bold_blue", regular_blue);
        StyleConstants.setBold(temp, true);
-       
+
        Style regular_black = doc.addStyle("regular_black", regular);
        StyleConstants.setForeground(regular_black, Color.black);
 
@@ -566,7 +563,7 @@ public class ORProcessViewer implements Runnable
 
        temp = doc.addStyle("bold_black", regular_black);
        StyleConstants.setBold(temp, true);
-       
+
 
 //       s = doc.addStyle("small", regular);
 //       StyleConstants.setFontSize(s, 10);
@@ -598,9 +595,9 @@ public class ORProcessViewer implements Runnable
 //       button.addActionListener(this);
 //       StyleConstants.setComponent(s, button);
    }
-   
+
    /**
-    * 
+    *
     * @param path
     * @param description
     * @return
@@ -614,8 +611,8 @@ public class ORProcessViewer implements Runnable
 			return null;
 		}
 	}
-   
-   
+
+
 }
 class ActionAdapter implements ActionListener {
   @Override

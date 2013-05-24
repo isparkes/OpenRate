@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -51,12 +55,12 @@
 
 package OpenRate.process;
 
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.CustomerCache;
 import OpenRate.cache.ICacheManager;
 import OpenRate.exception.InitializationException;
 import OpenRate.lang.ProductList;
 import OpenRate.record.IRecord;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 
 /**
@@ -70,19 +74,12 @@ import OpenRate.utils.PropertyUtils;
 public abstract class AbstractCustomerLookup
     extends AbstractPlugIn
 {
+  private ICacheManager CM;
+
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
+   * The reference to the customer cache, so we can access the methods in it
    */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractCustomerLookup.java,v $, $Revision: 1.29 $, $Date: 2013-05-13 18:12:10 $";
-
-   private ICacheManager CM;
-
-   /**
-    * The reference to the customer cache, so we can access the methods in it
-    */
-   protected CustomerCache CC;
+  protected CustomerCache CC;
 
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
@@ -175,10 +172,10 @@ public abstract class AbstractCustomerLookup
     String custId;
 
     custId = CC.getCustId(Alias);
-    
+
     return custId;
   }
-  
+
  /**
   * This returns a product list based on a login, a service and the validity of
   * the customer and of the individual products.
@@ -197,7 +194,7 @@ public abstract class AbstractCustomerLookup
 
     return tmpProductList;
   }
-  
+
  /**
   * This returns a product list based on a login, a service and the validity of
   * the customer and of the individual products.
@@ -212,8 +209,8 @@ public abstract class AbstractCustomerLookup
     String ERAValue;
 
     ERAValue = CC.getERA(custId, ERAKey);
-    
+
     return ERAValue;
   }
-  
+
 }

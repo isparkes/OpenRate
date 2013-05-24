@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -53,13 +57,13 @@ package OpenRate.transaction;
 
 /**
  * This class holds the definitions for the transaction manager.
- * 
+ *
  * @author tgdspia1
  */
 public class TMDefs
 {
   private static TMDefs tmDef = new TMDefs();
-  
+
   /**
    * This is the default creation state, and is the equivalent of a null value,
    * meaning only that the new transaction object has been created
@@ -90,16 +94,16 @@ public class TMDefs
   public final int TM_FINISHED_OK   = 4;
 
   /**
-   * The transaction has finished up, and any closure work in the module can be 
+   * The transaction has finished up, and any closure work in the module can be
    * done.
    */
   public final int TM_CLOSING       = 5;
-  
+
   /**
    * The transaction has closed and can be removed.
    */
   public final int TM_CLOSED        = 6;
-  
+
  /**
   * This value defines that the registered client is an input adapter
   */
@@ -119,10 +123,10 @@ public class TMDefs
   * This value defines that the registered client is a data cache
   */
   public final int CT_DATA_CACHE           = 4;
-  
+
   /**
    * This class
-   * 
+   *
    * @return
    */
   public static TMDefs getTMDefs()

@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -94,19 +98,12 @@ import java.util.Iterator;
  *   -----------------------
  *
  * <p>[to do]<br>
- * 
+ *
  */
 public abstract class SocketInputAdapter
   extends AbstractTransactionalInputAdapter
   implements IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: SocketInputAdapter.java,v $, $Revision: 1.15 $, $Date: 2013-05-13 18:12:13 $";
-
   // this is the hard limit on the maximum number of files that we can open
   // in the same batch
   private static final int MAX_CONCURRENT_CONNECTIONS = 1;
@@ -145,7 +142,7 @@ public abstract class SocketInputAdapter
     super();
 
     // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   // -----------------------------------------------------------------------------
@@ -155,7 +152,7 @@ public abstract class SocketInputAdapter
  /**
   * Initialise the module. Called during pipeline creation.
   * initialize input adapter.
-  * 
+  *
   * @param PipelineName The name of the pipeline this module is in
   * @param ModuleName The module symbolic name of this module
   * @throws OpenRate.exception.InitializationException
@@ -198,7 +195,7 @@ public abstract class SocketInputAdapter
       // Could not use the value we got
       throw new InitializationException ("Unable to open socket at specified port <" + ListenerPort + ">");
     }
-    
+
   }
 
  /**
@@ -227,12 +224,12 @@ public abstract class SocketInputAdapter
       boolean InTrans = false;
 
       InputRecordNumber = 0;
-        
+
       // contine with the open file
       try
       {
         checkSocket();
-        
+
         // we don't want the socket to block
         serverSocket.setSoTimeout(100);
         serverSocket.setReuseAddress(true);
@@ -408,14 +405,14 @@ public abstract class SocketInputAdapter
     return null;
   }
 
-  
+
 
   // -----------------------------------------------------------------------------
   // ------------------------ Start of custom functions --------------------------
   // -----------------------------------------------------------------------------
 
  /**
-  * 
+  *
   * @throws IOException
   */
   private void initSocket() throws IOException

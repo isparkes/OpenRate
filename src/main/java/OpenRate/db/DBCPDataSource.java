@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -68,19 +72,12 @@ import org.apache.commons.pool.impl.StackKeyedObjectPoolFactory;
 /**
  * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Data_Source_Manager'>click here</a> to go to wiki page.
  * <br>
- * <p> 
+ * <p>
  * DataSourceBuilderImpl
  *
  */
 public class DBCPDataSource implements IDBDataSource
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: DBCPDataSource.java,v $, $Revision: 1.9 $, $Date: 2013-05-13 18:12:12 $";
-
   /**
    * configuration key for optional SQL string to be run upon new Connection checkout.
    */
@@ -106,7 +103,7 @@ public class DBCPDataSource implements IDBDataSource
   public DBCPDataSource()
   {
     // Log ourtselves to the audit map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO, this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**
@@ -252,7 +249,7 @@ public class DBCPDataSource implements IDBDataSource
    *
    * @param dataSourceName The data source name to build the pool for
    * @return The pool
-   * @throws InitializationException  
+   * @throws InitializationException
    */
   protected GenericObjectPool buildObjectPool(String dataSourceName)
     throws InitializationException

@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -69,13 +73,6 @@ import java.util.Date;
  */
 public class DBRecord extends AbstractRecord
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: DBRecord.java,v $, $Revision: 1.37 $, $Date: 2013-05-13 18:12:11 $";
-
   private static final long serialVersionUID = -4090030392623587158L;
 
   private String[] OriginalColumns;
@@ -88,37 +85,37 @@ public class DBRecord extends AbstractRecord
    * Defintion of column type as String
    */
   public static final int COL_TYPE_STRING  = 0;
-  
+
   /**
    * Defintion of column type as Integer
    */
   public static final int COL_TYPE_INTEGER = 1;
-  
+
   /**
    * Defintion of column type as Double
    */
   public static final int COL_TYPE_DOUBLE  = 2;
-  
+
   /**
    * Defintion of column type as Long
    */
   public static final int COL_TYPE_LONG    = 3;
-  
+
   /**
    * Defintion of column type as Date
    */
   public static final int COL_TYPE_DATE    = 4;
-  
+
   /**
    * Defintion of column type as Boolean
    */
   public static final int COL_TYPE_BOOL    = 5;
-  
+
   /**
    * Defintion of column type as Time
    */
   public static final int COL_TYPE_TIME    = 6;
-  
+
   /**
    * Defintion of column type as Binary
    */
@@ -265,7 +262,7 @@ public class DBRecord extends AbstractRecord
     this.OutputColumns[Column] = Value;
     this.OutputColumnTypes[Column] = COL_TYPE_LONG;
   }
-  
+
  /**
   * Set the output column as a date format, using a date as an input
   *
@@ -384,7 +381,7 @@ public class DBRecord extends AbstractRecord
   {
     return (String)this.OutputColumns[Index];
   }
-  
+
  /**
   * Set the output column as bytes
   *

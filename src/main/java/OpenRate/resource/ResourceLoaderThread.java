@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -58,7 +62,7 @@ import java.util.HashMap;
 
 /**
  * Runnable container for threaded resource loading.
- * 
+ *
  * @author tgdspia1
  */
 public class ResourceLoaderThread extends Thread
@@ -71,18 +75,18 @@ public class ResourceLoaderThread extends Thread
 
   /**
    * Constructor for creating the loader thread.
-   * 
+   *
    * @param tmpGrpResource The thread group we assign to.
    * @param tmpResourceName The resource we are creating for.
    */
-  public ResourceLoaderThread(ThreadGroup tmpGrpResource, String tmpResourceName) 
+  public ResourceLoaderThread(ThreadGroup tmpGrpResource, String tmpResourceName)
   {
     super(tmpGrpResource,tmpResourceName);
   }
-  
+
   /**
    * Setter for the IResource we are managing.
-   * 
+   *
    * @param resourceToInit The resource we are creating the thread for.
    */
   public void setResource(IResource resourceToInit)
@@ -93,14 +97,14 @@ public class ResourceLoaderThread extends Thread
   /**
    * Setter for the name of the resource we are managing. Needed to access the
    * properties configuration.
-   * 
+   *
    * @param resourceName The resource name.
    */
   public void setResourceName(String resourceName)
   {
     this.resourceName = resourceName;
   }
-  
+
   /**
    * Set the exception handler mechanism.
    *
@@ -110,7 +114,7 @@ public class ResourceLoaderThread extends Thread
   {
     this.handler = handler;
   }
-  
+
  /**
   * Main execution thread of teh resource loader thread. Initialises the
   * resource and registers it with the context and sync point map before ending.
@@ -125,7 +129,7 @@ public class ResourceLoaderThread extends Thread
 
       // initalise the resource
       resource.init(resourceName);
-      
+
       //resource.init(tmpResourceName);
       resourceContext.register(resourceName, resource);
 
@@ -148,9 +152,9 @@ public class ResourceLoaderThread extends Thread
   }
 
   /**
-   * Setter for the resource context. Used for registering the resource with 
+   * Setter for the resource context. Used for registering the resource with
    * the context once we have made it.
-   * 
+   *
    * @param resourceContext The resource context we are using.
    */
   public void setResourceContext(ResourceContext resourceContext)
@@ -162,10 +166,10 @@ public class ResourceLoaderThread extends Thread
    * Setter for the Sync Point Resource Map. In the case that this resource
    * is bound into the synchronisation framework, we need access to the map
    * to register ourselves for management of sync point handling.
-   * 
+   *
    * @param syncPointResourceMap The resource map.
    */
-  public void setsyncPointResourceMap(HashMap<String, IEventInterface> syncPointResourceMap) 
+  public void setsyncPointResourceMap(HashMap<String, IEventInterface> syncPointResourceMap)
   {
     this.syncPointResourceMap = syncPointResourceMap;
   }

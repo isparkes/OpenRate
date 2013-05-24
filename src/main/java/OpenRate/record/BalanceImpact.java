@@ -58,13 +58,6 @@ package OpenRate.record;
  */
 public class BalanceImpact
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: BalanceImpact.java,v $, $Revision: 1.16 $, $Date: 2013-05-13 18:12:11 $";
-
  /**
   * The BalanceImpact structure holds the information about the impacts that
   * have been created on the record. This is used for both rating and discounting
@@ -73,12 +66,12 @@ public class BalanceImpact
   */
 
  /**
-  * (D,R) The name of Balance Group - can be used to manage impacts on 
+  * (D,R) The name of Balance Group - can be used to manage impacts on
   * multiple balance groups in a single event.
   * @ added by Denis, Benjamin
   */
   public long balanceGroup=0;
-  
+
  /**
   * The type of packet D = Discount, R = Rating
   */

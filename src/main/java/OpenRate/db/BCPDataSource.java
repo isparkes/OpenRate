@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -65,20 +69,13 @@ import javax.sql.DataSource;
 
 public class BCPDataSource implements IDBDataSource
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: BoneCPDataSource.java,v $, $Revision: 1.0 $, $Date: 2013-05-11 20:48:00 $";
-
   // reference to the exception handler
   private ExceptionHandler handler;
 
  /**
   * The data source is a a pooled collection of connections that can be used
   * by elements of the framework.
-  * 
+  *
   * * @author ddijak
   */
   private static final ILogger FWlog = LogUtil.getLogUtil().getLogger("Framework");
@@ -93,7 +90,7 @@ public class BCPDataSource implements IDBDataSource
    */
   public static final String MIN_CONN_KEY = "MinConnectionsPerPartiton";
   public static final String DEFAULT_MIN_CONN = "5";
-  
+
   /**
    * maximal number of connections per partition
    *  Sets the maximum number of connections that will be contained in every partition. Setting this to 5 with 3 partitions means you will have 15 unique connections to the database.
@@ -101,7 +98,7 @@ public class BCPDataSource implements IDBDataSource
    */
   public static final String MAX_CONN_KEY = "MaxConnectionsPerPartiton";
   public static final String DEFAULT_MAX_CONN = "10";
-  
+
   /**
    * number of partitions
    *  Sets number of partitions to use. In order to reduce lock contention and thus improve performance, each incoming connection request picks off a connection from a pool that has thread-affinity,
@@ -119,15 +116,15 @@ public class BCPDataSource implements IDBDataSource
    *  Note: This is a per partition setting.
    */
   public static final String ACQUIRE_INCREMENT_KEY = "AcquireIncrement";
-  public static final String DEFAULT_ACQUIRE_INCREMENT_COUNT = "1"; 
-  
+  public static final String DEFAULT_ACQUIRE_INCREMENT_COUNT = "1";
+
   /**
    * number of cached statements
    *  Sets statementsCacheSize setting. The number of statements to cache.
    */
   public static final String STMT_CACHE_KEY = "StatementsCacheSize";
-  public static final String DEFAULT_STMTS_CACHE_SIZE = DEFAULT_MAX_STMTS; // (DEFAULT_MAX_STMTS = 25)  
-   
+  public static final String DEFAULT_STMTS_CACHE_SIZE = DEFAULT_MAX_STMTS; // (DEFAULT_MAX_STMTS = 25)
+
   // -----------------------------------------------------------------------------
   // --------------------------- Implementation  ---------------------------------
   // -----------------------------------------------------------------------------
@@ -138,7 +135,7 @@ public class BCPDataSource implements IDBDataSource
   public BCPDataSource()
   {
     // Log ourselves to the audit map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO, this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**
@@ -163,7 +160,7 @@ public class BCPDataSource implements IDBDataSource
     int AcquireIncrement;
     int StatementsCacheSize;
     int PartitionCount;
-        
+
     BoneCPDataSource dataSource = new BoneCPDataSource();
 
     FWlog.debug("Creating new DataSource <" + dataSourceName + ">");
@@ -216,23 +213,23 @@ public class BCPDataSource implements IDBDataSource
       throw new InitializationException(Message);
     }
 
-    // Set driver class 	
+    // Set driver class
       dataSource.setDriverClass(driver);
 
-    // set Test Query  
-       
+    // set Test Query
+
     validationSQL = PropertyUtils.getPropertyUtils().getDataSourcePropertyValue(dataSourceName, VALIDATION_QUERY_KEY);
-        
+
     // Options with defaults
     String numberOfPartitions   = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,PARTITION_KEY, DEFAULT_PARTITON_COUNT);
     PartitionCount 		  		= Integer.parseInt(numberOfPartitions);
-    
+
     String minConn 				= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,MIN_CONN_KEY, DEFAULT_MIN_CONN);
     MinConnPerPartition			= Integer.parseInt(minConn);
-   
+
     String maxConn 				= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,MAX_CONN_KEY, DEFAULT_MAX_CONN);
     MaxConnPerPartition 		= Integer.parseInt(maxConn);
-    
+
     String acquireInc 			= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,ACQUIRE_INCREMENT_KEY, DEFAULT_ACQUIRE_INCREMENT_COUNT);
     AcquireIncrement            = Integer.parseInt(acquireInc);
     // Acquire Increment can't be bigger than MaxConnectionsPerPartition
@@ -240,15 +237,15 @@ public class BCPDataSource implements IDBDataSource
     if (AcquireIncrement > MaxConnPerPartition)
     {
     	FWlog.warning("AcquireIncrement can't be bigger than MaxConnectionsPerPartition. Setting default value of: "+DEFAULT_ACQUIRE_INCREMENT_COUNT);
-    	AcquireIncrement = Integer.parseInt(DEFAULT_ACQUIRE_INCREMENT_COUNT);    	
+    	AcquireIncrement = Integer.parseInt(DEFAULT_ACQUIRE_INCREMENT_COUNT);
     }
-    String stmtCacheSize 		= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,STMT_CACHE_KEY, DEFAULT_STMTS_CACHE_SIZE);     
+    String stmtCacheSize 		= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,STMT_CACHE_KEY, DEFAULT_STMTS_CACHE_SIZE);
     StatementsCacheSize         = Integer.parseInt(stmtCacheSize);
-    	
+
     String connTimeOut    		= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,CONN_TIMEOUT_KEY, DEFAULT_CONN_TIMEOUT);
     int    timeoutPeriod  		= Integer.parseInt(connTimeOut);
 
-    // Perform the initialisation  
+    // Perform the initialisation
     dataSource.setJdbcUrl(db_url);
     dataSource.setUsername(username);
     dataSource.setPassword(password);
@@ -260,7 +257,7 @@ public class BCPDataSource implements IDBDataSource
     dataSource.setAcquireIncrement(AcquireIncrement);
     dataSource.setStatementsCacheSize(StatementsCacheSize);
     dataSource.setMaxConnectionAgeInSeconds(timeoutPeriod);
-  
+
     if (validationSQL == null || validationSQL.isEmpty())
     {
       FWlog.warning("No SQL validation statement found for Datasource <" + dataSourceName + ">");
@@ -268,20 +265,16 @@ public class BCPDataSource implements IDBDataSource
     else
     {
       dataSource.setConnectionTestStatement(validationSQL);
-           
-      // Test the data source
-      try 
-      {
-        try (Connection testConn = dataSource.getConnection())
-        {
-            PreparedStatement stmt = testConn.prepareStatement(validationSQL);
-            stmt.executeQuery();
 
-            // tidy up
-            stmt.close();
+      // Test the data source
+      try
+      {
+        try (Connection testConn = dataSource.getConnection(); PreparedStatement stmt = testConn.prepareStatement(validationSQL))
+        {
+          stmt.executeQuery();
         }
-      } 
-      catch (SQLException ex) 
+      }
+      catch (SQLException ex)
       {
         String Message = "Connection test failed for connection <" + dataSourceName + ">";
         FWlog.error(Message);

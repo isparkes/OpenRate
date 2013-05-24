@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -57,38 +61,31 @@ import java.util.Iterator;
 /**
  * A Charge Packet holds the rating information to drive the zoning and rating. Each time a
  * change in the rating happens, a new charge packet is needed.
- * 
+ *
  * @author ian
  */
 public class ChargePacket
 {
  /**
-  * CVS version info - Automatically captured and written to the Framework
-  * Version Audit log at Framework startup. For more information
-  * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-  */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: ChargePacket.java,v $, $Revision: 1.25 $, $Date: 2013-05-13 18:12:11 $";
-
- /**
   * Identifier for Flat Rating
   */
   public static final int RATING_TYPE_FLAT = 1;
-  
+
  /**
   * Identifier for Tiered Rating
   */
   public static final int RATING_TYPE_TIERED = 2;
-  
+
  /**
   * Identifier for Threshold Rating
   */
   public static final int RATING_TYPE_THRESHOLD = 3;
-  
+
   /**
   * Identifier for Event Rating
   */
   public static final int RATING_TYPE_EVENT = 4;
-  
+
  /**
   * The packet is valid until it is invalidated
   */
@@ -192,7 +189,7 @@ public class ChargePacket
  /**
   * tiemSplitting is used to control whether the time zoning module splits up
   * charge on the basis of the duration of an event.
-  * 
+  *
   * 0 = no splitting (Default)
   * 1 = splitting
   */
@@ -246,7 +243,7 @@ public class ChargePacket
     // in the case that we have a rating breakdown, clone that too
     if (toClone.breakDown != null)
     {
-      this.breakDown = new ArrayList<RatingBreakdown>();
+      this.breakDown = new ArrayList<>();
 
       Iterator<RatingBreakdown> bdIter = toClone.breakDown.iterator();
 

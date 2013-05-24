@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -61,7 +65,7 @@ import java.util.Iterator;
  *
  * This is the heart of the record passing scheme, and defines the record
  * transport strategy, which is used to transport records through the pipeline
- * between one plugin and the next. Each plugin reads (pulls) records from the
+ * between one plug-in and the next. Each plug-in reads (pulls) records from the
  * input buffer, works on them, and then writes (pushes) them to the output
  * buffer. Exceptions to this are of course input adapters, which read from some
  * external source, and push records into the pipeline, and output adapters,
@@ -69,18 +73,11 @@ import java.util.Iterator;
  *
  * This abstract class must be extended with a storage class, which is able to
  * contain records, as this abstract class only deals with the monitor
- * managment.
+ * management.
  */
 public abstract class AbstractBuffer
   implements IBuffer
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractBuffer.java,v $, $Revision: 1.31 $, $Date: 2013-05-13 18:12:11 $";
-
   // this hash set contains all of the monitors to this buffer. These will
   // be notified when new records are ready.
   private final HashSet<IMonitor> monitors = new HashSet<>();

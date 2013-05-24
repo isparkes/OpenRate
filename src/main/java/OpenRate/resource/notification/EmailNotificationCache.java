@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -56,9 +60,8 @@ import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.LogUtil;
-import OpenRate.logging.AstractLogger;
 import OpenRate.logging.ILogger;
+import OpenRate.logging.LogUtil;
 import OpenRate.resource.IResource;
 import OpenRate.utils.PropertyUtils;
 import java.io.UnsupportedEncodingException;
@@ -84,13 +87,6 @@ import javax.mail.internet.*;
  */
 public class EmailNotificationCache implements IResource, IEventInterface
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: EmailNotificationCache.java,v $, $Revision: 1.22 $, $Date: 2013-05-13 18:12:12 $";
-
   // List of Services that this Client supports
   private final static String SERVICE_QUEUE_LENGTH = "MailQueueLength";
 
@@ -156,7 +152,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
   public EmailNotificationCache()
   {
     // Add ourselves to the version map
-    AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**
@@ -259,11 +255,11 @@ public class EmailNotificationCache implements IResource, IEventInterface
     try
     {
       String mailToName = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"MailToName","None");
-      
+
       // manage multiple addresses
       String []tmpToAddresses = mailTo.split(";|,");
       ToAddresses = new InternetAddress[tmpToAddresses.length];
-      
+
       for (int idx = 0 ; idx < tmpToAddresses.length ; idx++ )
       {
         if (mailToName.equalsIgnoreCase("None"))
@@ -293,10 +289,10 @@ public class EmailNotificationCache implements IResource, IEventInterface
       try
       {
         String carbonCopyName = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"MailCCName","None");
-        
+
         String []tmpCCAddresses = carbonCopy.split(";|,");
         CCAddresses = new InternetAddress[tmpCCAddresses.length];
-        
+
         for (int idx = 0 ; idx < tmpCCAddresses.length ; idx++ )
         {
           if (carbonCopyName.equalsIgnoreCase("None"))
@@ -427,47 +423,47 @@ public class EmailNotificationCache implements IResource, IEventInterface
                                       InternetAddress[] ccAddresses)
   {
     MimeMessage msg;
-    
+
     try
     {
       // create a message
       msg = new MimeMessage(mailSession);
-      
+
       // ========= the from address (there can be only one) ========
       msg.setFrom(fromAddress);
-      
+
       // ========= the to addresses (there can be more than one) ========
       msg.setRecipients(Message.RecipientType.TO, toAddresses);
 
       // ========= the CC addresses (there can be more than one) ========
       msg.setRecipients(Message.RecipientType.CC, ccAddresses);
-      
+
       // ========= set the subject ========
       msg.setSubject(mailSubject);
-    
+
       // ========= the body ========
       MimeBodyPart mbp1 = new MimeBodyPart();
       mbp1.setText(mailBody);
-      
+
       // ========= the date ========
       msg.setSentDate(Calendar.getInstance().getTime());
-      
+
       // create the Multipart and add its parts to it
       Multipart mp = new MimeMultipart();
       mp.addBodyPart(mbp1);
-      
+
       // add the standard text
       msg.setContent(mp);
-    } 
-    catch (MessagingException ex) 
+    }
+    catch (MessagingException ex)
     {
       FWLog.error("Error sending message");
       return false;
     }
-            
+
     // Add the mail to the queue
     emailer.queueMessage(msg);
-    
+
     // Done!!!
     return true;
   }
@@ -555,7 +551,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
     }
 
     System.out.println("  Stopping Mailer resource.");
-    
+
     // mark for closedown and wait for mailer to clear the queue
     emailer.markForClosedown();
     while (emailerThread != null &&  emailerThread.isAlive())

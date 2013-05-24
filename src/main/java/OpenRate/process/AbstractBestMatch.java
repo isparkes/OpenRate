@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -52,11 +56,11 @@
 package OpenRate.process;
 
 import OpenRate.cache.BestMatchCache;
-import OpenRate.resource.CacheFactory;
 import OpenRate.cache.ICacheManager;
 import OpenRate.exception.InitializationException;
 import OpenRate.lang.DigitTree;
 import OpenRate.record.IRecord;
+import OpenRate.resource.CacheFactory;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
@@ -78,13 +82,6 @@ import java.util.ArrayList;
 public abstract class AbstractBestMatch
   extends AbstractPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractBestMatch.java,v $, $Revision: 1.44 $, $Date: 2013-05-13 18:12:10 $";
-
   // get the Cache manager for the zone map
   // We assume that there is one cache manager for
   // the zone, time and service maps, just to simplify
@@ -191,10 +188,10 @@ public abstract class AbstractBestMatch
   {
     return  BM.getMatchWithChildData(Service, Destination);
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -204,18 +201,18 @@ public abstract class AbstractBestMatch
     {
       return false;
     }
-    
+
     if ( resultToCheck.get(0).equals(DigitTree.NO_DIGIT_TREE_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
-  
+
  /**
    * checks if the lookup result is valid or not
-   * 
+   *
    * @param resultToCheck The result to check
    * @return true if the result is valid, otherwise false
    */
@@ -225,12 +222,12 @@ public abstract class AbstractBestMatch
     {
       return false;
     }
-    
+
     if (resultToCheck.equalsIgnoreCase(DigitTree.NO_DIGIT_TREE_MATCH))
     {
       return false;
     }
-    
+
     return true;
   }
 }

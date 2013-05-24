@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -58,23 +62,16 @@ package OpenRate.threads;
 public interface IThreadPool
 {
   /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
+   * Executes the given work. Typical IThreadPool implementations
+   * will use a worker thread or some sort to execute the work.
+   *
+   *
+   * @param work - work to be executed by thread pool.
    */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: IThreadPool.java,v $, $Revision: 1.14 $, $Date: 2013-05-13 18:12:13 $";
-
-  /**
-     * Executes the given work. Typical IThreadPool implementations
-     * will use a worker thread or some sort to execute the work.
-     *
-     *
-     * @param work - work to be executed by thread pool.
-     */
   public void execute(Runnable work);
 
   /**
-   * Wait for all the worker thread to finish, esentially join all
+   * Wait for all the worker thread to finish, essentially join all
    * threads in the pool..
    */
   public void join();

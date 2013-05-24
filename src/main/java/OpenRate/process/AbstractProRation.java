@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -78,13 +82,6 @@ import java.util.GregorianCalendar;
  */
 public abstract class AbstractProRation extends AbstractStubPlugIn
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: AbstractProRation.java,v $, $Revision: 1.22 $, $Date: 2013-05-13 18:12:10 $";
-
   private static Date FirstJan2000;
   private Calendar workingCalendar;
   private Calendar helperCalendar;
@@ -122,16 +119,16 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
   * This calculates the total period to be considered for this event. Given an
   * input start and end date, the multiplier factor is returned for the total
   * multipler to a simple monthly fee.
-  * 
+  *
   * For example, given a monthly fee of EUR10, the total factor calculated for
   * the period "20120103000000" to "20120303000000" will be 2 months and 1 day.
-  * 
+  *
   * The factor that is returned can be calculated either by using the real
   * number of days in the month, (useCalendarDays = true), or a standard 30 days
   * (useCalendarDays = false).
-  * 
-  * For calculating a refund, put the end date before the start date 
-  * (i.e. invert the parameters). This method works on the basis of days 
+  *
+  * For calculating a refund, put the end date before the start date
+  * (i.e. invert the parameters). This method works on the basis of days
   * (not hours, minutes or seconds).
   *
   * @param StartDate the start of the period to calculate for
@@ -221,7 +218,7 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
             ProRationOffset = ((double)TotalDays/(double)DaysInMonth) *
                               ((double)DaysInMonth/(double)30);
           }
-          
+
           TotalPeriodDays = 0;
         }
       }
@@ -246,7 +243,7 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
     // set the period dates
     result.setPeriodStartDate(StartDate);
     result.setPeriodEndDate(EndDate);
-      
+
     // return the updated record
     return result;
   }
@@ -282,7 +279,7 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
       // Get the component parts
       result.setDaysInPeriod(0);
       result.setMonthsInPeriod(0);
-      
+
       result.setPeriodStartDate(new Date(CommonConfig.LOW_DATE));
       result.setPeriodStartDate(new Date(CommonConfig.HIGH_DATE));
 
@@ -296,19 +293,19 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
       workingCalendar.setTime(EventDate);
       int EventMonth = workingCalendar.get(Calendar.MONTH) + 1 + workingCalendar.get(Calendar.YEAR)*12;
       DaysInMonth = workingCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-      
+
       // Default the period start and end to the start and end of the month
       // we will only change these in the code later if they are wrong
       // (often they will be right)
       periodStart = ConversionUtils.getConversionUtilsObject().getMonthStart(EventDate);
       periodEnd   = ConversionUtils.getConversionUtilsObject().getMonthEnd(EventDate);
-      
+
       // get the months of the validity start and end
       workingCalendar.setTime(StartDate);
       int StartMonth = workingCalendar.get(Calendar.MONTH) + 1 + workingCalendar.get(Calendar.YEAR)*12;
       workingCalendar.setTime(EndDate);
       int EndMonth = workingCalendar.get(Calendar.MONTH) + 1 + workingCalendar.get(Calendar.YEAR)*12;
-      
+
       // Check the cases based on the month identifiers
       if (EventMonth == StartMonth)
       {
@@ -318,7 +315,7 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
           // both start and end in the same month, just return the number of
           // days divided by the days in the month
           daysInPeriod = getDaysBetweenDates(StartDate,EndDate);
-          
+
           // The period dates are just the original validity dates
           periodStart = StartDate;
           periodEnd = EndDate;
@@ -328,7 +325,7 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
           // We need to calculate up to the end of the month
           workingCalendar.setTime(ConversionUtils.getConversionUtilsObject().getMonthEnd(StartDate));
           daysInPeriod = getDaysBetweenDates(StartDate,workingCalendar.getTime());
-          
+
           // The period dates are the original start date to the end of the month
           periodStart = StartDate;
         }
@@ -347,7 +344,7 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
           // We need to calculate from the start of the month
           workingCalendar.setTime(ConversionUtils.getConversionUtilsObject().getMonthStart(EndDate));
           daysInPeriod = getDaysBetweenDates(workingCalendar.getTime(),EndDate);
-          
+
           // The period dates are the start of the month to the original  end date
           periodEnd = EndDate;
         }
@@ -357,10 +354,10 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
         // full month in the middle
         daysInPeriod = DaysInMonth;
       }
-      
+
       // Set the default values
       result.setMonthsInPeriod(0);
-      
+
       // Now work out the factor
       if (useCalendarDays)
       {
@@ -368,20 +365,20 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
         {
           daysInPeriod = 30;
         }
-        
+
         if (DaysInMonth > 30)
         {
           DaysInMonth = 30;
         }
       }
-      
+
       // set up the output
-      result.setDaysInPeriod(daysInPeriod);        
+      result.setDaysInPeriod(daysInPeriod);
       result.setProRationFactor((double)daysInPeriod / (double) DaysInMonth);
       result.setPeriodStartDate(periodStart);
       result.setPeriodEndDate(periodEnd);
     }
-    
+
     // return the updated record
       return result;
   }

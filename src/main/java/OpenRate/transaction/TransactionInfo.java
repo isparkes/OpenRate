@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -147,7 +151,7 @@ public class TransactionInfo
   /**
    * Set the request abort flag. This will cause the rest of the transaction
    * to be skipped.
-   * 
+   *
    * @param newAbortRequested the new value to set
    */
   public void setAbortRequested(boolean newAbortRequested) {
@@ -164,8 +168,8 @@ public class TransactionInfo
   /**
    * Set the errored flag for the transaction. This will cause the transaction
    * to be errored out.
-   * 
-   * @param newTransactionErrored 
+   *
+   * @param newTransactionErrored
    */
   public void setTransactionErrored(boolean newTransactionErrored) {
     transactionErrored = newTransactionErrored;
@@ -187,7 +191,7 @@ public class TransactionInfo
 
   /**
    * Get the status value for a client.
-   * 
+   *
    * @param clientNumber The client number to get the status for
    * @return the client status value
    */
@@ -197,7 +201,7 @@ public class TransactionInfo
 
   /**
    * Set the status value for a client
-   * 
+   *
    * @param clientNumber the client number
    * @param newStatus the new status
    */
@@ -207,7 +211,7 @@ public class TransactionInfo
 
   /**
    * Get the record count for a client.
-   * 
+   *
    * @param clientNumber the client number
    * @return the recordCount
    */
@@ -217,8 +221,8 @@ public class TransactionInfo
 
   /**
    * Set the record count for a client.
-   * 
-   * @param clientNumber 
+   *
+   * @param clientNumber
    * @param recordCount the recordCount to set
    */
   public void setRecordCount(int clientNumber, int recordCount) {
