@@ -1,6 +1,10 @@
 /* ====================================================================
  * Limited Evaluation License:
  *
+ * This software is open source, but licensed. The license with this package
+ * is an evaluation license, which may not be used for productive systems. If
+ * you want a full license, please contact us.
+ *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
  * is Copyright of the OpenRate project 2006-2013.
@@ -119,7 +123,7 @@ public class OpenRate
    * Version Audit log at Framework startup. For more information
    * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
    */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: OpenRate.java,v $, $Revision: 1.88 $, $Date: 2013-05-13 18:12:12 $";
+  public static String SVN_MODULE_INFO = "OpenRate, $Id$, $Rev$, $Date$";
 
  /**
   * loggers, accessible to all child classes. We have to initialise these
@@ -196,7 +200,7 @@ public class OpenRate
 
   // controls whether resources are loaded sequentially or in parallel
   private boolean   sequentialLoading = true;
-  
+
   // For managing semaphore files
   private EventHandler ECI = null;
 
@@ -209,9 +213,9 @@ public class OpenRate
 
   // module symbolic name: set during initalisation
   private String symbolicName = "Framework";
-  
+
   private static OpenRate appl;
-          
+
   /**
    * default constructor
    */
@@ -232,13 +236,15 @@ public class OpenRate
    *   - call "createApplication"
    *   - call the "run" method
    *   - when finished, call the "finaliseApplication"
-   * 
+   *
    * @param args The arguments to pass to the process
    */
   public static void main(String[] args)
   {
     int            status;
-    
+
+    status = checkParameters(args);
+
     // Create the openrate application object
     appl = new OpenRate();
 
@@ -258,6 +264,35 @@ public class OpenRate
     System.exit(status);
   }
 
+ /**
+  * Check that the command line parameters are correct.
+  *
+  * @param args the passed command line parameters
+  * @return 0 if OK, otherwise a return code
+  */
+  public static int checkParameters(String[] args) {
+    // Check the arguments - we expect "-p testfile.properties.xml"
+    if ((args.length == 2) && (args[0].trim().equals("-p")))
+    {
+      // Check that the file exists
+      File propertiesTestFile = new File(args[1]);
+      if (propertiesTestFile.exists() == false)
+      {
+        // Arguments are not what we want
+        System.out.println("Could not find file properties file <" + args[1] + ">. Aborting.");
+        return -4;
+      }
+    } else {
+      // Arguments are not what we want
+      System.out.println("Command line not given correctly. Aborting.");
+      System.out.println("  Usage: java -cp $CLASSPATH OpenRate.OpenRate -p <properties-file.properties.xml>");
+      return -3;
+    }
+
+    // All OK
+    return 0;
+  }
+
   /**
    * Creates the OpenRate application. This is primarily here so that the
    * OpenRate core can be launched in embedded mode.
@@ -273,13 +308,14 @@ public class OpenRate
     boolean           initError = false;
 
     // *********************** Initialization Block ****************************
-    // Prepare the framework environment - Get the default logger
+    // Prepare the framework environment - Get the default logger until we
+    // read the properties file to get the correct logger
     LoadDefaultLogger();
 
     // Start the dialogue with the user
     System.out.println("");
     System.out.println("---------------------------------------------------");
-    System.out.println("OpenRate " + CVS_MODULE_INFO.replaceAll(".*\\$Revision", "Revision").replaceAll(" \\$", "").replace(",", ", "));
+    System.out.println("OpenRate Build xxxxxxx");
     System.out.println("Copyright Tiger Shore Management Ltd, 2005-2013");
     System.out.println("---------------------------------------------------");
 
@@ -352,8 +388,8 @@ public class OpenRate
    * and then call the abstract run() method to allow sub-classes to
    * do the real processing.
    *
-   * We pass arguments to define the configuration that we are using. 
-   * 
+   * We pass arguments to define the configuration that we are using.
+   *
    * This is a top level method, in which exception handling must be performed.
    *
    * @param args The arguments to pass to the framework
@@ -376,11 +412,11 @@ public class OpenRate
       }
       else
       {
-        FWLog.info("Loading properties file...");
-        System.out.println("Loading properties file...");
-
         // Initialise the Client Manager
         configurationFileName = GetConfigurationSource(args);
+
+        FWLog.info("Loading properties file: " + configurationFileName);
+        System.out.println("Loading properties file: " + configurationFileName);
 
         if (configurationFileName != null)
         {
@@ -461,13 +497,13 @@ public class OpenRate
       // Set the Audit Utils Core logging status
       boolean auditCoreOnly = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_CORE_ONLY_AUDIT, "false"));
       AuditUtils.getAuditUtils().setAuditCoreOnly(auditCoreOnly);
-      
+
       // Log our version
-      AuditUtils.getAuditUtils().buildVersionMap(CVS_MODULE_INFO,this.getClass());
+      AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
 
       // Get the sequential loading flag
       sequentialLoading = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_SEQUENTIAL_LOADING, "true"));
-      
+
       // Intialise the other resources in the framework so that these are
       // available for the module initialisation
       System.out.println("Initialising other resources...");
@@ -542,7 +578,7 @@ public class OpenRate
 
  /**
   * Handle, format and report top level initialisation exceptions.
-  * 
+  *
   * @param ex
   */
   public void HandleOpenRateException(Exception ex)
@@ -1044,9 +1080,9 @@ public class OpenRate
     {
       // Iterate through the resources and create them
       resourceIter = tmpResourceNameList.iterator();
-      
+
       tmpGrpResource = new ThreadGroup("Resources");
-      
+
       while (resourceIter.hasNext() && (getHandler().hasError() == false))
       {
         // Get the next resource
@@ -1061,9 +1097,9 @@ public class OpenRate
           tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(tmpResourceName,"ClassName");
           resourceClass = Class.forName(tmpResourceClassName);
           resource = (IResource)resourceClass.newInstance();
-          
+
           System.out.println("  Initialising Resource <" + tmpResourceName + ">...");
-          
+
           // see if we are using sequential or threaded loading
           // (Sequential is easier to use, but clearly takes longer to load)
           if (sequentialLoading)
@@ -1109,13 +1145,13 @@ public class OpenRate
           }
         }
       }
-      
+
       // Close down the thread group if we used it
       while ( tmpGrpResource.activeCount() > 0)
       {
         Thread.sleep(1000);
       }
-    
+
       // Destroy the thread group
       tmpGrpResource.destroy();
     }
@@ -1274,7 +1310,7 @@ public class OpenRate
       return "Error: Command not understood.";
     }
   }
-  
+
  /**
   * return the symbolic name
   *
@@ -1294,10 +1330,10 @@ public class OpenRate
   {
       symbolicName=Name;
   }
-  
+
  /**
   * Get the framework exception handler.
-  * 
+  *
   * @return The framework exception handler
   */
   public static ExceptionHandler getOpenRateExceptionHandler()
