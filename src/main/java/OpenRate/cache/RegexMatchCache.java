@@ -440,7 +440,7 @@ public class RegexMatchCache
    *
    * This function returns only the first match.
    *
-  * @param Group The Regex group to search
+  * @param Group The Regular expression group to search
   * @param Parameters The list of fields to search
   * @return Result The result of the search as a SearchMap object
    */

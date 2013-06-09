@@ -54,7 +54,6 @@
  */
 package OpenRate.adapter.realTime;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
@@ -128,9 +127,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   */
   public void AbstractRTAdapter()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(this.getClass());
-
   }
 
  /**

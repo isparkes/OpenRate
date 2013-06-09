@@ -57,6 +57,8 @@ package OpenRate.utils;
 
 import OpenRate.exception.InitializationException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -148,7 +150,7 @@ public class PropertyReader
   * @param PropertyName The symbolic name of the properties object in the cache
   * @throws OpenRate.exception.InitializationException
   */
-  public void loadPropertiesXML(String filename, String PropertyName)
+  public void loadPropertiesXML(URL filename, String PropertyName)
   throws InitializationException
   {
     Document xmlDocument;
@@ -157,7 +159,7 @@ public class PropertyReader
     {
       DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
       DocumentBuilder db = dbf.newDocumentBuilder();
-      xmlDocument = db.parse(filename);
+      xmlDocument = db.parse(filename.openStream());
       xmlDocument.getDocumentElement().normalize();
     } catch (IOException | ParserConfigurationException | SAXException e) {
       throw new InitializationException(e);

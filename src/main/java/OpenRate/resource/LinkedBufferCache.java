@@ -55,7 +55,6 @@
 
 package OpenRate.resource;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.buffer.IBuffer;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.ISupplier;
@@ -107,9 +106,6 @@ public class LinkedBufferCache implements IResource
     {
       throw new InitializationException("The linked buffer cache must be called " + RESOURCE_KEY);
     }
-
-    // Add ourselves to the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**

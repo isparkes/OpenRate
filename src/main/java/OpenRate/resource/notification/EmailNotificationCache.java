@@ -55,7 +55,6 @@
 
 package OpenRate.resource.notification;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.ExceptionHandler;
@@ -151,8 +150,6 @@ public class EmailNotificationCache implements IResource, IEventInterface
    */
   public EmailNotificationCache()
   {
-    // Add ourselves to the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**

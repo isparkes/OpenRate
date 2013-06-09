@@ -54,7 +54,6 @@
  */
 package OpenRate.adapter.realTime;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.SocketConnectionData;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.ProcessingException;
@@ -116,9 +115,7 @@ public class RTSocketListener implements Runnable, IRTListener
   {
     super();
 
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
-
+    // set the internal references
     this.socket = socket;
     this.socData = socData;
   }

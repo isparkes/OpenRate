@@ -56,7 +56,6 @@
 package OpenRate.adapter.socket;
 
 import OpenRate.adapter.AbstractTransactionalInputAdapter;
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -140,9 +139,6 @@ public abstract class SocketInputAdapter
   public SocketInputAdapter()
   {
     super();
-
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   // -----------------------------------------------------------------------------

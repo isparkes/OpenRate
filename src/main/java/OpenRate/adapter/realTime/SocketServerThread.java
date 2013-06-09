@@ -54,7 +54,6 @@
  */
 package OpenRate.adapter.realTime;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.SocketConnectionData;
 import OpenRate.configurationmanager.SocketConstants;
 import OpenRate.exception.ExceptionHandler;
@@ -108,8 +107,6 @@ public class SocketServerThread implements Runnable
   */
   public void SocketServerThread()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**

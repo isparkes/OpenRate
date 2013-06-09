@@ -54,7 +54,6 @@
  */
 package OpenRate.process;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -65,6 +64,7 @@ import OpenRate.resource.DataSourceFactory;
 import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
 import OpenRate.utils.PropertyUtils;
+import java.net.URL;
 import java.sql.Connection;
 import org.junit.*;
 
@@ -75,8 +75,7 @@ import org.junit.*;
  */
 public class AbstractBestMatchTest
 {
-  // local in-memory database for testing
-  private static final String FQConfigFileName = "src/test/resources/TestDB.properties.xml";
+  private static URL FQConfigFileName;
 
   private static String cacheDataSourceName;
   private static String resourceName;
@@ -98,6 +97,8 @@ public class AbstractBestMatchTest
     Class<?>          ResourceClass;
     IResource         Resource;
 
+    FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
+    
       // Get a properties object
       try
       {
@@ -331,9 +332,6 @@ public class AbstractBestMatchTest
     {
       // Get an initialise the cache
       instance = new AbstractBestMatchTest.AbstractBestMatchImpl();
-
-      // Turn off audit logging (we don't need it for testing)
-      AuditUtils.getAuditUtils().setAuditLogging(false);
 
       // Get the instance
       instance.init("DBTestPipe", "AbstractBestMatchTest");

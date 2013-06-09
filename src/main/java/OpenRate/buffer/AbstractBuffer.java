@@ -55,7 +55,6 @@
 
 package OpenRate.buffer;
 
-import OpenRate.audit.AuditUtils;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -90,8 +89,6 @@ public abstract class AbstractBuffer
   */
   public AbstractBuffer()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(this.getClass());
   }
 
  /**

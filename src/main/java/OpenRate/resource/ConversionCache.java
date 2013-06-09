@@ -55,7 +55,6 @@
 
 package OpenRate.resource;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.utils.ConversionUtils;
@@ -105,9 +104,6 @@ public class ConversionCache implements IResource
     {
       throw new InitializationException("Conversion Cache must be called ConversionCache");
     }
-
-    // Add ourselves to the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**

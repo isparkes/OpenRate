@@ -54,7 +54,6 @@
  */
 package OpenRate.process;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -69,6 +68,7 @@ import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.ConversionUtils;
 import OpenRate.utils.PropertyUtils;
 import TestUtils.TransactionUtils;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -82,8 +82,7 @@ import org.junit.*;
  */
 public class AbstractDuplicateCheckTest
 {
-  // local in-memory database for testing
-  private static final String FQConfigFileName = "src/test/resources/TestDB.properties.xml";
+  private static URL FQConfigFileName;
 
   private static String cacheDataSourceName;
 
@@ -108,6 +107,8 @@ public class AbstractDuplicateCheckTest
     Class<?>          ResourceClass;
     IResource         Resource;
 
+    FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
+    
     // Get a properties object
     try
     {
@@ -471,9 +472,6 @@ public class AbstractDuplicateCheckTest
     {
       // Get an initialise the cache
       instance = new AbstractDuplicateCheckTest.AbstractDuplicateCheckImpl();
-
-      // Turn off audit logging (we don't need it for testing)
-      AuditUtils.getAuditUtils().setAuditLogging(false);
 
       // Get the instance
       instance.init("DBTestPipe", "AbstractDuplicateCheckTest");

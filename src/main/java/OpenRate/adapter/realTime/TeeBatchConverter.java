@@ -55,7 +55,6 @@
 package OpenRate.adapter.realTime;
 
 import OpenRate.adapter.objectInterface.AbstractTeeAdapter;
-import OpenRate.audit.AuditUtils;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.logging.AstractLogger;
 import OpenRate.record.HeaderRecord;
@@ -103,8 +102,6 @@ public class TeeBatchConverter implements Runnable
   */
   public void BatchConverter()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**

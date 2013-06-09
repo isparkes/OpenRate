@@ -54,7 +54,6 @@
  */
 package OpenRate.process;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -65,6 +64,7 @@ import OpenRate.resource.DataSourceFactory;
 import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
 import OpenRate.utils.PropertyUtils;
+import java.net.URL;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,8 +76,7 @@ import org.junit.*;
  */
 public class AbstractMultipleValidityMatchTest
 {
-  // local in-memory database for testing
-  private static final String FQConfigFileName = "src/test/resources/TestDB.properties.xml";
+  private static URL FQConfigFileName;
 
   private static String cacheDataSourceName;
   private static String resourceName;
@@ -98,6 +97,8 @@ public class AbstractMultipleValidityMatchTest
   {
     Class<?>          ResourceClass;
     IResource         Resource;
+
+    FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
 
     // Get a properties object
     try
@@ -323,7 +324,7 @@ public class AbstractMultipleValidityMatchTest
     boolean boolExpResult;
     boolean boolResult;
     ArrayList<String> result;
-    ArrayList<String> expResult = new ArrayList<String>();
+    ArrayList<String> expResult = new ArrayList<>();
     String Group;
     String Resource;
     long   eventDate = 0;
@@ -413,7 +414,7 @@ public class AbstractMultipleValidityMatchTest
     boolean boolExpResult;
     boolean boolResult;
     ArrayList<String> result;
-    ArrayList<String> expResult = new ArrayList<String>();
+    ArrayList<String> expResult = new ArrayList<>();
     String Group;
     String Resource;
     long   eventDate = 0;
@@ -544,12 +545,12 @@ public class AbstractMultipleValidityMatchTest
   {
     boolean boolExpResult;
     boolean boolResult;
-    ArrayList<String> partResult1 = new ArrayList<String>();
-    ArrayList<String> partResult2 = new ArrayList<String>();
-    ArrayList<String> partResult3 = new ArrayList<String>();
-    ArrayList<String> partResult4 = new ArrayList<String>();
+    ArrayList<String> partResult1 = new ArrayList<>();
+    ArrayList<String> partResult2 = new ArrayList<>();
+    ArrayList<String> partResult3 = new ArrayList<>();
+    ArrayList<String> partResult4 = new ArrayList<>();
     ArrayList<ArrayList<String>> result;
-    ArrayList<ArrayList<String>> expResult = new ArrayList<ArrayList<String>>();
+    ArrayList<ArrayList<String>> expResult = new ArrayList<>();
     String Group;
     String Resource;
     long   eventDate = 0;
@@ -729,7 +730,7 @@ public class AbstractMultipleValidityMatchTest
     boolean boolExpResult;
     boolean boolResult;
     ArrayList<ArrayList<String>> result;
-    ArrayList<ArrayList<String>> expResult = new ArrayList<ArrayList<String>>();
+    ArrayList<ArrayList<String>> expResult = new ArrayList<>();
     String Group;
     String Resource;
     long   eventDate = 0;
@@ -889,9 +890,6 @@ public class AbstractMultipleValidityMatchTest
     {
       // Get an initialise the cache
       instance = new AbstractMultipleValidityMatchTest.AbstractMultipleValidityMatchImpl();
-
-      // Turn off audit logging (we don't need it for testing)
-      AuditUtils.getAuditUtils().setAuditLogging(false);
 
       // Get the instance
       instance.init("DBTestPipe", "AbstractMultipleValidityMatchTest");

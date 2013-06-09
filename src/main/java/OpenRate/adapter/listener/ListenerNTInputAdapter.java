@@ -56,7 +56,6 @@
 package OpenRate.adapter.listener;
 
 import OpenRate.adapter.AbstractInputAdapter;
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
@@ -160,9 +159,6 @@ public abstract class ListenerNTInputAdapter
   public ListenerNTInputAdapter()
   {
     super();
-
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
 // -----------------------------------------------------------------------------

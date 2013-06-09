@@ -55,7 +55,6 @@
 
 package OpenRate.cache;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -177,9 +176,6 @@ public class DuplicateCheckCache
   */
   public DuplicateCheckCache()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
-
     // This is the in-memory duplicate table
     recordList = new HashMap<>(50000);
 

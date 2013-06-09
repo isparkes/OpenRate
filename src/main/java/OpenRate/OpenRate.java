@@ -55,7 +55,6 @@
 
 package OpenRate;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.EventHandler;
 import OpenRate.configurationmanager.IEventInterface;
@@ -73,6 +72,8 @@ import OpenRate.resource.ResourceLoaderThread;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.PropertyUtils;
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,18 +119,6 @@ public class OpenRate
   implements IEventInterface,
              Runnable
 {
-  /**
-   * VCS version info - Automatically captured and written to the Framework
-   * log at Framework startup.
-   */
-  public static String SVN_MODULE_INFO = "OpenRate, $Id$, $Rev$, $Date$";
-
- /**
-  * loggers, accessible to all child classes. We have to initialise these
-  * during the application initialisation, once the configuration properties
-  * have been found and loaded.
-  */
-
  /**
   * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
   * from resources or caches) should go into this log, as well as startup
@@ -153,6 +142,27 @@ public class OpenRate
   /**
    * Return code for the OpenRate instance.
    *
+   * Default return code for a successful completion
+   */
+  public static final int VERSION_FILE_NOT_FOUND = -4;
+
+  /**
+   * Return code for the OpenRate instance.
+   *
+   * Default return code for a successful completion
+   */
+  public static final int PROPERTIES_FILE_NOT_FOUND = -5;
+
+  /**
+   * Return code for the OpenRate instance.
+   *
+   * Default return code for a successful completion
+   */
+  public static final int WRONG_ARGUMENTS = -3;
+
+  /**
+   * Return code for the OpenRate instance.
+   *
    * Default return code for a successful completion, but with some exception
    */
   public static final int SUCCESS_WITH_EXCEPTION = 1;
@@ -167,7 +177,6 @@ public class OpenRate
   // List of Services that this Client supports
   private final String SERVICE_FRAMEWORK_STOP     = "Shutdown";
   private final String SERVICE_SYNC_STATUS        = "SyncStatus";
-  private final String SERVICE_CORE_ONLY_AUDIT    = "OnlyAuditCoreClasses";
   private final String SERVICE_SEQUENTIAL_LOADING = "SequentialLoading";
 
   // This holds all of the pipelines that we are dealing with in this framework
@@ -213,8 +222,15 @@ public class OpenRate
   // module symbolic name: set during initalisation
   private String symbolicName = "Framework";
 
+  // The application object - split out like this so we can embed OpenRate if we need to
   private static OpenRate appl;
 
+  // Used to help people with fat fingers not shut the process down by accident
+  private int shutdownHookCalls = 0;
+  
+  // Global application version
+  private static String applicationVersion;
+  
   /**
    * default constructor
    */
@@ -242,8 +258,6 @@ public class OpenRate
   {
     int            status;
 
-    status = checkParameters(args);
-
     // Create the openrate application object
     appl = new OpenRate();
 
@@ -269,29 +283,99 @@ public class OpenRate
   * @param args the passed command line parameters
   * @return 0 if OK, otherwise a return code
   */
-  public static int checkParameters(String[] args) {
+  public int checkParameters(String[] args) {
     // Check the arguments - we expect "-p testfile.properties.xml"
     if ((args.length == 2) && (args[0].trim().equals("-p")))
     {
       // Check that the file exists
-      File propertiesTestFile = new File(args[1]);
-      if (propertiesTestFile.exists() == false)
+      URL propertiesFile = getClass().getResource( "/" + args[1] );
+      
+      if (propertiesFile == null)
       {
-        // Arguments are not what we want
-        System.out.println("Could not find file properties file <" + args[1] + ">. Aborting.");
-        return -4;
+        System.out.println("Properties file <"+args[1]+"> not found on the class path. Aborting.");
+        return PROPERTIES_FILE_NOT_FOUND;
       }
+      
+      System.out.println("Found properties file <" + propertiesFile.getFile() + ">.");
     } else {
       // Arguments are not what we want
       System.out.println("Command line not given correctly. Aborting.");
       System.out.println("  Usage: java -cp $CLASSPATH OpenRate.OpenRate -p <properties-file.properties.xml>");
-      return -3;
+      return WRONG_ARGUMENTS;
     }
 
     // All OK
-    return 0;
+    return SUCCESS;
   }
 
+ /**
+  * Get the properties file name from the command line parameters.
+  *
+  * @param args the passed command line parameters
+  * @return the file name as a URL, otherwise null
+  */
+  public URL getPropertiesFileName(String[] args) {
+    URL propertiesFile = getClass().getResource( "/" + args[1] );
+    return propertiesFile;
+  }
+  
+ /**
+  * Get the global version from the version file.
+  *
+  * @return the application version
+  */
+  public String getApplicationVersion() throws InitializationException
+  {
+    boolean foundVersion = false;
+    boolean foundBuild = false;
+    boolean foundDate = true;
+    String  versionID = null;
+    String  buildVer = null;
+    String  buildDate = null;
+    InputStream input;
+      
+    URL versionResourceFile = getClass().getResource("/VersionFile.txt");
+      
+    if (versionResourceFile == null)
+    {
+      throw new InitializationException("Version Information not found");
+    }
+      
+    input = getClass().getResourceAsStream("/VersionFile.txt");
+    java.util.Scanner s = new java.util.Scanner(input).useDelimiter("\\A");
+
+    while (s.hasNext())
+    {
+      String result = s.nextLine();
+      if (result.startsWith("OPENRATE_VERSION:"))
+      {
+        foundVersion = true;
+        versionID = result.replaceAll("OPENRATE_VERSION:", "").trim();
+      }
+
+      if (result.startsWith("BUILD_VERSION:"))
+      {
+        foundBuild = true;
+        buildVer = result.replaceAll("BUILD_VERSION:", "").trim();
+      }
+
+      if (result.startsWith("BUILD_DATE:"))
+      {
+        foundDate = true;
+        buildDate = result.replaceAll("BUILD_DATE:", "").trim();
+      }
+    }
+
+    if (foundVersion && foundBuild && foundDate)
+    {
+      return "OpenRate V"+versionID+", Build " + buildVer + " (" + buildDate + ")";
+    }
+    else
+    {
+      return null;
+    }
+  }
+  
   /**
    * Creates the OpenRate application. This is primarily here so that the
    * OpenRate core can be launched in embedded mode.
@@ -301,25 +385,52 @@ public class OpenRate
    */
   public int createApplication(String[] args)
   {
-    int               status = SUCCESS;
+    int               status;
     ArrayList<String> pipelineList;
     String            tmpPipelineToCreate;
     boolean           initError = false;
 
     // *********************** Initialization Block ****************************
+    // Set the version string
+      try
+      {
+        // Get the global SVN version info
+        applicationVersion = getApplicationVersion();
+      }
+      catch (InitializationException ex) {
+        System.err.println("Could not locate version file. Aborting.");
+        return VERSION_FILE_NOT_FOUND;
+      }
+    
+      // Check that the parameters we got are formally correct
+      status = checkParameters(args);
+    
+      // Get the properties file
+      URL propertiesFileName = getPropertiesFileName(args);
+
+      // Load it
+      try
+      {
+        PropertyUtils.getPropertyUtils().loadPropertiesXML(propertiesFileName,"FWProps");
+      }
+      catch (InitializationException ex) {
+        System.err.println("Error loading properties file <"+propertiesFileName+">. Aborting.");
+        return VERSION_FILE_NOT_FOUND;
+      }
+    
     // Prepare the framework environment - Get the default logger until we
     // read the properties file to get the correct logger
     LoadDefaultLogger();
-
+      
     // Start the dialogue with the user
     System.out.println("");
-    System.out.println("---------------------------------------------------");
-    System.out.println("OpenRate Build xxxxxxx");
-    System.out.println("Copyright Tiger Shore Management Ltd, 2005-2013");
-    System.out.println("---------------------------------------------------");
+    System.out.println("--------------------------------------------------------");
+    System.out.println("  " + applicationVersion);
+    System.out.println("  Copyright OpenRate Project, 2005-2013");
+    System.out.println("--------------------------------------------------------");
 
     // Start up the framework and load the resources etc
-    if (StartupFramework(args) == true)
+    if (StartupFramework() == true)
     {
       // Get a list of the pipelines that we are working with from the client
       // Manager instance
@@ -345,9 +456,9 @@ public class OpenRate
       // ************************* Execution Block *******************************
       if (initError == false)
       {
-        // Print out the version map
-        AuditUtils.logVersionMap();
-
+        // Attach shutdown hook 
+        appl.attachShutDownHook();
+        
         // run the application, run() exits on closedown
         System.out.println("Running...");
       }
@@ -394,64 +505,10 @@ public class OpenRate
    * @param args The arguments to pass to the framework
    * @return true if the startup went OK, otherwise false
    */
-  public boolean StartupFramework(String[] args)
+  public boolean StartupFramework()
   {
-    String configurationFileName;
-    String fqConfigFileName = null;
-
     try
     {
-      // Process the command line for the configuration object that we are to
-      // use. Exit if we don't have it.
-      if (args.length != 2)
-      {
-        System.err.println("No configuration file defined on the command line.");
-        System.err.println("Aborting...");
-        System.exit(-1);
-      }
-      else
-      {
-        // Initialise the Client Manager
-        configurationFileName = GetConfigurationSource(args);
-
-        FWLog.info("Loading properties file: " + configurationFileName);
-        System.out.println("Loading properties file: " + configurationFileName);
-
-        if (configurationFileName != null)
-        {
-          String configurationPath = PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef("BasePath","None");
-          if(configurationPath.equals("None"))
-          {
-            configurationPath = System.getProperty("user.dir");
-          }
-          fqConfigFileName = configurationPath + "/" +configurationFileName;
-
-          // Does it exist?
-          if (new File(fqConfigFileName).isFile() == false)
-          {
-            handler.reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource"));
-          }
-
-          System.out.println("Using configuration from <" + fqConfigFileName + ">");
-          System.out.println("Loading <" + configurationFileName + ">");
-
-          try
-          {
-            PropertyUtils.getPropertyUtils().loadPropertiesXML(fqConfigFileName,"FWProps");
-          }
-          catch (InitializationException ex)
-          {
-            String Message = "Error reading the configuration file <" + fqConfigFileName + ">";
-            throw new InitializationException(Message);
-          }
-        }
-        else
-        {
-          String Message = "Cannot find configuration file <" + fqConfigFileName + ">";
-          throw new InitializationException(Message);
-        }
-      }
-
       // Get the (completely useless but informative) application Name, and
       // well, inform the user
       //ApplicationName = PropertyUtils.getPropertyValueDef(resources,
@@ -490,15 +547,11 @@ public class OpenRate
       LogUtil.getLogUtil().setLoggerLog(FWLog);
 
       // Initalise the error log - this is intended to log all stack trace
-      // tyoe events, keeping the main output as clean and bûeinesslike as possible.
+      // type events, keeping the main output as clean and businesslike as possible.
       ErrorLog = LogUtil.getLogUtil().getLogger("ErrorLog");
 
-      // Set the Audit Utils Core logging status
-      boolean auditCoreOnly = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_CORE_ONLY_AUDIT, "false"));
-      AuditUtils.getAuditUtils().setAuditCoreOnly(auditCoreOnly);
-
       // Log our version
-      AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
+      FWLog.info("OpenRate Build " + applicationVersion);
 
       // Get the sequential loading flag
       sequentialLoading = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_SEQUENTIAL_LOADING, "true"));
@@ -619,40 +672,6 @@ public class OpenRate
     {
       // else we have no FWLog, so give a minimum of feedback on the console
       System.err.println(Message);
-    }
-  }
-
-  /**
-   * Bootstrap the application configuration by collecting the name of the
-   * configuration file from the command line argument, which will be the
-   * source of the configuration in use for this framework.
-   */
-  private String GetConfigurationSource(String[] args)
-                                 throws InitializationException
-  {
-    String propertiesFile = "";
-
-    // load command line arguments
-    for (int i = 0; i < args.length; ++i)
-    {
-      //resources.setProperty("arg" + i, args[i]);
-
-      if ((args[i].equalsIgnoreCase("-p") == true) ||
-          (args[i].equalsIgnoreCase("-properties-file") == true))
-      {
-        propertiesFile = args[i + 1];
-      }
-    }
-
-    if (propertiesFile.equals("") == true)
-    {
-      FWLog.error("No properties file found.");
-
-      return null;
-    }
-    else
-    {
-      return propertiesFile;
     }
   }
 
@@ -1032,6 +1051,36 @@ public class OpenRate
     }
   }
 
+  /**
+   * Shutdown hook. Attaching shutdown hook to the Application, so that we
+   * gracefully stop when the process is interrupted.
+   */
+    private void attachShutDownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                if (shutdownHookCalls == 0)
+                {
+                    // Hook triggered, starting shutdown process
+                    // Stop all pipes
+                    stopAllPipelines();
+                    
+                    FWLog.info("Shutdown command called");
+                }
+
+                // increment the shutdown hook
+                shutdownHookCalls++;
+                
+                // If the person shutting down is too insistent, we just abort
+                if (shutdownHookCalls == 3)
+                {
+                  FWLog.error("Hard shutdown forced by 3 kills. Aborting.");
+                  System.exit(-99);
+                }
+            }
+        });
+    }
+
  /**
   * Load the framework resources. Can be called in two different ways:
   * 1) To load the logger only. Clearly the logger is very useful when loading
@@ -1056,9 +1105,12 @@ public class OpenRate
     // Get the resource list
     tmpResourceNameList = PropertyUtils.getPropertyUtils().getGenericNameList("Resource");
 
-    if (tmpResourceNameList == null | tmpResourceNameList.isEmpty())
+    if (tmpResourceNameList == null || tmpResourceNameList.isEmpty())
     {
       handler.reportException(new InitializationException("No resources defined. Aborting."));
+      
+      // we are done
+      return;
     }
 
     // Check if we got the FWLog resource
@@ -1066,6 +1118,7 @@ public class OpenRate
     {
       // No FWLog resource.
       handler.reportException(new InitializationException("Log resource not found. Framework aborting."));
+      return;
     }
 
     // Check if we got the ECI resource
@@ -1073,6 +1126,7 @@ public class OpenRate
     {
       // No FWLog resource.
       handler.reportException(new InitializationException("ECI resource not found. Framework aborting."));
+      return;
     }
 
     try
@@ -1244,7 +1298,6 @@ public class OpenRate
     //Register services for this Client
     ClientManager.registerClientService(getSymbolicName(),SERVICE_FRAMEWORK_STOP,  ClientManager.PARAM_DYNAMIC);
     ClientManager.registerClientService(getSymbolicName(),SERVICE_SYNC_STATUS,     ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(),SERVICE_CORE_ONLY_AUDIT, ClientManager.PARAM_NONE);
 
     // Register each of the pipelines' services
     pipelineSet = pipelineMap.keySet();
@@ -1291,11 +1344,6 @@ public class OpenRate
     if (Command.equalsIgnoreCase(SERVICE_SYNC_STATUS))
     {
       return Integer.toString(syncStatus);
-    }
-
-    if (Command.equalsIgnoreCase(SERVICE_CORE_ONLY_AUDIT))
-    {
-      return Boolean.toString(AuditUtils.getAuditUtils().getAuditCoreOnly());
     }
 
     if (ResultCode == 0)

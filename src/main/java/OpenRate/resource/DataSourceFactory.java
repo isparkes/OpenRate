@@ -55,7 +55,6 @@
 
 package OpenRate.resource;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.IDBDataSource;
@@ -117,9 +116,6 @@ public class DataSourceFactory implements IResource, IEventInterface
   public DataSourceFactory()
   {
     super();
-
-    // log ourselves to the audit map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**

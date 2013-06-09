@@ -56,7 +56,6 @@
 package OpenRate.resource;
 
 import OpenRate.OpenRate;
-import OpenRate.audit.AuditUtils;
 import OpenRate.cache.*;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
@@ -143,8 +142,6 @@ public class CacheFactory
    */
   public CacheFactory()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**

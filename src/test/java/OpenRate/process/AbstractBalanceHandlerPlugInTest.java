@@ -55,7 +55,6 @@
 
 package OpenRate.process;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -75,6 +74,7 @@ import OpenRate.utils.ConversionUtils;
 import OpenRate.utils.PropertyUtils;
 import TestUtils.TestRatingRecord;
 import TestUtils.TransactionUtils;
+import java.net.URL;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Date;
@@ -87,8 +87,7 @@ import org.junit.*;
  */
 public class AbstractBalanceHandlerPlugInTest
 {
-  // local in-memory database for testing
-  private static final String FQConfigFileName = "src/test/resources/TestBalanceHandler.properties.xml";
+  private static URL FQConfigFileName;
 
   private static String cacheDataSourceName;
   private static String resourceName;
@@ -105,7 +104,9 @@ public class AbstractBalanceHandlerPlugInTest
     {
     Class<?>          ResourceClass;
     IResource         Resource;
-
+    
+    FQConfigFileName = new URL("File:src/test/resources/TestBalanceHandler.properties.xml");
+    
       // Get a properties object
       try
       {
@@ -866,9 +867,6 @@ public class AbstractBalanceHandlerPlugInTest
     {
       // Get an initialise the cache
       instance = new AbstractBalanceHandlerPlugInTest.AbstractBalanceHandlerPlugInImpl();
-
-      // Turn off audit logging (we don't need it for testing)
-      AuditUtils.getAuditUtils().setAuditLogging(false);
 
       // Get the instance
       instance.init("DBTestPipe", "AbstractBalanceHandlerPlugInTest");

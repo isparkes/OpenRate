@@ -55,7 +55,6 @@
 
 package OpenRate.resource.notification;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
@@ -101,8 +100,6 @@ public class EmailerThread implements Runnable
   */
   public EmailerThread()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**

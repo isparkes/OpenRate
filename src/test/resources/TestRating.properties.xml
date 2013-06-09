@@ -25,7 +25,7 @@
   <Resource>
     <LogFactory>
       <ClassName>OpenRate.logging.LogFactory</ClassName>
-      <Properties>src/test/resources/logUnitTest.properties</Properties>
+      <Properties>logUnitTest.properties</Properties>
       <DefaultCategory>RatingTest</DefaultCategory>
     </LogFactory>
 

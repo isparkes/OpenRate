@@ -56,7 +56,6 @@
 package OpenRate.process;
 
 import OpenRate.CommonConfig;
-import OpenRate.audit.AuditUtils;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.IEvent;
 import OpenRate.buffer.IMonitor;
@@ -199,9 +198,6 @@ public abstract class AbstractPlugIn
 
     // register us with the client manager
     registerClientManager();
-
-    // Log the version hierarchy
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(this.getClass());
   }
 
   /**

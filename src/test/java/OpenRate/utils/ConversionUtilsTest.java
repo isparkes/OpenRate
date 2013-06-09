@@ -59,6 +59,7 @@ import OpenRate.logging.AbstractLogFactory;
 import OpenRate.resource.ConversionCache;
 import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,8 +74,7 @@ import org.junit.*;
  */
 public class ConversionUtilsTest
 {
-  // properties file we are using for these tests
-  private static final String FQConfigFileName = "src/test/resources/TestUtils.properties.xml";
+  private static URL FQConfigFileName;
 
   private static String resourceName;
   private static String tmpResourceClassName;
@@ -89,6 +89,8 @@ public class ConversionUtilsTest
     Class<?>          ResourceClass;
     IResource         Resource;
 
+    FQConfigFileName = new URL("File:src/test/resources/TestUtils.properties.xml");
+    
     // Get a properties object
     try
     {

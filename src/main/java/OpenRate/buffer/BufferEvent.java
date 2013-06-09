@@ -55,9 +55,6 @@
 
 package OpenRate.buffer;
 
-import OpenRate.audit.AuditUtils;
-
-
 /**
  * BufferEvent is the class that is used to notify monitors that something
  * has happened that they should be aware of. At the moment, the only event
@@ -79,8 +76,6 @@ public class BufferEvent
   */
   private BufferEvent()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
     type = "NONE";
   }
 

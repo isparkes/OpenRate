@@ -58,6 +58,7 @@ import OpenRate.exception.InitializationException;
 import OpenRate.logging.AbstractLogFactory;
 import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
+import java.net.URL;
 import org.junit.*;
 
 /**
@@ -66,8 +67,7 @@ import org.junit.*;
  */
 public class PropertyUtilsTest
 {
-  // properties file we are using for these tests
-  private static final String FQConfigFileName = "src/test/resources/TestUtils.properties.xml";
+  private static URL FQConfigFileName;
 
   private static String resourceName;
   private static String tmpResourceClassName;
@@ -81,6 +81,8 @@ public class PropertyUtilsTest
     Class<?>          ResourceClass;
     IResource         Resource;
 
+    FQConfigFileName = new URL("File:src/test/resources/TestUtils.properties.xml");
+    
     // Get a properties object
     try
     {

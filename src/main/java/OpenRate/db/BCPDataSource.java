@@ -55,7 +55,6 @@
 
 package OpenRate.db;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
@@ -134,8 +133,6 @@ public class BCPDataSource implements IDBDataSource
   */
   public BCPDataSource()
   {
-    // Log ourselves to the audit map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**

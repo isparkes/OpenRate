@@ -55,7 +55,6 @@
 
 package OpenRate.db;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import java.sql.Connection;
@@ -90,8 +89,6 @@ public class InitializingConnectionFactory implements ConnectionFactory
   {
     this.factory   = factory;
     this.sql       = sql;
-
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
   /**

@@ -55,7 +55,6 @@
 
 package OpenRate.cache;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
@@ -105,9 +104,7 @@ public class PersistentIndexedObject
    */
   public PersistentIndexedObject()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(this.getClass());
-
+    // Initialise the object cache
     ObjectList = new HashMap<>(50000);
   }
 

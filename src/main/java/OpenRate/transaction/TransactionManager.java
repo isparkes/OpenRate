@@ -55,7 +55,6 @@
 
 package OpenRate.transaction;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
@@ -157,8 +156,6 @@ public class TransactionManager implements ITransactionManager, IEventInterface
    */
   public TransactionManager()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
  /**

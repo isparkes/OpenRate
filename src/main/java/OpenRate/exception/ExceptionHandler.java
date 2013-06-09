@@ -133,7 +133,7 @@ public class ExceptionHandler
   }
 
   /**
-   * Rethrow the first reported exception.
+   * Re-throw the first reported exception.
    *
    * @throws ProcessingException
    */
@@ -152,7 +152,8 @@ public class ExceptionHandler
   }
 
   /**
-   * Rethrow the first reported exception.
+   * Get a list of all the exceptions. We get a copy rather than the list
+   * itself so that we do not get concurrent access problems.
    *
    * @return The exception list
    */

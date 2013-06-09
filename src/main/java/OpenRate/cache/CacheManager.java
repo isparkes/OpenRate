@@ -55,7 +55,6 @@
 
 package OpenRate.cache;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
@@ -87,9 +86,7 @@ public class CacheManager
    */
   public CacheManager()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
-
+    // Initialise the manager store
     cacheableClassMap = new HashMap<>();
   }
 

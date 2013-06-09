@@ -55,7 +55,6 @@
 
 package OpenRate.cache;
 
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -145,9 +144,7 @@ public class BalanceCache extends AbstractCache
   */
   public BalanceCache()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
-
+    // Initialise the cache hash 
     balanceCache = new ConcurrentHashMap<>(1000);
 
     // Initialise variables that we will be using regularly - this is the

@@ -58,7 +58,6 @@ package OpenRate;
 import OpenRate.adapter.IInputAdapter;
 import OpenRate.adapter.IOutputAdapter;
 import OpenRate.adapter.realTime.IRTAdapter;
-import OpenRate.audit.AuditUtils;
 import OpenRate.buffer.IBuffer;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
@@ -68,9 +67,6 @@ import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import OpenRate.process.IPlugIn;
-import OpenRate.record.DBRecord;
-import OpenRate.record.FlatRecord;
-import OpenRate.record.RatingRecord;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.transaction.TransactionManager;
 import OpenRate.transaction.TransactionManagerFactory;
@@ -271,18 +267,8 @@ public class Pipeline
     // Set the max transactions
       TM.setMaxTransactions(maxTransTM);
 
-    // Perform the version audit
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
-
     // set up the logger
     PipeLog = LogUtil.getLogUtil().getLogger(Name);
-
-    // Also FWLog some of the other base information - record classes
-    // We don't do this on record creation because of the processing overhead
-    // (each time we create a record, we would try to FWLog the information)
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(FlatRecord.class);
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(RatingRecord.class);
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(DBRecord.class);
   }
 
   /**

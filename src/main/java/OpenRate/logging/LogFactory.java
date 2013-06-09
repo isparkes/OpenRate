@@ -60,6 +60,7 @@ import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
 import OpenRate.utils.PropertyUtils;
 import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -146,18 +147,17 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
         handler.reportException(new InitializationException("Logger Configuration File <" + ResourceName + "> not defined in Logger resource"));
       }
 
-      // Get the base path - see if it defned in the properties, if not we
-      // assume that the logger configuration is always in the properties dir
-      String ConfigurationPath = PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef("BasePath","None");
-      if(ConfigurationPath.equals("None"))
-      {
-        ConfigurationPath = System.getProperty("user.dir");
-      }
-
-      String fqConfigFileName = ConfigurationPath + "/" + log4j_properties;
-
+      // Get the file from the classpath
+      URL fqConfigFileName = getClass().getResource( "/" + log4j_properties );
+      
       // Does it exist?
-      if (new File(fqConfigFileName).isFile() == false)
+      if (fqConfigFileName == null)
+      {
+        handler.reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource"));
+      }
+      
+      // Is it a file?
+      if (new File(fqConfigFileName.getFile()).isFile() == false)
       {
         handler.reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource"));
       }
@@ -178,7 +178,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
       // log4j initialized.
       loaded              = true;
 
-      System.out.println("Logger initialised using configuration <" + fqConfigFileName + ">");
+      System.out.println("Logger initialised using configuration <" + fqConfigFileName.getFile() + ">");
 
       // If there is a default logger configured in the properties file then
       // use that.  Otherwise use AstractLogger.DEFAULT_CATEGORY

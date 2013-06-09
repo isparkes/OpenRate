@@ -56,7 +56,6 @@
 package OpenRate.adapter.socket;
 
 import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
-import OpenRate.audit.AuditUtils;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -107,14 +106,11 @@ public abstract class SocketOutputAdapter
   public SocketOutputAdapter()
   {
     super();
-
-    // Add the version map
-    AuditUtils.getAuditUtils().buildVersionMap(this.getClass());
   }
 
 
  /**
-  * Initialize the output adapter with the configuraton that is to be used
+  * Initialize the output adapter with the configuration that is to be used
   * for this instance of the adapter.
   *
   * @param PipelineName The name of the pipeline this module is in

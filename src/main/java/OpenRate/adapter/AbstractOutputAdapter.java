@@ -56,7 +56,6 @@
 package OpenRate.adapter;
 
 import OpenRate.CommonConfig;
-import OpenRate.audit.AuditUtils;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.IEvent;
 import OpenRate.buffer.IMonitor;
@@ -153,9 +152,6 @@ public abstract class AbstractOutputAdapter
   public AbstractOutputAdapter()
   {
     super();
-
-    // Add the version map
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(this.getClass());
   }
 
  /**

@@ -57,7 +57,6 @@ package OpenRate.adapter;
 
 import OpenRate.CommonConfig;
 import OpenRate.IPipeline;
-import OpenRate.audit.AuditUtils;
 import OpenRate.buffer.IConsumer;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
@@ -147,8 +146,6 @@ public abstract class AbstractInputAdapter
    */
   public AbstractInputAdapter()
   {
-    // Add the version map
-    AuditUtils.getAuditUtils().buildHierarchyVersionMap(this.getClass());
   }
 
   /**
