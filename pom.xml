@@ -4,7 +4,7 @@
 	<artifactId>OpenRate</artifactId>
 	<version>1.5.2.0</version>
 	<packaging>jar</packaging>
-	
+
 	<name>OpenRate</name>
 	<url>http://maven.apache.org</url>
 	<build>
@@ -16,9 +16,10 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+				 <showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -35,16 +36,23 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<properties>
 		<version.junit>4.8</version.junit>
 		<version.common.logging>1.1.1</version.common.logging>
 		<version.common.lang>2.6</version.common.lang>
 		<version.java.source>1.7</version.java.source>
 		<version.java.target>1.7</version.java.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                <version.commons.collections>3.2.1</version.commons.collections>
+                <version.commons.pool>1.5.5</version.commons.pool>
+                <version.c3p0>0.9.1.2</version.c3p0>
+                <version.bonecp>0.7.1.RELEASE</version.bonecp>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                <version.mysql.connector>5.1.13</version.mysql.connector>
+                <version.log4j>1.2.13</version.log4j>
+                <org.springframework.version>3.0.5.RELEASE</org.springframework.version>
 	</properties>
-	
+
 	<dependencies>
     <!-- JUnit -->
 		<dependency>
@@ -72,54 +80,61 @@
 		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<version>${version.commons.collections}</version>
 		</dependency>
-		
+
     <!-- common pool -->
 		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
-			<version>1.5.5</version>
+			<version>${version.commons.pool}</version>
 		</dependency>
-		
+
 		<!-- connection pools -->
 		<dependency>
 			<groupId>c3p0</groupId>
 			<artifactId>c3p0</artifactId>
-			<version>0.9.1.2</version>
+			<version>${version.c3p0}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.jolbox</groupId>
 			<artifactId>bonecp-spring</artifactId>
-			<version>0.7.1.RELEASE</version>
+			<version>${version.bonecp}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.13</version>
+			<version>${version.mysql.connector}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.13</version>
+			<version>${version.log4j}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>
 			<version>2.0.8</version>
 		</dependency>
 
-       <!-- <dependency>
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${org.springframework.version}</version>
+    </dependency>
+    
+<!-- <dependency>
             <groupId>drools</groupId>
             <artifactId>drools-compiler</artifactId>
             <version>3.0.4</version>
@@ -156,7 +171,7 @@
             <version>1.8.0.7</version>
         </dependency>
 -->
-		
+
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -172,7 +187,7 @@
 	</dependencies>
 	<groupId>OpenRate</groupId>
 	<description>OpenRate project: Open Source Telecommunications rating engine</description>
-	
+
 	<reporting>
 		<plugins>
 			<plugin>

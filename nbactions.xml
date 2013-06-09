@@ -10,7 +10,7 @@
                 <exec.args>-Xmx256m -classpath %classpath OpenRate.OpenRate -classpath %classpath OpenRate.OpenRate</exec.args>
                 <exec.executable>java</exec.executable>
                 <exec.classpathScope>runtime</exec.classpathScope>
-                <exec.workingdir>Z:\Documents and Settings\tgdspia1\My Documents\NetBeansProjects\OpenRate</exec.workingdir>
+                <exec.workingdir>Z:\NoBackup\Data\Copy\Projects\OpenRate</exec.workingdir>
             </properties>
         </action>
         <action>
@@ -24,7 +24,7 @@
                 <exec.executable>java</exec.executable>
                 <exec.classpathScope>runtime</exec.classpathScope>
                 <jpda.listen>true</jpda.listen>
-                <exec.workingdir>Z:\Documents and Settings\tgdspia1\My Documents\NetBeansProjects\OpenRate</exec.workingdir>
+                <exec.workingdir>Z:\NoBackup\Data\Copy\Projects\OpenRate</exec.workingdir>
             </properties>
         </action>
         <action>
@@ -37,7 +37,7 @@
                 <exec.args>${profiler.args} -Xmx256m -classpath %classpath OpenRate.OpenRate -classpath %classpath OpenRate.OpenRate</exec.args>
                 <exec.executable>${profiler.java}</exec.executable>
                 <profiler.action>profile</profiler.action>
-                <exec.workingdir>Z:\Documents and Settings\tgdspia1\My Documents\NetBeansProjects\OpenRate</exec.workingdir>
+                <exec.workingdir>Z:\NoBackup\Data\Copy\Projects\OpenRate</exec.workingdir>
             </properties>
         </action>
     </actions>
