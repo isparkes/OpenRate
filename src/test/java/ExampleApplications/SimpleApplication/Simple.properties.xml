@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<config>
+  <!-- simplest possible processing pipeline -->
+  <Application>
+    Simple
+  </Application>
+
+  <PipelineList>
+    <SimplePipe>
+      <Active>True</Active>
+      <HaltOnException>True</HaltOnException>
+      <PipelineType>Batch</PipelineType>
+    </SimplePipe>
+  </PipelineList>
+
+  <!-- this configuration tells OpenRate to only audit core classes, which
+       means that CVS version information does not need to be put into the 
+       application classes -->
+  <OnlyAuditCoreClasses>
+    True
+  </OnlyAuditCoreClasses>
+  
+  <SimplePipe>
+    <InputAdapter>
+      <!-- read the input file, using pattern testpipeline*.edr, renaming to
+           testpipeline*.done when done. In the case of a transaction rollback
+           (unlikely), rename to testpipeline*.err. Rollbacks only occurr when
+           record level processing cannot continue, usually triggered explicitly
+           in your processing -->
+      <SInpAdapter>
+        <ClassName>Simple.SimpleInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+        <InputFilePath>Data/Simple</InputFilePath>
+        <InputFilePrefix>testpipeline</InputFilePrefix>
+        <InputFileSuffix>.edr</InputFileSuffix>
+        <DoneFilePath>Data/Simple</DoneFilePath>
+        <DoneFilePrefix>testpipeline</DoneFilePrefix>
+        <DoneFileSuffix>.done</DoneFileSuffix>
+        <ErrFilePath>Data/Simple</ErrFilePath>
+        <ErrFilePrefix>testpipeline</ErrFilePrefix>
+        <ErrFileSuffix>.err</ErrFileSuffix>
+      </SInpAdapter>
+     </InputAdapter>
+
+    <!-- The "Process" section executes the modules in the order they are listed -->
+    <Process>
+      
+      <!-- Perform the lookup on the B Number. The lookup uses the data in the
+           "PrefixCache" to lookup against, and this is stored in memory for
+           performance reasons. You can look at the definition of the cache
+           at the end of the file to know the location of the data, but if you
+           are in too much of a hurry it is at: ConfigData/Simple/prefixdesc.dat
+           
+           The Batch size tells us how many records to get at once. In this 
+           example we use 5000 which is a good balance between memory and speed.
+           The choice of batch size depends on how long your pipe is, how slow 
+           your output persistence is and how much memory you want to use for
+           the processing. -->
+      <DestLookup>
+        <ClassName>Simple.DestLookup</ClassName>
+         <Active>True</Active>
+        <DataCache>PrefixCache</DataCache>
+        <BatchSize>5000</BatchSize>
+      </DestLookup>
+
+      <!-- Dump out the diagnostics to file. This will create a dump file
+           testpipeline*.dump.
+           
+           Valid values for DumpType are:
+              All - Dump every record (Default)
+              None - Dump no records
+              Errors - Dump records with errors
+              Flag - Dump records where we have set the dumping flag -->
+      <DumpFirst>
+        <ClassName>OpenRate.process.Dump</ClassName>
+        <Active>True</Active>
+        <DumpType>All</DumpType>
+        <DumpFilePath>Data/Simple</DumpFilePath>
+        <DumpFilePrefix>testpipeline</DumpFilePrefix>
+        <DumpFileSuffix>.dump</DumpFileSuffix>
+        <BatchSize>5000</BatchSize>
+      </DumpFirst>
+    </Process>
+
+    <OutputAdapter>
+      <!-- Write the output file, using pattern testpipeline*.out. In the case 
+           of a transaction rollback, then the file will be renamed to 
+           testpipeline*.err. -->
+      <SOutAdapter>
+        <ClassName>Simple.SimpleSTOutputAdapter</ClassName>
+        <OutputName>default</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <OutputFilePath>Data/Simple</OutputFilePath>
+        <OutputFilePrefix>testpipeline</OutputFilePrefix>
+        <OutputFileSuffix>.out</OutputFileSuffix>
+        <ErrFilePath>Data/Simple</ErrFilePath>
+        <ErrFilePrefix>testpipeline</ErrFilePrefix>
+        <ErrFileSuffix>.err</ErrFileSuffix>
+      </SOutAdapter>
+    </OutputAdapter>
+  </SimplePipe>
+
+  <Resource>
+    <LogFactory>
+      <ClassName>OpenRate.logging.LogFactory</ClassName>
+      <Properties>logSimple.properties</Properties>
+      <DefaultCategory>SimplePipe</DefaultCategory>
+    </LogFactory>
+
+    <ECI>
+      <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+      <Port>8086</Port>
+      <MaxConnection>2</MaxConnection>
+    </ECI>
+
+    <TransactionManagerFactory>
+      <ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+    </TransactionManagerFactory>
+
+    <CacheFactory>
+      <ClassName>OpenRate.cache.CacheFactory</ClassName>
+      <CacheableClass>
+        <PrefixCache>
+          <ClassName>OpenRate.cache.BestMatchCache</ClassName>
+          <DataSourceType>File</DataSourceType>
+          <DataFile>ConfigData/Simple/prefixdesc.dat</DataFile>
+        </PrefixCache>
+      </CacheableClass>
+    </CacheFactory>
+  </Resource>
+</config>
