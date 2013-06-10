@@ -94,7 +94,7 @@ public class OpenRateTest {
             Assert.fail(ex.getMessage());
         }
         
-        String expResult = "OpenRate V1.5.2.0, Build 10 (20130610)";
+        String expResult = "OpenRate V1.5.2.0, Build 11 (20130610)";
         
         Assert.assertEquals(expResult,result);
     }

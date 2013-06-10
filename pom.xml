@@ -67,8 +67,8 @@
         </executions>
         <configuration>
           <doCheck>false</doCheck>
-          <username>ian</username>
-          <password>tigger</password>
+          <username>readonlyuser</username>
+          <password>readonly</password>
           <revisionOnScmFailure>001</revisionOnScmFailure>
           <buildNumberPropertyName>sources.version</buildNumberPropertyName>
           <timestampPropertyName>build.custtimestamp</timestampPropertyName>
