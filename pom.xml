@@ -4,11 +4,14 @@
 	<artifactId>OpenRate</artifactId>
 	<version>1.5.2.0</version>
 	<packaging>jar</packaging>
-
+	<groupId>OpenRate</groupId>
+	<description>OpenRate project: Open Source Telecommunications rating engine</description>
 	<name>OpenRate</name>
-	<url>http://maven.apache.org</url>
+	<url>http://www.open-rate.com</url>
+	
 	<build>
 		<plugins>
+      <!-- The compiler -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -20,6 +23,20 @@
 				</configuration>
 			</plugin>
 
+      <!-- Create JAR -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.1</version>
+        <configuration>
+          <excludes>
+            <exclude>VersionFileTemplate.txt</exclude>
+            <exclude>*netbeans*</exclude>
+          </excludes>
+          </configuration>
+      </plugin>
+      
+      <!-- Create source code JAR -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -34,6 +51,75 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+      <!-- Revision Info -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <doCheck>false</doCheck>
+          <username>ian</username>
+          <password>tigger</password>
+          <revisionOnScmFailure>001</revisionOnScmFailure>
+          <buildNumberPropertyName>sources.version</buildNumberPropertyName>
+          <timestampPropertyName>build.custtimestamp</timestampPropertyName>
+          <timestampFormat>{0,date,yyyyMMdd}</timestampFormat>
+          <providerImplementations>
+            <svn>javasvn</svn>
+          </providerImplementations>
+        </configuration>
+        <!-- SVN Version 1.7 -->
+        <dependencies>
+          <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+            <version>1.7.5</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      
+      <!-- Update version file -->
+      <plugin>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
+        <version>1.5.2</version>
+        <executions>
+          <execution>
+          	<phase>compile</phase>
+            <goals>
+              <goal>replace</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <file>${basedir}/src/main/resources/VersionFileTemplate.txt</file>
+          <outputFile>${basedir}/target/classes/VersionFile.txt</outputFile>
+          <regex>false</regex>
+          <replacements>
+            <replacement>
+              <token>PROJECT_VERSION</token>
+              <value>${project.version}</value>
+            </replacement>
+            <replacement>
+              <token>SVN_REVISION</token>
+              <value>${sources.version}</value>
+            </replacement>
+            <replacement>
+              <token>BUILD_TIMESTAMP</token>
+              <value>${build.custtimestamp}</value>
+            </replacement>
+          </replacements>
+        </configuration>
+      </plugin>
 		</plugins>
 	</build>
 
@@ -43,14 +129,15 @@
 		<version.common.lang>2.6</version.common.lang>
 		<version.java.source>1.7</version.java.source>
 		<version.java.target>1.7</version.java.target>
-                <version.commons.collections>3.2.1</version.commons.collections>
-                <version.commons.pool>1.5.5</version.commons.pool>
-                <version.c3p0>0.9.1.2</version.c3p0>
-                <version.bonecp>0.7.1.RELEASE</version.bonecp>
-                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                <version.mysql.connector>5.1.13</version.mysql.connector>
-                <version.log4j>1.2.13</version.log4j>
-                <org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+    <version.commons.collections>3.2.1</version.commons.collections>
+    <version.commons.pool>1.5.5</version.commons.pool>
+    <version.c3p0>0.9.1.2</version.c3p0>
+    <version.bonecp>0.7.1.RELEASE</version.bonecp>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <version.mysql.connector>5.1.13</version.mysql.connector>
+    <version.log4j>1.2.13</version.log4j>
+    <version.oro>2.0.8</version.oro>
+    <org.springframework.version>3.0.5.RELEASE</org.springframework.version>
 	</properties>
 
 	<dependencies>
@@ -103,11 +190,11 @@
 			<version>${version.bonecp}</version>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
-		</dependency>
+		</dependency-->
 
 		<dependency>
 			<groupId>mysql</groupId>
@@ -124,7 +211,7 @@
 		<dependency>
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>
-			<version>2.0.8</version>
+			<version>${version.oro}</version>
 		</dependency>
 
     <!-- Spring -->
@@ -185,9 +272,7 @@
         </dependency>
 -->
 	</dependencies>
-	<groupId>OpenRate</groupId>
-	<description>OpenRate project: Open Source Telecommunications rating engine</description>
-
+	
 	<reporting>
 		<plugins>
 			<plugin>
@@ -200,4 +285,14 @@
 			</plugin>
 		</plugins>
 	</reporting>
+	
+  <!-- link to our subversion repository -->
+  <scm>
+    <developerConnection>scm:svn:http://tsm-consulting.de/svn/OpenRate</developerConnection>
+  </scm>
+  
+  <!-- link to our Jenkins -->
+  <ciManagement>
+    <url>http://obrm:8888/job/snocsFaces/</url>
+  </ciManagement>
 </project>
