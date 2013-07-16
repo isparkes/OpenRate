@@ -225,9 +225,9 @@ public abstract class AbstractSyncLoaderCache
 
     if (!foundCacheDataSourceType)
     {
-      String Message = "CacheDataSourceType for cache <" + getSymbolicName() +
+      message = "CacheDataSourceType for cache <" + getSymbolicName() +
             "> must be File, DB or method, found <" + CacheDataSourceType + ">";
-      getHandler().reportException(new InitializationException(Message));
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the date format if something is defined
@@ -248,9 +248,8 @@ public abstract class AbstractSyncLoaderCache
 
       if (foundStatements == false)
       {
-        String Message = "Data files not found for cache <" +
-              getSymbolicName() + ">";
-        getHandler().reportException(new InitializationException(Message));
+        message = "Data files not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -267,9 +266,8 @@ public abstract class AbstractSyncLoaderCache
 
       if (cacheDataSourceName.equals("None"))
       {
-        String Message = "Data source DB name not found for cache <" + getSymbolicName() +
-              ">";
-        getHandler().reportException(new InitializationException(Message));
+        message = "Data source DB name not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -281,9 +279,9 @@ public abstract class AbstractSyncLoaderCache
 
       if (foundStatements == false)
       {
-        String Message = "One or more select statements not found for cache <" +
+        message = "One or more select statements not found for cache <" +
               getSymbolicName() + ">";
-        getHandler().reportException(new InitializationException(Message));
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -296,8 +294,8 @@ public abstract class AbstractSyncLoaderCache
       // JDBC adapters to work properly using 1 configuration file.
       if(DBUtil.initDataSource(cacheDataSourceName) == null)
       {
-        String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-        getHandler().reportException(new InitializationException(Message));
+        message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
+        throw new InitializationException(message,getSymbolicName());
       }
 
       loadDataFromDB();
@@ -309,9 +307,8 @@ public abstract class AbstractSyncLoaderCache
 
       if (foundMethods == false)
       {
-        String Message = "Data source methods not found for cache <" +
-              getSymbolicName() + ">";
-        getHandler().reportException(new InitializationException(Message));
+        message = "Data source methods not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -473,10 +470,10 @@ public abstract class AbstractSyncLoaderCache
     }
     catch (ClassNotFoundException cnfe)
     {
-      String Message = "Error finding data cache class <" + MethodClassName +
+      message = "Error finding data cache class <" + MethodClassName +
                                         "> in data cache <" + getSymbolicName() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Now try to get the instance
@@ -486,19 +483,19 @@ public abstract class AbstractSyncLoaderCache
     }
     catch (InstantiationException ex)
     {
-      String Message = "Data method class <" + MethodClassName +
+      message = "Data method class <" + MethodClassName +
                                         "> instantiation error in cache <" +
                                         getSymbolicName() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (IllegalAccessException ex)
     {
-      String Message = "Data method class  <" + MethodClassName +
+      message = "Data method class  <" + MethodClassName +
                                         "> access error in pipeline <" +
                                         getSymbolicName() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Now we can get the data from the method
@@ -619,10 +616,10 @@ public abstract class AbstractSyncLoaderCache
           {
             ReloadData();
           }
-          catch (InitializationException iex)
+          catch (InitializationException ex)
           {
-            String Message = "SERVICE_RELOAD not executed because of InitializationException thrown by loadData()";
-            getFWLog().fatal(Message,iex);
+            message = "SERVICE_RELOAD not executed because of InitializationException thrown by loadData()";
+            getFWLog().fatal(message,ex);
           }
         }
       }
@@ -647,15 +644,15 @@ public abstract class AbstractSyncLoaderCache
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_DYNAMIC_SYNC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_AUTO_RELOAD, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_NEXT_RELOAD, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DATE_FORMAT, ClientManager.PARAM_SYNC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_LOAD_LOG_STEP, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_NO_AUTORELOAD, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_AUTO_RELOAD, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_NEXT_RELOAD, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DATE_FORMAT, ClientManager.PARAM_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_LOAD_LOG_STEP, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_NO_AUTORELOAD, ClientManager.PARAM_NONE);
   }
 
  /**
@@ -795,16 +792,16 @@ public abstract class AbstractSyncLoaderCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error preparing the statement " + CacheDataSelectQuery;
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Error preparing the statement " + CacheDataSelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
-      String Message = "Error preparing the statement <" + CacheDataSelectQuery +
-                       ">. Message: " + ex.getMessage();
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Error preparing the statement <" + CacheDataSelectQuery +
+                       ">. message: " + ex.getMessage();
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -916,8 +913,9 @@ public abstract class AbstractSyncLoaderCache
     }
     catch (NumberFormatException nfe)
     {
-      throw new InitializationException("Value provided for property <" + SERVICE_LOAD_LOG_STEP +
-                                        "> was not numeric. Received value <" + tmpValue + ">.");
+      message = "Value provided for property <" + SERVICE_LOAD_LOG_STEP +
+                                        "> was not numeric. Received value <" + tmpValue + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return tmpLoadStep;
@@ -943,8 +941,9 @@ public abstract class AbstractSyncLoaderCache
     }
     else
     {
-      throw new InitializationException("Value provided for property <" + SERVICE_NO_AUTORELOAD +
-                                        "> was not boolean. Received value <" + tmpValue + ">.");
+      message = "Value provided for property <" + SERVICE_NO_AUTORELOAD +
+                "> was not boolean. Received value <" + tmpValue + ">.";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 }

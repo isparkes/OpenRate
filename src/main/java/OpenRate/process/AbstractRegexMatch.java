@@ -114,8 +114,8 @@ public abstract class AbstractRegexMatch
 
     if (CM == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays
@@ -123,8 +123,8 @@ public abstract class AbstractRegexMatch
 
     if (RMC == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
    }
 

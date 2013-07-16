@@ -54,7 +54,6 @@
  */
 package OpenRate.resource;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
@@ -75,18 +74,17 @@ import java.io.IOException;
  * cost, but is useful for situations where the business user cannot accept
  * programming to define a record.
  *
- * This has been created initially for a rules engine implementation.
+ * This has been created primarily for a rules engine implementation.
  */
 public class FlexRecordFactory implements IResource
 {
   /**
    * Get the log for this and all child classes
    */
-  protected ILogger FWLog;
-
+  private ILogger fwLog;
 
   // This is the symbolic name of the resource
-  private String SymbolicName;
+  private String symbolicName;
 
   /**
    * key used by ResourceContext to find FlexRecordFactory type
@@ -95,10 +93,7 @@ public class FlexRecordFactory implements IResource
 
   // This is the master record definition that we will be constructing
   private FlexRecord MasterRecord;
-
-  // reference to the exception handler
-  private ExceptionHandler handler;
-
+  
   /**
    * Constructor
    */
@@ -172,13 +167,13 @@ public class FlexRecordFactory implements IResource
     int            tmpFieldOffset;
 
     // Get the log before we start
-    FWLog = LogUtil.getLogUtil().getLogger("Framework");
+        setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
 
     // here we go
-    FWLog.info("Starting FlexRecordFactory initialisation");
+        getFwLog().info("Starting FlexRecordFactory initialisation");
 
     // Set the symbolic name
-    SymbolicName = ResourceName;
+    symbolicName = ResourceName;
 
     tmpRecordDefinitionName = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName, "RecordDefintion",
                                                                 "None");
@@ -186,7 +181,7 @@ public class FlexRecordFactory implements IResource
     if (tmpRecordDefinitionName.equals("None"))
     {
       // we found no record definition file. Crash and burn
-      throw new InitializationException("RecordDefinition file name not found");
+      throw new InitializationException("RecordDefinition file name not found",getSymbolicName());
     }
 
     // Now try to open the definition file, and work on it
@@ -196,12 +191,12 @@ public class FlexRecordFactory implements IResource
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      FWLog.error(
+            getFwLog().error(
             "Not able to read the record definition file : <" +
             tmpRecordDefinitionName + ">");
       throw new InitializationException("Not able to read the record definition file : <" +
                                         tmpRecordDefinitionName + ">",
-                                        exFileNotFound);
+                                        exFileNotFound,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -286,13 +281,13 @@ public class FlexRecordFactory implements IResource
     }
     catch (IOException ex)
     {
-      FWLog.fatal(
+            getFwLog().fatal(
             "Error reading input file <" + tmpRecordDefinitionName +
             "> in record <" + FileLine + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      FWLog.fatal(
+            getFwLog().fatal(
             "Error reading input file <" + tmpRecordDefinitionName +
             "> on line <" + FileLine + ">. Malformed Record.");
     }
@@ -304,12 +299,12 @@ public class FlexRecordFactory implements IResource
       }
       catch (IOException ex)
       {
-        FWLog.error("Error closing input file <" + tmpRecordDefinitionName +
+                getFwLog().error("Error closing input file <" + tmpRecordDefinitionName +
                   ">", ex);
       }
     }
 
-    FWLog.info("FlexRecordFactory initialised");
+        getFwLog().info("FlexRecordFactory initialised");
   }
 
   /**
@@ -351,16 +346,8 @@ public class FlexRecordFactory implements IResource
     // try the new Logging model.
     FR = (FlexRecordFactory)ctx.get(FlexRecordFactory.KEY);
 
-    if (FR == null)
-    {
-      // no factory registered, fall back to the old model
-      LogUtil.getStaticLogger("Framework").fatal("No Flex Record Factory loaded");
-      throw new InitializationException ("No Flex Record Factory loaded");
-    }
-    else
-    {
-      return FR.getReference();
-    }
+    // return the value we got
+    return FR.getReference();
   }
 
  /**
@@ -377,17 +364,20 @@ public class FlexRecordFactory implements IResource
   @Override
   public String getSymbolicName()
   {
-    return SymbolicName;
+    return symbolicName;
   }
 
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
+    /**
+     * @return the fwLog
+     */
+    public ILogger getFwLog() {
+        return fwLog;
+    }
+
+    /**
+     * @param fwLog the fwLog to set
+     */
+    public void setFwLog(ILogger fwLog) {
+        this.fwLog = fwLog;
+    }
 }

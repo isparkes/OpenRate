@@ -107,15 +107,15 @@ public abstract class AbstractMinFeeCalc extends AbstractPlugIn
 
     if (CMRR == null)
     {
-      Message = "Could not find cache for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     MFC = (MinFeeCache)CMRR.get(CacheObjectName);
     if (MFC == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

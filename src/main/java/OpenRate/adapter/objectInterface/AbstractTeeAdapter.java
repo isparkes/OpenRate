@@ -143,7 +143,7 @@ public abstract class AbstractTeeAdapter
     processControlEvent(SERVICE_PURGETIME, true, ConfigHelper);
 
     // launch it in it's own thread
-    Thread batchConvThread = new Thread(batchConv, pipeName + "-BatchConverter");
+    Thread batchConvThread = new Thread(batchConv, getPipeName() + "-BatchConverter");
 
     batchConv.setParentAdapter(this);
 
@@ -245,11 +245,11 @@ public abstract class AbstractTeeAdapter
   public void registerClientManager() throws InitializationException
   {
     // Set the client reference and the base services first
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_CONVBATCH, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PURGETIME, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CONVBATCH, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PURGETIME, ClientManager.PARAM_MANDATORY);
   }
 
   /**
@@ -269,7 +269,7 @@ public abstract class AbstractTeeAdapter
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -289,7 +289,7 @@ public abstract class AbstractTeeAdapter
   private String initGetConvBatchSize() throws InitializationException
   {
     String tmpValue;
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),getSymbolicName(),
                                                    SERVICE_CONVBATCH, DEFAULT_CONVBATCH);
 
     return tmpValue;
@@ -302,7 +302,7 @@ public abstract class AbstractTeeAdapter
   private String initGetPurgeTime() throws InitializationException
   {
     String tmpValue;
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),getSymbolicName(),
                                                    SERVICE_PURGETIME, DEFAULT_PURGETIME);
 
     return tmpValue;

@@ -53,83 +53,101 @@
  * ====================================================================
  */
 
-package OpenRate.cache;
+package OpenRate.adapter;
 
-import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
-import java.util.HashMap;
+import OpenRate.exception.ProcessingException;
+import OpenRate.record.IRecord;
+import java.util.ArrayList;
+import java.util.Collection;
+
 
 /**
- * This is simple cache manager that handles the cacheable
- * objects by storing and retrieving from HashMap java class.
- * Other complex cache managers can store in different java
- * classes or third party caching mechanism like JCS etc.
- *
+ * The Null Input Adapter is used primarily for testing. It does not
+ * create or source records, and is used to build pipelines in the unit tests
+ * so that we can test the whole framework. It is not a generally useful module.
+ * But we love it anyway.
  */
-public class CacheManager
-  implements ICacheManager
+public class NullInputAdapter
+  extends AbstractInputAdapter
 {
-  // Get access to the log
-  private ILogger log = LogUtil.getLogUtil().getLogger("Framework");
-
   /**
-   * This stores all the cacheable objects.
-   */
-  protected HashMap<String, ICacheable> cacheableClassMap;
-
-  /**
-   * Constructor. Creates the cache manager module, which is an index of the
-   * caches which have been instantiated in this framework. This means we are
-   * able to reference the cache managers at a later date using only the
-   * name of the class, as opposed to the actual class instance.
-   */
-  public CacheManager()
-  {
-    // Initialise the manager store
-    cacheableClassMap = new HashMap<>();
-  }
-
-  /**
-   * This method retrieves the cacheable object from
-   * cache using the key and returns the it.
+   * Retrieve a batch of records from the adapter.
    *
-   * @param pkKey The search key for the cacheable object
-   * @return The cacheable object
+   * @return The collection of records that was loaded
+   * @throws OpenRate.exception.ProcessingException
    */
-  @Override
-  public ICacheable get(String pkKey)
-  {
-    ICacheable lookUpResult;
-    lookUpResult = cacheableClassMap.get(pkKey);
-
-    return lookUpResult;
-  }
-
-  /**
-   * This method adds the cacheable object to the
-   * cache with its key.
-   *
-   * @param key The search key to store the object under
-   * @param cachedObject The object to store
-   * @throws InitializationException
-   *
-   */
-  @Override
-  public void put(String key, ICacheable cachedObject)
-           throws InitializationException
-  {
-    try
-    {
-      cacheableClassMap.put(key, cachedObject);
+    @Override
+    protected Collection<IRecord> loadBatch() throws ProcessingException {
+        ArrayList<IRecord> outBatch = new ArrayList<>();
+        return outBatch;
     }
-    catch (Exception cacheEx)
-    {
-      String message = "Error while putting object <"+key+"> into CacheManager";
-      log.error(message);
-      throw new InitializationException(message,
-                                        cacheEx,
-                                        "CacheManager");
+
+ /**
+  * This is called when the synthetic Header record is encountered, and has the
+  * meaning that the stream is starting. In this case we have to open a new
+  * dump file each time a stream starts.   *
+  *
+  * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+  */
+    @Override
+    public IRecord procHeader(IRecord r) throws ProcessingException {
+        return r;
     }
-  }
+
+ /**
+  * This is called when a data record is encountered. You should do any normal
+  * processing here.
+  *
+  * @param r The record we are working on
+  * @return The processed record
+  * @throws ProcessingException
+  */
+    @Override
+    public IRecord procValidRecord(IRecord r) throws ProcessingException {
+        return r;
+    }
+
+ /**
+  * This is called when a data record with errors is encountered. You should do
+  * any processing here that you have to do for error records, e.g. statistics,
+  * special handling, even error correction!
+  *
+  * @param r The record we are working on
+  * @return The processed record
+  * @throws ProcessingException
+  */
+    @Override
+    public IRecord procErrorRecord(IRecord r) throws ProcessingException {
+        return r;
+    }
+
+ /**
+  * This is called just before the trailer, and allows any pending record to
+  * be pushed into the pipe before the trailer. Note that this is useful when
+  * there is no trailer in a file, otherwise the file (not the synthetic trailer)
+  * trailer will normally be used for this.
+  *
+  * @return The possible pending record in the adapter at the moment
+  * @throws ProcessingException
+  */
+    @Override
+    public IRecord purgePendingRecord() throws ProcessingException {
+        return null;
+    }
+
+ /**
+  * This is called when the synthetic trailer record is encountered, and has the
+  * meaning that the stream is now finished. In this example, all we do is
+  * pass the control back to the transactional layer.
+  *
+  * @param r The record we are working on
+  * @return The processed record
+  * @throws ProcessingException
+  */
+    @Override
+    public IRecord procTrailer(IRecord r) throws ProcessingException {
+        return r;
+    }
 }

@@ -136,7 +136,8 @@ public class DumpRT
     // Check the result we got
     if (ConfigHelper.equals("None"))
     {
-      throw new InitializationException("DumpRT must have a logger defined.");
+      message = "DumpRT must have a logger defined.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     processControlEvent(SERVICE_DUMPLOGGER, true, ConfigHelper);
@@ -435,7 +436,7 @@ public class DumpRT
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -459,10 +460,10 @@ public class DumpRT
     super.registerClientManager();
 
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPTYPE, ClientManager.PARAM_MANDATORY_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPLOGGER, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPTYPE, ClientManager.PARAM_MANDATORY_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPLOGGER, ClientManager.PARAM_NONE);
   }
 }

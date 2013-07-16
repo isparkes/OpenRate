@@ -123,8 +123,8 @@ public abstract class AbstractSocketTeeAdapter
     ConfigHelper = initGetBatchHost();
     if (ConfigHelper.equalsIgnoreCase("NONE"))
     {
-      Message = "No host defined for the batch listener";
-      throw new InitializationException(Message);
+      message = "No host defined for the batch listener";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -134,8 +134,8 @@ public abstract class AbstractSocketTeeAdapter
     ConfigHelper = initGetBatchPort();
     if (ConfigHelper.equalsIgnoreCase("NONE"))
     {
-      Message = "No host port defined for the batch listener";
-      throw new InitializationException(Message);
+      message = "No host port defined for the batch listener";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -243,11 +243,11 @@ public abstract class AbstractSocketTeeAdapter
   public void registerClientManager() throws InitializationException
   {
     // Set the client reference and the base services first
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHHOST, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHPORT, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHHOST, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHPORT, ClientManager.PARAM_MANDATORY);
   }
 
   /**
@@ -305,7 +305,7 @@ public abstract class AbstractSocketTeeAdapter
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error("Invalid number for batch port. Passed value = <" +
+          getPipeLog().error("Invalid number for batch port. Passed value = <" +
                 Parameter + ">");
         }
 
@@ -315,7 +315,7 @@ public abstract class AbstractSocketTeeAdapter
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -334,7 +334,7 @@ public abstract class AbstractSocketTeeAdapter
   private String initGetBatchHost() throws InitializationException
   {
     String tmpValue;
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),getSymbolicName(),
                                                    SERVICE_BATCHHOST, "NONE");
 
     return tmpValue;
@@ -347,7 +347,7 @@ public abstract class AbstractSocketTeeAdapter
   private String initGetBatchPort() throws InitializationException
   {
     String tmpValue;
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),getSymbolicName(),
                                                    SERVICE_BATCHPORT, "NONE");
 
     return tmpValue;

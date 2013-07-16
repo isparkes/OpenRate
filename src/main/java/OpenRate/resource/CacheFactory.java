@@ -126,9 +126,9 @@ public class CacheFactory
   // controls whether resources are loaded sequentially or in parallel
   private boolean   sequentialLoading;
 
-  // reference to the exception handler
-  private ExceptionHandler handler;
-
+  // used to simplify logging and exception handling
+  public String message;
+  
   /**
    * The Key used to get the CacheFactory from the
    * configuration settings.
@@ -181,7 +181,8 @@ public class CacheFactory
     {
       // we are relying on this name to be able to find the resource
       // later, so stop if it is not right
-      throw new InitializationException("Cache Factory ModuleName should be <" + RESOURCE_KEY + ">");
+      message = "Cache Factory ModuleName should be <" + RESOURCE_KEY + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     managers = new HashMap<>(50);
@@ -217,7 +218,8 @@ public class CacheFactory
         if (tmpCacheableClassName.equalsIgnoreCase("None") ||
            (tmpCacheableClass.equalsIgnoreCase("None")))
         {
-          throw new InitializationException("Configuration for <" + tmpCacheableClassName + ">:<" + tmpCacheableClass + "> not complete.");
+          message = "Configuration for <" + tmpCacheableClassName + ">:<" + tmpCacheableClass + "> not complete.";
+          throw new InitializationException(message,getSymbolicName());
         }
         else
         {
@@ -231,7 +233,6 @@ public class CacheFactory
           // Instantiate the object
           cacheableClass = Class.forName(tmpCacheableClass);
           cacheableObject = (ICacheable) cacheableClass.newInstance();
-          cacheableObject.setHandler(handler);
           cacheManager.put(tmpCacheableClassName, cacheableObject);
 
           /*
@@ -260,7 +261,6 @@ public class CacheFactory
               cacheLoaderThread.setResourceName(resourceName);
               cacheLoaderThread.setLoadStartTime(ConversionUtils.getConversionUtilsObject().getCurrentUTCms());
               cacheLoaderThread.setLog(FWLog);
-              cacheLoaderThread.setExceptionHandler(OpenRate.getOpenRateExceptionHandler());
 
               // Launch the thread
               cacheLoaderThread.start();
@@ -268,59 +268,59 @@ public class CacheFactory
           }
         }
       }
-      catch (ClassNotFoundException cnfe)
+      catch (ClassNotFoundException ex)
       {
-        String Message = "ClassNotFoundException creating <" + tmpCacheableClassName + ">. Message = <" + cnfe.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,cnfe));
+        message = "ClassNotFoundException creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (InstantiationException ie)
+      catch (InstantiationException ex)
       {
-        String Message = "InstantiationException creating <" + tmpCacheableClassName + ">. Message = <" + ie.getMessage() + ">. Perhaps you are trying to use an abstract class.";
-        handler.reportException(new InitializationException(Message,ie));
+        message = "InstantiationException creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">. Perhaps you are trying to use an abstract class.";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (IllegalAccessException iae)
+      catch (IllegalAccessException ex)
       {
-        String Message = "IllegalAccessException creating <" + tmpCacheableClassName + ">. Message = <" +  iae.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,iae));
+        message = "IllegalAccessException creating <" + tmpCacheableClassName + ">. Message = <" +  ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (NullPointerException npe)
+      catch (NullPointerException ex)
       {
-        String Message = "NullPointerException creating <" + tmpCacheableClassName + ">. Message = <" + npe.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,npe));
+        message = "NullPointerException creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (ClassCastException cce)
+      catch (ClassCastException ex)
       {
-        String Message = "Class Cast Exception creating <" + tmpCacheableClassName + ">. Message = <" +  cce.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,cce));
+        message = "Class Cast Exception creating <" + tmpCacheableClassName + ">. Message = <" +  ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (NumberFormatException nfe)
+      catch (NumberFormatException ex)
       {
-        String Message = "Number Format Exception creating <" + tmpCacheableClassName + ">. Message = <" + nfe.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,nfe));
+        message = "Number Format Exception creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
       catch (InitializationException ie)
       {
-        handler.reportException(ie);
+        OpenRate.getFrameworkExceptionHandler().reportException(ie);
       }
-      catch (OutOfMemoryError oome)
+      catch (OutOfMemoryError ex)
       {
-        String Message = "Out of memory creating <" + tmpCacheableClassName + ">. Message = <" + oome.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,oome));
+        message = "Out of memory creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (ArrayIndexOutOfBoundsException aioob)
+      catch (ArrayIndexOutOfBoundsException ex)
       {
-        String Message = "Out of memory creating <" + tmpCacheableClassName + ">. Message = <" + aioob.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,aioob));
+        message = "Out of memory creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        String Message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + e.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,e));
+        message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (Throwable t)
+      catch (Throwable ex)
       {
-        String Message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + t.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,t));
+        message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
 
       // Set the auto reload parameter
@@ -335,11 +335,17 @@ public class CacheFactory
           // Set the date so that we don't reload right away
           lastReloadUTC = ConversionUtils.getConversionUtilsObject().getCurrentUTC();
         }
-        catch (NumberFormatException nfe)
+        catch (NumberFormatException ex)
         {
-          String Message = "Parameter " + SERVICE_AUTO_RELOAD + " expects a numeric value, but the configured value <" + configHelper + "> is not numeric.";
-        handler.reportException(new InitializationException(Message,nfe));
+          message = "Parameter " + SERVICE_AUTO_RELOAD + " expects a numeric value, but the configured value <" + configHelper + "> is not numeric.";
+          OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
         }
+      }
+      
+      // Check for exceptions
+      if (OpenRate.getFrameworkExceptionHandler().hasError())
+      {
+        throw new InitializationException("Startup failed. Aborting.",getSymbolicName());
       }
     }
 
@@ -356,7 +362,7 @@ public class CacheFactory
       }
 
       // Check for errors
-      if (OpenRate.getOpenRateExceptionHandler().hasError())
+      if (OpenRate.getFrameworkExceptionHandler().hasError())
       {
         // no point in carrying on
         return;
@@ -400,10 +406,10 @@ public class CacheFactory
           }
           catch (NumberFormatException nfe)
           {
-            String Message = "Expected a numeric value for <" + SERVICE_AUTO_RELOAD +
+            message = "Expected a numeric value for <" + SERVICE_AUTO_RELOAD +
                               ">, in cache <" + getSymbolicName() + "> but got <" +
                               autoLoadPeriod + ">";
-            throw new InitializationException(Message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           // Log the fact that we are reloading this cache
@@ -429,29 +435,29 @@ public class CacheFactory
         // Log the creation of the cacheable class
         FWLog.info("Created Cacheable Class <" + tmpCacheableClassName + ">");
       }
-      catch (NullPointerException npe)
+      catch (NullPointerException ex)
       {
-        String Message = "NullPointerException creating <" + tmpCacheableClassName + ">. Message = <" + npe.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,npe));
+        message = "NullPointerException creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (ClassCastException cce)
+      catch (ClassCastException ex)
       {
-        String Message = "Class Cast Exception creating <" + tmpCacheableClassName + ">. Message = <" +  cce.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,cce));
+        message = "Class Cast Exception creating <" + tmpCacheableClassName + ">. Message = <" +  ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (NumberFormatException nfe)
+      catch (NumberFormatException ex)
       {
-        String Message = "Number Format Exception creating <" + tmpCacheableClassName + ">. Message = <" + nfe.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,nfe));
+        message = "Number Format Exception creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
       catch (InitializationException ie)
       {
-        handler.reportException(ie);
+        OpenRate.getFrameworkExceptionHandler().reportException(ie);
       }
       catch (Exception ex)
       {
-        String Message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
-        handler.reportException(new InitializationException(Message,ex));
+        message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
 
       // Set the auto reload parameter
@@ -466,10 +472,10 @@ public class CacheFactory
           // Set the date so that we don't reload right away
           lastReloadUTC = ConversionUtils.getConversionUtilsObject().getCurrentUTC();
         }
-        catch (NumberFormatException nfe)
+        catch (NumberFormatException ex)
         {
-          String Message = "Parameter " + SERVICE_AUTO_RELOAD + " expects a numeric value, but the configured value <" + configHelper + "> is not numeric.";
-        handler.reportException(new InitializationException(Message,nfe));
+          message = "Parameter " + SERVICE_AUTO_RELOAD + " expects a numeric value, but the configured value <" + configHelper + "> is not numeric.";
+          OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
         }
       }
     }
@@ -671,12 +677,12 @@ public class CacheFactory
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_DYNAMIC_SYNC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_AUTO_RELOAD, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_NEXT_RELOAD, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_AUTO_RELOAD, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_NEXT_RELOAD, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -840,17 +846,6 @@ public class CacheFactory
           }
         }
       }
-	  }
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
+    }
   }
 }

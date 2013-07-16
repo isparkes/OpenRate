@@ -54,6 +54,8 @@
  */
 package OpenRate.adapter.realTime;
 
+import OpenRate.IPipeline;
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
@@ -83,28 +85,10 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   // thread monitoring) and logging.
   private String SymbolicName;
 
-  /**
-   * The PipeLog is the logger which should be used for all pipeline level
-   * messages. This is instantiated during pipe startup, because at this
-   * point we don't know the name of the pipe and therefore the logger to use.
-   */
-  protected ILogger PipeLog = null;
-
-  /**
-   * The PipeLog is the logger which should be used for all statistics related
-   * messages.
-   */
-  protected ILogger StatsLog = LogUtil.getLogUtil().getLogger("Statistics");
-
  /**
   * This is the pipeline that we are in, used for logging and property retrieval
   */
-  protected String pipeName;
-
-  /**
-   * The exception handler that we use for reporting runtime errors
-   */
-  protected ExceptionHandler handler;
+  protected IPipeline pipeline;
 
   // used to create the output batches
   int outputCounter = 0;
@@ -154,22 +138,20 @@ public abstract class AbstractRTAdapter implements IRTAdapter
  /**
   * Initialise the module. Called during pipeline creation.
   *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The module symbolic name of this module
+  * @param pipelineName The name of the pipeline this module is in
+  * @param moduleName The module symbolic name of this module
   * @throws OpenRate.exception.InitializationException
   */
   @Override
-  public void init(String PipelineName, String ModuleName) throws InitializationException
+  public void init(String pipelineName, String moduleName) throws InitializationException
   {
-    setSymbolicName(ModuleName);
+    setSymbolicName(moduleName);
 
     // store the pipe we are in
-    this.pipeName = PipelineName;
+    setPipeline(OpenRate.getPipeline(pipelineName));
 
-    // Get the pipe log
-    PipeLog = LogUtil.getLogUtil().getLogger(PipelineName);
     // Get the debug status
-    String ConfigHelper = PropertyUtils.getPropertyUtils().getRTAdapterPropertyValueDef(PipelineName, ModuleName, "Debug", "false");
+    String ConfigHelper = PropertyUtils.getPropertyUtils().getRTAdapterPropertyValueDef(pipelineName, moduleName, "Debug", "false");
 
     if (ConfigHelper.equals("true"))
     {
@@ -187,27 +169,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   public void cleanup()
   {
     // NOP
-  }
-
- /**
-  * Set the exception handler mechanism.
-  *
-  * @param handler The parent handler to set
-  */
-  @Override
-  public void setExceptionHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
-
- /**
-  * return exception handler
-  *
-  * @return The parent handler that is currently in use
-  */
-  public ExceptionHandler getExceptionHandler()
-  {
-    return this.handler;
   }
 
  /**
@@ -237,15 +198,15 @@ public abstract class AbstractRTAdapter implements IRTAdapter
     }
     catch (ProcessingException pe)
     {
-      PipeLog.error("Processing exception caught in Output Adapter <" +
+      getPipeLog().error("Processing exception caught in Output Adapter <" +
                 getSymbolicName() + ">", pe);
       getExceptionHandler().reportException(pe);
     }
     catch (Throwable t)
     {
-      PipeLog.fatal("Unexpected exception caught in Plug In <" +
+      getPipeLog().fatal("Unexpected exception caught in Plug In <" +
                 getSymbolicName() + ">", t);
-      getExceptionHandler().reportException(new ProcessingException(t));
+      getExceptionHandler().reportException(new ProcessingException(t,getSymbolicName()));
     }
   }
 
@@ -385,7 +346,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
           }
           catch (ProcessingException ex)
           {
-            PipeLog.error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
+            getPipeLog().error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
           }
         }
         else
@@ -396,7 +357,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
           }
           catch (ProcessingException ex)
           {
-            PipeLog.error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
+            getPipeLog().error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
           }
         }
       }
@@ -445,7 +406,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
         }
         catch (ProcessingException ex)
         {
-          PipeLog.error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
+          getPipeLog().error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
         }
       }
       else
@@ -456,7 +417,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
         }
         catch (ProcessingException ex)
         {
-          PipeLog.error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
+          getPipeLog().error("Processing exception <"+ex.getMessage()+"> caught in adapter <"+tmpPlugin.getSymbolicName()+">");
         }
       }
     }
@@ -570,10 +531,10 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   public void RegisterClientManager() throws InitializationException
   {
     // Set the client reference and the base services first
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHSIZE, ClientManager.PARAM_MANDATORY);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHSIZE, ClientManager.PARAM_MANDATORY);
   }
 
   /**
@@ -594,8 +555,8 @@ public abstract class AbstractRTAdapter implements IRTAdapter
     if (ResultCode == 0)
     {
       String logStr = "Command <" + Command + "> handled by plugin <" +
-                       getSymbolicName() + "> in pipe <" + pipeName +">";
-      PipeLog.debug(logStr);
+                       getSymbolicName() + "> in pipe <" + getPipeName() +">";
+      getPipeLog().debug(logStr);
 
       return "OK";
     }
@@ -605,4 +566,49 @@ public abstract class AbstractRTAdapter implements IRTAdapter
     }
   }
 
+  // -----------------------------------------------------------------------------
+  // -------------------- Standard getter/setter functions -----------------------
+  // -----------------------------------------------------------------------------
+
+    /**
+     * @return the pipeName
+     */
+    public String getPipeName() {
+      return pipeline.getSymbolicName();
+    }
+
+    /**
+     * @return the pipeline
+     */
+    public IPipeline getPipeline() {
+      return pipeline;
+    }
+
+ /**
+  * Set the pipeline reference so the input adapter can control the scheduler
+  *
+  * @param pipeline the Pipeline to set
+  */
+  public void setPipeline(IPipeline pipeline)
+  {
+    this.pipeline = pipeline;
+  }
+
+   /**
+    * Return the pipeline logger.
+    * 
+    * @return The logger
+    */
+    protected ILogger getPipeLog() {
+      return pipeline.getPipeLog();
+    }
+
+   /**
+    * Return the exception handler.
+    * 
+    * @return The exception handler
+    */
+    protected ExceptionHandler getExceptionHandler() {
+      return pipeline.getPipelineExceptionHandler();
+    }
 }

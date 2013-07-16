@@ -116,8 +116,8 @@ public abstract class AbstractJBCustomerLookup
 
     if (CM == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays
@@ -125,8 +125,8 @@ public abstract class AbstractJBCustomerLookup
 
     if (getCC() == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

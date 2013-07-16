@@ -218,7 +218,7 @@ public abstract class BinaryFileInputAdapter
   protected String ProcessingPrefix;
 
   // This is used for queueing up files ready for processing
-  private ArrayList<Integer> FileTransactionNumbers = new ArrayList<Integer>();
+  private ArrayList<Integer> FileTransactionNumbers = new ArrayList<>();
 
   // This is the current transaction number we are working on
   private int      transactionNumber = 0;
@@ -326,7 +326,7 @@ public abstract class BinaryFileInputAdapter
     initFileName();
 
     // create the structure for storing filenames
-    CurrentFileNames = new HashMap <Integer, TransControlStructure>(10);
+    CurrentFileNames = new HashMap <>(10);
   }
 
  /**
@@ -358,7 +358,7 @@ public abstract class BinaryFileInputAdapter
     IRecord           batchRecord;
     byte[]            bytes;
 
-    Outbatch = new ArrayList<IRecord>();
+    Outbatch = new ArrayList<>();
 
     // Check to see if there is any work to do, and if the transaction
     // manager can accept the new work (if it can't, no files will be assigned
@@ -421,24 +421,27 @@ public abstract class BinaryFileInputAdapter
         }
         catch (FileNotFoundException exFileNotFound)
         {
-          PipeLog.error(
-                "Application is not able to read file : '" + getProcName(transactionNumber) +
-                "' ");
-          throw new ProcessingException("Application is not able to read file : '" +
-                                        getProcName(transactionNumber) + "' ", exFileNotFound);
+          getPipeLog().error(
+                "Application is not able to read file <" + getProcName(transactionNumber) + ">");
+          throw new ProcessingException("Application is not able to read file <" +
+                                        getProcName(transactionNumber) + ">", 
+                                        exFileNotFound, 
+                                        getSymbolicName());
         }
         catch (IOException ioex)
         {
-          PipeLog.error(
+          getPipeLog().error(
                 "Application is not able to read file : '" + getProcName(transactionNumber) +
                 "' ");
-          throw new ProcessingException("Application is not able to read file : '" +
-                                        getProcName(transactionNumber) + "' ", ioex);
+          throw new ProcessingException("Application is not able to read file: <" +
+                                        getProcName(transactionNumber) + "> ",
+                                        ioex,
+                                        getSymbolicName());
         }
       }
 
       // read from the file and prepare the batch
-      while ((recordListIterator.hasNext()) & (ThisBatchCounter < BatchSize))
+      while ((recordListIterator.hasNext()) & (ThisBatchCounter < batchSize))
       {
         tmpDataRecord = recordListIterator.next();
 
@@ -481,7 +484,7 @@ public abstract class BinaryFileInputAdapter
         }
 
         // if so, clear down the outbatch, so we don't keep filling the pipe
-        PipeLog.warning("Pipe <"+ getSymbolicName() + "> discarded <" + discardCount + "> of <" + originalCount + "> input records, because of pending abort.");
+        getPipeLog().warning("Pipe <"+ getSymbolicName() + "> discarded <" + discardCount + "> of <" + originalCount + "> input records, because of pending abort.");
       }
 
       // Update the statistics with the number of COMPRESSED final records
@@ -534,7 +537,7 @@ public abstract class BinaryFileInputAdapter
         }
         catch (ProcessingException ex)
         {
-          PipeLog.error("Error flushing transaction in module <" + getSymbolicName() + ">. Message <" + ex.getMessage() + ">");
+          getPipeLog().error("Error flushing transaction in module <" + getSymbolicName() + ">. Message <" + ex.getMessage() + ">");
         }
 
         // Notify the transaction layer that we have finished
@@ -567,10 +570,11 @@ public abstract class BinaryFileInputAdapter
     }
     catch (IOException exFileNotFound)
     {
-      PipeLog.error("Application is not able to close file : '" + getProcName(TransactionNumber) +
-                "' ");
-      throw new ProcessingException("Application is not able to read file : '" +
-                                    getProcName(TransactionNumber) + "' ", exFileNotFound);
+      getPipeLog().error("Application is not able to close file <" + getProcName(TransactionNumber) + ">");
+      throw new ProcessingException("Application is not able to read file <" +
+                                    getProcName(TransactionNumber) + "> ", 
+                                    exFileNotFound,
+                                    getSymbolicName());
     }
   }
 
@@ -865,7 +869,7 @@ public abstract class BinaryFileInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -889,16 +893,16 @@ public abstract class BinaryFileInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 
   // -----------------------------------------------------------------------------
@@ -912,7 +916,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetInputFilePath() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PATH);
 
     return tmpFile;
   }
@@ -924,7 +928,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetDoneFilePath() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PATH);
 
     return tmpFile;
   }
@@ -936,7 +940,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetErrFilePath() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PATH);
 
     return tmpFile;
   }
@@ -948,7 +952,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetInputFilePrefix() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PREFIX);
 
     return tmpFile;
   }
@@ -960,7 +964,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetDoneFilePrefix() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PREFIX);
 
     return tmpFile;
   }
@@ -972,7 +976,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetErrFilePrefix() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PREFIX);
 
     return tmpFile;
   }
@@ -984,7 +988,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetInputFileSuffix() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_SUFFIX);
 
     return tmpFile;
   }
@@ -996,7 +1000,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetDoneFileSuffix() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_SUFFIX);
 
     return tmpFile;
   }
@@ -1008,7 +1012,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetErrFileSuffix() throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_SUFFIX);
 
     return tmpFile;
   }
@@ -1020,7 +1024,7 @@ public abstract class BinaryFileInputAdapter
   private String initGetProcPrefix() throws InitializationException
   {
     String tmpProcPrefix;
-    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
                                                                   "tmp");
 
@@ -1043,7 +1047,7 @@ public abstract class BinaryFileInputAdapter
    */
   private void initFileName() throws InitializationException
   {
-    String  Message;
+    String  message;
     File    dir;
 
     /*
@@ -1056,49 +1060,49 @@ public abstract class BinaryFileInputAdapter
     if (InputFilePath == null)
     {
       InputFilePath = ".";
-      Message = "Input file path not set. Defaulting to <.>.";
-      PipeLog.warning(Message);
+      message = "Input file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
     dir = new File(InputFilePath);
     if (!dir.isDirectory())
     {
-      Message = "Input file path <" + InputFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Input file path <" + InputFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (DoneFilePath == null)
     {
       DoneFilePath = ".";
-      Message = "Done file path not set. Defaulting to <.>.";
-      PipeLog.warning(Message);
+      message = "Done file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
     dir = new File(DoneFilePath);
     if (!dir.isDirectory())
     {
-      Message = "Done file path <" + DoneFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Done file path <" + DoneFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (ErrFilePath == null)
     {
       ErrFilePath = ".";
-      Message = "Error file path not set. Defaulting to <.>.";
-      PipeLog.warning(Message);
+      message = "Error file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
     dir = new File(ErrFilePath);
     if (!dir.isDirectory())
     {
-      Message = "Error file path <" + ErrFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error file path <" + ErrFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
@@ -1106,9 +1110,9 @@ public abstract class BinaryFileInputAdapter
           ErrFileSuffix))
     {
       // These look suspiciously similar
-      Message = "Done file and Error file cannot be the same";
-      PipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Done file and Error file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
@@ -1116,9 +1120,9 @@ public abstract class BinaryFileInputAdapter
           ErrFileSuffix))
     {
       // These look suspiciously similar
-      Message = "Input file and Error file cannot be the same";
-      PipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Input file and Error file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
@@ -1126,9 +1130,9 @@ public abstract class BinaryFileInputAdapter
           InputFileSuffix))
     {
       // These look suspiciously similar
-      Message = "Input file and Input file cannot be the same";
-      PipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Input file and Input file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -1162,7 +1166,7 @@ public abstract class BinaryFileInputAdapter
     int            tmpTransNumber;
     int            filesOpened;
     TransControlStructure tmpFileNames;
-    ArrayList<Integer> openedTransactions = new ArrayList<Integer>();
+    ArrayList<Integer> openedTransactions = new ArrayList<>();
 
     // This is the current filename we are working on
     String fileName;
@@ -1192,7 +1196,7 @@ public abstract class BinaryFileInputAdapter
             // The transactional layer - we just trigger it here
             tmpTransNumber = createNewTransaction();
 
-            PipeLog.info("Input File name is <" + fileName + ">");
+            getPipeLog().info("Input File name is <" + fileName + ">");
 
             // Calculate the processing file name that we are using for this file
             procName = getProcFilePath(fileName,
@@ -1244,11 +1248,11 @@ public abstract class BinaryFileInputAdapter
               openedTransactions.add(tmpTransNumber);
 
               // Set the scheduler - we have found some files to process
-              ourPipeline.setSchedulerHigh();
+              getPipeline().setSchedulerHigh();
             }
             else
             {
-              PipeLog.warning("Could not rename file <" + inpName + ">");
+              getPipeLog().warning("Could not rename file <" + inpName + ">");
 
               cancelTransaction(tmpTransNumber);
             }

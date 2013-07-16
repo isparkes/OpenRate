@@ -170,11 +170,11 @@ public class RUMCPRateCache
     // Validate the beat
     if(Beat <= 0)
     {
-      String Message = "Beat in model <" + PriceModel + "> and step number <" +
+      message = "Beat in model <" + PriceModel + "> and step number <" +
                         Step + "> is invalid <" + Beat + "> in module <" +
                         getSymbolicName() + ">";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // See if we already have the cache object for this price
@@ -247,11 +247,11 @@ public class RUMCPRateCache
           else
           {
             // cannot have two steps with the same start date
-            String Message = "Two steps in model <" + PriceModel + "> and step number <" +
+            message = "Two steps in model <" + PriceModel + "> and step number <" +
                              Step + "> have the same start date <" + StartTime + "> in module <" +
                              getSymbolicName() + ">";
-            getFWLog().error(Message);
-            throw new InitializationException(Message);
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
         }
       }
@@ -323,10 +323,10 @@ public class RUMCPRateCache
     }
     catch (FileNotFoundException fnfe)
     {
-      String Message = "Not able to read file : <" +
-            CacheDataFile + ">. Message = <" + fnfe.getMessage() + ">";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Not able to read file : <" +
+            CacheDataFile + ">. message = <" + fnfe.getMessage() + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // inform the user about the start of the price model phase
@@ -371,11 +371,11 @@ public class RUMCPRateCache
 
             if (tmpChargeBase == 0)
             {
-              String Message = "Error in price model <" + PriceModel +
+              message = "Error in price model <" + PriceModel +
                                "> in module <" + getSymbolicName() +
                                ">. Charge base cannot be 0.";
-              getFWLog().fatal(Message);
-              throw new InitializationException(Message);
+              getFWLog().fatal(message);
+              throw new InitializationException(message,getSymbolicName());
             }
 
             addPriceModel(PriceModel, tmpTier, tmpFrom, tmpTo, tmpBeat, tmpFactor, tmpChargeBase, tmpStartTime);
@@ -383,37 +383,37 @@ public class RUMCPRateCache
           else
           {
             // Not a valid number of fields
-            String Message = "Invalid number of fields in price map loading for module <" +
+            message = "Invalid number of fields in price map loading for module <" +
                              getSymbolicName() + "> at line <" + RatesLoaded +
                              ">. Expecting <7> or <8>, but got <" + RateFields.length + ">.";
-            getFWLog().error(Message);
-            throw new InitializationException(Message);
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
         }
       }
     }
     catch (IOException ex)
     {
-      String Message = "Error reading input file <" + CacheDataFile +
+      message = "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      String Message =
+      message =
             "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record.";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (ParseException pe)
     {
-      String Message =
+      message =
             "Error converting date from <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     finally
@@ -424,10 +424,10 @@ public class RUMCPRateCache
       }
       catch (IOException ex)
       {
-        String Message = "Error closing input file <" + CacheDataFile +
-                  ">. Message = <" + ex.getMessage() + ">";
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        message = "Error closing input file <" + CacheDataFile +
+                  ">. message = <" + ex.getMessage() + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -479,10 +479,10 @@ public class RUMCPRateCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Price Model Data for <" +
+      message = "Error performing SQL for retieving Price Model Data for <" +
                        getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // check we have something we can use - either we expect 7 fields (no
@@ -515,11 +515,11 @@ public class RUMCPRateCache
           if (tmpChargeBase == 0)
           {
             // cannot have a 0 charge base - exception
-            String Message = "Error in price model <" + PriceModel +
+            message = "Error in price model <" + PriceModel +
                              "> in module <" + getSymbolicName() +
                              ">. Charge base cannot be 0.";
-            getFWLog().fatal(Message);
-            throw new InitializationException(Message);
+            getFWLog().fatal(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           // Add the map
@@ -528,27 +528,27 @@ public class RUMCPRateCache
       }
       catch (SQLException ex)
       {
-        String Message = "Error opening Price Model Data for <" + getSymbolicName() +
+        message = "Error opening Price Model Data for <" + getSymbolicName() +
               ">. SQL Error = <" + ex.getMessage() + ">";
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       catch (ParseException pe)
       {
-        String Message =
+        message =
               "Error converting date from <" + getSymbolicName() + "> in record <" +
               RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
     else
     {
       // Not a valid number of fields
-      String Message = "Invalid number of fields in price map loading for module <" +
+      message = "Invalid number of fields in price map loading for module <" +
                        getSymbolicName() + ">. Expecting <7> or <9>, but got <" + Columns + ">.";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Close down stuff
@@ -560,10 +560,10 @@ public class RUMCPRateCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Price Model Data connection for <" +
+      message = "Error closing Price Model Data connection for <" +
                        getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     getFWLog().info(
@@ -579,7 +579,7 @@ public class RUMCPRateCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
  /**

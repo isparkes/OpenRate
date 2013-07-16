@@ -172,7 +172,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
         }
         else
         {
-          throw new ProcessingException("Event start date not found");
+          throw new ProcessingException("Event start date not found",getSymbolicName());
         }
       }
 
@@ -214,7 +214,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                   }
                   else
                   {
-                    throw new ProcessingException("Time zone not found");
+                    throw new ProcessingException("Time zone not found",getSymbolicName());
                   }
                 }
 
@@ -234,7 +234,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                 }
                 else
                 {
-                  throw new ProcessingException(e);
+                  throw new ProcessingException(e,getSymbolicName());
                 }
               }
 
@@ -260,7 +260,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                   }
                   else
                   {
-                    throw new ProcessingException("Event end date not found");
+                    throw new ProcessingException("Event end date not found",getSymbolicName());
                   }
                 }
 
@@ -285,7 +285,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                     }
                     else
                     {
-                      throw new ProcessingException("Time zone not found");
+                      throw new ProcessingException("Time zone not found",getSymbolicName());
                     }
                   }
                   else
@@ -338,7 +338,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                   }
                   else
                   {
-                    throw new ProcessingException("Time zone not found");
+                    throw new ProcessingException("Time zone not found",getSymbolicName());
                   }
                 }
               }
@@ -355,7 +355,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
                 }
                 else
                 {
-                  throw new ProcessingException(e);
+                  throw new ProcessingException(e,getSymbolicName());
                 }
               }
 
@@ -380,7 +380,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch
       }
       else
       {
-        throw new ProcessingException("Not a rating record");
+        throw new ProcessingException("Not a rating record",getSymbolicName());
       }
     }
   }

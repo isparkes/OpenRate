@@ -109,8 +109,8 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
 
     if (CMNR == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping array
@@ -118,8 +118,8 @@ public abstract class AbstractNumberRangeMatch extends AbstractPlugIn
 
     if (NR == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

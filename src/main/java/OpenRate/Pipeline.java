@@ -101,32 +101,10 @@ public class Pipeline
   // framework FWLog, or the default logger (console).
 
   /**
-   * Framework logger. This logger is used for logging information from the
-   * framework level, which include cache messages initialisation messages and
-   * framework level events.
-   */
-  protected ILogger FWLog         = LogUtil.getLogUtil().getLogger("Framework");
-
-  /**
-   * Error AstractLogger. This logger is used for capturing stack traces and other
-   * "verbose" errors, which is intended to leave the other logs free of
-   * stack dumps, and to centralise the place in which critical errors are
-   * reported.
-   */
-  protected ILogger ErrorLog      = LogUtil.getLogUtil().getLogger("ErrorLog");
-
-  /**
-   * Statistics AstractLogger. This logger gives you an overview of the processing
-   * statistics during the run, and aids in locating processing bottlenecks
-   * and monitoring.
-   */
-  protected ILogger StatsLog      = LogUtil.getLogUtil().getLogger("Statistics");
-
-  /**
    * Pipeline Level AstractLogger. This logger is used for logging messages specific
    * to this pipeline. It is instantiated during pipeline startup.
    */
-  protected ILogger PipeLog       = null;
+  private ILogger pipeLog       = null;
 
   // The symbolic name is used in the management of the pipeline (control and
   // thread monitoring) and logging.
@@ -155,23 +133,23 @@ public class Pipeline
 
   // Concrete classes for the following member attributes are
   // loaded from a property file and instantiated via reflection.
-  private ExceptionHandler handler = new ExceptionHandler();
+  private ExceptionHandler pipeExceptionHandler = new ExceptionHandler();
 
   // And the batch input adapter for this pipe
   private IInputAdapter batchInputAdapter;
 
   // And the real time input adapter for this pipe
-  private IRTAdapter RTAdapter;
+  private IRTAdapter rtAdapter;
 
   // tree of all threads that have been launched for processing plugins. Each
   // plug in has a sub-node containing a ThreadGroup for itself.
   private ThreadGroup pluginRoot;
 
   // tree of all threads that have been launched for output adapters.
-  private ThreadGroup OutputAdapterRoot;
+  private ThreadGroup outputAdapterRoot;
 
   // tree of all threads that have been launched for output adapters.
-  private ThreadGroup RTAdapterRoot;
+  private ThreadGroup rtAdapterRoot;
 
   // list of plug ins to be run by this pipeline
   private ArrayList<IPlugIn> plugInList = new ArrayList<>();
@@ -184,7 +162,7 @@ public class Pipeline
   private ArrayList<ThreadGroup> thGrpsPlugIn = new ArrayList<>();
 
   // These are used for configuring the pipe
-  private int  SleepTime;
+  private int  sleepTime;
 
   // List of Services that this Client supports
   private final String SERVICE_PIPELINE_ACTIVE = CommonConfig.ACTIVE;
@@ -194,7 +172,7 @@ public class Pipeline
   private final String SERVICE_BUFFER_STATUS   = "BufferStatus";
 
   // If we encounter an unhadled processing exception, this says if we stop
-  private boolean HaltOnException = true;
+  private boolean haltOnException = true;
 
   // Does this pipe need to perform an action that needs a sync
   private int localSyncStatus = ISyncPoint.SYNC_STATUS_NORMAL_RUN;
@@ -214,6 +192,9 @@ public class Pipeline
 
   // this tells us if this is a batch pipe - used for management
   private boolean batchPipeline;
+  
+  // Used to simplify logging and exception handling
+  private String message;
 
  /**
   * Constructor
@@ -260,15 +241,15 @@ public class Pipeline
     }
     catch (NumberFormatException nfe)
     {
-      String Message = "MaxTransactions must be a numeric value, but we got <" + maxTransactions + "> in pipeline <" + symbolicName + ">. Aborting.";
-      throw new InitializationException(Message);
+      message = "MaxTransactions must be a numeric value, but we got <" + maxTransactions + "> in pipeline <" + symbolicName + ">. Aborting.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Set the max transactions
       TM.setMaxTransactions(maxTransTM);
 
     // set up the logger
-    PipeLog = LogUtil.getLogUtil().getLogger(Name);
+    setPipeLog(LogUtil.getLogUtil().getLogger(Name));
   }
 
   /**
@@ -290,7 +271,10 @@ public class Pipeline
     String strHaltOnExcp;
 
     // Initialise the default polling sleep time
-    SleepTime = 5000;
+    sleepTime = 5000;
+    
+    // Get our logger
+    setPipeLog(LogUtil.getLogUtil().getLogger(symbolicName));
 
     try
     {
@@ -320,11 +304,11 @@ public class Pipeline
       }
       else
       {
-        String Message = "Pipeline Type must be either Batch or RealTime, but we got <" + pipelineType + "> in pipeline <" + symbolicName + ">. Aborting.";
-        throw new InitializationException(Message);
+        message = "Pipeline Type must be either Batch or RealTime, but we got <" + pipelineType + "> in pipeline <" + symbolicName + ">. Aborting.";
+        throw new InitializationException(message,getSymbolicName());
       }
 
-      FWLog.info("*** Constructing " +pipelineType + " pipeline <" + symbolicName + "> ***");
+      OpenRate.getOpenRateFrameworkLog().info("*** Constructing " +pipelineType + " pipeline <" + symbolicName + "> ***");
 
       // Set the pipeline state with the value we have found from the
       // registry, otherwise it is true
@@ -333,23 +317,23 @@ public class Pipeline
 
       if (!active)
       {
-        FWLog.warning("Starting pipeline <" + symbolicName + "> in inactive state");
+        OpenRate.getOpenRateFrameworkLog().warning("Starting pipeline <" + symbolicName + "> in inactive state");
       }
 
       // set the halt on exception state
-      HaltOnException = strHaltOnExcp.equalsIgnoreCase("true");
+      haltOnException = strHaltOnExcp.equalsIgnoreCase("true");
 
       // Construct the pipeline according to the batch model
       if (batchPipeline)
       {
         // Get the initialised batch input adapter
-        batchInputAdapter = getBatchInputAdapter(handler);
+        batchInputAdapter = getBatchInputAdapter(pipeExceptionHandler);
 
         // create and initalise the processing body of the pipe
-        plugInList = getProcessPlugins(handler);
+        plugInList = getProcessPlugins(pipeExceptionHandler);
 
         // create the batch output adapter list
-        batchOutputAdapterList = getBatchOutputAdapterList(handler);
+        batchOutputAdapterList = getBatchOutputAdapterList(pipeExceptionHandler);
 
         // Hookup the buffers through the chain
         hookupBuffers(getBufferClass());
@@ -358,35 +342,32 @@ public class Pipeline
       // Construct the pipeline according to the real time model
       {
         // Get the real time input adapter
-        RTAdapter = getRTAdapter(handler);
+        rtAdapter = getRTAdapter(pipeExceptionHandler);
 
         // create and initalise the processing body of the pipe
-        plugInList = getProcessPlugins(handler);
-
-        // Set the exception handlers
-        RTAdapter.setExceptionHandler(handler);
+        plugInList = getProcessPlugins(pipeExceptionHandler);
 
         // Set up the RT processing chain - this injects the plugin list into the
         // adapter so it can be used for processing
-        RTAdapter.setProcessingList(plugInList);
+        rtAdapter.setProcessingList(plugInList);
       }
     }
-    catch (InitializationException ie)
+    catch (InitializationException ex)
     {
       // this will already be handled as we want, just pass it up
-      throw ie;
+      throw ex;
     }
     catch (Exception ex)
     {
       // Unexpected exception. Wrap it and pass it up, nesting the original message
-      String Message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
-      throw new InitializationException(Message, ex);
+      message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
     catch (Throwable ex)
     {
       // Unexpected exception. Wrap it and pass it up, nesting the original message
-      String Message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
-      throw new InitializationException(Message, ex);
+      message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
   }
 
@@ -414,10 +395,10 @@ public class Pipeline
                                                                 CommonConfig.DEFAULT_BUFFER_TYPE);
       BufferClass = Class.forName(defaultBuffer);
     }
-    catch (ClassNotFoundException cnfe)
+    catch (ClassNotFoundException ex)
     {
-      String Message = "Error finding buffer class <" + defaultBuffer + "> in pipeline <" + symbolicName + ">";
-      throw new InitializationException(Message);
+      message = "Error finding buffer class <" + defaultBuffer + "> in pipeline <" + symbolicName + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     return BufferClass;
@@ -429,7 +410,7 @@ public class Pipeline
   * @return The initialised batch input adapter
   * @exception InitializationException
   */
-  private IInputAdapter getBatchInputAdapter(ExceptionHandler Handler)
+  private IInputAdapter getBatchInputAdapter(ExceptionHandler pipeExceptionHandler)
           throws InitializationException
   {
     Class<?> PluginClass = null;
@@ -443,22 +424,22 @@ public class Pipeline
     // Check that we have the right number of input adapters (1)
     if (PluginNameList.size() != 1)
     {
-      String Message = "Expecting 1 Batch Input Adapter class for pipeline <" +
+      message = "Expecting 1 Batch Input Adapter class for pipeline <" +
                         symbolicName + ">. Found <" + PluginNameList.size() + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the name
     PluginName = PluginNameList.get(0);
     if (PluginName == null)
     {
-      String Message = "No Batch input adapter found";
-      FWLog.error(Message);
-      throw new InitializationException(Message);
+      message = "No Batch input adapter found";
+      OpenRate.getOpenRateFrameworkLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
-      FWLog.debug("Batch input adapter <" + PluginName + ">");
+      OpenRate.getOpenRateFrameworkLog().debug("Batch input adapter <" + PluginName + ">");
 
       // Get the class name
       PluginClassName = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(symbolicName, PluginName, "ClassName");
@@ -470,10 +451,10 @@ public class Pipeline
       }
       catch (ClassNotFoundException | NoClassDefFoundError ex)
       {
-        String Message = "Input adapter class <" + PluginClassName +
+        message = "Input adapter class <" + PluginClassName +
                          "> not found for pipeline <" + symbolicName + ">. <"
                          + ex.getMessage() + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       try
@@ -482,25 +463,22 @@ public class Pipeline
       }
       catch (InstantiationException ex)
       {
-        String Message = "Input adapter class  <" + PluginClassName +
+        message = "Input adapter class  <" + PluginClassName +
                          "> instantiation error in pipeline <" + symbolicName +
                          ">. <" + ex.getMessage() + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
       catch (IllegalAccessException ex)
       {
-        String Message = "Input adapter class  <" + PluginClassName +
+        message = "Input adapter class  <" + PluginClassName +
                          "> access error in pipeline <" + symbolicName + ">. <" +
                          ex.getMessage() + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // Now that we have the input adapter, initialise it using the index 0 (we
       // have only one input adapter)
       batchInputAdapter.init(symbolicName, PluginName);
-
-      // set the exception handler
-      batchInputAdapter.setExceptionHandler(Handler);
 
       // link the batch input adaptor to us, so it can manage the scheduler
       batchInputAdapter.setPipeline(this);
@@ -515,7 +493,7 @@ public class Pipeline
   * @return The initialised RT adapter
   * @throws InitializationException
   */
-  private IRTAdapter getRTAdapter(ExceptionHandler Handler)
+  private IRTAdapter getRTAdapter(ExceptionHandler pipeExceptionHandler)
           throws InitializationException
   {
     String PluginName;
@@ -529,21 +507,21 @@ public class Pipeline
     // Check that we have the right number of input adapters (1)
     if (PluginNameList.size() != 1)
     {
-      String Message = "Expecting 1 RT adapter class for pipeline <" +
+      message = "Expecting 1 RT adapter class for pipeline <" +
                         symbolicName + ">. Found <" + PluginNameList.size() + ".";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     PluginName = PluginNameList.get(0);
     if (PluginName == null)
     {
-      String Message = "No Real Time input adapter found";
-      FWLog.debug(Message);
-      throw new InitializationException(Message);
+      message = "No Real Time input adapter found";
+      OpenRate.getOpenRateFrameworkLog().debug(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
-      FWLog.debug("Real time input adapter <" + PluginName + ">");
+     OpenRate.getOpenRateFrameworkLog().debug("Real time input adapter <" + PluginName + ">");
 
       // Get the class name
       PluginClassName = PropertyUtils.getPropertyUtils().getRTAdapterPropertyValue(symbolicName, PluginName, "ClassName");
@@ -555,47 +533,46 @@ public class Pipeline
 
       catch (ClassNotFoundException ex)
       {
-        String Message = "Input adapter class <" + PluginClassName +
+        message = "Input adapter class <" + PluginClassName +
                          "> not found for pipeline <" + symbolicName + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       try
       {
-        RTAdapter = (IRTAdapter) PluginClass.newInstance();
+        rtAdapter = (IRTAdapter) PluginClass.newInstance();
       }
       catch (InstantiationException ex)
       {
-        String Message = "Input adapter class  <" + PluginClassName +
+        message = "Input adapter class  <" + PluginClassName +
                          "> instantiation error in pipeline <" +
                          symbolicName + ">. <" + ex.getMessage() + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
       catch (IllegalAccessException ex)
       {
-        String Message = "Input adapter class  <" + PluginClassName +
+        message = "Input adapter class  <" + PluginClassName +
                          "> access error in pipeline <" + symbolicName + ">. <" +
                          ex.getMessage() + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // Now that we have the input adapter, initialise it using the index 0 (we
       // have only one input adapter)
-      RTAdapter.init(symbolicName, PluginName);
-      RTAdapter.setExceptionHandler(Handler);
+      rtAdapter.init(symbolicName, PluginName);
     }
 
-    return RTAdapter;
+    return rtAdapter;
   }
 
  /**
   * Get and initialise the batch output adapters for this pipeline
   *
-  * @param Handler The Exception handler we are going to link to
+  * @param pipeExceptionHandler The Exception handler we are going to link to
   * @return The output adapter list
   * @throws InitializationException
   */
-  private ArrayList<IOutputAdapter> getBatchOutputAdapterList(ExceptionHandler Handler)
+  private ArrayList<IOutputAdapter> getBatchOutputAdapterList(ExceptionHandler pipeExceptionHandler)
           throws InitializationException
   {
     String PluginName;
@@ -610,8 +587,8 @@ public class Pipeline
     PluginNameList = PropertyUtils.getPropertyUtils().getGenericNameList(symbolicName+".OutputAdapter");
     if (PluginNameList.isEmpty())
     {
-      String Message = "No Output adapter found for pipeline <" + symbolicName + ">";
-      throw new InitializationException(Message);
+      message = "No Output adapter found for pipeline <" + symbolicName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -628,7 +605,7 @@ public class Pipeline
           // Now create the output adapter chain - get the adapter class
           PluginClassName = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(symbolicName, PluginName, "ClassName");
 
-          FWLog.debug("OutputAdapter " + Index + " = <" + PluginClassName  + ">");
+          OpenRate.getOpenRateFrameworkLog().debug("OutputAdapter " + Index + " = <" + PluginClassName  + ">");
 
           PluginClass = Class.forName(PluginClassName);
 
@@ -648,29 +625,28 @@ public class Pipeline
           // set to sink unconsumed errors
           tmpBatchOutputAdapter.init(symbolicName, PluginName);
           batchOutputAdapterList.add(tmpBatchOutputAdapter);
-          tmpBatchOutputAdapter.setExceptionHandler(Handler);
           Index++;
         }
       }
-      catch (ClassNotFoundException cnfe)
+      catch (ClassNotFoundException ex)
       {
-        String Message = "Error finding plugin class <" + PluginClassName + ">";
-        throw new InitializationException(Message);
+        message = "Error finding plugin class <" + PluginClassName + "> in module <"+getSymbolicName()+">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
-      catch (ClassCastException cce)
+      catch (ClassCastException ex)
       {
-        String Message = "Error creating plugin class (cast exception) <" + PluginClassName + ">";
-        throw new InitializationException(Message);
+        message = "Error creating plugin class (cast exception) <" + PluginClassName + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
-      catch (InstantiationException ie)
+      catch (InstantiationException ex)
       {
-        String Message = "Error instantiating plugin class <" + PluginClassName + ">";
-        throw new InitializationException(Message);
+        message = "Error instantiating plugin class <" + PluginClassName + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
-      catch (IllegalAccessException iae)
+      catch (IllegalAccessException ex)
       {
-        String Message = "Error accessing plugin class <" + PluginClassName + ">";
-        throw new InitializationException(Message);
+        message = "Error accessing plugin class <" + PluginClassName + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
     }
 
@@ -681,11 +657,11 @@ public class Pipeline
 
   * Get and initialise the processing plug ins
   *
-  * @param Handler The Exception handler we are going to link to
+  * @param pipeExceptionHandler The Exception handler we are going to link to
   * @return The processing plug in list
   * @throws InitializationException
   */
-  private ArrayList<IPlugIn> getProcessPlugins(ExceptionHandler Handler)
+  private ArrayList<IPlugIn> getProcessPlugins(ExceptionHandler pipeExceptionHandler)
           throws InitializationException
   {
     // This is the processing plug in we are adding
@@ -695,7 +671,7 @@ public class Pipeline
     Iterator<String> PluginIter;
     String   PluginName;
     Class<?> PluginClass;
-    String   PluginClassName = null;
+    String   pluginClassName = null;
     int      Index;
 
     // ------------------------- Build the pipeline ----------------------------
@@ -705,6 +681,7 @@ public class Pipeline
     try
     {
       PluginNameList = PropertyUtils.getPropertyUtils().getGenericNameList(symbolicName + ".Process");
+      
       // Now create the output adapter chain
       PluginIter = PluginNameList.iterator();
       Index = 0;
@@ -714,40 +691,46 @@ public class Pipeline
         PluginName = PluginIter.next();
 
         // Get the process class for the Plugin
-        PluginClassName = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(symbolicName, PluginName, "ClassName", "None");
+        pluginClassName = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(symbolicName, PluginName, "ClassName", "None");
 
-        FWLog.debug("Process "+ Index +" = " + PluginClassName);
+        if (pluginClassName.equals("None"))
+        {
+          message = "Could not find the ClassName definition for module <"+PluginName+"> in pipe <"+symbolicName+">";
+          throw new InitializationException(message,getSymbolicName());
+        }
+        
+        OpenRate.getOpenRateFrameworkLog().debug("Process "+ Index +" = " + pluginClassName);
 
-        PluginClass = Class.forName(PluginClassName);
+        PluginClass = Class.forName(pluginClassName);
         Plugin = (IPlugIn)PluginClass.newInstance();
 
         // Create the new Plugin
         Plugin.init(symbolicName,PluginName);
-        Plugin.setExceptionHandler(Handler);
+        Plugin.setExceptionHandler(pipeExceptionHandler);
         plugInList.add(Plugin);
 
         Index++;
       }
     }
-    catch (ClassNotFoundException cnfe)
+    catch (ClassNotFoundException ex)
     {
-      String Message = "Error finding plugin class <" + PluginClassName + ">";
-      throw new InitializationException(Message);
+      message = "Error finding plugin class <" + pluginClassName + "> in module <"+getSymbolicName()+">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
-    catch (ClassCastException cce)
+    catch (ClassCastException ex)
     {
-      String Message = "Error creating plugin class (cast exception) <" + PluginClassName + ">";
-      throw new InitializationException(Message,cce);
+      message = "Error creating plugin class (cast exception) <" + pluginClassName + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
-    catch (InstantiationException ie)
+    catch (InstantiationException ex)
     {
-      String Message = "Error instantiating plugin class <" + PluginClassName + ">";
-      throw new InitializationException(Message,ie);
+      message = "Error instantiating plugin class <" + pluginClassName + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
-    catch (IllegalAccessException iae)
+    catch (IllegalAccessException ex)
     {
-      String Message = "Error accessing plugin class <" + PluginClassName + ">";
-      throw new InitializationException(Message,iae);
+      message = "Error accessing plugin class <" + pluginClassName + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     return plugInList;
@@ -825,12 +808,13 @@ public class Pipeline
         tmpBuffer.setSupplier(tmpPlugIn.getSymbolicName());
 
         // if we have an RT adapter, hook it up onto the beginning of the output chain
-        if (RTAdapter != null)
+        if (rtAdapter != null)
         {
           // if we have a batch output adapter, create a new buffer and link it
           if (batchOutputAdapterList.size() > 0)
           {
-            throw new InitializationException ("Output adapter defined in an RT pipe");
+            message = "Output adapter defined in an RT pipe";
+            throw new InitializationException (message,getSymbolicName());
           }
         }
 
@@ -866,15 +850,15 @@ public class Pipeline
     }
     catch (InstantiationException ie)
     {
-      String Message = "Error instantiating buffer class in pipeline <" +
+      message = "Error instantiating buffer class in pipeline <" +
                        symbolicName + ">. <" + ie.getMessage() + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (IllegalAccessException iae)
     {
-      String Message = "Error accessing buffer class in pipeline <" +
+      message = "Error accessing buffer class in pipeline <" +
                        symbolicName + ">. <" + iae.getMessage() + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -945,7 +929,7 @@ public class Pipeline
         }
         else
         {
-          tmpSleepTime = SleepTime;
+          tmpSleepTime = sleepTime;
         }
 
         // **** Manage pipeline state changes ****
@@ -966,7 +950,7 @@ public class Pipeline
             if ((activeStateRequested == false) & (TM.getActiveTransactionCount() == 0))
             {
               active = activeStateRequested;
-              FWLog.info("Pipeline <" + symbolicName + "> inactive");
+              OpenRate.getOpenRateFrameworkLog().info("Pipeline <" + symbolicName + "> inactive");
             }
 
             // We can set the active state to true if the transaction manager
@@ -974,7 +958,7 @@ public class Pipeline
             if ((activeStateRequested == true) & (TM.getNewTransactionAllowed()))
             {
               active = activeStateRequested;
-              FWLog.info("Pipeline <" + symbolicName + "> active");
+              OpenRate.getOpenRateFrameworkLog().info("Pipeline <" + symbolicName + "> active");
             }
           }
 
@@ -1010,7 +994,7 @@ public class Pipeline
         {
           try
           {
-            FWLog.debug(
+            OpenRate.getOpenRateFrameworkLog().debug(
                   "Pipeline <" + symbolicName + "> will sleep for " +
                   tmpSleepTime + " ms.");
             Thread.sleep(tmpSleepTime);
@@ -1033,7 +1017,7 @@ public class Pipeline
 
           if (runCount == 0)
           {
-            FWLog.info(
+            OpenRate.getOpenRateFrameworkLog().info(
                   "RunCount reached, setting pipe <" + symbolicName +
                   "> inactive");
             active = false;
@@ -1046,7 +1030,7 @@ public class Pipeline
     }
     catch (ProcessingException pe)
     {
-      FWLog.error("ProcessingException thrown.", pe);
+      OpenRate.getOpenRateFrameworkLog().error("ProcessingException thrown.", pe);
     }
   }
 
@@ -1076,7 +1060,7 @@ public class Pipeline
     // Only notify once
     if (stopRequested == false)
     {
-      FWLog.warning(
+      OpenRate.getOpenRateFrameworkLog().warning(
             "Pipeline <" + symbolicName +
             "> received Stop Command. Will exit after the current Transaction");
 
@@ -1103,7 +1087,7 @@ public class Pipeline
     if (TM == null)
     {
       activeStateRequested = NewState;
-      FWLog.info("Pipeline <" + symbolicName + "> active state changed");
+      OpenRate.getOpenRateFrameworkLog().info("Pipeline <" + symbolicName + "> active state changed");
     }
     else
     {
@@ -1111,13 +1095,13 @@ public class Pipeline
       {
         activeStateRequested = true;
         TM.setNewTransactionAllowed(true);
-        FWLog.info("Pipeline <" + symbolicName + "> scheduled to become active");
+        OpenRate.getOpenRateFrameworkLog().info("Pipeline <" + symbolicName + "> scheduled to become active");
       }
       else
       {
         activeStateRequested = false;
         TM.setNewTransactionAllowed(false);
-        FWLog.info("Pipeline <" + symbolicName +
+        OpenRate.getOpenRateFrameworkLog().info("Pipeline <" + symbolicName +
               "> scheduled to become inactive after transaction completion");
       }
     }
@@ -1136,13 +1120,13 @@ public class Pipeline
     ThreadGroup  tmpGrpPlugIn;
     IOutputAdapter tmpOutputAdapter;
 
-    FWLog.debug("Pipeline <" + getSymbolicName() + "> starting...");
+    OpenRate.getOpenRateFrameworkLog().debug("Pipeline <" + getSymbolicName() + "> starting...");
 
     if (isBatchPipeline())
     {
       if (plugInList.isEmpty())
       {
-        FWLog.debug("no plugins, pipeline will pass records through.");
+        OpenRate.getOpenRateFrameworkLog().debug("no plugins, pipeline will pass records through.");
       }
 
       pluginIterator = plugInList.listIterator();
@@ -1185,7 +1169,7 @@ public class Pipeline
       }
 
       // Create the root thread group for the output adapters
-      OutputAdapterRoot = new ThreadGroup("Output");
+      outputAdapterRoot = new ThreadGroup("Output");
 
       // Launch the batch output adapters
       for (int i = 0; i < batchOutputAdapterList.size(); ++i)
@@ -1195,7 +1179,7 @@ public class Pipeline
         // reset Adapter before launching. clears shutdown flag.
         tmpOutputAdapter.reset();
 
-        Thread ThrOutAdapter = new Thread(OutputAdapterRoot, tmpOutputAdapter,
+        Thread ThrOutAdapter = new Thread(outputAdapterRoot, tmpOutputAdapter,
                                        tmpOutputAdapter.getSymbolicName() +
                                        ".Inst-" + Integer.toString(i));
 
@@ -1209,16 +1193,16 @@ public class Pipeline
     else
     {
       // Create the thread group for the real time adapter
-      RTAdapterRoot = new ThreadGroup("RT");
+      rtAdapterRoot = new ThreadGroup("RT");
 
       // Launch the real time output adapter
-      if (RTAdapter != null)
+      if (rtAdapter != null)
       {
         // reset Adapter before launching. clears shutdown flag.
-        RTAdapter.reset();
+        rtAdapter.reset();
 
-        Thread ThrRTAdapter = new Thread(RTAdapterRoot, RTAdapter,
-                                       RTAdapter.getSymbolicName() +
+        Thread ThrRTAdapter = new Thread(rtAdapterRoot, rtAdapter,
+                                       rtAdapter.getSymbolicName() +
                                        ".Inst-RT");
         // We could use this to unblock pipe bottlenecks, but at the
         // moment we don't seem to need it
@@ -1228,7 +1212,7 @@ public class Pipeline
       }
     }
 
-    FWLog.debug("Pipeline <" + getSymbolicName() + "> started.");
+    OpenRate.getOpenRateFrameworkLog().debug("Pipeline <" + getSymbolicName() + "> started.");
   }
 
  /**
@@ -1280,31 +1264,32 @@ public class Pipeline
 
     // check if there have been any errors in the threads, and if there
     // have, pass the exception up
-    if (handler.hasError())
+    if (pipeExceptionHandler.hasError())
     {
       // Failure occurred, propogate the error
       System.err.println("Exception thrown in pipeline <" + getSymbolicName() + ">, see Error Log.");
-      FWLog.error("Exception thrown in pipeline <" + getSymbolicName() + ">, see Error Log.");
+      OpenRate.getOpenRateFrameworkLog().error("Exception thrown in pipeline <" + getSymbolicName() + ">, see Error Log.");
 
       // report the exceptions to the ErrorLog
-      Iterator<Exception> excList = handler.getExceptionList().iterator();
+      Iterator<Exception> excList = pipeExceptionHandler.getExceptionList().iterator();
 
+      // for each of the exceptions we have collected
       while (excList.hasNext())
       {
         Exception tmpException = (Exception) excList.next();
-        ErrorLog.error("Processing Exception caught.", tmpException);
-        PipeLog.error(tmpException.getMessage());
+        OpenRate.getOpenRateErrorLog().error("Processing Exception caught.", tmpException);
+        getPipeLog().error(tmpException.getMessage());
       }
 
       // Clear down the list
-      handler.clearExceptions();
+      pipeExceptionHandler.clearExceptions();
 
       // See if we should shutdown
-      if(HaltOnException)
+      if(haltOnException)
       {
         // stop the pipe
         System.err.println("Exception thrown in pipeline <" + getSymbolicName() + ">, see Error Log.");
-        FWLog.error("Pipeline <" + getSymbolicName() + "> configured to shut down on exception. Shutting down.");
+        OpenRate.getOpenRateFrameworkLog().error("Pipeline <" + getSymbolicName() + "> configured to shut down on exception. Shutting down.");
         aborted = true;
       }
     }
@@ -1323,9 +1308,9 @@ public class Pipeline
     IOutputAdapter tmpOutputAdapter;
 
     // Shut down the real time adapter if it is defined
-    if (RTAdapter != null)
+    if (rtAdapter != null)
     {
-      RTAdapter.markForClosedown();
+      rtAdapter.markForClosedown();
     }
 
     // Shut down the output adapters
@@ -1339,11 +1324,11 @@ public class Pipeline
     }
 
     // Wait until all the output adapters have finished
-    if (OutputAdapterRoot != null)
+    if (outputAdapterRoot != null)
     {
-      while (OutputAdapterRoot.activeCount() > 0) //&& (Handler.hasError() == false))
+      while (outputAdapterRoot.activeCount() > 0) //&& (Handler.hasError() == false))
       {
-        FWLog.debug("Waiting for output thread groups to finish.");
+        OpenRate.getOpenRateFrameworkLog().debug("Waiting for output thread groups to finish.");
 
         try
         {
@@ -1358,13 +1343,13 @@ public class Pipeline
         }
         catch (InterruptedException ie)
         {
-          FWLog.debug("Interrupted!");
+          OpenRate.getOpenRateFrameworkLog().debug("Interrupted!");
         }
       }
 
       // Clean up the output adapter thread groups
-      OutputAdapterRoot.destroy();
-      OutputAdapterRoot = null;
+      outputAdapterRoot.destroy();
+      outputAdapterRoot = null;
     }
 
     if (batchOutputAdapterList != null)
@@ -1408,7 +1393,7 @@ public class Pipeline
       // wait for all Threads in this group to shutdown.
       while (tmpGrpPlugIn.activeCount() > 0) //&& (Handler.hasError() == false))
       {
-        FWLog.debug(
+        OpenRate.getOpenRateFrameworkLog().debug(
                 "Waiting for plugin thread group <" + tmpGrpPlugIn.getName() +
                 "> to finish.");
 
@@ -1425,11 +1410,11 @@ public class Pipeline
         }
         catch (InterruptedException ie)
         {
-          FWLog.debug("Interrupted!");
+          OpenRate.getOpenRateFrameworkLog().debug("Interrupted!");
         }
       }
 
-      FWLog.debug("ThreadGroup <" + tmpGrpPlugIn.getName() + "> dead, next... ");
+      OpenRate.getOpenRateFrameworkLog().debug("ThreadGroup <" + tmpGrpPlugIn.getName() + "> dead, next... ");
 
       // Destroy the group
       if (tmpGrpPlugIn.isDestroyed() == false)
@@ -1574,25 +1559,25 @@ public class Pipeline
       if (Parameter.equals(""))
       {
         // Get the current status
-        return Integer.toString(SleepTime);
+        return Integer.toString(sleepTime);
       }
       else
       {
         try
         {
-          SleepTime = Integer.parseInt(Parameter);
+          sleepTime = Integer.parseInt(Parameter);
         }
         catch (NumberFormatException nfe)
         {
           logStr = "Sleep paramter was not numeric. Passed value = <" +
                    Parameter + ">";
-          FWLog.error(logStr);
+          OpenRate.getOpenRateFrameworkLog().error(logStr);
 
           return logStr;
         }
 
-        FWLog.info(
-              "Sleep time set to <" + SleepTime + "> for pipeline <" +
+        OpenRate.getOpenRateFrameworkLog().info(
+              "Sleep time set to <" + sleepTime + "> for pipeline <" +
               symbolicName + ">");
         ResultCode = 0;
       }
@@ -1621,7 +1606,7 @@ public class Pipeline
         {
           logStr = "RunCount paramter was not numeric. Passed value = <" +
                    Parameter + ">";
-          FWLog.error(logStr);
+          OpenRate.getOpenRateFrameworkLog().error(logStr);
 
           return logStr;
         }
@@ -1635,21 +1620,21 @@ public class Pipeline
       if (Parameter.equalsIgnoreCase("false"))
       {
         // Suspend pipeline processing
-        HaltOnException = false;
+        haltOnException = false;
         ResultCode = 0;
       }
 
       if (Parameter.equalsIgnoreCase("true"))
       {
         // Start pipeline processing
-        HaltOnException = true;
+        haltOnException = true;
         ResultCode = 0;
       }
 
       if (Parameter.equalsIgnoreCase(""))
       {
         // Get the current status
-        return Boolean.toString(HaltOnException);
+        return Boolean.toString(haltOnException);
       }
     }
 
@@ -1673,7 +1658,7 @@ public class Pipeline
     }
 
     logStr = "Command " + Command + " handled by OpenRateApplication";
-    FWLog.debug(logStr);
+    OpenRate.getOpenRateFrameworkLog().debug(logStr);
 
     if (ResultCode == 0)
     {
@@ -1698,14 +1683,14 @@ public class Pipeline
   public void registerClientManager() throws InitializationException
   {
     //Register this Client to this pipeline
-    ClientManager.registerClient(getSymbolicName(),getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getSymbolicName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PIPELINE_ACTIVE, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PIPELINE_SLEEP,  ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_RUNCOUNT,        ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_HALT_ON_EXCP,    ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BUFFER_STATUS,   ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PIPELINE_ACTIVE, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PIPELINE_SLEEP,  ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_RUNCOUNT,        ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_HALT_ON_EXCP,    ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BUFFER_STATUS,   ClientManager.PARAM_DYNAMIC);
   }
 
   // -----------------------------------------------------------------------------
@@ -1769,4 +1754,29 @@ public class Pipeline
   {
     return aborted;
   }
+
+  /**
+   * @return the pipeLog
+   */
+  @Override
+    public ILogger getPipeLog() {
+        return pipeLog;
+    }
+
+    /**
+     * @param pipeLog the pipeLog to set
+     */
+    public void setPipeLog(ILogger pipeLog) {
+        this.pipeLog = pipeLog;
+    }
+
+ /**
+  * Returns the pipeline exception handler.
+  * 
+  * @return The exception handler for the pipeline
+  */
+    @Override
+    public ExceptionHandler getPipelineExceptionHandler() {
+        return pipeExceptionHandler;
+    }
 }

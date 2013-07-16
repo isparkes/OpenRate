@@ -55,7 +55,6 @@
 
 package OpenRate.resource;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.utils.ConversionUtils;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,9 +79,6 @@ public class ConversionCache implements IResource
   // cache Categories
   private static ConcurrentHashMap<String, ConversionUtils> ConversionManagers = new ConcurrentHashMap<>();
 
-  // reference to the exception handler
-  private ExceptionHandler handler;
-
   /**
    * default constructor - protected
    */
@@ -102,7 +98,7 @@ public class ConversionCache implements IResource
   {
     if (ResourceName.equals(RESOURCE_KEY) == false)
     {
-      throw new InitializationException("Conversion Cache must be called ConversionCache");
+      throw new InitializationException("Conversion Cache must be called ConversionCache",getSymbolicName());
     }
   }
 
@@ -145,16 +141,5 @@ public class ConversionCache implements IResource
   public String getSymbolicName()
   {
     return symbolicName;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 }

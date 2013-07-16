@@ -383,13 +383,12 @@ public class BalanceCache extends AbstractCache
 
     if (!foundCacheDataSourceType)
     {
-      getFWLog().error(
-            "CacheDataSourceType for cache <" + getSymbolicName() +
-            "> must be File or DB, found <" + cacheDataSourceType + ">");
-      throw new InitializationException("DataSourceType for cache <" +
+      message = "DataSourceType for cache <" +
                                         getSymbolicName() +
                                         "> must be File or DB, found <" +
-                                        cacheDataSourceType + ">");
+                                        cacheDataSourceType + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // get the date format
@@ -413,11 +412,9 @@ public class BalanceCache extends AbstractCache
 
       if (cacheDataSourceName.equals("None"))
       {
-        getFWLog().error(
-              "Data source file name not found for cache <" + getSymbolicName() +
-              ">");
-        throw new InitializationException("Data source file name not found for cache <" +
-                                          getSymbolicName() + ">");
+        message = "Data source file name not found for cache <" + getSymbolicName() + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -437,11 +434,9 @@ public class BalanceCache extends AbstractCache
 
       if (cacheDataSourceName.equals("None"))
       {
-        getFWLog().error(
-              "Data source DB name not found for cache <" + getSymbolicName() +
-              ">");
-        throw new InitializationException("Data source DB name not found for cache <" +
-                                          getSymbolicName() + ">");
+        message = "Data source DB name not found for cache <" + getSymbolicName() + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -456,11 +451,10 @@ public class BalanceCache extends AbstractCache
 
       if (cacheDataSelectQuery.equals("None"))
       {
-        getFWLog().error(
-              "Data source select statement not found for cache <" +
-              getSymbolicName() + ">");
-        throw new InitializationException("Data source select statement not found for cache <" +
-                                          getSymbolicName() + ">");
+        message = "Data source select statement not found for cache <" +
+              getSymbolicName() + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -473,9 +467,9 @@ public class BalanceCache extends AbstractCache
       // JDBC adapters to work properly using 1 configuration file.
       if(DBUtil.initDataSource(cacheDataSourceName) == null)
       {
-        String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       loadDataFromDB();
@@ -519,12 +513,12 @@ public class BalanceCache extends AbstractCache
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      getFWLog().error(
-            "Application is not able to read file : <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Application is not able to read file: <" +
-                                        cacheDataSourceName + ">",
-                                        exFileNotFound);
+      message = "Application is not able to read file : <" +
+            cacheDataSourceName + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,
+                                        exFileNotFound,
+                                        getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -559,9 +553,9 @@ public class BalanceCache extends AbstractCache
           }
           catch (ParseException ex)
           {
-            String Message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(Message);
-            throw new InitializationException (Message);
+            message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           try
@@ -570,9 +564,9 @@ public class BalanceCache extends AbstractCache
           }
           catch (ParseException ex)
           {
-            String Message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(Message);
-            throw new InitializationException (Message);
+            message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           currentBal = Double.parseDouble(tmpCurrentBal);
@@ -652,9 +646,9 @@ public class BalanceCache extends AbstractCache
       }
       catch (SQLException Sex)
       {
-        String Message = "Error performing SQL for retieving Balance data. Message <" + Sex.getMessage() + ">";
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        message = "Error performing SQL for retieving Balance data. message <" + Sex.getMessage() + ">";
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // loop through the results for the balance cache
@@ -678,9 +672,9 @@ public class BalanceCache extends AbstractCache
           }
           catch (ParseException ex)
           {
-            String Message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(Message);
-            throw new InitializationException (Message);
+            message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           try
@@ -689,9 +683,9 @@ public class BalanceCache extends AbstractCache
           }
           catch (ParseException ex)
           {
-            String Message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(Message);
-            throw new InitializationException (Message);
+            message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           CurrentBal = Double.parseDouble(tmpCurrentBal);
@@ -702,9 +696,9 @@ public class BalanceCache extends AbstractCache
       }
       catch (SQLException ex)
       {
-        getFWLog().fatal("Error opening retreiving customer data. SQL error: " + ex.getMessage());
-        throw new InitializationException(
-          "Connection error. Error getting customer data", ex);
+        message = "Error opening retreiving customer data. SQL error: " + ex.getMessage();
+        getFWLog().fatal(message);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // Close down stuff
@@ -716,9 +710,10 @@ public class BalanceCache extends AbstractCache
       }
       catch (SQLException ex)
       {
-        String Message = "Error closing Result Set for Customer information from <" +
+        message = "Error closing Result Set for Customer information from <" +
               cacheDataSourceName + ">";
-        throw new InitializationException(Message,ex);
+        getFWLog().error(message);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       getFWLog().info("Balance Loading completed. " + balsLoaded +
@@ -742,10 +737,10 @@ public class BalanceCache extends AbstractCache
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMP_BALGROUP, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMP_BALGROUP, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -839,9 +834,9 @@ public class BalanceCache extends AbstractCache
     }
     catch (SQLException ex)
     {
-      getFWLog().error("Error preparing the statement " + cacheDataSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-                                        cacheDataSelectQuery + ">");
+      message = "Error preparing the statement " + cacheDataSelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

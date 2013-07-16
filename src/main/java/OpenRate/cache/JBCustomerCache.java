@@ -402,13 +402,13 @@ public abstract class JBCustomerCache
   }
 
  /**
-  * load the data from a file
+  * load the data from a file - not supported for this cache.
   */
   @Override
   public void loadDataFromFile()
                         throws InitializationException
   {
-    throw new InitializationException("File loading not supported");
+    throw new InitializationException("File loading not supported",getSymbolicName());
   }
 
  /**
@@ -450,8 +450,8 @@ public abstract class JBCustomerCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Customer data. Message <" + ex.getMessage() + ">";
-      throw new InitializationException(Message, ex);
+      message = "Error performing SQL for retieving Customer data. message <" + ex.getMessage() + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer alias cache
@@ -530,8 +530,8 @@ public abstract class JBCustomerCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Customer Data for <" + cacheDataSourceName + ">";
-      throw new InitializationException(Message, ex);
+      message = "Error opening Customer Data for <" + cacheDataSourceName + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -543,9 +543,9 @@ public abstract class JBCustomerCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Result Set for Customer information from <" +
+      message = "Error closing Result Set for Customer information from <" +
             cacheDataSourceName + ">";
-      throw new InitializationException(Message,ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     getFWLog().info(
@@ -562,7 +562,7 @@ public abstract class JBCustomerCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
  /**
@@ -577,7 +577,7 @@ public abstract class JBCustomerCache
 
  /**
   * Add an alias to the customer cache. An alias is a representation of any
-  * identifier that can be used to locate the account. Note that we exckude
+  * identifier that can be used to locate the account. Note that we exclude
   * the last second of the validity period to avoid issues with overlapping
   * periods that end and start on the same second (e.g. old validity ends on
   * 1st Sept @ 00:00 and the new one starts on 1st Sept @ 00:00)
@@ -837,8 +837,8 @@ public abstract class JBCustomerCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error preparing the statement <" + CustomerDataSelectQuery + ">";
-      throw new InitializationException(Message,ex);
+      message = "Error preparing the statement <" + CustomerDataSelectQuery + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
   }
 
@@ -862,7 +862,7 @@ public abstract class JBCustomerCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_INVALIDATE_DUPLICATE, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INVALIDATE_DUPLICATE, ClientManager.PARAM_NONE);
   }
 
  /**

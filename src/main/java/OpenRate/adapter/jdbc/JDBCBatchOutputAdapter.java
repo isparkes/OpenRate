@@ -109,9 +109,9 @@ public abstract class JDBCBatchOutputAdapter
       JDBCcon = DBUtil.getConnection(dataSourceName);
       if (JDBCcon.getMetaData().supportsBatchUpdates() == false)
       {
-        String Message = "Output <" + getSymbolicName() + "> does not support batch commits in adapter <" + getSymbolicName() + ">. Please use non-Batch adapter.";
-        pipeLog.fatal(Message);
-        throw new InitializationException(Message);
+        message = "Output <" + getSymbolicName() + "> does not support batch commits in adapter <" + getSymbolicName() + ">. Please use non-Batch adapter.";
+        getPipeLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // Done the check, close it
@@ -119,9 +119,9 @@ public abstract class JDBCBatchOutputAdapter
     }
     catch (SQLException Sex)
     {
-      String Message = "Output <" + getSymbolicName() + "> error setting manual commit in adapter <" + getSymbolicName() + ">. Message <" + Sex.getMessage() + ">";
-      pipeLog.fatal(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> error setting manual commit in adapter <" + getSymbolicName() + ">. message <" + Sex.getMessage() + ">";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -147,9 +147,9 @@ public abstract class JDBCBatchOutputAdapter
     catch (SQLException Sex)
     {
       // Not good. Abort the transaction
-      String Message = "Error changing autocommit. Message <" + Sex.getMessage() + "> in adapter <" + getSymbolicName() + ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Sex));
+      message = "Error changing autocommit. message <" + Sex.getMessage() + "> in adapter <" + getSymbolicName() + ">. Aborting transaction.";
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(Sex,getSymbolicName()));
       this.setTransactionAbort(getTransactionNumber());
     }
 
@@ -178,31 +178,31 @@ public abstract class JDBCBatchOutputAdapter
     catch (ProcessingException pe)
     {
       // Pass the exception up
-      String Message = "Processing exception preparing valid record in module <" +
-                       getSymbolicName() + ">. Message <" + pe.getMessage() +
+      message = "Processing exception preparing valid record in module <" +
+                       getSymbolicName() + ">. message <" + pe.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(pe));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(pe,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (ArrayIndexOutOfBoundsException aiex)
     {
       // Not good. Abort the transaction
-      String Message = "Column Index preparing valid record in module <" +
-                       getSymbolicName() + ">. Message <" + aiex.getMessage() +
+      message = "Column Index preparing valid record in module <" +
+                       getSymbolicName() + ">. message <" + aiex.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (Exception ex)
     {
       // Not good. Abort the transaction
-      String Message = "Unexpected Exception preparing valid record in module <" +
-                        getSymbolicName() + ">. Message <" + ex.getMessage() +
+      message = "Unexpected Exception preparing valid record in module <" +
+                        getSymbolicName() + ">. message <" + ex.getMessage() +
                         ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, ex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
@@ -278,42 +278,42 @@ public abstract class JDBCBatchOutputAdapter
         catch (SQLException Sex)
         {
           // Not good. Abort the transaction
-          String Message = "SQL Exception inserting valid record in module <" +
-                          getSymbolicName() + ">. Message <" + Sex.getMessage() +
+          message = "SQL Exception inserting valid record in module <" +
+                          getSymbolicName() + ">. message <" + Sex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (ArrayIndexOutOfBoundsException aiex)
         {
           // Not good. Abort the transaction
-          String Message = "Column Index inserting valid record in module <" +
-                          getSymbolicName() + ">. Message <" + aiex.getMessage() +
+          message = "Column Index inserting valid record in module <" +
+                          getSymbolicName() + ">. message <" + aiex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (NumberFormatException nfe)
         {
           // Not good. Abort the transaction
           // Not good. Abort the transaction
-          String Message = "Number format inserting valid record in module <" +
-                          getSymbolicName() + ">. Message <" + nfe.getMessage() +
+          message = "Number format inserting valid record in module <" +
+                          getSymbolicName() + ">. message <" + nfe.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, nfe));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,nfe,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (Exception ex)
         {
           // Not good. Abort the transaction
-          String Message = "Unknown Exception inserting valid record in module <" +
-                          getSymbolicName() + ">. Message <" + ex.getMessage() +
+          message = "Unknown Exception inserting valid record in module <" +
+                          getSymbolicName() + ">. message <" + ex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, ex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
       }
@@ -344,31 +344,31 @@ public abstract class JDBCBatchOutputAdapter
     catch (ProcessingException pe)
     {
       // Pass the exception up
-      String Message = "Processing exception preparing error record in module <" +
-                       getSymbolicName() + ">. Message <" + pe.getMessage() +
+      message = "Processing exception preparing error record in module <" +
+                       getSymbolicName() + ">. message <" + pe.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(pe));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(pe,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (ArrayIndexOutOfBoundsException aiex)
     {
       // Not good. Abort the transaction
-      String Message = "Column Index preparing error record in module <" +
-                       getSymbolicName() + ">. Message <" + aiex.getMessage() +
+      message = "Column Index preparing error record in module <" +
+                       getSymbolicName() + ">. message <" + aiex.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (Exception ex)
     {
       // Not good. Abort the transaction
-      String Message = "Unknown Exception preparing error record in module <" +
-                        getSymbolicName() + ">. Message <" + ex.getMessage() +
+      message = "Unknown Exception preparing error record in module <" +
+                        getSymbolicName() + ">. message <" + ex.getMessage() +
                         ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, ex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
@@ -444,41 +444,41 @@ public abstract class JDBCBatchOutputAdapter
         catch (SQLException Sex)
         {
           // Not good. Abort the transaction
-          String Message = "SQL Exception inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + Sex.getMessage() +
+          message = "SQL Exception inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + Sex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (ArrayIndexOutOfBoundsException aiex)
         {
           // Not good. Abort the transaction
-          String Message = "Column Index inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + aiex.getMessage() +
+          message = "Column Index inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + aiex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (NumberFormatException nfe)
         {
           // Not good. Abort the transaction
-          String Message = "Number format inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + nfe.getMessage() +
+          message = "Number format inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + nfe.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, nfe));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,nfe,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (Exception ex)
         {
           // Not good. Abort the transaction
-          String Message = "Unknown Exception inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + ex.getMessage() +
+          message = "Unknown Exception inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + ex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, ex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
       }
@@ -511,26 +511,26 @@ public abstract class JDBCBatchOutputAdapter
         stmtInsertQuery.executeBatch();
 
         // perform a commit once per block
-        pipeLog.debug("Adapter <" + getSymbolicName() + "> performing commit.");
+        getPipeLog().debug("Adapter <" + getSymbolicName() + "> performing commit.");
         JDBCcon.commit();
       }
       catch (SQLException Sex)
       {
-        String Message = "Error performing batch commit in module <" + getSymbolicName()
-                + ">. Message <" + Sex.getMessage() + ">. Aborting transaction.";
-        pipeLog.fatal(Message);
-        String NextMessage = "Next message <" + Sex.getNextException().getMessage() + ">";
-        pipeLog.fatal(NextMessage);
+        message = "Error performing batch commit in module <" + getSymbolicName()
+                + ">. message <" + Sex.getMessage() + ">. Aborting transaction.";
+        getPipeLog().fatal(message);
+        String Nextmessage = "Next message <" + Sex.getNextException().getMessage() + ">";
+        getPipeLog().fatal(Nextmessage);
         this.setTransactionAbort(getTransactionNumber());
-        throw new ProcessingException(Message);
+        throw new ProcessingException(message,getSymbolicName());
       }
       catch (Exception ex)
       {
         // Not good. Abort the transaction
-        String Message = "Error performing batch commit in module <" + getSymbolicName()
-                + ">. Message <" + ex.getMessage() + ">. Aborting transaction.";
-        pipeLog.fatal(Message);
-        getExceptionHandler().reportException(new ProcessingException(Message, ex));
+        message = "Error performing batch commit in module <" + getSymbolicName()
+                + ">. message <" + ex.getMessage() + ">. Aborting transaction.";
+        getPipeLog().fatal(message);
+        getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
@@ -556,26 +556,26 @@ public abstract class JDBCBatchOutputAdapter
       stmtInsertQuery.executeBatch();
 
       // perform a commit once per block
-      pipeLog.debug("Adapter <" + getSymbolicName() + "> performing commit.");
+      getPipeLog().debug("Adapter <" + getSymbolicName() + "> performing commit.");
       JDBCcon.commit();
     }
     catch (SQLException Sex)
     {
-      String Message = "Error performing batch commit in module <" + getSymbolicName()
-              + ">. Message <" + Sex.getMessage() + ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      String NextMessage = "Next message <" + Sex.getNextException().getMessage() + ">";
-      pipeLog.fatal(NextMessage);
+      message = "Error performing batch commit in module <" + getSymbolicName()
+              + ">. message <" + Sex.getMessage() + ">. Aborting transaction.";
+      getPipeLog().fatal(message);
+      String Nextmessage = "Next message <" + Sex.getNextException().getMessage() + ">";
+      getPipeLog().fatal(Nextmessage);
       this.setTransactionAbort(getTransactionNumber());
-      throw new ProcessingException(Message);
+      throw new ProcessingException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
       // Not good. Abort the transaction
-      String Message = "Error performing batch commit in module <" + getSymbolicName()
-              + ">. Message <" + ex.getMessage() + ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, ex));
+      message = "Error performing batch commit in module <" + getSymbolicName()
+              + ">. message <" + ex.getMessage() + ">. Aborting transaction.";
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 

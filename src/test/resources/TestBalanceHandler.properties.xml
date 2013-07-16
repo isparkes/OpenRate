@@ -14,12 +14,27 @@
 	</PipelineList>
 	
 	<DBTestPipe>
-		<Process>
-			<AbstractBalanceHandlerPlugInTest>
-				<DataCache>BalCache</DataCache>
-				<BatchSize>5000</BatchSize>
-			</AbstractBalanceHandlerPlugInTest>
-		</Process>
+            <InputAdapter>
+                <BEInput>
+                    <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+                </BEInput>
+           </InputAdapter>
+    
+            <Process>
+		<AbstractBalanceHandlerPlugInTest>
+                        <ClassName>OpenRate.process.AbstractBalanceHandlerPlugInTest</ClassName>
+			<DataCache>BalCache</DataCache>
+			<BatchSize>5000</BatchSize>
+		</AbstractBalanceHandlerPlugInTest>
+            </Process>
+            
+            <OutputAdapter>
+                <BEInput>
+                    <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+                    <OutputName>default</OutputName>
+                </BEInput>
+           </OutputAdapter>
+    
 	</DBTestPipe>
 
 	<Resource>

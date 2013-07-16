@@ -130,8 +130,8 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
 
     if (CMRR == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays, but only if we are the right type. This
@@ -143,14 +143,14 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
 
       if (RRC == null)
       {
-        Message = "Could not find cache entry for <" + CacheObjectName + ">";
-        throw new InitializationException(Message);
+        message = "Could not find cache entry for <" + CacheObjectName + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
     else
     {
-      Message = "<" + CacheObjectName + "> is not an instance of RUMRateCache. Aborting.";
-      throw new InitializationException(Message);
+      message = "<" + CacheObjectName + "> is not an instance of RUMRateCache. Aborting.";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -231,7 +231,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
                 }
                 else
                 {
-                  throw new ProcessingException ("Price group map not found for <"+tmpCP.priceGroup+">");
+                  throw new ProcessingException ("Price group map not found for <"+tmpCP.priceGroup+">",getSymbolicName());
                 }
               }
 
@@ -336,7 +336,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
         catch (ProcessingException pe)
         {
           // Log the error
-          pipeLog.error("RUM Rating exception <" + pe.getMessage() + ">");
+          getPipeLog().error("RUM Rating exception <" + pe.getMessage() + ">");
 
           if (reportExceptions == false)
           {
@@ -351,7 +351,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
           }
           else
           {
-            throw new ProcessingException (pe);
+            throw new ProcessingException (pe,getSymbolicName());
           }
         }
       }

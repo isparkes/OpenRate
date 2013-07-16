@@ -143,18 +143,24 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
     super.init(pipelineName,moduleName);
 
     // Get the cache object reference
-    CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(pipelineName,
+    CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipelineName,
                                                            moduleName,
-                                                           "DataCache");
+                                                           "DataCache",
+                                                           "None");
+    
+    if (CacheObjectName.equals("None"))
+    {
+      message = "Not able to find cache property entry for module <"+moduleName+"> in pipeline <"+pipelineName+">";
+      throw new InitializationException(message,getSymbolicName());
+    }
 
     // Load up the customer information held in the Cached Object
     BG = CacheFactory.getGlobalManager(CacheObjectName);
 
     if (BG == null)
     {
-      pipeLog.fatal("Could not find cache entry for <" + CacheObjectName + ">");
-      throw new InitializationException("Could not find cache entry for <" +
-                                        CacheObjectName + ">");
+      message = "Could not find cache entry for cache <" + CacheObjectName + "> in module <"+moduleName+"> in pipeline <"+pipelineName+">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays
@@ -162,9 +168,9 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
 
     if (BC == null)
     {
-      pipeLog.fatal("Could not find cache entry for <" + CacheObjectName + ">");
+      getPipeLog().fatal("Could not find cache entry for <" + CacheObjectName + ">");
       throw new InitializationException("Could not find cache entry for <" +
-                                        CacheObjectName + ">");
+                                        CacheObjectName + ">",getSymbolicName());
     }
   }
 

@@ -164,7 +164,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
                   }
                   else
                   {
-                    throw new ProcessingException("Zone match not found");
+                    throw new ProcessingException("Zone match not found",getSymbolicName());
                   }
               }
             }
@@ -186,7 +186,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
               }
               else
               {
-                throw new ProcessingException(e);
+                throw new ProcessingException(e,getSymbolicName());
               }
             }
           }
@@ -202,7 +202,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
       }
       else
       {
-        throw new ProcessingException("Not a rating record");
+        throw new ProcessingException("Not a rating record",getSymbolicName());
       }
     }
   }
@@ -255,7 +255,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
               }
               else
               {
-                throw new ProcessingException("Zone match not found");
+                throw new ProcessingException("Zone match not found",getSymbolicName());
               }
             }
             else
@@ -274,7 +274,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
                   }
                   else
                   {
-                    throw new ProcessingException("Zone match not found");
+                    throw new ProcessingException("Zone match not found",getSymbolicName());
                   }
                 }
               }
@@ -299,7 +299,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
               }
               else
               {
-                throw new ProcessingException(e);
+                throw new ProcessingException(e,getSymbolicName());
               }
             }
           }
@@ -315,7 +315,7 @@ public abstract class AbstractRUMBestMatch extends AbstractBestMatch
       }
       else
       {
-        throw new ProcessingException("Not a rating record");
+        throw new ProcessingException("Not a rating record",getSymbolicName());
       }
     }
   }

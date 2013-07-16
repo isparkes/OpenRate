@@ -100,6 +100,9 @@ public class FlexRecord extends AbstractRecord
   * Data type float
   */
   public final static int FIELD_TYPE_FLOAT   = 2;
+  
+  // The symbolic module name of the class stack
+  private String symbolicName = "FlecRecord";
 
   /**
    * @return the defRoot
@@ -114,6 +117,13 @@ public class FlexRecord extends AbstractRecord
   public void setDefRoot(RecordBlockDef defRoot) {
     this.defRoot = defRoot;
   }
+
+    /**
+     * @return the symbolicName
+     */
+    public String getSymbolicName() {
+        return symbolicName;
+    }
 
  /**
   * This is the implementation of the record structure. The structure has been
@@ -185,7 +195,7 @@ public class FlexRecord extends AbstractRecord
 
     if (!tmpBlockPath[0].equalsIgnoreCase("ROOT"))
     {
-      throw new InitializationException("Block definition must begin with ROOT.");
+      throw new InitializationException("Block definition must begin with ROOT.",getSymbolicName());
     }
     else
     {
@@ -204,7 +214,7 @@ public class FlexRecord extends AbstractRecord
         }
         else
         {
-          throw new InitializationException("Cannot find path to <" + BlockName + ">");
+          throw new InitializationException("Cannot find path to <" + BlockName + ">",getSymbolicName());
         }
       }
     }
@@ -236,12 +246,12 @@ public class FlexRecord extends AbstractRecord
     {
       if ((tmpFieldNumber < 0) | (FieldNumber>tmpRecordBlock.NumberOfFields))
       {
-        throw new InitializationException("Field Index <" + FieldNumber + "> invalid for block <" + RootBlockName + ">");
+        throw new InitializationException("Field Index <" + FieldNumber + "> invalid for block <" + RootBlockName + ">",getSymbolicName());
       }
 
       if (tmpRecordBlock.FieldNames[tmpFieldNumber] != null)
       {
-        throw new InitializationException("Field Index <" + FieldNumber + "> overwrites existing definition <" + tmpRecordBlock.FieldNames[tmpFieldNumber] + "> in block <" + RootBlockName + ">");
+        throw new InitializationException("Field Index <" + FieldNumber + "> overwrites existing definition <" + tmpRecordBlock.FieldNames[tmpFieldNumber] + "> in block <" + RootBlockName + ">",getSymbolicName());
       }
 
       // Add the field definition
@@ -270,14 +280,14 @@ public class FlexRecord extends AbstractRecord
 
       if (!FieldTypeFound)
       {
-        throw new InitializationException("Cannot find field type <" + FieldType + ">");
+        throw new InitializationException("Cannot find field type <" + FieldType + ">",getSymbolicName());
       }
 
       tmpRecordBlock.FieldNameIndex.put(RootBlockName + "." + NewFieldName,tmpFieldNumber);
     }
     else
     {
-      throw new InitializationException("Cannot find block <" + RootBlockName + ">");
+      throw new InitializationException("Cannot find block <" + RootBlockName + ">",getSymbolicName());
     }
   }
 
@@ -306,12 +316,12 @@ public class FlexRecord extends AbstractRecord
         // now we should have the correct block to work on, so do it
         if (ParentBlock.ChildTemplates.containsKey(NewBlockName))
         {
-          throw new InitializationException("Block <" + NewBlockName + "> already exists in <" + RootBlockName + ">");
+          throw new InitializationException("Block <" + NewBlockName + "> already exists in <" + RootBlockName + ">",getSymbolicName());
         }
       }
       else
       {
-        throw new InitializationException("Cannot find block <" + RootBlockName + ">");
+        throw new InitializationException("Cannot find block <" + RootBlockName + ">",getSymbolicName());
       }
     }
 
@@ -393,12 +403,12 @@ public class FlexRecord extends AbstractRecord
     }
     else
     {
-      throw new InitializationException("Cannot find block <" + BlockName + ">");
+      throw new InitializationException("Cannot find block <" + BlockName + ">",getSymbolicName());
     }
 
     if (!FieldFound)
     {
-      throw new InitializationException("Field name <" + FieldName + "> not found in block <" + BlockName + ">");
+      throw new InitializationException("Field name <" + FieldName + "> not found in block <" + BlockName + ">",getSymbolicName());
     }
   }
 
@@ -431,7 +441,7 @@ public class FlexRecord extends AbstractRecord
     }
     else
     {
-      throw new InitializationException("Cannot find block <" + BlockName + ">");
+      throw new InitializationException("Cannot find block <" + BlockName + ">",getSymbolicName());
     }
   }
 
@@ -469,7 +479,7 @@ public class FlexRecord extends AbstractRecord
     }
     catch (InitializationException ie)
     {
-       throw new ProcessingException(ie.getMessage());
+       throw new ProcessingException(ie,"FlexRecord");
     }
 
     if (tmpRecordBlockDef != null)
@@ -479,7 +489,7 @@ public class FlexRecord extends AbstractRecord
       // check the length of the data we have
       if (tmpFields.length < tmpRecordBlockDef.NumberOfFields)
       {
-        throw new ProcessingException("Input data too short for mapping block <" + BlockName + ">");
+        throw new ProcessingException("Input data too short for mapping block <" + BlockName + ">","FlexRecord");
       }
 
       // Create the block
@@ -581,7 +591,7 @@ public class FlexRecord extends AbstractRecord
     }
     else
     {
-      throw new ProcessingException("Cannot find block <" + BlockName + ">");
+      throw new ProcessingException("Cannot find block <" + BlockName + ">","FlexRecord");
     }
   }
 
@@ -803,5 +813,5 @@ public class FlexRecord extends AbstractRecord
 
     tmpFieldIndex = ((Number)tmpRecordBlock.FieldMap.get(SplitName[1])).intValue();
     tmpRecordBlock.Fields[tmpFieldIndex] = NewValue;
-  }
+  }  
 }

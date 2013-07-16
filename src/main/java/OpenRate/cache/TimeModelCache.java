@@ -310,11 +310,11 @@ public class TimeModelCache
       // basic sanity checks
       if (tmpIntervalNode.TimeFrom > tmpIntervalNode.TimeTo)
       {
-        String Message = "From time <" + From + "> is later than To time <" +
+        message = "From time <" + From + "> is later than To time <" +
                           To + "> in model <" + Model + "> and day <" + Day +
                           "> in module <" +getSymbolicName() + ">" ;
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       tmpIntervalNode.Result = ZoneResult;
     }
@@ -703,10 +703,10 @@ public class TimeModelCache
       try {
           inFile = new BufferedReader(new FileReader(CacheDataFile));
       } catch (FileNotFoundException fnfe) {
-          String Message = "Not able to read time model data file <" +
+          message = "Not able to read time model data file <" +
                   CacheDataFile + "> in <" + getSymbolicName() + ">" ;
-          getFWLog().error(Message);
-          throw new InitializationException(Message);
+          getFWLog().error(message);
+          throw new InitializationException(message,getSymbolicName());
       }
 
       // File open, now get the stuff
@@ -732,22 +732,22 @@ public class TimeModelCache
               }
           }
       } catch (IOException ioe) {
-          String Message = "Error reading input file in <" + getSymbolicName() +
+          message = "Error reading input file in <" + getSymbolicName() +
                   "> at record <" + LinesLoaded + ">. IO Error message = <" +
                   ioe.getMessage() + ">";
-          getFWLog().fatal(Message);
-          throw new InitializationException(Message);
+          getFWLog().fatal(message);
+          throw new InitializationException(message,getSymbolicName());
       } catch (ArrayIndexOutOfBoundsException aiobe) {
-          String Message = "Error reading input file in <" + getSymbolicName() +
+          message = "Error reading input file in <" + getSymbolicName() +
                   "> at record <" + LinesLoaded + ">. Malformed Record.";
-          getFWLog().fatal(Message);
+          getFWLog().fatal(message);
       } finally {
           try {
               inFile.close();
           } catch (IOException ioe) {
-            String Message = "Error closing input file in <" + getSymbolicName() +
+            message = "Error closing input file in <" + getSymbolicName() +
                     ">. IO Error message = <" + ioe.getMessage() + ">";
-            getFWLog().fatal(Message);
+            getFWLog().fatal(message);
           }
       }
 
@@ -798,9 +798,9 @@ public class TimeModelCache
         try {
             mrsc = StmtDayMappingSelectQuery.executeQuery();
         } catch (SQLException Sex) {
-          String Message = "Error performing SQL for retieving day map data in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-          getFWLog().fatal(Message);
-          throw new InitializationException(Message);
+          message = "Error performing SQL for retieving day map data in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+          getFWLog().fatal(message);
+          throw new InitializationException(message,getSymbolicName());
         }
 
         // loop through the results for the mapping entries
@@ -814,9 +814,9 @@ public class TimeModelCache
                 addDay(Name, Value);
             }
         } catch (SQLException Sex) {
-          String Message = "Error performing SQL for retieving day map data in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-          getFWLog().fatal(Message);
-          throw new InitializationException(Message);
+          message = "Error performing SQL for retieving day map data in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+          getFWLog().fatal(message);
+          throw new InitializationException(message,getSymbolicName());
         }
 
         // Close down stuff
@@ -824,9 +824,9 @@ public class TimeModelCache
             mrsc.close();
             StmtDayMappingSelectQuery.close();
         } catch (SQLException Sex) {
-          String Message = "Error closing day map data result set in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-          getFWLog().fatal(Message);
-          throw new InitializationException(Message);
+          message = "Error closing day map data result set in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+          getFWLog().fatal(message);
+          throw new InitializationException(message,getSymbolicName());
         }
     }
 
@@ -834,9 +834,9 @@ public class TimeModelCache
     try {
         mrsa = StmtModelSelectQuery.executeQuery();
     } catch (SQLException Sex) {
-        String Message = "Error performing SQL for retieving time map data in <" +getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        message = "Error performing SQL for retieving time map data in <" +getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the model entries
@@ -851,9 +851,9 @@ public class TimeModelCache
             // There was no mapping
             if (Day == null)
             {
-              String Message = "Error reading Map Data for <" + getSymbolicName() + ">. No day map found for day value <" + mrsa.getString(2) + ">";
-              getFWLog().fatal(Message);
-              throw new InitializationException(Message);
+              message = "Error reading Map Data for <" + getSymbolicName() + ">. No day map found for day value <" + mrsa.getString(2) + ">";
+              getFWLog().fatal(message);
+              throw new InitializationException(message,getSymbolicName());
             }
 
             From = mrsa.getString(3);
@@ -863,9 +863,9 @@ public class TimeModelCache
             addInterval(Model, Day, From, To, Result);
         }
     } catch (SQLException Sex) {
-        String Message = "SQL Error reading Map Data for <" + getSymbolicName() + ">. Messge = <" + Sex.getMessage() + ">";
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        message = "SQL Error reading Map Data for <" + getSymbolicName() + ">. Messge = <" + Sex.getMessage() + ">";
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
     }
 
     // Close down stuff
@@ -873,18 +873,18 @@ public class TimeModelCache
         mrsa.close();
         StmtModelSelectQuery.close();
     } catch (SQLException Sex) {
-      String Message = "Error closing time map data result set in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error closing time map data result set in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // *** Mappings ***
     try {
       mrsb = StmtMappingSelectQuery.executeQuery();
     } catch (SQLException Sex) {
-      String Message = "Error performing SQL for retieving time model data in <" +getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error performing SQL for retieving time model data in <" +getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the mapping entries
@@ -899,31 +899,22 @@ public class TimeModelCache
             addModel(Plan, Model);
         }
     } catch (SQLException Sex) {
-      String Message = "SQL Error reading Model Data for <" + getSymbolicName() + ">. Messge = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "SQL Error reading Model Data for <" + getSymbolicName() + ">. Messge = <" + Sex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Close down stuff
-    try {
-        mrsb.close();
-        StmtMappingSelectQuery.close();
-    } catch (SQLException ex) {
-        getFWLog().fatal(
-                "Error closing Data result set for <" +
-                MappingSelectQuery + ">");
-        throw new InitializationException("Error closing Data result set fo <" +
-                MappingSelectQuery + ">");
-    }
-
+    DBUtil.close(mrsb);
+    DBUtil.close(StmtMappingSelectQuery);
 
     // Close down the connection
     try {
         JDBCcon.close();
     } catch (SQLException Sex) {
-      String Message = "Error closing time model data result set in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error closing time model data result set in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // check that we have complete coverage of the time models
@@ -1016,9 +1007,9 @@ public class TimeModelCache
           // There was no mapping
           if (Day == null)
           {
-            String Message = "Error reading Map Data for <" + getSymbolicName() + ">. No day map found for day value <" + tmpMethodResult.get(1) + ">";
-            getFWLog().fatal(Message);
-            throw new InitializationException(Message);
+            message = "Error reading Map Data for <" + getSymbolicName() + ">. No day map found for day value <" + tmpMethodResult.get(1) + ">";
+            getFWLog().fatal(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           From = tmpMethodResult.get(2);
@@ -1180,9 +1171,9 @@ public class TimeModelCache
                   ResultSet.TYPE_SCROLL_INSENSITIVE,
                   ResultSet.CONCUR_READ_ONLY);
       } catch (SQLException ex) {
-          getFWLog().error("Error preparing the statement " + ModelSelectQuery);
-          throw new InitializationException("Error preparing the statement <" +
-                  ModelSelectQuery + ">");
+          message = "Error preparing the statement " + ModelSelectQuery;
+          getFWLog().error(message);
+          throw new InitializationException(message,ex,getSymbolicName());
       }
 
       try {
@@ -1191,9 +1182,9 @@ public class TimeModelCache
                   ResultSet.TYPE_SCROLL_INSENSITIVE,
                   ResultSet.CONCUR_READ_ONLY);
       } catch (SQLException ex) {
-          getFWLog().error("Error preparing the statement " + MappingSelectQuery);
-          throw new InitializationException("Error preparing the statement <" +
-                  MappingSelectQuery + ">");
+          message = "Error preparing the statement " + MappingSelectQuery;
+          getFWLog().error(message);
+          throw new InitializationException(message,ex,getSymbolicName());
 
       }
 
@@ -1204,9 +1195,9 @@ public class TimeModelCache
                       ResultSet.TYPE_SCROLL_INSENSITIVE,
                       ResultSet.CONCUR_READ_ONLY);
           } catch (SQLException ex) {
-              getFWLog().error("Error preparing the statement " + DayMappingSelectQuery);
-              throw new InitializationException("Error preparing the statement <" +
-                      DayMappingSelectQuery + ">");
+            message = "Error preparing the statement " + DayMappingSelectQuery;
+            getFWLog().error(message);
+            throw new InitializationException(message,ex,getSymbolicName());
           }
       }
   }
@@ -1231,7 +1222,7 @@ public class TimeModelCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

@@ -115,8 +115,8 @@ public abstract class AbstractEmailNotification
 
     if (ENC == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -195,7 +195,7 @@ public abstract class AbstractEmailNotification
     }
     catch (AddressException ex)
     {
-      pipeLog.error("Could not prepare email address <" + emailAddress + ">. Message <" + ex.getMessage() + ">");
+      getPipeLog().error("Could not prepare email address <" + emailAddress + ">. Message <" + ex.getMessage() + ">");
     }
 
     return newAddress;

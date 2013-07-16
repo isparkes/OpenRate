@@ -223,7 +223,7 @@ public class DumpNT
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
       }
@@ -264,7 +264,7 @@ public class DumpNT
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
       }
@@ -288,7 +288,7 @@ public class DumpNT
             }
             catch (IOException ex)
             {
-              pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+              getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
             }
           }
         }
@@ -331,7 +331,7 @@ public class DumpNT
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
       }
@@ -355,7 +355,7 @@ public class DumpNT
             }
             catch (IOException ex)
             {
-              pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+              getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
             }
           }
         }
@@ -403,7 +403,7 @@ public class DumpNT
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
 
@@ -414,7 +414,7 @@ public class DumpNT
         }
         catch (ProcessingException ex)
         {
-          pipeLog.fatal("Error closing dump file");
+          getPipeLog().fatal("Error closing dump file");
         }
 
         finaliseDump(tmpTrailer.getStreamName());
@@ -579,7 +579,7 @@ public class DumpNT
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -602,14 +602,14 @@ public class DumpNT
     super.registerClientManager();
 
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPACTIVE, ClientManager.PARAM_MANDATORY_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPPATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPPREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPSUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPACTIVE, ClientManager.PARAM_MANDATORY_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPPATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPSUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 
   // -----------------------------------------------------------------------------
@@ -631,9 +631,10 @@ public class DumpNT
     }
     catch (IOException exFileNotFound)
     {
-      pipeLog.error("Application is not able to close dump file");
+      getPipeLog().error("Application is not able to close dump file");
       throw new ProcessingException("Application is not able to close dump file",
-                                    exFileNotFound);
+                                    exFileNotFound,
+                                    getSymbolicName());
     }
   }
 
@@ -660,14 +661,14 @@ public class DumpNT
 
       if (file.createNewFile() == false)
       {
-        pipeLog.error("output file already exists = " + DumpFileName);
+        getPipeLog().error("output file already exists = " + DumpFileName);
       }
 
       fwriter = new FileWriter(file);
     }
     catch (IOException ex)
     {
-      pipeLog.error("Error opening valid stream output for file " +
+      getPipeLog().error("Error opening valid stream output for file " +
                 DumpFileName);
     }
 

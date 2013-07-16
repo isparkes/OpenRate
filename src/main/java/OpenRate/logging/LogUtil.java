@@ -105,7 +105,7 @@ public class LogUtil
     if (factory == null)
     {
       // no factory registered, error
-      handler.reportException(new InitializationException("No log factory found"));
+      handler.reportException(new InitializationException("No log factory found","LogUtil"));
     }
     else
     {
@@ -114,7 +114,7 @@ public class LogUtil
 
     if (logger == null)
     {
-      handler.reportException(new InitializationException("unable to load logger. Resource not found"));
+      handler.reportException(new InitializationException("unable to load logger. Resource not found","LogUtil"));
     }
 
     return logger;
@@ -139,7 +139,7 @@ public class LogUtil
     if (factory == null)
     {
       // no factory registered, error
-      handler.reportException(new InitializationException("No log factory found"));
+      handler.reportException(new InitializationException("No log factory found","LogUtil"));
     }
     else
     {
@@ -148,7 +148,7 @@ public class LogUtil
 
     if (logger == null)
     {
-      handler.reportException(new InitializationException("unable to load logger. Resource not found"));
+      handler.reportException(new InitializationException("unable to load logger. Resource not found","LogUtil"));
     }
 
     return logger;

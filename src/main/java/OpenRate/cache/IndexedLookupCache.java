@@ -238,8 +238,8 @@ public class IndexedLookupCache
     if (tmpValue.equals("None"))
     {
       // No object field count found
-      String Message = "ObjectFields entry for cache <" + getSymbolicName() + "> not found.";
-      throw new InitializationException(Message);
+      message = "ObjectFields entry for cache <" + getSymbolicName() + "> not found.";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -250,9 +250,9 @@ public class IndexedLookupCache
       catch(NumberFormatException nfe)
       {
         // The object fields value was not numeric
-        String Message = "ObjectFields entry for cache <" + getSymbolicName() +
+        message = "ObjectFields entry for cache <" + getSymbolicName() +
                          "> not numeric. Found value <" + tmpValue + ">";
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -264,8 +264,8 @@ public class IndexedLookupCache
     if (tmpValue.equals("None"))
     {
       // Could not find the index fields group
-      String Message = "IndexFields entry for cache <" + getSymbolicName() + "> not found.";
-      throw new InitializationException(Message);
+      message = "IndexFields entry for cache <" + getSymbolicName() + "> not found.";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -276,8 +276,8 @@ public class IndexedLookupCache
       catch(NumberFormatException nfe)
       {
       // The index fields group was not numeric
-        String Message = "IndexFields entry for cache <" + getSymbolicName() + "> not numeric. Found value <" + tmpValue + ">";
-        throw new InitializationException(Message);
+        message = "IndexFields entry for cache <" + getSymbolicName() + "> not numeric. Found value <" + tmpValue + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -287,23 +287,23 @@ public class IndexedLookupCache
     // Check that we have sensible values for the index and object field values
     if (ObjectFields < 2)
     {
-      String Message = "ObjectFields entry for cache <" + getSymbolicName() +
+      message = "ObjectFields entry for cache <" + getSymbolicName() +
                        "> must be greater than 1. Found value <" + ObjectFields + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (IndexFields < 1)
     {
-      String Message = "IndexFields entry for cache <" + getSymbolicName() +
+      message = "IndexFields entry for cache <" + getSymbolicName() +
                        "> must be greater than 0. Found value <" + IndexFields + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (IndexFields > ObjectFields)
     {
-      String Message =  "IndexFields entry for cache <" + getSymbolicName() +
+      message =  "IndexFields entry for cache <" + getSymbolicName() +
                         "> must be less than or equal to greater than ObjectFields.";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Now get the index field entries
@@ -318,9 +318,9 @@ public class IndexedLookupCache
       if (tmpValue.equals("None"))
       {
         // We can't find the index field we were told exists
-        String Message = "IndexField <Index" + i + "> entry for cache <" + getSymbolicName() + "> not found.";
+        message = "IndexField <Index" + i + "> entry for cache <" + getSymbolicName() + "> not found.";
 
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -334,9 +334,9 @@ public class IndexedLookupCache
         }
         catch(NumberFormatException nfe)
         {
-          String Message = "IndexFields entry for cache <" + getSymbolicName() +
+          message = "IndexFields entry for cache <" + getSymbolicName() +
                            "> not numeric. Found value <" + tmpValue + ">";
-          throw new InitializationException(Message);
+          throw new InitializationException(message,getSymbolicName());
         }
       }
     }
@@ -411,9 +411,9 @@ public class IndexedLookupCache
 
     if (Index > KeyFormFactor)
     {
-      String Message = "ObjectCache does not contain a key with index <" + Index +
+      message = "ObjectCache does not contain a key with index <" + Index +
                        "> in module <" + getSymbolicName() + ">";
-      throw new ProcessingException(Message);
+      throw new ProcessingException(message,getSymbolicName());
     }
 
     // Get the Index
@@ -450,11 +450,11 @@ public class IndexedLookupCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
-      String Message = "Application is not able to read file : <" + CacheDataFile +
+      message = "Application is not able to read file : <" + CacheDataFile +
                        "> in module <" + getSymbolicName() + ">";
-      throw new InitializationException(Message, exFileNotFound);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -476,10 +476,10 @@ public class IndexedLookupCache
 
           if (ObjectSplitFields.length != ObjectFields)
           {
-            String Message = "Line <" + ObjectLinesLoaded +
+            message = "Line <" + ObjectLinesLoaded +
                              "> does not conform to defined form factor of <" +
                              ObjectFields + "> in module <" + getSymbolicName() + ">";
-            throw new InitializationException(Message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           // Create the Index List
@@ -499,17 +499,17 @@ public class IndexedLookupCache
     }
     catch (IOException ex)
     {
-      String Message =  "Error reading input file <" + CacheDataFile +
+      message =  "Error reading input file <" + CacheDataFile +
                         "> in record <" + ObjectLinesLoaded + "> in module <" +
                         getSymbolicName() + ">. IO Error.";
-      throw new InitializationException(Message, ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      String Message = "Error reading input file <" + CacheDataFile +
+      message = "Error reading input file <" + CacheDataFile +
                        "> in record <" + ObjectLinesLoaded + "> in module <" +
                        getSymbolicName() + ">. Malformed Record.";
-      throw new InitializationException(Message, ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
     finally
     {
@@ -519,9 +519,9 @@ public class IndexedLookupCache
       }
       catch (IOException ex)
       {
-        String Message = "Error closing input file <" + CacheDataFile +
+        message = "Error closing input file <" + CacheDataFile +
                          "> in module <" + getSymbolicName() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
     }
 
@@ -562,9 +562,9 @@ public class IndexedLookupCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Indexed Match data in module <" +
+      message = "Error performing SQL for retieving Indexed Match data in module <" +
                        getSymbolicName() + ">";
-      throw new InitializationException(Message, ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -598,9 +598,9 @@ public class IndexedLookupCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Search Map Data for <" +
+      message = "Error opening Search Map Data for <" +
             cacheDataSourceName + "> in module <" + getSymbolicName() + ">";
-      throw new InitializationException(Message, ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -612,10 +612,10 @@ public class IndexedLookupCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Search Map Data connection for <" +
+      message = "Error closing Search Map Data connection for <" +
                        cacheDataSourceName + "> in module <" +
                        getSymbolicName() + ">";
-      throw new InitializationException(Message, ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     getFWLog().info(
@@ -631,7 +631,7 @@ public class IndexedLookupCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
   // -----------------------------------------------------------------------------
@@ -654,7 +654,7 @@ public class IndexedLookupCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

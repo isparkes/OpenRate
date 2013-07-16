@@ -99,9 +99,6 @@ public class SocketServerThread implements Runnable
   // The name of this thread
   private String threadName;
 
-  // Used for reporting exceptions up to the pipe manager
-  private ExceptionHandler handler;
-
  /**
   * Constructor
   */
@@ -159,7 +156,6 @@ public class SocketServerThread implements Runnable
           socLis.setParentAdapter(ParentRTAdapter);
           socLis.setPipelineLog(this.PipeLog);
           socLis.setThreadId("RTListener-" + socData.getConnectionNumber());
-          socLis.setHandler(handler);
 
           //start thread
           Thread t = new Thread(socLis, pipeName + "-" + threadName + "-" + Integer.toString(socData.getConnectionNumber()));
@@ -304,7 +300,7 @@ public class SocketServerThread implements Runnable
   }
 
  /**
-  * Set the refence of the parent adapter, so that we can send received records
+  * Set the reference of the parent adapter, so that we can send received records
   * there for serialisation and processing.
   *
   * @param parentAdapter
@@ -312,10 +308,5 @@ public class SocketServerThread implements Runnable
   void setParentAdapter(IRTAdapter parentAdapter)
   {
     this.ParentRTAdapter = parentAdapter;
-  }
-
-  void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 }

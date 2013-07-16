@@ -55,10 +55,10 @@
 
 package OpenRate.resource;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.IDBDataSource;
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
@@ -101,9 +101,6 @@ public class DataSourceFactory implements IResource, IEventInterface
    * List of Services that this Client supports
    */
   private final static String SERVICE_STATUS_KEY = "Status";
-
-  // reference to the exception handler
-  private ExceptionHandler handler;
 
   // for handling thread safety
   private static Object  lock    = new Object();
@@ -148,7 +145,7 @@ public class DataSourceFactory implements IResource, IEventInterface
       {
         // we are relying on this name to be able to find the resource
         // later, so stop if it is not right
-        handler.reportException(new InitializationException("DataSourceFactory ModuleName should be <" + RESOURCE_KEY + ">"));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("DataSourceFactory ModuleName should be <" + RESOURCE_KEY + ">",getSymbolicName()));
       }
 
       // Get the builder class
@@ -156,7 +153,7 @@ public class DataSourceFactory implements IResource, IEventInterface
 
       if (builderClassName.equals("None"))
       {
-        handler.reportException(new InitializationException("No Data Source Builder Class defined"));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("No Data Source Builder Class defined",getSymbolicName()));
       }
 
       builderClass = Class.forName(builderClassName);
@@ -164,19 +161,19 @@ public class DataSourceFactory implements IResource, IEventInterface
     }
     catch (ClassNotFoundException cnfe)
     {
-      handler.reportException(new InitializationException("Data source builder class not found <" + builderClassName + ">",cnfe));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Data source builder class not found <" + builderClassName + ">",cnfe,getSymbolicName()));
     }
     catch (InstantiationException ie)
     {
-      handler.reportException(new InitializationException("Could not instantiate data source builder class <" + builderClassName + ">",ie));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not instantiate data source builder class <" + builderClassName + ">",ie,getSymbolicName()));
     }
     catch (IllegalAccessException iae)
     {
-      handler.reportException(new InitializationException("Error accessing data source builder class <" + builderClassName + ">",iae));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Error accessing data source builder class <" + builderClassName + ">",iae,getSymbolicName()));
     }
     catch (NoClassDefFoundError ncdfe)
     {
-      handler.reportException(new InitializationException("Could not find data source builder class <" + builderClassName + ">",ncdfe));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source builder class <" + builderClassName + ">",ncdfe,getSymbolicName()));
     }
 
     // Now go and get all the data sources that have to be created
@@ -201,12 +198,12 @@ public class DataSourceFactory implements IResource, IEventInterface
     }
     catch (NoClassDefFoundError ncdfe)
     {
-      handler.reportException(new InitializationException("Could not find data source class for data source<" +
-              tmpDataSourceName + ">",ncdfe));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source class for data source<" +
+              tmpDataSourceName + ">",ncdfe,getSymbolicName()));
     }
     catch (InitializationException ie)
     {
-      handler.reportException(ie);
+      OpenRate.getFrameworkExceptionHandler().reportException(ie);
     }
   }
 
@@ -307,20 +304,9 @@ public class DataSourceFactory implements IResource, IEventInterface
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATUS_KEY, ClientManager.PARAM_DYNAMIC);
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATUS_KEY, ClientManager.PARAM_DYNAMIC);
   }
 }

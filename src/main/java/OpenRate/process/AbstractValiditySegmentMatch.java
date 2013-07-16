@@ -109,8 +109,8 @@ public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
 
     if (CMV == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping array
@@ -118,8 +118,8 @@ public abstract class AbstractValiditySegmentMatch extends AbstractPlugIn
 
     if (VS == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

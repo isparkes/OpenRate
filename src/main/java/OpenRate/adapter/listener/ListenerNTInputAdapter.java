@@ -248,20 +248,20 @@ public abstract class ListenerNTInputAdapter
         else
         {
           // No work to do - return the empty batch
-          PipeLog.info("Unable to connect to Host : " + strHost + ":" + intPort);
+          getPipeLog().info("Unable to connect to Host : " + strHost + ":" + intPort);
           return Outbatch;
         }
       }
       catch (UnknownHostException ex) {
 
-          PipeLog.error("Unknown Host : " + strHost + ":" + intPort);
-          throw new ProcessingException("Unknown Host : " + strHost + ":" + intPort);
+          getPipeLog().error("Unknown Host : " + strHost + ":" + intPort);
+          throw new ProcessingException("Unknown Host : " + strHost + ":" + intPort,getSymbolicName());
 
       }
       catch (IOException ex) {
 
-          PipeLog.error("IOException reading stream on " + strHost + ":" + intPort);
-          throw new ProcessingException("IOException reading stream on " + strHost + ":" + intPort);
+          getPipeLog().error("IOException reading stream on " + strHost + ":" + intPort);
+          throw new ProcessingException("IOException reading stream on " + strHost + ":" + intPort,getSymbolicName());
 
       }
     }
@@ -273,7 +273,7 @@ public abstract class ListenerNTInputAdapter
       {
 
         // read from the file and prepare the batch
-        while ((reader.ready()) & (ThisBatchCounter < BatchSize))
+        while ((reader.ready()) & (ThisBatchCounter < batchSize))
         {
           ThisBatchCounter++;
           tmpFileRecord = reader.readLine();
@@ -310,7 +310,7 @@ public abstract class ListenerNTInputAdapter
       }
       catch (IOException ex)
       {
-        PipeLog.fatal("Error reading input stream");
+        getPipeLog().fatal("Error reading input stream");
       }
     }
 
@@ -331,8 +331,8 @@ public abstract class ListenerNTInputAdapter
     }
     catch (IOException ex)
     {
-          PipeLog.error("IOException closing stream on " + strHost + ":" + intPort);
-          throw new ProcessingException("IOException closing stream on " + strHost + ":" + intPort);
+          getPipeLog().error("IOException closing stream on " + strHost + ":" + intPort);
+          throw new ProcessingException("IOException closing stream on " + strHost + ":" + intPort,getSymbolicName());
 
     }
   }
@@ -394,7 +394,7 @@ public abstract class ListenerNTInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -418,7 +418,7 @@ public abstract class ListenerNTInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_NAME, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_NAME, ClientManager.PARAM_NONE);
 
   }
 }

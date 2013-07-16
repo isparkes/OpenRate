@@ -150,11 +150,11 @@ public class RateCache
     // Validate the beat
     if(Beat <= 0)
     {
-      String Message = "Beat in model <" + PriceModel + "> and step number <" +
+      message = "Beat in model <" + PriceModel + "> and step number <" +
                         Step + "> is invalid <" + Beat + "> in module <" +
                         getSymbolicName() + ">";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // See if we already have the cache object for this price
@@ -265,14 +265,12 @@ public class RateCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
-      getFWLog().error(
-            "Application is not able to read file : <" +
-            CacheDataFile + ">");
-      throw new InitializationException("Application is not able to read file: <" +
-                                        CacheDataFile + ">",
-                                        exFileNotFound);
+        
+      message = "Application is not able to read file : <" + CacheDataFile + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -295,10 +293,10 @@ public class RateCache
           if (RateFields.length != 7)
           {
             // bad record, log but try to continue
-            String Message = "Error reading input file <" + CacheDataFile +
+            message = "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record <" + tmpFileRecord +
             ">. Expecting <7> fields but got <" + RateFields.length + ">";
-            getFWLog().error(Message);
+            getFWLog().error(message);
           }
           else
           {
@@ -317,10 +315,10 @@ public class RateCache
             // Update to the log file
             if ((RatesLoaded % loadingLogNotificationStep) == 0)
             {
-              String Message = "Rate Cache Data Loading: <" + RatesLoaded +
+              message = "Rate Cache Data Loading: <" + RatesLoaded +
                     "> configurations loaded for <" + getSymbolicName() + "> from <" +
                     CacheDataFile + ">";
-              getFWLog().info(Message);
+              getFWLog().info(message);
             }
           }
         }
@@ -383,8 +381,9 @@ public class RateCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal("Error performing SQL for retieving Rate Cache data");
-      throw new InitializationException("Connection error. Error retieving Rate Cache data");
+      message = "Error performing SQL for retieving Rate Cache data";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -409,37 +408,24 @@ public class RateCache
         // Update to the log file
         if ((RatesLoaded % loadingLogNotificationStep) == 0)
         {
-          String Message = "Rate Cache Data Loading: <" + RatesLoaded +
+          message = "Rate Cache Data Loading: <" + RatesLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error opening Search Map Data for <" + cacheDataSourceName +
-            ">");
-      throw new InitializationException("Error opening Search Map Data for <" +
-                                        cacheDataSourceName + ">", ex);
+      message = "Error opening Search Map Data for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
-    try
-    {
-      mrs.close();
-      StmtCacheDataSelectQuery.close();
-      JDBCcon.close();
-    }
-    catch (SQLException ex)
-    {
-      getFWLog().fatal(
-            "Error closing Search Map Data connection for <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Error closing Search Map Data connection for <" +
-                                        cacheDataSourceName + ">");
-    }
+    DBUtil.close(mrs);
+    DBUtil.close(StmtCacheDataSelectQuery);
+    DBUtil.close(JDBCcon);
 
     getFWLog().info(
           "Rate Cache Data Loading completed. " + RatesLoaded +
@@ -454,7 +440,7 @@ public class RateCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
  /**

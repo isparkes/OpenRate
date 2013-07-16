@@ -55,11 +55,13 @@
 
 package OpenRate.transaction;
 
+import OpenRate.IPipeline;
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
+import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -103,10 +105,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TransactionManager implements ITransactionManager, IEventInterface
 {
-  // Get access to the log
-  private ILogger FWLog    = LogUtil.getLogUtil().getLogger("Framework");
-  private ILogger StatsLog = LogUtil.getLogUtil().getLogger("Statistics");
-  private ILogger PipeLog  = null;
+  // This is the pipeline that we are in, used for logging and property retrieval
+  private IPipeline pipeline;
 
   // Tells us whether we are in a transaction
   private boolean  TMStarted               = false;
@@ -148,6 +148,9 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   // Common Definitions for the transaction manager
   private TMDefs TMD = TMDefs.getTMDefs();
 
+  // used to simplify logging and exception handling
+  public String message;
+  
   // Transaction Flusher Thread
   TransactionFlusher tmf;
 
@@ -166,11 +169,11 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   */
   public void init(String pipelineName) throws InitializationException
   {
-    FWLog.info("Starting TransactionManager initialisation for pipeline <" +
+    OpenRate.getOpenRateFrameworkLog().info("Starting TransactionManager initialisation for pipeline <" +
                pipelineName + ">");
 
-    // init the logger access for the pipe
-    PipeLog = LogUtil.getLogUtil().getLogger(pipelineName);
+    // store the pipe we are in - used for pipeline level logging and exception handling
+    setPipeline(OpenRate.getPipeline(pipelineName));
 
     // The list of current transactions
     transactionList   = new ConcurrentHashMap<>(50);
@@ -194,13 +197,13 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     Thread flusherThread = new Thread(flusher, tmf, "TransFlusher."+pipelineName+"-Inst-0");
     tmf.setTMReference(this);
     tmf.setPipelineName(pipelineName);
-    tmf.setLogger(PipeLog);
+    tmf.setLogger(getPipeLog());
     flusherThread.setDaemon(true);
     flusherThread.start();
 
     System.out.println("    Started 1 Transaction Flusher Thread for pipeline <"+pipelineName+">");
 
-    FWLog.info("TransactionManager initialised");
+    OpenRate.getOpenRateFrameworkLog().info("TransactionManager initialised");
   }
 
   /**
@@ -223,8 +226,8 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       CachedTrans.setTransactionNumber(tmpTransactionNumber);
       transactionList.put(tmpTransactionNumber, CachedTrans);
       message = "Opened transaction <" + tmpTransactionNumber + "> for pipeline <" + pipeline + ">";
-      PipeLog.info(message);
-      StatsLog.info(message);
+      getPipeLog().info(message);
+      OpenRate.getOpenRateStatsLog().info(message);
 
       // Maintain the count
       activeTransactionCount++;
@@ -233,7 +236,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     }
     else
     {
-      PipeLog.error("Transaction Manager halted. Cannot open new transactions.");
+      getPipeLog().error("Transaction Manager halted. Cannot open new transactions.");
 
       return -1;
     }
@@ -260,17 +263,17 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       TransactionTime = 1;
     }
 
-    PipeLog.info("Transaction <" + transNumber + "> closed");
-    StatsLog.info("Transaction <" + transNumber + "> closed");
-    StatsLog.info("Statistics: Records  <" + CachedTrans.getTransactionRecords() + ">");
-    StatsLog.info("            Duration <" +
+    getPipeLog().info("Transaction <" + transNumber + "> closed");
+    OpenRate.getOpenRateStatsLog().info("Transaction <" + transNumber + "> closed");
+    OpenRate.getOpenRateStatsLog().info("Statistics: Records  <" + CachedTrans.getTransactionRecords() + ">");
+    OpenRate.getOpenRateStatsLog().info("            Duration <" +
       (CachedTrans.getTransactionEnd() - CachedTrans.getTransactionStart()) + "> ms");
-    StatsLog.info("            Speed    <" +
+    OpenRate.getOpenRateStatsLog().info("            Speed    <" +
       ((CachedTrans.getTransactionRecords() * 1000) / TransactionTime) + "> records /sec");
 
     // remove the old transaction
     transactionList.remove(transNumber);
-    PipeLog.debug("Removed transaction <" + transNumber + ">");
+    getPipeLog().debug("Removed transaction <" + transNumber + ">");
 
     // Maintain the count
     activeTransactionCount--;
@@ -291,7 +294,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     CachedTrans = transactionList.get(transNumber);
 
     CachedTrans.setAbortRequested(true);
-    PipeLog.info("Request Abort for Transaction <" + transNumber + ">");
+    getPipeLog().info("Request Abort for Transaction <" + transNumber + ">");
 
     // if we should abort concurrent transactions do so
     if (abortConcurrentTransactions)
@@ -303,7 +306,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
         Integer tmpTransactionKey = TransactionIterator.next();
         tmpCachedTrans = transactionList.get(tmpTransactionKey);
         tmpCachedTrans.setAbortRequested(true);
-        PipeLog.info("Request Subordinate Abort for Transaction <" + tmpTransactionKey + ">");
+        getPipeLog().info("Request Subordinate Abort for Transaction <" + tmpTransactionKey + ">");
       }
     }
   }
@@ -323,7 +326,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     else
     {
       // This is a closed transaction, we didn't abort it
-      FWLog.warning("No trans info found for trans<" + transNumber + ">");
+      OpenRate.getOpenRateFrameworkLog().warning("No trans info found for trans<" + transNumber + ">");
       return false;
     }
   }
@@ -335,12 +338,12 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   {
     if (TMStarted)
     {
-      PipeLog.info("Request Stop for Transaction manager. Will stop after current transaction is closed.");
+      getPipeLog().info("Request Stop for Transaction manager. Will stop after current transaction is closed.");
       TMStarted = false;
     }
     else
     {
-      PipeLog.error("Transaction manager already stopped. No Change made.");
+      getPipeLog().error("Transaction manager already stopped. No Change made.");
     }
   }
 
@@ -351,11 +354,11 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   {
     if (TMStarted)
     {
-      PipeLog.error("Transaction manager already started. No Change made.");
+      getPipeLog().error("Transaction manager already started. No Change made.");
     }
     else
     {
-      PipeLog.info("Request Start for Transaction manager.");
+      getPipeLog().info("Request Start for Transaction manager.");
       TMStarted = true;
     }
   }
@@ -388,7 +391,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   @Override
   public void cancelTransaction(int transNumber)
   {
-    PipeLog.info("Cancel Transaction <" + transNumber + ">");
+    getPipeLog().info("Cancel Transaction <" + transNumber + ">");
     transactionList.remove(transNumber);
     activeTransactionCount--;
   }
@@ -416,7 +419,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     clients[numberOfClients] = clientReference;
     clientTypeArray[numberOfClients] = clientType;
 
-    PipeLog.debug("Registered client <" + clientReference.toString() +"> as client type <" + clientType + "> as client number <" + numberOfClients + ">");
+    getPipeLog().debug("Registered client <" + clientReference.toString() +"> as client type <" + clientType + "> as client number <" + numberOfClients + ">");
 
     return numberOfClients;
   }
@@ -440,7 +443,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       transactionList.get(transNumber).setClientStatus(clientNumber, newStatus);
 
       // Print something to the log, so we can understand the state changes
-      PipeLog.debug("Client <" + clientNumber+ "> set status <" + newStatus + "> " +
+      getPipeLog().debug("Client <" + clientNumber+ "> set status <" + newStatus + "> " +
                 " for transaction <" + transNumber + ">");
 
       // Store away the transaction number
@@ -454,10 +457,10 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     }
     catch (NullPointerException npe)
     {
-      String Message = "Error setting client status <" + newStatus +
+      message = "Error setting client status <" + newStatus +
                        "> for client <" + clientNumber + "> in transaction <" +
                        transNumber + ">";
-      FWLog.error(Message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
   }
 
@@ -566,7 +569,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     cachedTrans.setTransactionStatus(newOverallStatus);
 
     // log if we need to
-    if (PipeLog.isDebugEnabled())
+    if (getPipeLog().isDebugEnabled())
     {
       logTransactionStatus(transNumber);
     }
@@ -597,7 +600,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
         ClientStatus += Integer.toString(CachedTrans.getClientStatus(i));
       }
 
-      PipeLog.debug("New Status for transaction <" + transNumber + ">:");
+      getPipeLog().debug("New Status for transaction <" + transNumber + ">:");
       ClientStatus = ClientStatus + " --> " + CachedTrans.getTransactionStatus();
 
       if (CachedTrans.isStateChange())
@@ -605,8 +608,8 @@ public class TransactionManager implements ITransactionManager, IEventInterface
         ClientStatus += "(*)";
       }
 
-      PipeLog.debug("  " + ClientType);
-      PipeLog.debug("  " + ClientStatus);
+      getPipeLog().debug("  " + ClientType);
+      getPipeLog().debug("  " + ClientStatus);
     }
   }
 
@@ -739,17 +742,17 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ABORT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ALLOWTRANS, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_TRANSCOUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_CLIENT_STATUS, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FLUSH_STATUS, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_MAX_TRANSACTIONS, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ABORT_CONCURRENT_TRANS, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ABORT_HARD, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ABORT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ALLOWTRANS, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_TRANSCOUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CLIENT_STATUS, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FLUSH_STATUS, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_MAX_TRANSACTIONS, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ABORT_CONCURRENT_TRANS, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ABORT_HARD, ClientManager.PARAM_DYNAMIC);
   }
 
   /**
@@ -904,7 +907,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
         }
         catch (NumberFormatException nfe)
         {
-          PipeLog.error("Invalid number for batch size. Passed value = <" + Parameter + ">");
+          getPipeLog().error("Invalid number for batch size. Passed value = <" + Parameter + ">");
         }
         ResultCode = 0;
       }
@@ -945,7 +948,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
     if (ResultCode == 0)
     {
         String logStr = "Command " + Command + " handled";
-        PipeLog.debug(logStr);
+        getPipeLog().debug(logStr);
         return "OK";
     }
     else
@@ -984,4 +987,50 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   public void resetClients() {
     numberOfClients = 0;
   }
+  
+  // -----------------------------------------------------------------------------
+  // -------------------- Standard getter/setter functions -----------------------
+  // -----------------------------------------------------------------------------
+
+    /**
+     * @return the pipeName
+     */
+    public String getPipeName() {
+      return pipeline.getSymbolicName();
+    }
+
+    /**
+     * @return the pipeline
+     */
+    public IPipeline getPipeline() {
+      return pipeline;
+    }
+
+ /**
+  * Set the pipeline reference so the input adapter can control the scheduler
+  *
+  * @param pipeline the Pipeline to set
+  */
+  public void setPipeline(IPipeline pipeline)
+  {
+    this.pipeline = pipeline;
+  }
+
+   /**
+    * Return the pipeline logger.
+    * 
+    * @return The logger
+    */
+    protected ILogger getPipeLog() {
+      return pipeline.getPipeLog();
+    }
+
+   /**
+    * Return the exception handler.
+    * 
+    * @return The exception handler
+    */
+    protected ExceptionHandler getExceptionHandler() {
+      return pipeline.getPipelineExceptionHandler();
+    }
 }

@@ -574,7 +574,7 @@ public class CustomerCache
   public List<String> getERAKeys(String CustId)
   {
     CustInfo tmpCustInfo;
-    ArrayList<String> keyList = null;
+    ArrayList<String> keyList = new ArrayList<>();
 
     // See if we already have ID for this customer
     if (CustIDCache.containsKey(CustId))
@@ -624,12 +624,11 @@ public class CustomerCache
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      getFWLog().error(
-            "Application is not able to read file : <" +
-            CacheDataFile + ">");
-      throw new InitializationException("Application is not able to read file: <" +
-                                        CacheDataFile + ">",
-                                        exFileNotFound);
+      message = "Application is not able to read file <" + CacheDataFile + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,
+                                        exFileNotFound,
+                                        getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -781,9 +780,9 @@ public class CustomerCache
     // JDBC adapters to work properly using 1 configuration file.
     if(DBUtil.initDataSource(cacheDataSourceName) == null)
     {
-      String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Try to open the DS
@@ -799,8 +798,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal("Error performing SQL for retieving Alias data. Message: <" + ex.getMessage() + ">");
-      throw new InitializationException("Connection error. Error retieving Alias data. Message: <" + ex.getMessage() + ">");
+      message = "Error performing SQL for retieving Alias data. message: <" + ex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer alias cache
@@ -820,11 +820,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error opening Alias Data for <" + cacheDataSourceName +
-            ">");
-      throw new InitializationException("Error opening Alias Data for <" +
-                                        cacheDataSourceName + ">", ex);
+      message = "Error opening Alias Data for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -834,11 +832,10 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error closing Result Set for Alias information from <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Error closing Result Set for Alias information from <" +
-                                        cacheDataSourceName + ">");
+      message = "Error closing Result Set for Alias information from <" +
+            cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Execute the query
@@ -848,8 +845,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal("Error performing SQL for retieving Customer data. Message: " + ex.getMessage());
-      throw new InitializationException("Connection error. Error retieving Customer data. Message: " + ex.getMessage());
+      message = "Error performing SQL for retieving Customer data. message: " + ex.getMessage();
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer alias cache
@@ -884,11 +882,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error opening Customer Data for <" + cacheDataSourceName +
-            ">");
-      throw new InitializationException("Error opening Customer Data for <" +
-                                        cacheDataSourceName + ">", ex);
+      message = "Error opening Customer Data for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -898,11 +894,10 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error closing Result Set for Customer information from <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Error closing Result Set for Customer information from <" +
-                                        cacheDataSourceName + ">");
+      message = "Error closing Result Set for Customer information from <" +
+            cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
      // Execute the query
@@ -912,8 +907,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal("Error performing SQL for retieving Product data. Message: " + ex.getMessage());
-      throw new InitializationException("Connection error. Error retieving Product data. Message: " + ex.getMessage());
+      message = "Error performing SQL for retieving Product data. message: " + ex.getMessage();
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer alias cache
@@ -947,11 +943,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error opening Product Data for <" + cacheDataSourceName +
-            ">");
-      throw new InitializationException("Error opening Product Data for <" +
-                                        cacheDataSourceName + ">", ex);
+      message = "Error opening Product Data for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -961,11 +955,10 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error closing Result Set for Product information from <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Error closing Result Set for Product information from <" +
-                                        cacheDataSourceName + ">");
+      message = "Error closing Result Set for Product information from <" +
+            cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Execute the query
@@ -975,8 +968,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal("Error performing SQL for retieving ERA data");
-      throw new InitializationException("Connection error. Error retieving ERA data");
+      message = "Error performing SQL for retieving ERA data";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer alias cache
@@ -997,11 +991,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error opening Product Data for <" + cacheDataSourceName +
-            ">");
-      throw new InitializationException("Error opening Product Data for <" +
-                                        cacheDataSourceName + ">", ex);
+      message = "Error opening Product Data for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -1016,11 +1008,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error closing Search Map Data connection for <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Error closing Search Map Data connection for <" +
-                                        cacheDataSourceName + ">");
+      message = "Error closing Search Map Data connection for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     getFWLog().info(
@@ -1041,7 +1031,7 @@ public class CustomerCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
  /**
@@ -1079,8 +1069,8 @@ public class CustomerCache
 
     if (aliasSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<AliasSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<AliasSelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     customerSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -1090,8 +1080,8 @@ public class CustomerCache
 
     if (customerSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<CustomerSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<CustomerSelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     productSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -1101,8 +1091,8 @@ public class CustomerCache
 
     if (productSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<ProductSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<ProductSelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     eraSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -1112,8 +1102,8 @@ public class CustomerCache
 
     if (eraSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<ERASelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<ERASelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Normally we should not get here - we should have thrown an exception already
@@ -1149,9 +1139,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().error("Error preparing the statement " + aliasSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-                                        aliasSelectQuery + ">");
+      message = "Error preparing the statement " + aliasSelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     try
@@ -1163,9 +1153,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().error("Error preparing the statement " + customerSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-                                        customerSelectQuery + ">");
+      message = "Error preparing the statement " + customerSelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     try
@@ -1177,9 +1167,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().error("Error preparing the statement " + productSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-                                        productSelectQuery + ">");
+      message = "Error preparing the statement " + productSelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     try
@@ -1191,9 +1181,9 @@ public class CustomerCache
     }
     catch (SQLException ex)
     {
-      getFWLog().error("Error preparing the statement " + eraSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-                                        eraSelectQuery + ">");
+      message = "Error preparing the statement " + eraSelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
   }
 }

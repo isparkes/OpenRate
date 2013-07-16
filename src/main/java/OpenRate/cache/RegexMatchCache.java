@@ -218,10 +218,10 @@ public class RegexMatchCache
       }
       catch(NumberFormatException nfe)
       {
-        String Message = "KeyFields entry for cache <" + getSymbolicName() +
+        message = "KeyFields entry for cache <" + getSymbolicName() +
                           "> not numeric. Found value <" + tmpValue + ">";
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -358,10 +358,10 @@ public class RegexMatchCache
           }
           catch (PatternSyntaxException pse)
           {
-            String Message = "Error compiling regex pattern <" + fields[i] +
-                      "> in module <" + getSymbolicName() + ">. Message <" + pse.getMessage() + ">";
-            getFWLog().error(Message);
-            throw new InitializationException(Message);
+            message = "Error compiling regex pattern <" + fields[i] +
+                      "> in module <" + getSymbolicName() + ">. message <" + pse.getMessage() + ">";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           tmpSearchMap.Type[i] = 0;
@@ -766,12 +766,12 @@ public class RegexMatchCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
-      String Message = "Application is not able to read file : <" +
+      message = "Application is not able to read file : <" +
             CacheDataFile + ">";
-      getFWLog().error(Message);
-      throw new InitializationException(Message,exFileNotFound);
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -806,10 +806,10 @@ public class RegexMatchCache
             if (ColumnCount < 3)
             {
               // we're not going to be able to use this
-              String Message = "You must define at least 3 entries in the record, you have defined  <" +
-                    ColumnCount + ">";
-              getFWLog().fatal(Message);
-              throw new InitializationException(Message);
+              message = "You must define at least 3 entries in the record, you have defined  <" +
+                    ColumnCount + "> in module <"+getSymbolicName()+">";
+              getFWLog().fatal(message);
+              throw new InitializationException(message,getSymbolicName());
             }
 
             // Do we have a defined form factor?
@@ -818,21 +818,23 @@ public class RegexMatchCache
               // If we have not been given a key form factor, assume the result factor is 1
               ResultFormFactor = 1;
               KeyFormFactor = ColumnCount - ResultFormFactor - 1;
-              String Message = "Using default key factor for regex cache <" +
+              message = "Using default key factor for regex cache <" +
                                CacheDataFile + ">. Assuming Key = <" +
                                Integer.toString(KeyFormFactor) + "> and Result = <" +
-                               Integer.toString(ResultFormFactor) + ">";
-              getFWLog().info(Message);
+                               Integer.toString(ResultFormFactor) + 
+                               "> in module <"+getSymbolicName()+">";
+              getFWLog().info(message);
             }
             else
             {
               // Use the given factor
               ResultFormFactor = ColumnCount - KeyFormFactor - 1;
-              String Message = "Using defined key factor for regex cache <" +
+              message = "Using defined key factor for regex cache <" +
                                CacheDataFile + ">. Using Key = <" +
                                Integer.toString(KeyFormFactor) + "> and Result = <" +
-                               Integer.toString(ResultFormFactor) + ">";
-              getFWLog().info(Message);
+                               Integer.toString(ResultFormFactor) + "> in module <"+ 
+                               getSymbolicName()+">";
+              getFWLog().info(message);
             }
           }
 
@@ -860,41 +862,41 @@ public class RegexMatchCache
           else
           {
             // Error because the form factor changed
-            String Message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor) +
+            message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor) +
                   "> + Payload = <" + Integer.toString(ResultFormFactor) +
-                  ">, but received <" + MapEntryFields.length + ">";
-            getFWLog().error(Message);
-            throw new InitializationException(Message);
+                  ">, but received <" + MapEntryFields.length + "> in module <"+getSymbolicName()+">";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           // Update to the log file
           if ((MapsLoaded % loadingLogNotificationStep) == 0)
           {
-            String Message = "Regex Map Data Loading: <" + MapsLoaded +
+            message = "Regex Map Data Loading: <" + MapsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
         }
       }
     }
     catch (IOException ex)
     {
-      String Message = "Error reading input file  <" + CacheDataFile +
+      message = "Error reading input file  <" + CacheDataFile +
             "> in record <" + MapsLoaded + ">. IO Error.";
-      getFWLog().fatal(Message);
+      getFWLog().fatal(message);
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      String Message = "Error reading input file  <" + CacheDataFile +
+      message = "Error reading input file  <" + CacheDataFile +
             "> in record <" + MapsLoaded + ">. Malformed Record.";
-      getFWLog().fatal(Message);
+      getFWLog().fatal(message);
     }
     catch (NullPointerException npe)
     {
-      String Message = "Error reading input file  <" + CacheDataFile +
-            "> in record <" + MapsLoaded + ">. Malformed Record.";
-      getFWLog().fatal(Message);
+      message = "Error reading input file  <" + CacheDataFile +
+            "> in record <" + MapsLoaded + ">. Malformed Record in module <"+getSymbolicName()+">";
+      getFWLog().fatal(message);
     }
     finally
     {
@@ -904,15 +906,16 @@ public class RegexMatchCache
       }
       catch (IOException ex)
       {
-        String Message = "Error closing input file <" + CacheDataFile + ">";
-        getFWLog().error(Message, ex);
+        message = "Error closing input file <" + CacheDataFile + 
+                         "> in module <"+getSymbolicName()+">";
+        getFWLog().error(message, ex);
       }
     }
 
-    String Message = "Regex Map Data Loading completed. <" + MapsLoaded +
+    message = "Regex Map Data Loading completed. <" + MapsLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
           CacheDataFile + ">";
-    getFWLog().info(Message);
+    getFWLog().info(message);
   }
 
   /**
@@ -947,9 +950,9 @@ public class RegexMatchCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retrieving Regex Match data in module <"+getSymbolicName()+">. Message <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error performing SQL for retrieving Regex Match data in module <"+getSymbolicName()+">. message <" + ex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -971,10 +974,10 @@ public class RegexMatchCache
         if (ColumnCount < 3)
         {
           // we're not going to be able to use this
-          String Message = "You must define at least 3 entries in the record, you have defined  <" +
+          message = "You must define at least 3 entries in the record, you have defined  <" +
                 ColumnCount + ">";
-          getFWLog().fatal(Message);
-          throw new InitializationException(Message);
+          getFWLog().fatal(message);
+          throw new InitializationException(message,getSymbolicName());
         }
 
         // Do we have a defined form factor?
@@ -983,11 +986,11 @@ public class RegexMatchCache
           // If we have not been given a key form factor, assume the result factor is 1
           ResultFormFactor = 1;
           KeyFormFactor = ColumnCount - ResultFormFactor - 1;
-          String Message = "Using default key factor for regex cache <" +
+          message = "Using default key factor for regex cache <" +
                            cacheDataSourceName + ">. Assuming Key = <" +
                            Integer.toString(KeyFormFactor) + "> and Result = <" +
                            Integer.toString(ResultFormFactor) + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
         else
         {
@@ -997,18 +1000,18 @@ public class RegexMatchCache
           if (ResultFormFactor < 1)
           {
             // Makes no sense to start if we don't give any results
-            String Message = "Error in module <" +
+            message = "Error in module <" +
                   cacheDataSourceName + ">. Key fields >= total columns. Got KeyFields <" +
                     KeyFormFactor + "> and columns <" + ColumnCount + ">";
-            getFWLog().fatal(Message);
-            throw new InitializationException(Message);
+            getFWLog().fatal(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
-          String Message = "Using defined key factor for regex cache <" +
+          message = "Using defined key factor for regex cache <" +
                            getSymbolicName() + ">. Using Key = <" +
                            Integer.toString(KeyFormFactor) + "> and Result = <" +
                            Integer.toString(ResultFormFactor) + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
 
@@ -1039,24 +1042,24 @@ public class RegexMatchCache
         // Update to the log file
         if ((ConfigsLoaded % loadingLogNotificationStep) == 0)
         {
-          String Message = "Regex Map Data Loading: <" + ConfigsLoaded +
+          message = "Regex Map Data Loading: <" + ConfigsLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Search Map Data for <" + getSymbolicName() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message, ex);
+      message = "Error opening Search Map Data for <" + getSymbolicName() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
     catch (NullPointerException ex)
     {
-      String Message = "Error opening Search Map Data for <" + getSymbolicName() + "> in config <" + ConfigsLoaded + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message, ex);
+      message = "Error opening Search Map Data for <" + getSymbolicName() + "> in config <" + ConfigsLoaded + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -1068,16 +1071,16 @@ public class RegexMatchCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Search Map Data connection for <" +
+      message = "Error closing Search Map Data connection for <" +
             cacheDataSourceName + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
-    String Message = "Regex Map Data Loading completed. <" + ConfigsLoaded +
+    message = "Regex Map Data Loading completed. <" + ConfigsLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
           cacheDataSourceName + ">";
-    getFWLog().info(Message);
+    getFWLog().info(message);
   }
 
  /**
@@ -1133,10 +1136,10 @@ public class RegexMatchCache
           if (ColumnCount < 3)
           {
             // we're not going to be able to use this
-            String Message = "You must define at least 3 entries in the record, you have defined  <" +
+            message = "You must define at least 3 entries in the record, you have defined  <" +
                   ColumnCount + ">";
-            getFWLog().fatal(Message);
-            throw new InitializationException(Message);
+            getFWLog().fatal(message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           // Do we have a defined form factor?
@@ -1145,21 +1148,21 @@ public class RegexMatchCache
             // If we have not been given a key form factor, assume the result factor is 1
             ResultFormFactor = 1;
             KeyFormFactor = ColumnCount - ResultFormFactor - 1;
-            String Message = "Using default key factor for regex cache <" +
+            message = "Using default key factor for regex cache <" +
                              cacheDataSourceName + ">. Assuming Key = <" +
                              Integer.toString(KeyFormFactor) + "> and Result = <" +
                              Integer.toString(ResultFormFactor) + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
           else
           {
             // Use the given factor
             ResultFormFactor = ColumnCount - KeyFormFactor - 1;
-            String Message = "Using defined key factor for regex cache <" +
+            message = "Using defined key factor for regex cache <" +
                              cacheDataSourceName + ">. Using Key = <" +
                              Integer.toString(KeyFormFactor) + "> and Result = <" +
                              Integer.toString(ResultFormFactor) + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
         }
 
@@ -1188,27 +1191,27 @@ public class RegexMatchCache
           // Update to the log file
           if ((ConfigsLoaded % loadingLogNotificationStep) == 0)
           {
-            String Message = "Regex Map Data Loading: <" + ConfigsLoaded +
+            message = "Regex Map Data Loading: <" + ConfigsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   cacheDataSourceName + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
         }
         else
         {
           // Error because the form factor changed
-          String Message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor) +
+          message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor) +
                 "> + Payload = <" + Integer.toString(ResultFormFactor) +
                 ">, but received <" + tmpMethodResult.size() + ">";
-          getFWLog().error(Message);
-          throw new InitializationException(Message);
+          getFWLog().error(message);
+          throw new InitializationException(message,getSymbolicName());
         }
       }
     }
 
-    String Message = "Regex Map Data Loading completed. " + ConfigsLoaded +
+    message = "Regex Map Data Loading completed. " + ConfigsLoaded +
           " configuration lines loaded for <" + getSymbolicName() + ">";
-    getFWLog().info(Message);
+    getFWLog().info(message);
   }
 
  /**
@@ -1303,9 +1306,9 @@ public class RegexMatchCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMP_MAP, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMP_MAP, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

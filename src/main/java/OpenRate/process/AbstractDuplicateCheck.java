@@ -122,16 +122,16 @@ public abstract class AbstractDuplicateCheck
                                                           "None");
     if (CacheObjectName.equalsIgnoreCase("None"))
     {
-      Message = "Could not find cache entry for <" + CACHE_KEY + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CACHE_KEY + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     CMDupCache = CacheFactory.getGlobalManager(CacheObjectName);
 
     if (CMDupCache == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the reference to the Auth List
@@ -274,10 +274,10 @@ public abstract class AbstractDuplicateCheck
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_WRITE_EVERY_N_TRANS, ClientManager.PARAM_DYNAMIC);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_WRITE_EVERY_N_TRANS, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -319,7 +319,7 @@ public abstract class AbstractDuplicateCheck
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }

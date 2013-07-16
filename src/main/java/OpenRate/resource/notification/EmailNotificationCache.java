@@ -55,10 +55,12 @@
 
 package OpenRate.resource.notification;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
+import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import OpenRate.resource.IResource;
@@ -70,8 +72,8 @@ import javax.mail.*;
 import javax.mail.internet.*;
 
 /**
- * The email notification cache simplifies the process of sending emails from
- * OpenRate to alert in (Near) Real Time about things which might need
+ * The email notification cache simplifies the process of sending email messages 
+ * from OpenRate to alert in (Near) Real Time about things which might need
  * urgent intervention, such as fraud detection.
  *
  * There are two modes of operation:
@@ -134,9 +136,9 @@ public class EmailNotificationCache implements IResource, IEventInterface
   // Used to identify the source of the notification
   String notificationInstanceID;
 
-  // The parent Exception Handler
-  private ExceptionHandler handler;
-
+  // used to simplify logging and exception handling
+  public String message;
+  
  /**
   * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
   * from resources or caches) should go into this log, as well as startup
@@ -163,20 +165,23 @@ public class EmailNotificationCache implements IResource, IEventInterface
   {
     if (ResourceName.equals(RESOURCE_KEY) == false)
     {
-      throw new InitializationException("The linked buffer cache must be called " + RESOURCE_KEY);
+      message = "The linked buffer cache must be called " + RESOURCE_KEY;
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Initialise the mail subsystem
     server = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"Server","None");
     if (server.equalsIgnoreCase("None"))
     {
-      throw new InitializationException("Property <Server> not defined for resource <" + ResourceName + ">");
+      message = "Property <Server> not defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     String sPort = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"Port","None");
     if (sPort.equalsIgnoreCase("None"))
     {
-      throw new InitializationException("Property <Port> not defined for resource <" + ResourceName + ">");
+      message = "Property <Port> not defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // show some life
@@ -189,7 +194,8 @@ public class EmailNotificationCache implements IResource, IEventInterface
     }
     catch (NumberFormatException nfe)
     {
-      throw new InitializationException("Property <Port> was not numeric. Received: <" + sPort + ">");
+      message = "Property <Port> was not numeric. Received: <" + sPort + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     System.out.println("    Port           <" + port + ">");
@@ -197,7 +203,8 @@ public class EmailNotificationCache implements IResource, IEventInterface
     userName = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"UserName","None");
     if (userName.equalsIgnoreCase("None"))
     {
-      throw new InitializationException("Property <UserName> not defined for resource <" + ResourceName + ">");
+      message = "Property <UserName> not defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -207,7 +214,8 @@ public class EmailNotificationCache implements IResource, IEventInterface
     passWord = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"PassWord","None");
     if (passWord.equalsIgnoreCase("None"))
     {
-      throw new InitializationException("Property <PassWord> not defined for resource <" + ResourceName + ">");
+      message = "Property <PassWord> not defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -217,13 +225,15 @@ public class EmailNotificationCache implements IResource, IEventInterface
     mailTo = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"MailTo","None");
     if (mailTo.equalsIgnoreCase("None"))
     {
-      throw new InitializationException("Property <mailTo> not defined for resource <" + ResourceName + ">");
+      message = "Property <mailTo> not defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     mailFrom = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"MailFrom","None");
     if (mailFrom.equalsIgnoreCase("None"))
     {
-      throw new InitializationException("Property <MailFrom> not defined for resource <" + ResourceName + ">");
+      message = "Property <MailFrom> not defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Create the mail from address
@@ -241,11 +251,13 @@ public class EmailNotificationCache implements IResource, IEventInterface
     }
     catch (AddressException ae)
     {
-      throw new InitializationException("Invalid email address <MailFrom> defined for resource <" + ResourceName + ">");
+      message = "Invalid email address <MailFrom> defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (UnsupportedEncodingException ex)
     {
-      throw new InitializationException("Invalid email name <MailFromName> defined for resource <" + ResourceName + ">");
+      message = "Invalid email name <MailFromName> defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Create the default mail to address
@@ -271,11 +283,13 @@ public class EmailNotificationCache implements IResource, IEventInterface
     }
     catch (AddressException ae)
     {
-      throw new InitializationException("Invalid email address <MailTo> defined for resource <" + ResourceName + ">");
+      message = "Invalid email address <MailTo> defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (UnsupportedEncodingException ex)
     {
-      throw new InitializationException("Invalid email name <MailToName> defined for resource <" + ResourceName + ">");
+      message = "Invalid email name <MailToName> defined for resource <" + ResourceName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the optional CC address
@@ -304,11 +318,13 @@ public class EmailNotificationCache implements IResource, IEventInterface
       }
       catch (AddressException ae)
       {
-        throw new InitializationException("Invalid email address <MailTo> defined for resource <" + ResourceName + ">");
+        message = "Invalid email address <MailTo> defined for resource <" + ResourceName + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       catch (UnsupportedEncodingException ex)
       {
-        throw new InitializationException("Invalid email name <MailToName> defined for resource <" + ResourceName + ">");
+        message = "Invalid email name <MailToName> defined for resource <" + ResourceName + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -352,10 +368,11 @@ public class EmailNotificationCache implements IResource, IEventInterface
     // will be handling threads
     emailer.setFWLog(FWLog);
 
+    // Pass the mail session (for authentication) down to the handler thread
     emailer.setMailSession(mailSession);
 
-    // ToDo add exceptionhandler
-    emailer.setHandler(getHandler());
+    // set the symbolic name into the thread
+    emailer.setSymbolicName(getSymbolicName());
 
     // start the mailer thread
     Thread emailerProcess = new Thread(emailer,"EmailNotificationThread");
@@ -373,7 +390,8 @@ public class EmailNotificationCache implements IResource, IEventInterface
       if (sentOK == false)
       {
         // problems sending the mail - abort
-        throw new InitializationException("Failed to send startup email. Aborting.");
+        message = "Failed to send startup email. Aborting.";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
   }
@@ -522,9 +540,13 @@ public class EmailNotificationCache implements IResource, IEventInterface
       FWLog.error("Error sending message");
       return false;
     }
-
-    // Add the mail to the queue
-    emailer.despatchEmailSync(msg);
+      try {
+        // Add the mail to the queue
+        emailer.despatchEmailSync(msg);
+      }
+      catch (ProcessingException ex) {
+        OpenRate.getFrameworkExceptionHandler().reportException(ex);
+      }
 
     // Done!!!
     return true;
@@ -571,26 +593,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
   {
     return symbolicName;
   }
-
-  /**
-   * Get the exception handler.
-   *
-   * @return the handler
-   */
-  public ExceptionHandler getHandler() {
-    return handler;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler) {
-    this.handler = handler;
-  }
-
+  
  /**
   * The JavaMail authenticator object. Needed for cases where we need to perform
   * authenticated logins to be able to send mails.
@@ -621,10 +624,10 @@ public class EmailNotificationCache implements IResource, IEventInterface
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_QUEUE_LENGTH, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_QUEUE_LENGTH, ClientManager.PARAM_DYNAMIC);
   }
 
   /**

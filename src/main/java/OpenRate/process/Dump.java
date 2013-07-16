@@ -180,7 +180,7 @@ public class Dump
     processControlEvent(SERVICE_PROCPREFIX, true, ConfigHelper);
 
     // create the hash for storing the file names
-    CurrentFileNames = new HashMap <String, String>(10);
+    CurrentFileNames = new HashMap <>(10);
   }
 
   /**
@@ -236,7 +236,7 @@ public class Dump
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
       }
@@ -277,7 +277,7 @@ public class Dump
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
         break;
@@ -302,7 +302,7 @@ public class Dump
             }
             catch (IOException ex)
             {
-              pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+              getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
             }
           }
         }
@@ -355,7 +355,7 @@ public class Dump
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
         break;
@@ -379,7 +379,7 @@ public class Dump
             }
             catch (IOException ex)
             {
-              pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+              getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
             }
           }
         }
@@ -441,7 +441,7 @@ public class Dump
           }
           catch (IOException ex)
           {
-            pipeLog.error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
+            getPipeLog().error("Error during processing in Module <" + getSymbolicName() + ">. Error reason <" + ex.getMessage() + ">");
           }
         }
 
@@ -452,7 +452,7 @@ public class Dump
         }
         catch (ProcessingException pe)
         {
-          pipeLog.error("Error closing dump file in Module <" + getSymbolicName() + ">. Error reason <" + pe.getMessage() + ">");
+          getPipeLog().error("Error closing dump file in Module <" + getSymbolicName() + ">. Error reason <" + pe.getMessage() + ">");
         }
       }
     }
@@ -571,8 +571,8 @@ public class Dump
         else
         {
           // Unknown dump type
-          Message = "Unknown " + SERVICE_DUMPTYPE + " <" + Parameter + ">. Command ignored.";
-          pipeLog.error(Message);
+          message = "Unknown " + SERVICE_DUMPTYPE + " <" + Parameter + ">. Command ignored.";
+          getPipeLog().error(message);
         }
     }
 
@@ -658,7 +658,7 @@ public class Dump
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -682,14 +682,14 @@ public class Dump
     super.registerClientManager();
 
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPTYPE, ClientManager.PARAM_MANDATORY_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPPATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPPREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMPSUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPTYPE, ClientManager.PARAM_MANDATORY_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPPATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMPSUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 
   // -----------------------------------------------------------------------------
@@ -818,9 +818,10 @@ public class Dump
     }
     catch (IOException exFileNotFound)
     {
-      pipeLog.error("Application is not able to close dump file");
+      getPipeLog().error("Application is not able to close dump file");
       throw new ProcessingException("Application is not able to close dump file",
-                                    exFileNotFound);
+                                    exFileNotFound,
+                                    getSymbolicName());
     }
   }
 
@@ -850,14 +851,14 @@ public class Dump
 
       if (file.createNewFile() == false)
       {
-        pipeLog.error("output file already exists = " + DumpFileName);
+        getPipeLog().error("output file already exists = " + DumpFileName);
       }
 
       fwriter = new FileWriter(file);
     }
     catch (IOException ex)
     {
-      pipeLog.error("Error opening valid stream output for file <" +
+      getPipeLog().error("Error opening valid stream output for file <" +
                 DumpFileName + ">. Message <" + ex.getMessage() + ">");
     }
 

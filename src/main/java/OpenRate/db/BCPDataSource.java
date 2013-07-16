@@ -68,9 +68,16 @@ import javax.sql.DataSource;
 
 public class BCPDataSource implements IDBDataSource
 {
+  // The symbolic name is used in the management of the pipeline (control and
+  // thread monitoring) and logging.
+  private String SymbolicName = "BCPDataSource";
+
   // reference to the exception handler
   private ExceptionHandler handler;
 
+  // used to simplify logging and exception handling
+  public String message;
+  
  /**
   * The data source is a a pooled collection of connections that can be used
   * by elements of the framework.
@@ -172,30 +179,30 @@ public class BCPDataSource implements IDBDataSource
 
       if (db_url == null || db_url.isEmpty())
       {
-        String Message = "Error recovering data source parameter <db_url> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <db_url> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       if (driver == null || driver.isEmpty())
       {
-        String Message = "Error recovering data source parameter <driver> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <driver> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       if (username == null || username.isEmpty())
       {
-        String Message = "Error recovering data source parameter <username> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <username> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       if (password == null)
       {
-        String Message = "Error recovering data source parameter <password> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <password> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       FWlog.info("Creating DataSource <" + dataSourceName + "> using driver <" + driver + "> from URL <" + db_url + ">");
@@ -205,9 +212,9 @@ public class BCPDataSource implements IDBDataSource
     }
     catch (ClassNotFoundException cnfe)
     {
-      String Message = "Driver class <" + driver + "> not found for data source <" + dataSourceName + ">";
-      FWlog.error(Message);
-      throw new InitializationException(Message);
+      message = "Driver class <" + driver + "> not found for data source <" + dataSourceName + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Set driver class
@@ -273,9 +280,9 @@ public class BCPDataSource implements IDBDataSource
       }
       catch (SQLException ex)
       {
-        String Message = "Connection test failed for connection <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Connection test failed for connection <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
     return dataSource;
@@ -291,4 +298,25 @@ public class BCPDataSource implements IDBDataSource
   {
     this.handler = handler;
   }
+
+    /**
+     * @return the SymbolicName
+     */
+    public String getSymbolicName() {
+        return SymbolicName;
+    }
+
+    /**
+     * @param SymbolicName the SymbolicName to set
+     */
+    public void setSymbolicName(String SymbolicName) {
+        this.SymbolicName = SymbolicName;
+    }
+
+    /**
+     * @return the handler
+     */
+    public ExceptionHandler getHandler() {
+        return handler;
+    }
 }

@@ -55,7 +55,6 @@
 
 package OpenRate.resource.notification;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
 import java.util.ArrayList;
@@ -81,9 +80,7 @@ public class EmailerThread implements Runnable
    */
   protected ILogger FWLog = null;
 
-  // Used for reporting exceptions up to the pipe manager
-  private ExceptionHandler handler = new ExceptionHandler();
-
+  // True while we are running, set false to exit thread
   private boolean inLoop = true;
 
   // This is the mail queue - this allows asynchronous sending of messages
@@ -94,7 +91,13 @@ public class EmailerThread implements Runnable
 
   // This is the mail session for the synchronous despatch
   private Session mailSessionSync;
+  
+  // The symbolic name to use for reporting errors
+  private String symbolicName;
 
+  // used to simplify logging and exception handling
+  public String message;
+  
  /**
   * Constructor
   */
@@ -162,9 +165,9 @@ public class EmailerThread implements Runnable
         try
         {
           // Send a mail
-          String Message = "Sending email [" + tmpMessage.getSubject() + "] addresses [" + formatMailAddresses(tmpMessage) + "]";
+          message = "Sending email [" + tmpMessage.getSubject() + "] addresses [" + formatMailAddresses(tmpMessage) + "]";
 
-          FWLog.info(Message);
+          FWLog.info(message);
           smtpTransport.sendMessage(tmpMessage, tmpMessage.getAllRecipients());
         }
         catch (MessagingException ex)
@@ -182,7 +185,7 @@ public class EmailerThread implements Runnable
   *
   * @param tmpMessage The mail message to send
   */
-  public void despatchEmailSync(MimeMessage tmpMessage)
+  public void despatchEmailSync(MimeMessage tmpMessage) throws ProcessingException
   {
     Transport smtpTransport;
 
@@ -195,10 +198,10 @@ public class EmailerThread implements Runnable
       FWLog.debug("Immediate SMTP Connection opened.");
 
       // Send a mail
-      String Message = "Sending email [" + tmpMessage.getSubject() + "] addresses [" + formatMailAddresses(tmpMessage) + "]";
+      message = "Sending email [" + tmpMessage.getSubject() + "] addresses [" + formatMailAddresses(tmpMessage) + "]";
 
       // Log the message
-      FWLog.info(Message);
+      FWLog.info(message);
 
       // Do the sending
       smtpTransport.sendMessage(tmpMessage, tmpMessage.getAllRecipients());
@@ -209,13 +212,13 @@ public class EmailerThread implements Runnable
     }
     catch (NoSuchProviderException ex)
     {
-      String Message = "No provider for smtp";
-      handler.reportException(new ProcessingException(Message,ex));
+      message = "No provider for smtp";
+      throw new ProcessingException(message,ex,getSymbolicName());
     }
     catch (MessagingException ex)
     {
-    	String Message = "Messaging exception";
-      handler.reportException(new ProcessingException(Message,ex));
+    	message = "Messaging exception";
+      throw new ProcessingException(message,ex,getSymbolicName());
     }
   }
 
@@ -240,16 +243,6 @@ public class EmailerThread implements Runnable
   void setFWLog(ILogger newLog)
   {
     this.FWLog = newLog;
-  }
-
- /**
-  * Set the exception handler
-  *
-  * @param handler The exception handler to set
-  */
-  void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 
   void queueMessage(MimeMessage msg)
@@ -326,4 +319,15 @@ public class EmailerThread implements Runnable
 
     return addressList;
   }
+
+    void setSymbolicName(String newSymbolicName) {
+      symbolicName = newSymbolicName;
+    }
+
+    /**
+     * @return the symbolicName
+     */
+    public String getSymbolicName() {
+        return symbolicName;
+    }
 }

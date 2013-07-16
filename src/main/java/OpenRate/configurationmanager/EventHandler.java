@@ -54,7 +54,6 @@
  */
 package OpenRate.configurationmanager;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
@@ -101,9 +100,6 @@ public class EventHandler implements IResource
   private String semaphoreFileLocation;
   private File semaphoreFile;
 
-  // reference to the exception handler
-  private ExceptionHandler handler;
-
  /**
   * Creates a new instance of EventHandler
   */
@@ -124,7 +120,7 @@ public class EventHandler implements IResource
     {
       // we are relying on this name to be able to find the resource
       // later, so stop if it is not right
-      throw new InitializationException("ECI ModuleName should be <" + RESOURCE_KEY + ">");
+      throw new InitializationException("ECI ModuleName should be <" + RESOURCE_KEY + ">",getSymbolicName());
     }
 
     // Set the symbolic name
@@ -150,10 +146,10 @@ public class EventHandler implements IResource
         } else {
           // we are relying on this name to be able to find the resource
           // later, so stop if it is not right
-          throw new InitializationException("Semaphore File <" + semaphoreFileLocation + "> is not a valid path");
+          throw new InitializationException("Semaphore File <" + semaphoreFileLocation + "> is not a valid path",getSymbolicName());
         }
       } catch (IOException ex) {
-        throw new InitializationException("Semaphore File <" + semaphoreFileLocation + "> is not a valid path");
+        throw new InitializationException("Semaphore File <" + semaphoreFileLocation + "> is not a valid path",ex,getSymbolicName());
       }
 
       // Move any existing semaphores out of the way
@@ -288,7 +284,7 @@ public class EventHandler implements IResource
         CmdCommand = CommandParams[0];
         CmdParameter = CommandParams[1];
       }
-      ClientContainer clCon = ClientManager.get(CmdModuleSymbolicName);
+      ClientContainer clCon = ClientManager.getClientManager().get(CmdModuleSymbolicName);
 
       if (clCon != null)
       {
@@ -310,16 +306,5 @@ public class EventHandler implements IResource
     }
 
     return output;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 }

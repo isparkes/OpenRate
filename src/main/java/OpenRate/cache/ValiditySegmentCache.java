@@ -395,14 +395,12 @@ public class ValiditySegmentCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
-      getFWLog().error(
-            "Application is not able to read file : <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Application is not able to read file : '" +
-                                        CacheDataFile +
-                                        "' ", exFileNotFound);
+      message = "Application is not able to read file : <" +
+                cacheDataSourceName + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -448,10 +446,10 @@ public class ValiditySegmentCache
           // Update to the log file
           if ((ValidityPeriodsLoaded % loadingLogNotificationStep) == 0)
           {
-            String Message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
+            message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
         }
       }
@@ -470,12 +468,12 @@ public class ValiditySegmentCache
     }
     catch (ParseException pe)
     {
-      String Message =
+      message =
             "Error converting date from <" + getSymbolicName() + "> in record <" +
             ValidityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
             ">, <" + tmpEndDate + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     finally
@@ -531,9 +529,9 @@ public class ValiditySegmentCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retrieving Validity Segment Match data in <" + getSymbolicName() + ">. Message = <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error performing SQL for retrieving Validity Segment Match data in <" + getSymbolicName() + ">. message = <" + ex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -568,27 +566,27 @@ public class ValiditySegmentCache
         // Update to the log file
         if ((ValidityPeriodsLoaded % loadingLogNotificationStep) == 0)
         {
-          String Message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
+          message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Validity Segment Match Data for <" + getSymbolicName() + ">. Message = <" + ex.getMessage() +">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error opening Validity Segment Match Data for <" + getSymbolicName() + ">. message = <" + ex.getMessage() +">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (ParseException pe)
     {
-      String Message =
+      message =
             "Error converting date from <" + getSymbolicName() + "> in record <" +
             ValidityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
-            ">, <" + tmpEndDate + ">. Message = <" + pe.getMessage() + ">";
-      getFWLog().fatal(Message,pe);
-      throw new InitializationException(Message);
+            ">, <" + tmpEndDate + ">. message = <" + pe.getMessage() + ">";
+      getFWLog().fatal(message,pe);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Close down stuff
@@ -600,9 +598,9 @@ public class ValiditySegmentCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Validity Segment Match Data for <" + getSymbolicName() + ">. Message = <" + ex.getMessage() +">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error closing Validity Segment Match Data for <" + getSymbolicName() + ">. message = <" + ex.getMessage() +">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     getFWLog().info(
@@ -649,11 +647,11 @@ public class ValiditySegmentCache
       if (formFactor < 5)
       {
         // There are not enough fields
-        String Message = "Error reading input data from <" + cacheDataSourceName +
+        message = "Error reading input data from <" + cacheDataSourceName +
         "> in record <" + ValidityPeriodsLoaded + ">. Not enough fields.";
 
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       Group = tmpMethodResult.get(0);
@@ -683,10 +681,10 @@ public class ValiditySegmentCache
       // Update to the log file
       if ((ValidityPeriodsLoaded % loadingLogNotificationStep) == 0)
       {
-        String Message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
+        message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
               "> configurations loaded for <" + getSymbolicName() + "> from <" +
               cacheDataSourceName + ">";
-        getFWLog().info(Message);
+        getFWLog().info(message);
       }
     }
 
@@ -716,8 +714,8 @@ public class ValiditySegmentCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

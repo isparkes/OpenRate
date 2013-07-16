@@ -168,7 +168,8 @@ public abstract class SocketInputAdapter
 
     if (ConfigHelper == null || ConfigHelper.equals("0"))
     {
-      throw new InitializationException ("Please set the port number to listen on using the ListenerPort property");
+      message = "Please set the port number to listen on using the ListenerPort property";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // see if we can convert it
@@ -179,7 +180,8 @@ public abstract class SocketInputAdapter
     catch (NumberFormatException nfe)
     {
       // Could not use the value we got
-      throw new InitializationException ("Could not parse the ListenerPort value <" + ConfigHelper + ">");
+      message = "Could not parse the ListenerPort value <" + ConfigHelper + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check the file name scanning variables, throw initialisation exception
@@ -189,7 +191,8 @@ public abstract class SocketInputAdapter
     }catch (IOException nfe)
     {
       // Could not use the value we got
-      throw new InitializationException ("Unable to open socket at specified port <" + ListenerPort + ">");
+      message = "Unable to open socket at specified port <" + ListenerPort + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
   }
@@ -243,7 +246,7 @@ public abstract class SocketInputAdapter
         BufferedReader inputRecordStream = new BufferedReader(new InputStreamReader(InputSocket.getInputStream()));
 
         // read from the socket and prepare the batch
-        while (InputSocket.isClosed() == false && (ThisBatchCounter < BatchSize))
+        while (InputSocket.isClosed() == false && (ThisBatchCounter < batchSize))
         {
           String inputRecord;
           if(inputRecordStream.ready())
@@ -266,7 +269,7 @@ public abstract class SocketInputAdapter
             // create the transaction
             transactionNumber = createNewTransaction();
             InTrans = true;
-            PipeLog.info("opening trans " + transactionNumber);
+            getPipeLog().info("opening trans " + transactionNumber);
             // Inform the transactional layer that we have started processing
             setTransactionProcessing(transactionNumber);
             // Inject a stream header record into the stream
@@ -304,10 +307,10 @@ public abstract class SocketInputAdapter
             // Notify the transaction layer that we have finished
             setTransactionFlushed(transactionNumber);
             InTrans = false;
-            PipeLog.info("flushed trans " + transactionNumber);
+            getPipeLog().info("flushed trans " + transactionNumber);
             // Remove the transaction from the list
             transactionNumber = 0;
-            PipeLog.info("Recevive batch count " + batchCount);
+            getPipeLog().info("Recevive batch count " + batchCount);
             break;
           default:
             // All other records
@@ -332,7 +335,7 @@ public abstract class SocketInputAdapter
               }
 
               // if so, clear down the outbatch, so we don't keep filling the pipe
-              PipeLog.warning("Pipe <"+ getSymbolicName() + "> discarded <" + discardCount + "> of <" + originalCount + "> input records, because of pending abort.");
+              getPipeLog().warning("Pipe <"+ getSymbolicName() + "> discarded <" + discardCount + "> of <" + originalCount + "> input records, because of pending abort.");
             }
             else
             {
@@ -361,7 +364,7 @@ public abstract class SocketInputAdapter
       }
       catch (IOException ioex)
       {
-        PipeLog.fatal("Error reading socket. Message <" + ioex.getMessage() + ">");
+        getPipeLog().fatal("Error reading socket. Message <" + ioex.getMessage() + ">");
       }
 
     return Outbatch;
@@ -382,7 +385,7 @@ public abstract class SocketInputAdapter
 //    }
 //    catch (IOException ex)
 //    {
-//      PipeLog.error("Application is unable to close the Socket: '" + TransactionNumber +
+//      getPipeLog().error("Application is unable to close the Socket: '" + TransactionNumber +
 //                "' ");
 //      throw new ProcessingException("Application is unable to close the Socket : '" +
 //                                    TransactionNumber + "' ", ex);
@@ -416,7 +419,7 @@ public abstract class SocketInputAdapter
 
     this.serverSocket = new ServerSocket(this.ListenerPort);
 
-    PipeLog.info("Input Socket Initialized @ port: " + this.ListenerPort);
+    getPipeLog().info("Input Socket Initialized @ port: " + this.ListenerPort);
     System.out.println(getSymbolicName() + " Input Socket Initialized @ port <" + this.ListenerPort + ">");
   }
 

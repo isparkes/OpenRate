@@ -112,8 +112,8 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
 
     if (CMV == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping array
@@ -121,8 +121,8 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
 
     if (MV == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

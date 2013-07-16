@@ -95,11 +95,14 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   static boolean started = false;
   static boolean initialised = false;
 
-  // module symbolic name: set during initalisation
+  // module symbolic name: never changes in this module, so not set dynamically
   private String SymbolicName = "OpenRateListener";
 
   // This is the socket for the ECI
   private ServerSocket serverSocket;
+  
+  // used to simplify logging and exception handling
+  private String message;
 
   /**
    * Default constructor with Properties object as a parameter. This
@@ -123,16 +126,16 @@ public final class OpenRateSocket implements Runnable, IEventInterface
       // Get the socket
       serverSocket = getServerSocket();
     }
-    catch(NumberFormatException nfe)
+    catch(NumberFormatException ex)
     {
-      String Message = "OpenRateSocket constructor error";
-      throw new InitializationException(Message, nfe);
+      message = "OpenRateSocket constructor error";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
-    catch (IOException ie)
+    catch (IOException ex)
     {
-      String Message = "OpenRateSocket.getServerSocket(): Could not listen on port <"
-        + this.port + ">. Message = <" + ie.getMessage() + ">. Aborting.";
-      throw new InitializationException(Message);
+      message = "OpenRateSocket.getServerSocket(): Could not listen on port <"
+        + this.port + ">. Message = <" + ex.getMessage() + ">. Aborting.";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -298,11 +301,11 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PORT, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_CONNECTIONS, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PORT, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CONNECTIONS, ClientManager.PARAM_MANDATORY);
   }
 
  /**

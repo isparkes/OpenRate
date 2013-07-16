@@ -54,10 +54,12 @@
  */
 package OpenRate.process;
 
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.AbstractLogFactory;
+import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
 import OpenRate.resource.CacheFactory;
 import OpenRate.resource.DataSourceFactory;
@@ -84,6 +86,9 @@ public class AbstractRegexMatchTest
   private static ResourceContext ctx = new ResourceContext();
   private static AbstractRegexMatch instance;
 
+  // Used for logging and exception handling
+  private static String message; 
+
  /**
   * Default constructor
   */
@@ -107,10 +112,13 @@ public class AbstractRegexMatchTest
       }
       catch (InitializationException ex)
       {
-        String Message = "Error reading the configuration file <" + FQConfigFileName + ">";
-        Assert.fail(Message);
+        message = "Error reading the configuration file <" + FQConfigFileName + ">";
+        Assert.fail(message);
       }
 
+      // Set up the OpenRate internal logger - this is normally done by app startup
+      OpenRate.getApplicationInstance();
+      
       // Get the data source name
       cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
                                                                                           "RegexMatchTestCache",
@@ -139,8 +147,8 @@ public class AbstractRegexMatchTest
       // JDBC adapters to work properly using 1 configuration file.
       if(DBUtil.initDataSource(cacheDataSourceName) == null)
       {
-        String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractRegexMatchTest>.";
-        Assert.fail(Message);
+        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractRegexMatchTest>.";
+        Assert.fail(message);
       }
 
       // Get a connection
@@ -159,8 +167,8 @@ public class AbstractRegexMatchTest
         else
         {
           // Not OK, Assert.fail the case
-          String Message = "Error dropping table TEST_REGEX in test <AbstractRegexMatchTest>.";
-          Assert.fail(Message);
+          message = "Error dropping table TEST_REGEX in test <AbstractRegexMatchTest>.";
+          Assert.fail(message);
         }
       }
 
@@ -179,6 +187,16 @@ public class AbstractRegexMatchTest
       Resource             = (IResource)ResourceClass.newInstance();
       Resource.init(resourceName);
       ctx.register(resourceName, Resource);
+      
+      // Link the logger
+      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
+      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
+      
+      // Get the list of pipelines we are going to make
+      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
+      
+      // Create the pipeline skeleton instance (assume only one for tests)
+      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
   }
 
   @AfterClass
@@ -242,8 +260,8 @@ public class AbstractRegexMatchTest
     catch (InitializationException ie)
     {
       // Not OK, Assert.fail the case
-      String Message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(Message);
+      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
+      Assert.fail(message);
     }
 
     String[] searchParameters = new String[1];
@@ -296,8 +314,8 @@ public class AbstractRegexMatchTest
     catch (InitializationException ie)
     {
       // Not OK, Assert.fail the case
-      String Message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(Message);
+      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
+      Assert.fail(message);
     }
 
     String[] searchParameters = new String[1];
@@ -359,8 +377,8 @@ public class AbstractRegexMatchTest
     catch (InitializationException ie)
     {
       // Not OK, Assert.fail the case
-      String Message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(Message);
+      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
+      Assert.fail(message);
     }
 
     String[] searchParameters = new String[1];
@@ -407,8 +425,8 @@ public class AbstractRegexMatchTest
     catch (InitializationException ie)
     {
       // Not OK, Assert.fail the case
-      String Message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(Message);
+      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
+      Assert.fail(message);
     }
 
     String[] searchParameters = new String[1];
@@ -459,8 +477,8 @@ public class AbstractRegexMatchTest
     catch (InitializationException ie)
     {
       // Not OK, Assert.fail the case
-      String Message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(Message);
+      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
+      Assert.fail(message);
     }
 
     String[] searchParameters = new String[1];

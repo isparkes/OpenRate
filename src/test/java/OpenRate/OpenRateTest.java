@@ -5,6 +5,8 @@
 package OpenRate;
 
 import OpenRate.exception.InitializationException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import org.junit.*;
 
 /**
@@ -84,6 +86,13 @@ public class OpenRateTest {
     public void testGetVersionString() {
         System.out.println("checkVersionString");
 
+        // The revision number has to be changed to match the current revision
+        int    revisionNumber = 11;
+        
+        // get the date portion of the version string
+        String revision = String.valueOf(revisionNumber);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); 
+        String revisionDate = sdf.format(Calendar.getInstance().getTime());
         String result = null;
         
         OpenRate appl = new OpenRate();
@@ -94,7 +103,7 @@ public class OpenRateTest {
             Assert.fail(ex.getMessage());
         }
         
-        String expResult = "OpenRate V1.5.2.0, Build 11 (20130610)";
+        String expResult = "OpenRate V1.5.2.0, Build "+revision+" ("+revisionDate+")";
         
         Assert.assertEquals(expResult,result);
     }

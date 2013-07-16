@@ -151,74 +151,74 @@ public abstract class FlatFileInputAdapter
    * The path of the directory in which we are scanning for input files. This
    * can either be a relative or an absolute path.
    */
-  protected String InputFilePath = null;
+  protected String inputFilePath = null;
 
   /**
    * The path of the directory in which we will place done input files. This
    * can either be a relative or an absolute path.
    */
-  protected String DoneFilePath = null;
+  protected String doneFilePath = null;
 
   /**
    * The path of the directory in which we will place errored input files. This
    * can either be a relative or an absolute path.
    */
-  protected String ErrFilePath = null;
+  protected String errFilePath = null;
 
   /**
    * The prefix for which we will be scanning for input files. The file must
    * have this prefix to be considered for processing.
    */
-  protected String InputFilePrefix = null;
+  protected String inputFilePrefix = null;
 
   /**
    * The prefix which we will place on done files. The input prefix will be
    * replaced with this value on the done file.
    */
-  protected String DoneFilePrefix = null;
+  protected String doneFilePrefix = null;
 
   /**
    * The prefix which we will place on errored files. The input prefix will be
    * replaced with this value on the error file.
    */
-  protected String ErrFilePrefix = null;
+  protected String errFilePrefix = null;
 
   /**
    * The suffix for which we will be scanning for input files. The file must
    * have this suffix to be considered for processing.
    */
-  protected String InputFileSuffix = null;
+  protected String inputFileSuffix = null;
 
   /**
    * The suffix which we will place on done files. The input suffix will be
    * replaced with this value on the done file.
    */
-  protected String DoneFileSuffix = null;
+  protected String doneFileSuffix = null;
 
   /**
    * The suffix which we will place on errored files. The input suffix will be
    * replaced with this value on the error file.
    */
-  protected String ErrFileSuffix = null;
+  protected String errFileSuffix = null;
 
  /**
   * This tells us if we should look for a file to open or continue reading from
   * the one we have
   */
-  protected boolean InputStreamOpen = false;
+  protected boolean inputStreamOpen = false;
 
  /**
   * used to track the status of the stream processing. This should normally
   * count the number of input records which have been processed.
   */
-  protected int InputRecordNumber = 0;
+  protected int inputRecordNumber = 0;
 
  /**
   * Used as the processing prefix. This is prepended to the file name as soon
   * as the framework takes the file for processing. This is way of marking the
   * file as being "in processing" and the property of the framework.
   */
-  protected String ProcessingPrefix;
+  protected String processingPrefix;
 
   // This is used for queueing up files ready for processing
   private ArrayList<Integer> fileTransactionNumbers = new ArrayList<>();
@@ -247,10 +247,10 @@ public abstract class FlatFileInputAdapter
   // This is used to hold the calculated file names
   private class TransControlStructure
   {
-    String ProcFileName;
-    String DoneFileName;
-    String ErrorFileName;
-    String BaseName;
+    String procFileName;
+    String doneFileName;
+    String errorFileName;
+    String baseName;
   }
 
   // This holds the file names for the files that are in processing at any
@@ -356,11 +356,11 @@ public abstract class FlatFileInputAdapter
     }
 
     // Process records if we are not yet full, or we have files waiting
-    while ((ThisBatchCounter < BatchSize) & ((fileTransactionNumbers.size() > 0) | (InputStreamOpen)))
+    while ((ThisBatchCounter < batchSize) & ((fileTransactionNumbers.size() > 0) | (inputStreamOpen)))
     {
       // see if we can open a new file - we are not in a transaction but we have
       // files waiting, so open a file
-      if (InputStreamOpen == false)
+      if (inputStreamOpen == false)
       {
         // we don't have anything open, so get something from the head of the
         // waiting list
@@ -374,8 +374,8 @@ public abstract class FlatFileInputAdapter
         try
         {
           reader = new BufferedReader(new FileReader(getProcName(transactionNumber)), BUF_SIZE);
-          InputStreamOpen = true;
-          InputRecordNumber = 0;
+          inputStreamOpen = true;
+          inputRecordNumber = 0;
 
           // Inform the transactional layer that we have started processing
           setTransactionProcessing(transactionNumber);
@@ -395,11 +395,12 @@ public abstract class FlatFileInputAdapter
         }
         catch (FileNotFoundException exFileNotFound)
         {
-          PipeLog.error(
-                "Application is not able to read file : '" + getProcName(transactionNumber) +
-                "' ");
-          throw new ProcessingException("Application is not able to read file : '" +
-                                        getProcName(transactionNumber) + "' ", exFileNotFound);
+          getPipeLog().error(
+                "Application is not able to read file <" + getProcName(transactionNumber) + ">");
+          throw new ProcessingException("Application is not able to read file <" +
+                                        getProcName(transactionNumber) + ">", 
+                                        exFileNotFound,
+                                        getSymbolicName());
         }
       }
       else
@@ -408,7 +409,7 @@ public abstract class FlatFileInputAdapter
         try
         {
           // read from the file and prepare the batch
-          while ((reader.ready()) & (ThisBatchCounter < BatchSize))
+          while ((reader.ready()) & (ThisBatchCounter < batchSize))
           {
             tmpFileRecord = reader.readLine();
 
@@ -418,7 +419,7 @@ public abstract class FlatFileInputAdapter
               continue;
             }
 
-            tmpDataRecord = new FlatRecord(tmpFileRecord, InputRecordNumber);
+            tmpDataRecord = new FlatRecord(tmpFileRecord, inputRecordNumber);
 
             // Call the user layer for any processing that needs to be done
             batchRecord = procValidRecord((IRecord) tmpDataRecord);
@@ -429,7 +430,7 @@ public abstract class FlatFileInputAdapter
             {
               // We got a record to work on
               ThisBatchCounter++;
-              InputRecordNumber++;
+              inputRecordNumber++;
               Outbatch.add(batchRecord);
             }
           }
@@ -454,20 +455,20 @@ public abstract class FlatFileInputAdapter
             }
 
             // if so, clear down the outbatch, so we don't keep filling the pipe
-            PipeLog.warning("Pipe <"+ getSymbolicName() + "> discarded <" + discardCount + "> of <" + originalCount + "> input records, because of pending abort.");
+            getPipeLog().warning("Pipe <"+ getSymbolicName() + "> discarded <" + discardCount + "> of <" + originalCount + "> input records, because of pending abort.");
           }
 
           // Update the statistics with the number of COMPRESSED final records
-          updateRecordCount(transactionNumber,InputRecordNumber);
+          updateRecordCount(transactionNumber,inputRecordNumber);
 
           // set the scheduler
-          ourPipeline.setSchedulerHigh();
+          getPipeline().setSchedulerHigh();
 
           // see the reason that we closed
           if (reader.ready() == false)
           {
             // we have finished
-            InputStreamOpen = false;
+            inputStreamOpen = false;
 
             // get any pending records that are in the input handler
             batchRecord = purgePendingRecord();
@@ -476,7 +477,7 @@ public abstract class FlatFileInputAdapter
             // we may receive a null here. If we do, don't bother adding it
             if (batchRecord != null)
             {
-              InputRecordNumber++;
+              inputRecordNumber++;
               Outbatch.add(batchRecord);
             }
 
@@ -512,7 +513,7 @@ public abstract class FlatFileInputAdapter
             }
             catch (ProcessingException ex)
             {
-              PipeLog.error("Error flushing transaction in module <" + getSymbolicName() + ">. Message <" + ex.getMessage() + ">");
+              getPipeLog().error("Error flushing transaction in module <" + getSymbolicName() + ">. Message <" + ex.getMessage() + ">");
             }
 
             // Notify the transaction layer that we have finished
@@ -524,7 +525,7 @@ public abstract class FlatFileInputAdapter
         }
         catch (IOException ioex)
         {
-          PipeLog.fatal("Error reading input file. Message <" + ioex.getMessage() + ">");
+          getPipeLog().fatal("Error reading input file. Message <" + ioex.getMessage() + ">");
         }
       }
     }
@@ -547,10 +548,11 @@ public abstract class FlatFileInputAdapter
     }
     catch (IOException exFileNotFound)
     {
-      PipeLog.error("Application is not able to close file : '" + getProcName(TransactionNumber) +
-                "' ");
-      throw new ProcessingException("Application is not able to read file : '" +
-                                    getProcName(TransactionNumber) + "' ", exFileNotFound);
+      getPipeLog().error("Application is not able to close file <" + getProcName(TransactionNumber) + ">");
+      throw new ProcessingException("Application is not able to read file <" +
+                                    getProcName(TransactionNumber) + ">", 
+                                    exFileNotFound,
+                                    getSymbolicName());
     }
   }
 
@@ -652,14 +654,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        InputFilePath = Parameter;
+        inputFilePath = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return InputFilePath;
+          return inputFilePath;
         }
         else
         {
@@ -672,14 +674,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        DoneFilePath = Parameter;
+        doneFilePath = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return DoneFilePath;
+          return doneFilePath;
         }
         else
         {
@@ -692,14 +694,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        ErrFilePath = Parameter;
+        errFilePath = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return ErrFilePath;
+          return errFilePath;
         }
         else
         {
@@ -712,14 +714,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        InputFilePrefix = Parameter;
+        inputFilePrefix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return InputFilePrefix;
+          return inputFilePrefix;
         }
         else
         {
@@ -732,14 +734,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        DoneFilePrefix = Parameter;
+        doneFilePrefix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return DoneFilePrefix;
+          return doneFilePrefix;
         }
         else
         {
@@ -752,14 +754,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        ErrFilePrefix = Parameter;
+        errFilePrefix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return ErrFilePrefix;
+          return errFilePrefix;
         }
         else
         {
@@ -772,14 +774,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        InputFileSuffix = Parameter;
+        inputFileSuffix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return InputFileSuffix;
+          return inputFileSuffix;
         }
         else
         {
@@ -792,14 +794,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        DoneFileSuffix = Parameter;
+        doneFileSuffix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return DoneFileSuffix;
+          return doneFileSuffix;
         }
         else
         {
@@ -812,14 +814,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        ErrFileSuffix = Parameter;
+        errFileSuffix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return ErrFileSuffix;
+          return errFileSuffix;
         }
         else
         {
@@ -832,14 +834,14 @@ public abstract class FlatFileInputAdapter
     {
       if (Init)
       {
-        ProcessingPrefix = Parameter;
+        processingPrefix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return ProcessingPrefix;
+          return processingPrefix;
         }
         else
         {
@@ -850,7 +852,7 @@ public abstract class FlatFileInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -874,16 +876,16 @@ public abstract class FlatFileInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 
   // -----------------------------------------------------------------------------
@@ -898,7 +900,7 @@ public abstract class FlatFileInputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PATH);
 
     return tmpFile;
   }
@@ -911,7 +913,7 @@ public abstract class FlatFileInputAdapter
                               throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PATH);
 
     return tmpFile;
   }
@@ -924,7 +926,7 @@ public abstract class FlatFileInputAdapter
                              throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PATH);
 
     return tmpFile;
   }
@@ -938,7 +940,7 @@ public abstract class FlatFileInputAdapter
                                  throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PREFIX);
 
     return tmpFile;
   }
@@ -951,7 +953,7 @@ public abstract class FlatFileInputAdapter
                                 throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PREFIX);
 
     return tmpFile;
   }
@@ -964,7 +966,7 @@ public abstract class FlatFileInputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PREFIX);
 
     return tmpFile;
   }
@@ -977,7 +979,7 @@ public abstract class FlatFileInputAdapter
                                  throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_SUFFIX);
 
     return tmpFile;
   }
@@ -990,7 +992,7 @@ public abstract class FlatFileInputAdapter
                                 throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_SUFFIX);
 
     return tmpFile;
   }
@@ -1003,7 +1005,7 @@ public abstract class FlatFileInputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_SUFFIX);
 
     return tmpFile;
   }
@@ -1016,7 +1018,7 @@ public abstract class FlatFileInputAdapter
                                  throws InitializationException
   {
     String tmpProcPrefix;
-    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
                                                                   "tmp");
 
@@ -1040,7 +1042,7 @@ public abstract class FlatFileInputAdapter
   private void initFileName()
                      throws InitializationException
   {
-    String  ErrMessage;
+    String  message;
     File           dir;
 
     /*
@@ -1050,82 +1052,82 @@ public abstract class FlatFileInputAdapter
      */
 
     // Set default values
-    if (InputFilePath == null)
+    if (inputFilePath == null)
     {
-      InputFilePath = ".";
-      ErrMessage = "Input file path not set. Defaulting to <.>.";
-      PipeLog.warning(ErrMessage);
+      inputFilePath = ".";
+      message = "Input file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
-    dir = new File(InputFilePath);
+    dir = new File(inputFilePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Input file path <" + InputFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Input file path <" + inputFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
-    if (DoneFilePath == null)
+    if (doneFilePath == null)
     {
-      DoneFilePath = ".";
-      ErrMessage = "Done file path not set. Defaulting to <.>.";
-      PipeLog.warning(ErrMessage);
+      doneFilePath = ".";
+      message = "Done file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
-    dir = new File(DoneFilePath);
+    dir = new File(doneFilePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Done file path <" + DoneFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Done file path <" + doneFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
-    if (ErrFilePath == null)
+    if (errFilePath == null)
     {
-      ErrFilePath = ".";
-      ErrMessage = "Error file path not set. Defaulting to <.>.";
-      PipeLog.warning(ErrMessage);
+      errFilePath = ".";
+      message = "Error file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
-    dir = new File(ErrFilePath);
+    dir = new File(errFilePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Error file path <" + ErrFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Error file path <" + errFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
-    if ((DoneFilePath + DoneFilePrefix + DoneFileSuffix).equals(ErrFilePath + ErrFilePrefix +
-          ErrFileSuffix))
+    if ((doneFilePath + doneFilePrefix + doneFileSuffix).equals(errFilePath + errFilePrefix +
+          errFileSuffix))
     {
       // These look suspiciously similar
-      ErrMessage = "Done file and Error file cannot be the same";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Done file and Error file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
-    if ((InputFilePath + InputFilePrefix + InputFileSuffix).equals(ErrFilePath + ErrFilePrefix +
-          ErrFileSuffix))
+    if ((inputFilePath + inputFilePrefix + inputFileSuffix).equals(errFilePath + errFilePrefix +
+          errFileSuffix))
     {
       // These look suspiciously similar
-      ErrMessage = "Input file and Error file cannot be the same";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Input file and Error file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
-    if ((DoneFilePath + DoneFilePrefix + DoneFileSuffix).equals(InputFilePath + InputFilePrefix +
-          InputFileSuffix))
+    if ((doneFilePath + doneFilePrefix + doneFileSuffix).equals(inputFilePath + inputFilePrefix +
+          inputFileSuffix))
     {
       // These look suspiciously similar
-      ErrMessage = "Input file and Input file cannot be the same";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Input file and Input file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -1169,9 +1171,9 @@ public abstract class FlatFileInputAdapter
     String fileName;
 
     // get the first file name from the directory that matches the
-    dir = new File(InputFilePath);
-    filter = new GlobFilenameFilter(InputFilePrefix + "*" +
-                                    InputFileSuffix,
+    dir = new File(inputFilePath);
+    filter = new GlobFilenameFilter(inputFilePrefix + "*" +
+                                    inputFileSuffix,
                                     GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
 
     // sort files
@@ -1197,45 +1199,45 @@ public abstract class FlatFileInputAdapter
             tmpTransNumber = createNewTransaction();
 
             // trace it
-            PipeLog.info("Input File name is <" + fileName + "> for transaction <" + tmpTransNumber + ">");
+            getPipeLog().info("Input File name is <" + fileName + "> for transaction <" + tmpTransNumber + ">");
 
             // Calculate the processing file name that we are using for this file
             procName = getProcFilePath(fileName,
-                                       InputFilePath,
-                                       InputFilePrefix,
-                                       InputFileSuffix,
-                                       ProcessingPrefix,
+                                       inputFilePath,
+                                       inputFilePrefix,
+                                       inputFileSuffix,
+                                       processingPrefix,
                                        tmpTransNumber);
 
             doneName = getDoneFilePath(fileName,
-                                       InputFilePrefix,
-                                       InputFileSuffix,
-                                       DoneFilePath,
-                                       DoneFilePrefix,
-                                       DoneFileSuffix,
+                                       inputFilePrefix,
+                                       inputFileSuffix,
+                                       doneFilePath,
+                                       doneFilePrefix,
+                                       doneFileSuffix,
                                        tmpTransNumber);
 
             errName =  getErrorFilePath(fileName,
-                                        InputFilePrefix,
-                                        InputFileSuffix,
-                                        ErrFilePath,
-                                        ErrFilePrefix,
-                                        ErrFileSuffix,
+                                        inputFilePrefix,
+                                        inputFileSuffix,
+                                        errFilePath,
+                                        errFilePrefix,
+                                        errFileSuffix,
                                         tmpTransNumber);
 
             inpName =  getInputFilePath(fileName,
-                                        InputFilePath);
+                                        inputFilePath);
 
             baseName = getFileBaseName(fileName,
-                                       InputFilePrefix,
-                                       InputFileSuffix,
+                                       inputFilePrefix,
+                                       inputFileSuffix,
                                        tmpTransNumber);
 
             tmpFileNames = new TransControlStructure();
-            tmpFileNames.ProcFileName  = procName;
-            tmpFileNames.DoneFileName  = doneName;
-            tmpFileNames.ErrorFileName = errName;
-            tmpFileNames.BaseName      = baseName;
+            tmpFileNames.procFileName  = procName;
+            tmpFileNames.doneFileName  = doneName;
+            tmpFileNames.errorFileName = errName;
+            tmpFileNames.baseName      = baseName;
 
             // rename the input file to show that its our little piggy now
             File f = new File(inpName);
@@ -1251,11 +1253,11 @@ public abstract class FlatFileInputAdapter
               OpenedTransactions.add(tmpTransNumber);
 
               // Set the scheduler - we have found some files to process
-              ourPipeline.setSchedulerHigh();
+              getPipeline().setSchedulerHigh();
             }
             else
             {
-              PipeLog.warning("Could not rename file <" + inpName + ">");
+              getPipeLog().warning("Could not rename file <" + inpName + ">");
 
               cancelTransaction(tmpTransNumber);
             }
@@ -1269,7 +1271,7 @@ public abstract class FlatFileInputAdapter
       }
 
       // Log the number of files we effectively got
-      PipeLog.debug("Assigned <" + filesAssigned + "> files in input adapter");
+      getPipeLog().debug("Assigned <" + filesAssigned + "> files in input adapter");
     }
 
     return OpenedTransactions;
@@ -1292,7 +1294,7 @@ public abstract class FlatFileInputAdapter
     //Try to rename the file, and warn it it was not possible
     if (procFile.renameTo(doneFile) == false)
     {
-      PipeLog.error("Could not rename file <" + getProcName(TransactionNumber) + "> to <" + getDoneName(TransactionNumber) + ">");
+      getPipeLog().error("Could not rename file <" + getProcName(TransactionNumber) + "> to <" + getDoneName(TransactionNumber) + ">");
     }
   }
 
@@ -1314,7 +1316,7 @@ public abstract class FlatFileInputAdapter
     //Try to rename the file, and warn it it was not possible
     if (procFile.renameTo(errFile) == false)
     {
-      PipeLog.error("Could not rename file <" + getProcName(TransactionNumber) + "> to <" + getErrName(TransactionNumber) + ">");
+      getPipeLog().error("Could not rename file <" + getProcName(TransactionNumber) + "> to <" + getErrName(TransactionNumber) + ">");
     }
   }
 
@@ -1450,7 +1452,7 @@ public abstract class FlatFileInputAdapter
     // Get the name to work on
     tmpFileNames = currentFileNames.get(TransactionNumber);
 
-    return tmpFileNames.ProcFileName;
+    return tmpFileNames.procFileName;
   }
 
  /**
@@ -1466,7 +1468,7 @@ public abstract class FlatFileInputAdapter
     // Get the name to work on
     tmpFileNames = currentFileNames.get(TransactionNumber);
 
-    return tmpFileNames.DoneFileName;
+    return tmpFileNames.doneFileName;
   }
 
  /**
@@ -1482,7 +1484,7 @@ public abstract class FlatFileInputAdapter
     // Get the name to work on
     tmpFileNames = currentFileNames.get(TransactionNumber);
 
-    return tmpFileNames.ErrorFileName;
+    return tmpFileNames.errorFileName;
   }
 
  /**
@@ -1498,7 +1500,7 @@ public abstract class FlatFileInputAdapter
     // Get the name to work on
     tmpFileNames = currentFileNames.get(TransactionNumber);
 
-    return tmpFileNames.BaseName;
+    return tmpFileNames.baseName;
   }
 
   /**
@@ -1511,7 +1513,7 @@ public abstract class FlatFileInputAdapter
   public boolean filterFileName(String fileNameToFilter)
   {
     // Filter out files that already have the processing prefix
-    return (fileNameToFilter.startsWith(ProcessingPrefix) == false);
+    return (fileNameToFilter.startsWith(processingPrefix) == false);
   }
 
  /**

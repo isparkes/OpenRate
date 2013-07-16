@@ -56,7 +56,6 @@
 package OpenRate.transaction;
 
 import OpenRate.configurationmanager.IEventInterface;
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
@@ -73,10 +72,10 @@ import java.util.Iterator;
 public class TransactionManagerFactory implements IResource
 {
   // The logger for this class
-  private ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
+  private ILogger fwLog = LogUtil.getLogUtil().getLogger("Framework");
 
   // This is the symbolic name of the resource
-  private String SymbolicName;
+  private String symbolicName;
 
  /**
   * the configuration key used by the ResourceContext to look for & return
@@ -87,12 +86,9 @@ public class TransactionManagerFactory implements IResource
 
   // for handling thread safety
   private static final Object  lock    = new Object();
-  private static HashMap<String, TransactionManager> TransactionManagers = new HashMap<>();
+  private static HashMap<String, TransactionManager> transactionManagers = new HashMap<>();
 
   private static boolean    enabled = false;
-
-  // reference to the exception handler
-  private ExceptionHandler handler;
 
   /**
    * Default Constructor
@@ -111,13 +107,13 @@ public class TransactionManagerFactory implements IResource
   public void init(String ResourceName) throws InitializationException
   {
     // Set the symbolic name
-    SymbolicName = ResourceName;
+    symbolicName = ResourceName;
 
-    if (!SymbolicName.equalsIgnoreCase(RESOURCE_KEY))
+    if (!symbolicName.equalsIgnoreCase(RESOURCE_KEY))
     {
       // we are relying on this name to be able to find the resource
       // later, so stop if it is not right
-      throw new InitializationException("TransactionManagerFactory ModuleName should be <" + RESOURCE_KEY + ">");
+      throw new InitializationException("TransactionManagerFactory ModuleName should be <" + RESOURCE_KEY + ">",getSymbolicName());
     }
 
     // mark that we have been enabled
@@ -138,12 +134,12 @@ public class TransactionManagerFactory implements IResource
 
     if (enabled)
     {
-      if (!TransactionManagers.containsKey(PipelineName))
+      if (!transactionManagers.containsKey(PipelineName))
       {
         // Create the new Transaction Manager
         tmpTM = new TransactionManager();
         tmpTM.init(PipelineName);
-        TransactionManagers.put(PipelineName,tmpTM);
+        transactionManagers.put(PipelineName,tmpTM);
 
         // Now see if we have to register with the config manager
         if (tmpTM instanceof IEventInterface)
@@ -155,7 +151,7 @@ public class TransactionManagerFactory implements IResource
       }
 
       // Return the TM for the pipeline we have named
-      return TransactionManagers.get(PipelineName);
+      return transactionManagers.get(PipelineName);
     }
     else
     {
@@ -176,7 +172,7 @@ public class TransactionManagerFactory implements IResource
     {
       synchronized (lock)
       {
-        TMCollection = TransactionManagers.values();
+        TMCollection = transactionManagers.values();
         iter         = TMCollection.iterator();
 
         while (iter.hasNext())
@@ -185,12 +181,12 @@ public class TransactionManagerFactory implements IResource
           TM.close();
         }
 
-        TransactionManagers.clear();
+        transactionManagers.clear();
       }
     }
     catch (Exception e)
     {
-      FWLog.error("exception caught = " + e);
+      fwLog.error("exception caught = " + e);
     }
   }
 
@@ -202,17 +198,6 @@ public class TransactionManagerFactory implements IResource
   @Override
   public String getSymbolicName()
   {
-    return SymbolicName;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
+    return symbolicName;
   }
 }

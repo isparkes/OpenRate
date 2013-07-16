@@ -77,19 +77,21 @@ public class InitializationException extends NestableException
   /**
    * Constructor for InitializationException.
    *
-   * @param pMessage The exception message
+   * @param msg The exception message
+   * @param moduleName the name of the module that threw the exception 
    */
-  public InitializationException(String pMessage)
+  public InitializationException(String msg, String moduleName)
   {
-    super(pMessage);
+    super(msg);
   }
 
   /**
    * Constructor for InitializationException.
    *
-   * @param cause The throwable cause
+   * @param cause The throwable that caused
+   * @param moduleName the name of the module that threw the exception 
    */
-  public InitializationException(Throwable cause)
+  public InitializationException(Throwable cause, String moduleName)
   {
     super(cause);
   }
@@ -99,8 +101,9 @@ public class InitializationException extends NestableException
    *
    * @param msg The exception message
    * @param cause The throwable cause
+   * @param moduleName the name of the module that threw the exception 
    */
-  public InitializationException(String msg, Throwable cause)
+  public InitializationException(String msg, Throwable cause, String moduleName)
   {
     super(msg, cause);
   }

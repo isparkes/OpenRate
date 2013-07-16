@@ -80,6 +80,9 @@ public class ConversionUtilsTest
   private static String tmpResourceClassName;
   private static ResourceContext ctx = new ResourceContext();
 
+  // Used for logging and exception handling
+  private static String message; 
+
   public ConversionUtilsTest() {
   }
 
@@ -98,8 +101,8 @@ public class ConversionUtilsTest
     }
     catch (InitializationException ex)
     {
-      String Message = "Error reading the configuration file <" + FQConfigFileName + ">";
-      Assert.fail(Message);
+      message = "Error reading the configuration file <" + FQConfigFileName + ">";
+      Assert.fail(message);
     }
 
     // Get a logger

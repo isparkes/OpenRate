@@ -148,20 +148,17 @@ public class PersistentIndexedObject
 
     if (DataSourceType.equalsIgnoreCase("DB"))
     {
-      getFWLog().error(
-            "Persistent Cache does not yet support DB persistence sources.");
-      throw new InitializationException("Persistent Cache does not yet support DB persistence sources");
+      message = "Persistent Cache does not yet support DB persistence sources";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (!foundDataSourceType)
     {
-      getFWLog().error(
-            "DataSourceType for cache <" + getSymbolicName() +
-            "> must be File, found <" + DataSourceType + ">");
-      throw new InitializationException("DataSourceType for cache <" +
-                                        getSymbolicName() +
-                                        "> must be File, found <" +
-                                        DataSourceType + ">");
+      message = "DataSourceType for cache <" + getSymbolicName() +
+                "> must be File, found <" + DataSourceType + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the configuration we are working on
@@ -174,11 +171,9 @@ public class PersistentIndexedObject
 
       if (CachePersistenceName.equals("None"))
       {
-        getFWLog().error(
-              "Data source file name not found for cache <" + getSymbolicName() +
-              ">");
-        throw new InitializationException("Data source file name not found for cache <" +
-                                          getSymbolicName() + ">");
+        message = "Data source file name not found for cache <" + getSymbolicName() + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -325,12 +320,12 @@ public class PersistentIndexedObject
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_PERSIST, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC);
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PERSIST, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -423,8 +418,8 @@ public class PersistentIndexedObject
       }
       catch (FileNotFoundException ex)
       {
-        String Message = "File not found saving persistent objects";
-        getFWLog().fatal(Message);
+        message = "File not found saving persistent objects";
+        getFWLog().fatal(message);
       }
 
       try
@@ -447,8 +442,8 @@ public class PersistentIndexedObject
       }
       catch (IOException ex)
       {
-        String Message = "IO Exception saving persistent objects";
-        getFWLog().fatal(Message);
+        message = "IO Exception saving persistent objects";
+        getFWLog().fatal(message);
       }
     }
   }
@@ -502,8 +497,8 @@ public class PersistentIndexedObject
     }
     catch (ClassNotFoundException ex)
     {
-        String Message = "Class not found loading persistent objects";
-        getFWLog().fatal(Message);
+        message = "Class not found loading persistent objects";
+        getFWLog().fatal(message);
     }
  }
 

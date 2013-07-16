@@ -419,8 +419,8 @@ public class CustomerCacheAudited
     }
 
     // if we get here, we could not insert correctly
-    String Message = "Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">";
-    FWlog.error(Message);
+    message = "Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">";
+    FWlog.error(message);
   }
 
  /**
@@ -483,8 +483,8 @@ public class CustomerCacheAudited
     {
       // Null response means that we were not able to cover the period
       // without overlaps
-      String Message = "Attempting to add an audit segment to custId <" + custId + "> with start date <" + audSegValidFrom + ">, but this already exists";
-      FWlog.error(Message);
+      message = "Attempting to add an audit segment to custId <" + custId + "> with start date <" + audSegValidFrom + ">, but this already exists";
+      FWlog.error(message);
     }
     else
     {
@@ -521,8 +521,8 @@ public class CustomerCacheAudited
 
     if (tmpAuditSegment == null)
     {
-      String Message = "Attempting to add a product <" + productRefId + "> to a non-existent audit segment <" + auditSegId + ">";
-      getFWLog().error(Message);
+      message = "Attempting to add a product <" + productRefId + "> to a non-existent audit segment <" + auditSegId + ">";
+      getFWLog().error(message);
     }
     else
     {
@@ -555,8 +555,8 @@ public class CustomerCacheAudited
 
     if (tmpAuditSegment == null)
     {
-      String Message = "Attempting to add an ERA <" + ERAKey + "> to a non-existent audit segment <" + AuditSegId + ">";
-      getFWLog().error(Message);
+      message = "Attempting to add an ERA <" + ERAKey + "> to a non-existent audit segment <" + AuditSegId + ">";
+      getFWLog().error(message);
     }
     else
     {
@@ -610,8 +610,8 @@ public class CustomerCacheAudited
       if (custId == null)
       {
         // Otherwise write an error and ignore it
-        String Message = "Alias <" + alias + "> not found for time <" + cdrDate + ">. Lookup failed.";
-        throw new ProcessingException(Message);
+        message = "Alias <" + alias + "> not found for time <" + cdrDate + ">. Lookup failed.";
+        throw new ProcessingException(message,getSymbolicName());
       }
       else
       {
@@ -622,8 +622,8 @@ public class CustomerCacheAudited
     else
     {
       // Otherwise write an error and ignore it
-      String Message = "Alias <" + alias + "> not found. Lookup failed.";
-      throw new ProcessingException(Message);
+      message = "Alias <" + alias + "> not found. Lookup failed.";
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -667,8 +667,8 @@ public class CustomerCacheAudited
       else
       {
         // The account is not valid at this time
-        String Message = "Account id <" + CustId + "> not valid at time <" + CDRDate + "> in audit segment <" + tmpAuditSegment.getAuditSegmentID() + ">";
-        throw new ProcessingException(Message);
+        message = "Account id <" + CustId + "> not valid at time <" + CDRDate + "> in audit segment <" + tmpAuditSegment.getAuditSegmentID() + ">";
+        throw new ProcessingException(message,getSymbolicName());
       }
     }
 
@@ -950,8 +950,8 @@ public class CustomerCacheAudited
       if (custId == null)
       {
         // Otherwise write an error and ignore it
-        String Message = "Alias <" + alias + "> not found for time <" + cdrDate + ">. Lookup failed.";
-        throw new ProcessingException(Message);
+        message = "Alias <" + alias + "> not found for time <" + cdrDate + ">. Lookup failed.";
+        throw new ProcessingException(message,getSymbolicName());
       }
       else
       {
@@ -1072,12 +1072,12 @@ public class CustomerCacheAudited
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      FWlog.error(
-            "Application is not able to read file : <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Application is not able to read file: <" +
-                                        CacheDataFile + ">",
-                                        exFileNotFound);
+      message = "Application is not able to read file : <" +
+            cacheDataSourceName + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,
+                                        exFileNotFound,
+                                        getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -1305,9 +1305,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error setting incremental ID for retieving customer " +
+        message = "Error setting incremental ID for retieving customer " +
                         "alias data. SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // Execute the query
@@ -1317,9 +1317,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error executing SQL for retieving customer alias data." +
+        message = "Error executing SQL for retieving customer alias data." +
                         " SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       try
@@ -1358,19 +1358,19 @@ public class CustomerCacheAudited
 
             if ((aliasLoaded % loadingLogNotificationStep) == 0)
             {
-              String Message = "Customer Cache Alias Loading: <" + aliasLoaded +
+              message = "Customer Cache Alias Loading: <" + aliasLoaded +
                     "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
                     cacheDataSourceName + ">";
-              getFWLog().info(Message);
+              getFWLog().info(message);
             }
         } while (crs.next());
         }
       }
       catch (SQLException ex)
       {
-        String Message = "Error retreiving alias data. SQL Error <" +
+        message = "Error retreiving alias data. SQL Error <" +
                         ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       FWlog.info("Alias Loading completed. " + aliasLoaded +
@@ -1384,9 +1384,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error setting incremental ID for retieving customer " +
+        message = "Error setting incremental ID for retieving customer " +
                         "audit data. SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // Execute the query
@@ -1396,9 +1396,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error executing SQL for retieving customer audit data. " +
+        message = "Error executing SQL for retieving customer audit data. " +
                         "SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // loop through the results for the audit segment cache
@@ -1439,18 +1439,18 @@ public class CustomerCacheAudited
 
             if ((auditSegsLoaded % loadingLogNotificationStep) == 0)
             {
-              String Message = "Customer Cache Audit Segment Loading: <" + auditSegsLoaded +
+              message = "Customer Cache Audit Segment Loading: <" + auditSegsLoaded +
                     "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
                     cacheDataSourceName + ">";
-              getFWLog().info(Message);
+              getFWLog().info(message);
             }
           } while (ars.next());
         }
       }
       catch (SQLException ex)
       {
-        String Message = "Error retreiving audit data. SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        message = "Error retreiving audit data. SQL Error <" + ex.getMessage() + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       FWlog.info("Audit segment Loading completed. " + auditSegsLoaded +
@@ -1464,9 +1464,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error setting incremental ID for retieving product data. " +
+        message = "Error setting incremental ID for retieving product data. " +
                         "SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // Execute the query
@@ -1476,9 +1476,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error executing SQL for retieving customer product data. " +
+        message = "Error executing SQL for retieving customer product data. " +
                         "SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // loop through the results for the product cache
@@ -1518,18 +1518,18 @@ public class CustomerCacheAudited
 
             if ((cpiLoaded % loadingLogNotificationStep) == 0)
             {
-              String Message = "Customer Cache Product Loading: <" + cpiLoaded +
+              message = "Customer Cache Product Loading: <" + cpiLoaded +
                     "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
                     cacheDataSourceName + ">";
-              getFWLog().info(Message);
+              getFWLog().info(message);
             }
           } while (prs.next());
         }
       }
       catch (SQLException ex)
       {
-        String Message = "Error retreiving product data. SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        message = "Error retreiving product data. SQL Error <" + ex.getMessage() + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // set the where parameter to allow incremental loading
@@ -1540,9 +1540,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error setting incremental ID for retieving ERA data. " +
+        message = "Error setting incremental ID for retieving ERA data. " +
                         "SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // Execute the query
@@ -1552,9 +1552,9 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error executing SQL for retieving customer ERA data. " +
+        message = "Error executing SQL for retieving customer ERA data. " +
                         "SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        throw new InitializationException(message,ex,getSymbolicName());
       }
 
       // loop through the results for the era cache
@@ -1592,8 +1592,8 @@ public class CustomerCacheAudited
       }
       catch (SQLException ex)
       {
-        String Message = "Error retreiving ERA data. SQL Error <" + ex.getMessage() + ">";
-        throw new InitializationException(Message, ex);
+        message = "Error retreiving ERA data. SQL Error <" + ex.getMessage() + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
     }
     finally
@@ -1634,7 +1634,7 @@ public class CustomerCacheAudited
   @Override
   public void loadDataFromMethod() throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
  /**
@@ -1717,7 +1717,7 @@ public class CustomerCacheAudited
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error opening dump file <" + filename + ">. Message <" + ex.getMessage() +">");
+      getFWLog().error("Error opening dump file <" + filename + ">. message <" + ex.getMessage() +">");
     }
 
     dumpWriter = new BufferedWriter(fwriter);
@@ -1915,7 +1915,7 @@ public class CustomerCacheAudited
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error writing to dump file. Message <" + ex.getMessage() + ">");
+      getFWLog().error("Error writing to dump file. message <" + ex.getMessage() + ">");
     }
   }
 
@@ -1959,7 +1959,7 @@ public class CustomerCacheAudited
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error writing to dump file. Message <" + ex.getMessage() + ">");
+      getFWLog().error("Error writing to dump file. message <" + ex.getMessage() + ">");
     }
   }
 
@@ -1989,8 +1989,8 @@ public class CustomerCacheAudited
 
     if (aliasSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<AliasSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<AliasSelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     auditSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -2000,8 +2000,8 @@ public class CustomerCacheAudited
 
     if (auditSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<AuditSegmentSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<AuditSegmentSelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     productSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -2011,8 +2011,8 @@ public class CustomerCacheAudited
 
     if (productSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<ProductSelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<ProductSelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     eraSelectQuery         = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
@@ -2022,8 +2022,8 @@ public class CustomerCacheAudited
 
     if (eraSelectQuery.equalsIgnoreCase("None"))
     {
-      String Message = "<ERASelectStatement> for <" + getSymbolicName() + "> missing.";
-      throw new InitializationException(Message);
+      message = "<ERASelectStatement> for <" + getSymbolicName() + "> missing.";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (aliasSelectQuery.equals("None")  |
@@ -2055,10 +2055,9 @@ public class CustomerCacheAudited
     }
     catch(SQLException ex)
     {
-      FWlog.error("Error preparing the statement " + aliasSelectQuery);
-      FWlog.error("SQL Error:" + ex.getMessage());
-      throw new InitializationException("Error preparing the statement <" +
-        aliasSelectQuery + ">");
+      message = "Error preparing the statement " + aliasSelectQuery + "SQL Error:" + ex.getMessage();
+      FWlog.error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     try
@@ -2068,9 +2067,9 @@ public class CustomerCacheAudited
     }
     catch(SQLException ex)
     {
-      FWlog.error("Error preparing the statement " + auditSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-        auditSelectQuery + ">");
+      message = "Error preparing the statement <" + auditSelectQuery + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     try
@@ -2080,9 +2079,9 @@ public class CustomerCacheAudited
     }
     catch(SQLException ex)
     {
-      FWlog.error("Error preparing the statement " + productSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-        productSelectQuery + ">");
+      message = "Error preparing the statement <" + productSelectQuery + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     try
@@ -2092,9 +2091,9 @@ public class CustomerCacheAudited
     }
     catch(SQLException ex)
     {
-      FWlog.error("Error preparing the statement " + eraSelectQuery);
-      throw new InitializationException("Error preparing the statement <" +
-        eraSelectQuery + ">");
+      message = "Error preparing the statement <" + eraSelectQuery + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
   }
 
@@ -2136,8 +2135,8 @@ public class CustomerCacheAudited
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_UPDATE_FREQUENCY, ClientManager.PARAM_DYNAMIC_SYNC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DUMP_INFO, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_UPDATE_FREQUENCY, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMP_INFO, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

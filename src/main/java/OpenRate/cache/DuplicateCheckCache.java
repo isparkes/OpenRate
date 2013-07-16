@@ -218,9 +218,9 @@ public class DuplicateCheckCache
 
     if (DataSourceType.equals("None"))
     {
-      getFWLog().error("Data source type not found for cache <" + getSymbolicName() + ">");
-      throw new InitializationException("Data source type not found for cache <" +
-                                        getSymbolicName() + ">");
+      message = "Data source type not found for cache <" + getSymbolicName() + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -231,8 +231,8 @@ public class DuplicateCheckCache
 
     if (DataSourceType.equalsIgnoreCase("File"))
     {
-      String Message = "Data source type (File) not supported for cache <" + getSymbolicName() + ">";
-      throw new InitializationException(Message);
+      message = "Data source type (File) not supported for cache <" + getSymbolicName() + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
     else if(DataSourceType.equalsIgnoreCase("DB"))
     {
@@ -243,8 +243,8 @@ public class DuplicateCheckCache
 
       if (cacheDataSourceName.equals("None"))
       {
-        String Message = "Data source not found for cache <" + getSymbolicName() + ">";
-        throw new InitializationException(Message);
+        message = "Data source not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -259,8 +259,8 @@ public class DuplicateCheckCache
 
       if (SelectQuery.equals("None"))
       {
-        String Message = "Select statement not found for cache <" + getSymbolicName() + ">";
-        throw new InitializationException(Message);
+        message = "Select statement not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -275,8 +275,8 @@ public class DuplicateCheckCache
 
       if (InsertQuery.equals("None"))
       {
-        String Message = "Insert statement not found for cache <" + getSymbolicName() + ">";
-        throw new InitializationException(Message);
+        message = "Insert statement not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -291,8 +291,8 @@ public class DuplicateCheckCache
 
       if (PurgeQuery.equals("None"))
       {
-        String Message = "Purge statement not found for cache <" + getSymbolicName() + ">";
-        throw new InitializationException(Message);
+        message = "Purge statement not found for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -303,8 +303,8 @@ public class DuplicateCheckCache
     }
     else
     {
-      String Message = "Data source type not valid for cache <" + getSymbolicName() + ">";
-      throw new InitializationException(Message);
+      message = "Data source type not valid for cache <" + getSymbolicName() + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
 
@@ -333,8 +333,8 @@ public class DuplicateCheckCache
       }
       catch (NumberFormatException nfe)
       {
-        String Message = "Value given for <" + SERVICE_BUFFER + "> was not numeric for cache <" + getSymbolicName() + ">";
-        throw new InitializationException(Message);
+        message = "Value given for <" + SERVICE_BUFFER + "> was not numeric for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -363,23 +363,23 @@ public class DuplicateCheckCache
       }
       catch (NumberFormatException nfe)
       {
-        String Message = "Value given for <" + SERVICE_STORE + "> was not numeric for cache <" + getSymbolicName() + ">";
-        throw new InitializationException(Message);
+        message = "Value given for <" + SERVICE_STORE + "> was not numeric for cache <" + getSymbolicName() + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
     // perform some plausibility
     if (bufferLimitDays <= 1)
     {
-      String Message = "Value given for <" + SERVICE_BUFFER + "> was less than <1> for cache <" + getSymbolicName() + ">";
-      throw new InitializationException(Message);
+      message = "Value given for <" + SERVICE_BUFFER + "> was less than <1> for cache <" + getSymbolicName() + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // perform some plausibility
     if (storeLimitDays <= 1)
     {
-      String Message = "Value given for <" + SERVICE_STORE + "> was less than <1> for cache <" + getSymbolicName() + ">";
-      throw new InitializationException(Message);
+      message = "Value given for <" + SERVICE_STORE + "> was less than <1> for cache <" + getSymbolicName() + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the loading step, if one is defined
@@ -389,9 +389,9 @@ public class DuplicateCheckCache
     // JDBC adapters to work properly using 1 configuration file.
     if(DBUtil.initDataSource(cacheDataSourceName) == null)
     {
-      String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // load in the old data from the database
@@ -474,10 +474,10 @@ public class DuplicateCheckCache
           else
           {
             // other SQL exception
-            String Message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
-                + "check data on direct DB insert. Message=<" + ex.getMessage()+">";
-            getFWLog().error(Message);
-            throw new ProcessingException(ex);
+            message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
+                + "check data on direct DB insert. message=<" + ex.getMessage()+">";
+            getFWLog().error(message);
+            throw new ProcessingException(message,ex,getSymbolicName());
           }
         }
       }
@@ -521,8 +521,8 @@ public class DuplicateCheckCache
     if (ThisTrxRecordList == null)
     {
       // Something wrong, we don't expect this
-      String Message = "No record elements found for transaction <" + TransactionNumber + "> in module <" + getSymbolicName() + ">";
-      getFWLog().error(Message);
+      message = "No record elements found for transaction <" + TransactionNumber + "> in module <" + getSymbolicName() + ">";
+      getFWLog().error(message);
     }
     else
     {
@@ -553,16 +553,16 @@ public class DuplicateCheckCache
               if (message.matches(".*uplicate.*"))
               {
                 // other SQL exception
-                String Message = "Duplicate Error inserting into <" + cacheDataSourceName + "> for the duplicate "
+                message = "Duplicate Error inserting into <" + cacheDataSourceName + "> for the duplicate "
                     + "check data on transaction commit for key <" + key+"> in transaction <" + TransactionNumber + ">";
-                getFWLog().warning(Message);
+                getFWLog().warning(message);
               }
               else
               {
                 // other SQL exception
-                String Message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
-                    + "check data on transaction commit. Message=<" + ex.getMessage()+"> in transaction <" + TransactionNumber + ">";
-                getFWLog().error(Message);
+                message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
+                    + "check data on transaction commit. message=<" + ex.getMessage()+"> in transaction <" + TransactionNumber + ">";
+                getFWLog().error(message);
               }
             }
           }
@@ -584,9 +584,9 @@ public class DuplicateCheckCache
       TransRecordList.remove(TransactionNumber);
 
       // Log what we did
-      String Message = "Inserted <" + recordCount + "> records into duplicate check table" +
+      message = "Inserted <" + recordCount + "> records into duplicate check table" +
                         " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
-      getFWLog().info(Message);
+      getFWLog().info(message);
     }
   }
 
@@ -618,13 +618,13 @@ public class DuplicateCheckCache
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC_SYNC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BUFFER, ClientManager.PARAM_DYNAMIC_SYNC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STORE, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BUFFER, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STORE, ClientManager.PARAM_DYNAMIC_SYNC);
   }
 
  /**
@@ -728,9 +728,9 @@ public class DuplicateCheckCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Duplicate Check data in module <"+getSymbolicName()+">. Message <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      message = "Error performing SQL for retieving Duplicate Check data in module <"+getSymbolicName()+">. message <" + ex.getMessage() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the duplicate check cache
@@ -742,10 +742,10 @@ public class DuplicateCheckCache
       if (ColumnCount != 2)
       {
         // we're not going to be able to use this
-        String Message = "You must define 2 entries in the record, you have defined  <" +
+        message = "You must define 2 entries in the record, you have defined  <" +
               ColumnCount + ">";
-        getFWLog().fatal(Message);
-        throw new InitializationException(Message);
+        getFWLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // Start the loading
@@ -771,18 +771,18 @@ public class DuplicateCheckCache
         // Update to the log file
         if ((RecordsProcessed % loadingLogNotificationStep) == 0)
         {
-          String Message = "Duplicate Check Data Loading: <" + recordsLoaded +
+          message = "Duplicate Check Data Loading: <" + recordsLoaded +
                 "> records buffered and <" + recordsDiscarded + "> records in duplicate data table for <" +
                 getSymbolicName() + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Data for <" + getSymbolicName() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message, ex);
+      message = "Error opening Data for <" + getSymbolicName() + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -790,10 +790,10 @@ public class DuplicateCheckCache
     DBUtil.close(StmtSelectQuery);
     DBUtil.close(JDBCcon);
 
-    String Message = "Duplicate Check Data Loading completed. <" + recordsLoaded +
+    message = "Duplicate Check Data Loading completed. <" + recordsLoaded +
           "> records buffered and <" + recordsDiscarded +
           "> records in duplicate data table for <" + getSymbolicName() + ">";
-    getFWLog().info(Message);
+    getFWLog().info(message);
 
   }
 
@@ -876,8 +876,8 @@ public class DuplicateCheckCache
       }
       catch (InitializationException ie)
       {
-        String Message = "Error preparing purge statement for Duplicate Check data purge in module <"+getSymbolicName()+">. Message <" + ie.getMessage() + ">";
-        getFWLog().fatal(Message);
+        message = "Error preparing purge statement for Duplicate Check data purge in module <"+getSymbolicName()+">. message <" + ie.getMessage() + ">";
+        getFWLog().fatal(message);
       }
 
       // purge the database
@@ -889,9 +889,9 @@ public class DuplicateCheckCache
       }
       catch (SQLException ex)
       {
-        String Message = "Error purging the duplicate check database. Query: <" +
-                PurgeQuery + "> Message: <" + ex.getMessage() + ">";
-        getFWLog().error(Message);
+        message = "Error purging the duplicate check database. Query: <" +
+                PurgeQuery + "> message: <" + ex.getMessage() + ">";
+        getFWLog().error(message);
       }
     }
     finally
@@ -901,9 +901,9 @@ public class DuplicateCheckCache
     }
 
     // log what we have saved
-    String Message = "Duplicate check data purging finished. Purged <" + recordsPurgedMemory + "> records "
+    message = "Duplicate check data purging finished. Purged <" + recordsPurgedMemory + "> records "
             + "from memory, <" + recordsPurgedDatabase + "> records from database";
-    getFWLog().info(Message);
+    getFWLog().info(message);
   }
 
   // -----------------------------------------------------------------------------
@@ -927,16 +927,16 @@ public class DuplicateCheckCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error preparing the statement " + SelectQuery;
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Error preparing the statement " + SelectQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
-      String Message = "Error preparing the statement <" + SelectQuery +
-                       ">. Message: " + ex.getMessage();
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Error preparing the statement <" + SelectQuery +
+                       ">. message: " + ex.getMessage();
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -957,16 +957,16 @@ public class DuplicateCheckCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error preparing the statement " + PurgeQuery;
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Error preparing the statement " + PurgeQuery;
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
-      String Message = "Error preparing the statement <" + PurgeQuery +
-                       ">. Message: " + ex.getMessage();
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Error preparing the statement <" + PurgeQuery +
+                       ">. message: " + ex.getMessage();
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -989,10 +989,11 @@ public class DuplicateCheckCache
     {
       tmpLoadStep = Integer.parseInt(tmpValue);
     }
-    catch (NumberFormatException nfe)
+    catch (NumberFormatException ex)
     {
-      throw new InitializationException("Value provided for property <" + SERVICE_LOAD_LOG_STEP +
-                                        "> was not numeric. Received value <" + tmpValue + ">.");
+      message = "Value provided for property <" + SERVICE_LOAD_LOG_STEP +
+                "> was not numeric. Received value <" + tmpValue + ">.";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     return tmpLoadStep;
@@ -1071,14 +1072,14 @@ public class DuplicateCheckCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error preparing the statement " + InsertQuery;
-      getFWLog().error(Message);
+      message = "Error preparing the statement " + InsertQuery;
+      getFWLog().error(message);
     }
     catch (Exception ex)
     {
-      String Message = "Error preparing the statement <" + InsertQuery +
-                       ">. Message: " + ex.getMessage();
-      getFWLog().error(Message);
+      message = "Error preparing the statement <" + InsertQuery +
+                       ">. message: " + ex.getMessage();
+      getFWLog().error(message);
     }
 
     return tmpStatement;

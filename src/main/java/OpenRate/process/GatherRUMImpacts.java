@@ -270,7 +270,7 @@ public class GatherRUMImpacts extends AbstractStubPlugIn
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -294,6 +294,6 @@ public class GatherRUMImpacts extends AbstractStubPlugIn
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_0_BAL_IMP, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_0_BAL_IMP, ClientManager.PARAM_NONE);
   }
 }

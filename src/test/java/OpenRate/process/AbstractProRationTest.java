@@ -54,6 +54,7 @@
  */
 package OpenRate.process;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.lang.ProRatingResult;
@@ -82,6 +83,9 @@ public class AbstractProRationTest
   private static ResourceContext ctx = new ResourceContext();
   private static AbstractProRation instance;
 
+  // Used for logging and exception handling
+  private static String message; 
+
  /**
   * Default constructor
   */
@@ -103,10 +107,13 @@ public class AbstractProRationTest
       }
       catch (InitializationException ex)
       {
-        String Message = "Error reading the configuration file <" + FQConfigFileName + ">";
-        Assert.fail(Message);
+        message = "Error reading the configuration file <" + FQConfigFileName + ">";
+        Assert.fail(message);
       }
 
+      // Set up the OpenRate internal logger - this is normally done by app startup
+      OpenRate.getApplicationInstance();
+      
       // Get a logger
       System.out.println("  Initialising Logger Resource...");
       resourceName         = "LogFactory";

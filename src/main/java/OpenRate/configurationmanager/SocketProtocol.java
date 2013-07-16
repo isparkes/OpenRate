@@ -146,7 +146,7 @@ public class SocketProtocol implements ISocketProtocol
             (input.equalsIgnoreCase(SocketConstants.THREADSTATUS_SHORT)))
     {
       // show the status of the threads
-      output = ClientManager.getThreadList().toString();
+      output = ClientManager.getClientManager().getThreadList().toString();
     }
     else if(input.equalsIgnoreCase(SocketConstants.GUIMODE))
     {
@@ -189,7 +189,7 @@ public class SocketProtocol implements ISocketProtocol
           CmdParameter = CommandParams[1];
         }
 
-        clCon = ClientManager.get(CmdModuleSymbolicName);
+        clCon = ClientManager.getClientManager().get(CmdModuleSymbolicName);
 
         if (clCon != null)
         {

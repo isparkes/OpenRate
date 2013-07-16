@@ -74,9 +74,13 @@ public class DBUtil
   private static ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
 
   // The reference to the exception handler
+  //@Autowired
   private static ExceptionHandler handler;
 
-  long lastInitTime = 0;
+  //long lastInitTime = 0;
+
+  // module symbolic name: set during initialisation
+  private static String SymbolicName = "Unknown";
 
   /**
    * Get a specific DataSource
@@ -95,7 +99,7 @@ public class DBUtil
     if (factory == null)
     {
       FWLog.error("DataSourceFactory invalid.");
-      throw new InitializationException("unable to load datasourcefactory.");
+      throw new InitializationException("unable to load datasourcefactory.",SymbolicName);
     }
 
     DataSource ds = factory.getDataSource(dataSourceName);
@@ -208,8 +212,8 @@ public class DBUtil
     // deal with the case that we do not know the data source
     if (JDBCds == null)
     {
-      String Message = "Data source <" + dataSourceName + "> not known.";
-      throw new InitializationException(Message);
+      String message = "Data source <" + dataSourceName + "> not known.";
+      throw new InitializationException(message,SymbolicName);
     }
 
     // try to get a connection from the data source
@@ -218,8 +222,8 @@ public class DBUtil
       try {
         tmpConn = JDBCds.getConnection();
       } catch (SQLException ex) {
-        String Message = "Exception getting Data source connection <" + dataSourceName + "> not known.";
-        throw new InitializationException(Message,ex);
+        String message = "Exception getting Data source connection <" + dataSourceName + "> not known.";
+        throw new InitializationException(message,ex,SymbolicName);
       }
 
       // Increment the retries, we don't want to do this forever
@@ -227,12 +231,12 @@ public class DBUtil
       try {
         if (tmpConn.isClosed())
         {
-          String Message = "Data source <" + dataSourceName + "> provided a closed connection.";
-          throw new InitializationException(Message);
+          String message = "Data source <" + dataSourceName + "> provided a closed connection.";
+          throw new InitializationException(message,SymbolicName);
         }
       } catch (SQLException ex) {
-        String Message = "Exception checking Data source connection <" + dataSourceName + ">.";
-        throw new InitializationException(Message,ex);
+        String message = "Exception checking Data source connection <" + dataSourceName + ">.";
+        throw new InitializationException(message,ex,SymbolicName);
       }
     }
 
@@ -261,17 +265,11 @@ public class DBUtil
                                              ResultSet.TYPE_SCROLL_INSENSITIVE,
                                              ResultSet.CONCUR_UPDATABLE);
     }
-    catch (SQLException ex)
+    catch (SQLException | NullPointerException ex)
     {
       FWLog.error("Error preparing the statement <" + StatementToPrep + ">");
       throw new InitializationException("Error preparing the statement <" +
-                                        StatementToPrep + ">");
-    }
-    catch (NullPointerException npe)
-    {
-      FWLog.error("Error preparing the statement <" + StatementToPrep + ">");
-      throw new InitializationException("Error preparing the statement <" +
-                                        StatementToPrep + ">", npe);
+                                        StatementToPrep + ">",ex,SymbolicName);
     }
 
     return tmpPrepStmt;
@@ -286,5 +284,19 @@ public class DBUtil
   {
     handler = newHandler;
   }
+
+    /**
+     * @return the SymbolicName
+     */
+    public String getSymbolicName() {
+        return SymbolicName;
+    }
+
+    /**
+     * @param SymbolicName the SymbolicName to set
+     */
+    public void setSymbolicName(String SymbolicName) {
+        this.SymbolicName = SymbolicName;
+    }
 
 }

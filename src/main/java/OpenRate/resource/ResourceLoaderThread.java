@@ -55,6 +55,7 @@
 
 package OpenRate.resource;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
@@ -69,7 +70,6 @@ public class ResourceLoaderThread extends Thread
 {
   private IResource resource;
   private String    resourceName;
-  private ExceptionHandler handler;
   private ResourceContext resourceContext;
   private HashMap<String, IEventInterface> syncPointResourceMap;
 
@@ -105,18 +105,8 @@ public class ResourceLoaderThread extends Thread
     this.resourceName = resourceName;
   }
 
-  /**
-   * Set the exception handler mechanism.
-   *
-   * @param handler The exception handler to be used for this class
-   */
-  public void setExceptionHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
-
  /**
-  * Main execution thread of teh resource loader thread. Initialises the
+  * Main execution thread of the resource loader thread. Initialises the
   * resource and registers it with the context and sync point map before ending.
   */
   @Override
@@ -124,9 +114,6 @@ public class ResourceLoaderThread extends Thread
   {
     try
     {
-      // Set the exception handler - we might need this during the intialisation
-      resource.setHandler(handler);
-
       // initalise the resource
       resource.init(resourceName);
 
@@ -147,7 +134,7 @@ public class ResourceLoaderThread extends Thread
     }
     catch (InitializationException ie)
     {
-      handler.reportException(ie);
+      OpenRate.getFrameworkExceptionHandler().reportException(ie);
     }
   }
 

@@ -56,6 +56,8 @@
 package OpenRate.process;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
+import OpenRate.IPipeline;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.IEvent;
 import OpenRate.buffer.IMonitor;
@@ -88,21 +90,7 @@ public abstract class AbstractPlugIn
              IEventInterface
 {
   // module symbolic name: set during initialisation
-  private String SymbolicName = "Unknown";
-
-  // Get the logs, for this and all child classes. The pipe log will be
-  // Initialized during the init, up until then, all logging will go to the
-  // framework log.
-
- /**
-  * The statistics log
-  */
-  protected ILogger StatsLog = LogUtil.getLogUtil().getLogger("Statistics");
-
- /**
-  * The pipeline log
-  */
-  protected ILogger pipeLog  = null;
+  private String symbolicName = "Unknown";
 
   private ISupplier supplier;
   private IConsumer consumer;
@@ -110,8 +98,11 @@ public abstract class AbstractPlugIn
 
   // for reporting fatal errors in a thread.
   private ExceptionHandler handler;
-  private int     BatchSize;
-  private int     BufferSize;
+  
+  // the configured batch size
+  private int     batchSize;
+  
+  private int     bufferSize;
   private int     numThreads = 1;
 
   // to make getting ad hoc configurations easier
@@ -121,12 +112,10 @@ public abstract class AbstractPlugIn
   * the shutdown flag needs to be volatile to ensure that each thread accesses
   * the correct value. The flag is used to trigger a thread exit.
   */
-  private volatile boolean ShutdownFlag = false;
+  private volatile boolean shutdownFlag = false;
 
-  /**
-   * This is the pipeline that we are in, used for logging
-   */
-  protected String pipeName;
+   // This is the pipeline that we are in, used for logging  
+  private IPipeline pipeline;
 
   // List of Services that this Client supports
   private final static String SERVICE_BATCHSIZE  = CommonConfig.BATCH_SIZE;
@@ -144,18 +133,17 @@ public abstract class AbstractPlugIn
   private long processingTime = 0;
   private long batchRecordsProcessed = 0;
   private long streamsProcessed = 0;
-  private long ThisBatchRecordCount = 0;
   private int  outBufferCapacity = 0;
   private int  bufferHits = 0;
 
   // this is used to control the active status
-  private boolean Active = true;
+  private boolean active = true;
 
   /**
    * This is used for managing exceptions. Defined here to keep the messages
    * as short and as in line as possible in the modules.
    */
-  protected String Message;
+  protected String message;
 
  /**
   * constructor
@@ -178,14 +166,12 @@ public abstract class AbstractPlugIn
   {
     String ConfigHelper;
 
+    // set our name
     setSymbolicName(ModuleName);
 
-    // store the pipe we are in
-    this.pipeName = PipelineName;
-
-    // Get the pipe log
-    pipeLog = LogUtil.getLogUtil().getLogger(PipelineName);
-
+    // Get the pipeline reference
+    setPipeline(OpenRate.getPipeline(PipelineName));
+            
     // Get the batch size we should be working on
     ConfigHelper = initGetBatchSize();
     processControlEvent(SERVICE_BATCHSIZE, true, ConfigHelper);
@@ -246,19 +232,18 @@ public abstract class AbstractPlugIn
     Collection<IRecord> in;
 
     // Print the thread startup message
-    StatsLog.debug("PlugIn <" + Thread.currentThread().getName() +
+    OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() +
                    "> started, pulling from buffer <" + getBatchInbound().toString() +
                    ">, pushing to buffer <" + getBatchOutbound().toString() + ">");
 
     // Check to see if we have the naughty batch size of 0. this is usually
     // because someone has overwritten the init() without calling the parent
     // init
-    if (BatchSize == 0)
+    if (getBatchSize() == 0)
     {
-      Message = "Batch size is 0 in plugin <" + this.toString() + ">. " +
+      message = "Batch size is 0 in plugin <" + this.toString() + ">. " +
               "Please ensure that you have called the parent init().";
-      System.err.println(Message);
-      System.exit(-3);
+      getExceptionHandler().reportException(new ProcessingException(message,getSymbolicName()));
     }
 
     // main thread loop. This will not be exited until the thread is
@@ -270,15 +255,15 @@ public abstract class AbstractPlugIn
       startTime = System.currentTimeMillis();
 
       // get the batch records to process
-      in = getBatchInbound().pull(BatchSize);
+      in = getBatchInbound().pull(getBatchSize());
 
-      ThisBatchRecordCount = in.size();
+      int ThisBatchRecordCount = in.size();
 
       if (ThisBatchRecordCount > 0)
       {
         // If the active flag is set, we do the processing for real
         // if it is not set, we only manage the transaction
-        if (Active)
+        if (    isActive())
         {
           // Active loop
           iter = in.iterator();
@@ -321,45 +306,45 @@ public abstract class AbstractPlugIn
             } // try
             catch (ProcessingException pe)
             {
-              pipeLog.error("Processing exception caught in Plug In <" +
+              getPipeLog().error("Processing exception caught in Plug In <" +
                           getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
               getExceptionHandler().reportException(pe);
             }
             catch (ClassCastException cce)
             {
-              pipeLog.error("Record Class Cast exception caught in Plug In <" +
+              getPipeLog().error("Record Class Cast exception caught in Plug In <" +
                           getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-              getExceptionHandler().reportException(new ProcessingException(cce));
+              getExceptionHandler().reportException(new ProcessingException(cce,getSymbolicName()));
             }
             catch (NullPointerException npe)
             {
-              pipeLog.error("Null pointer exception caught in Plug In <" +
+              getPipeLog().error("Null pointer exception caught in Plug In <" +
                           getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-              getExceptionHandler().reportException(new ProcessingException(npe));
+              getExceptionHandler().reportException(new ProcessingException(npe,getSymbolicName()));
             }
             catch (ArrayIndexOutOfBoundsException aiob)
             {
-              pipeLog.error("Array Index Out of Bounds exception caught in Plug In <" +
+              getPipeLog().error("Array Index Out of Bounds exception caught in Plug In <" +
                           getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-              getExceptionHandler().reportException(new ProcessingException(aiob));
+              getExceptionHandler().reportException(new ProcessingException(aiob,getSymbolicName()));
             }
             catch (Exception ge)
             {
-                pipeLog.fatal("General exception caught in Plug In <" +
+                getPipeLog().fatal("General exception caught in Plug In <" +
                           getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-                getExceptionHandler().reportException(new ProcessingException(ge));
+                getExceptionHandler().reportException(new ProcessingException(ge,getSymbolicName()));
             }
             catch (Throwable t)
             {
-              pipeLog.fatal("Unexpected exception caught in Plug In <" +
+              getPipeLog().fatal("Unexpected exception caught in Plug In <" +
                         getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-              getExceptionHandler().reportException(new ProcessingException(t));
+              getExceptionHandler().reportException(new ProcessingException(t,getSymbolicName()));
               }
             }
           }
@@ -409,49 +394,49 @@ public abstract class AbstractPlugIn
               } // try
               catch (ClassCastException cce)
               {
-                pipeLog.error("Record Class Cast exception caught in Plug In <" +
+                getPipeLog().error("Record Class Cast exception caught in Plug In <" +
                             getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-                getExceptionHandler().reportException(new ProcessingException(cce));
+                getExceptionHandler().reportException(new ProcessingException(cce,getSymbolicName()));
               }
               catch (NullPointerException npe)
               {
-                pipeLog.error("Null pointer exception caught in Plug In <" +
+                getPipeLog().error("Null pointer exception caught in Plug In <" +
                             getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-                getExceptionHandler().reportException(new ProcessingException(npe));
+                getExceptionHandler().reportException(new ProcessingException(npe,getSymbolicName()));
               }
               catch (ArrayIndexOutOfBoundsException aiob)
               {
-                pipeLog.error("Array Index Out of Bounds exception caught in Plug In <" +
+                getPipeLog().error("Array Index Out of Bounds exception caught in Plug In <" +
                             getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-                getExceptionHandler().reportException(new ProcessingException(aiob));
+                getExceptionHandler().reportException(new ProcessingException(aiob,getSymbolicName()));
               }
               catch (Throwable t)
               {
-                pipeLog.fatal("Unexpected exception caught in Plug In <" +
+                getPipeLog().fatal("Unexpected exception caught in Plug In <" +
                           getSymbolicName() + ">. See Error Log for the Stack Trace.");
 
-                getExceptionHandler().reportException(new ProcessingException(t));
+                getExceptionHandler().reportException(new ProcessingException(t,getSymbolicName()));
                 }
               } // while
             }
           }
 
           getBatchOutbound().push(in);
-          StatsLog.debug("PlugIn <" + Thread.currentThread().getName() + "> pushed <" + String.valueOf(ThisBatchRecordCount) + "> batch records to buffer <" + getBatchOutbound().toString() + ">");
+          OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> pushed <" + String.valueOf(ThisBatchRecordCount) + "> batch records to buffer <" + getBatchOutbound().toString() + ">");
 
           outBufferCapacity = getBatchOutbound().getEventCount();
 
           endTime = System.currentTimeMillis();
           BatchTime = (endTime - startTime);
-          processingTime += BatchTime;
+                setProcessingTime(getProcessingTime() + BatchTime);
 
-          while (outBufferCapacity > BufferSize)
+          while (outBufferCapacity > getBufferSize())
           {
-            bufferHits++;
-            StatsLog.debug("PlugIn <" + Thread.currentThread().getName() + "> buffer high water mark! Buffer max = <" + BufferSize + "> current count = <" + outBufferCapacity + ">");
+                    setBufferHits(getBufferHits() + 1);
+            OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> buffer high water mark! Buffer max = <" + getBufferSize() + "> current count = <" + outBufferCapacity + ">");
             try
             {
               Thread.sleep(100);
@@ -463,21 +448,21 @@ public abstract class AbstractPlugIn
             outBufferCapacity = getBatchOutbound().getEventCount();
           }
 
-          StatsLog.info(
+          OpenRate.getOpenRateStatsLog().info(
             "Plugin <" + Thread.currentThread().getName() + "> processed <" +
             String.valueOf(ThisBatchRecordCount) + "> events in <" + BatchTime + "> ms" );
 
           // Update the statistics
-          batchRecordsProcessed += ThisBatchRecordCount;
+                setBatchRecordsProcessed(getBatchRecordsProcessed() + ThisBatchRecordCount);
         }
         else
         {
-          StatsLog.debug("PlugIn <" + Thread.currentThread().getName() + "> going to sleep");
+          OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> going to sleep");
 
           // We want to shut down the processing
-          if (ShutdownFlag == true)
+          if (shutdownFlag == true)
           {
-            StatsLog.debug("PlugIn <" + Thread.currentThread().getName() + "> shut down. Exiting.");
+            OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> shut down. Exiting.");
             break;
           }
 
@@ -517,7 +502,7 @@ public abstract class AbstractPlugIn
   public void markForClosedown()
   {
     //log.debug("PlugIn <" + getSymbolicName() + "> marked for exit....");
-    this.ShutdownFlag = true;
+    this.shutdownFlag = true;
 
     // notify any listeners that are waiting that we are flushing
     synchronized (this)
@@ -535,126 +520,7 @@ public abstract class AbstractPlugIn
   public void reset()
   {
     //log.debug("reset called on PlugIn <" + getSymbolicName() + ">");
-    this.ShutdownFlag = false;
-  }
-
-  /**
-   * Set the inbound delivery mechanism.
-   *
-   * @param s The supplier FIFO
-   */
-  @Override
-  public void setInbound(ISupplier s)
-  {
-    this.supplier = s;
-  }
-
-  /**
-   * supplier configured on the inbound side of the PlugIn.
-   *
-   * @return The supplier FIFO
-   */
-  public ISupplier getBatchInbound()
-  {
-    return this.supplier;
-  }
-
-  /**
-   * Set the outbound delivery mechanism.
-   *
-   * @param c The consumer FIFO
-   */
-  @Override
-  public void setOutbound(IConsumer c)
-  {
-    this.consumer = c;
-  }
-
-  /**
-   * consumer configured on the outbound side of this PlugIn.
-   *
-   * @return The consumer FIFO
-   */
-  public IConsumer getBatchOutbound()
-  {
-
-    return this.consumer;
-  }
-
-  /**
-   * Set the error delivery mechanism.
-   *
-   * @param err The error consumer FIFO
-   */
-  @Override
-  public void setErrorBuffer(IConsumer err)
-  {
-    this.errors = err;
-  }
-
-  /**
-   * return error buffer
-   *
-   * @return The error consumer FIFO
-   */
-  public IConsumer getErrorBuffer()
-  {
-
-    return this.errors;
-  }
-
-  /**
-   * Set the exception handler mechanism.
-   *
-   * @param handler The exception handler to be used for this class
-   */
-  @Override
-  public void setExceptionHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
-
-  /**
-   * return exception handler
-   *
-   * @return The exception handler to be used for this class
-   */
-  public ExceptionHandler getExceptionHandler()
-  {
-
-    return this.handler;
-  }
-
-  /**
-   * Method setNumThreads.
-   *
-   * @param val The number of threads to use for this plugin
-   */
-  public void setNumThreads(int val)
-  {
-    numThreads = val;
-  }
-
-  /**
-   * Return the suggested number of threads to launch for this PlugIn.
-   * The number of threads is '1' by default.
-   *
-   * @return The number of threads to use for this plugin
-   */
-  @Override
-  public int numThreads()
-  {
-    return this.numThreads;
-  }
-
- /**
-  * Return whether we have been asked to shutdown.
-  *
-  * @return true if a shutdown has been requested, otherwise false
-  */
-  public boolean getShutdownFlag()
-  {
-    return ShutdownFlag;
+    this.shutdownFlag = false;
   }
 
 // -----------------------------------------------------------------------------
@@ -669,7 +535,7 @@ public abstract class AbstractPlugIn
   {
     String tmpValue;
 
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,SymbolicName,SERVICE_BATCHSIZE, DEFAULT_BATCHSIZE);
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),symbolicName,SERVICE_BATCHSIZE, DEFAULT_BATCHSIZE);
     return tmpValue;
   }
 
@@ -681,7 +547,7 @@ public abstract class AbstractPlugIn
   {
     String tmpValue;
 
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,SymbolicName,SERVICE_BUFFERSIZE, DEFAULT_BUFFERSIZE);
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),symbolicName,SERVICE_BUFFERSIZE, DEFAULT_BUFFERSIZE);
     return tmpValue;
   }
 
@@ -693,7 +559,7 @@ public abstract class AbstractPlugIn
   {
     String tmpValue;
 
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,SymbolicName,SERVICE_NUMTHREAD, DEFAULT_NUMTHREAD);
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),symbolicName,SERVICE_NUMTHREAD, DEFAULT_NUMTHREAD);
     return tmpValue;
   }
 
@@ -705,7 +571,7 @@ public abstract class AbstractPlugIn
   {
     String tmpValue;
 
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,SymbolicName,SERVICE_ACTIVE, DEFAULT_ACTIVE);
+    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(),symbolicName,SERVICE_ACTIVE, DEFAULT_ACTIVE);
 
     return tmpValue;
   }
@@ -718,7 +584,7 @@ public abstract class AbstractPlugIn
   @Override
   public String getSymbolicName()
   {
-      return SymbolicName;
+      return symbolicName;
   }
 
  /**
@@ -729,7 +595,7 @@ public abstract class AbstractPlugIn
   @Override
   public void setSymbolicName(String Name)
   {
-      SymbolicName=Name;
+      symbolicName=Name;
   }
 
  /**
@@ -862,11 +728,11 @@ public abstract class AbstractPlugIn
       String propertyValue = null;
       try
       {
-        propertyValue = PropertyUtils.getPropertyUtils().getPluginPropertyValue(pipeName, getSymbolicName(), propertyName);
+        propertyValue = PropertyUtils.getPropertyUtils().getPluginPropertyValue(getPipeName(), getSymbolicName(), propertyName);
       }
       catch (InitializationException ex)
       {
-        pipeLog.error("Failure getting ad hoc property <" + propertyName + ">");
+        getPipeLog().error("Failure getting ad hoc property <" + propertyName + ">");
       }
       configurationParameters.put(propertyName, propertyValue);
       return propertyValue;
@@ -885,20 +751,21 @@ public abstract class AbstractPlugIn
   public String getPropertyValue(String propertyName) throws InitializationException
   {
     // Helpful error handling
-    if ((pipeName == null) || (getSymbolicName().equals("Unknown")))
+    if ((getPipeName() == null) || (getSymbolicName().equals("Unknown")))
     {
-      throw new InitializationException("Module initialisation not done in module <" + this + ">. Did you call super.init()?");
+      message = "Module initialisation not done in module <" + getSymbolicName() + ">. Did you call super.init()?";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // get it, store it, then return it
     String propertyValue = null;
     try
     {
-      propertyValue = PropertyUtils.getPropertyUtils().getPluginPropertyValue(pipeName, getSymbolicName(), propertyName);
+      propertyValue = PropertyUtils.getPropertyUtils().getPluginPropertyValue(getPipeName(), getSymbolicName(), propertyName);
     }
     catch (InitializationException ex)
     {
-      pipeLog.error("Failure getting ad hoc property <" + propertyName + ">");
+      getPipeLog().error("Failure getting ad hoc property <" + propertyName + ">");
     }
 
     return propertyValue;
@@ -917,20 +784,21 @@ public abstract class AbstractPlugIn
   public String getPropertyValueDef(String propertyName, String defaultValue) throws InitializationException
   {
     // Helpful error handling
-    if ((pipeName == null) || (getSymbolicName().equals("Unknown")))
+    if ((getPipeName() == null) || (getSymbolicName().equals("Unknown")))
     {
-      throw new InitializationException("Module initialisation not done in module <" + this + ">. Did you call super.init()?");
+      message = "Module initialisation not done in module <" + getSymbolicName() + ">. Did you call super.init()?";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // get it, store it, then return it
     String propertyValue = defaultValue;
     try
     {
-      propertyValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName, getSymbolicName(), propertyName, defaultValue);
+      propertyValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(getPipeName(), getSymbolicName(), propertyName, defaultValue);
     }
     catch (InitializationException ex)
     {
-      pipeLog.error("Failure getting ad hoc property <" + propertyName + ">");
+      getPipeLog().error("Failure getting ad hoc property <" + propertyName + ">");
     }
 
     return propertyValue;
@@ -950,15 +818,15 @@ public abstract class AbstractPlugIn
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHSIZE,  ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_NUMTHREAD,  ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATS,      ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ACTIVE,     ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHSIZE,  ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_NUMTHREAD,  ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATS,      ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ACTIVE,     ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -983,17 +851,17 @@ public abstract class AbstractPlugIn
     {
       if (Parameter.equals(""))
       {
-        return Integer.toString(BatchSize);
+        return Integer.toString(getBatchSize());
       }
       else
       {
         try
         {
-          BatchSize = Integer.parseInt(Parameter);
+          batchSize = Integer.parseInt(Parameter);
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error("Invalid number for batch size. Passed value = <" + Parameter + ">");
+          getPipeLog().error("Invalid number for batch size. Passed value = <" + Parameter + ">");
         }
         ResultCode = 0;
       }
@@ -1004,17 +872,17 @@ public abstract class AbstractPlugIn
     {
       if (Parameter.equals(""))
       {
-        return Integer.toString(BufferSize);
+        return Integer.toString(getBufferSize());
       }
       else
       {
         try
         {
-          BufferSize = Integer.parseInt(Parameter);
+                    setBufferSize(Integer.parseInt(Parameter));
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error("Invalid number for buffer size. Passed value = <" + Parameter + ">");
+          getPipeLog().error("Invalid number for buffer size. Passed value = <" + Parameter + ">");
         }
         ResultCode = 0;
       }
@@ -1025,10 +893,10 @@ public abstract class AbstractPlugIn
     {
       if (Parameter.equalsIgnoreCase("true"))
       {
-        processingTime = 0;
-        batchRecordsProcessed = 0;
+        setProcessingTime(0);
+                setBatchRecordsProcessed(0);
         streamsProcessed = 0;
-        bufferHits = 0;
+        setBufferHits(0);
         ResultCode = 0;
       }
       else
@@ -1040,21 +908,21 @@ public abstract class AbstractPlugIn
     // Return the Statistics
     if (Command.equalsIgnoreCase(SERVICE_STATS))
     {
-      if (processingTime == 0)
+      if (  getProcessingTime() == 0)
       {
         CDRsPerSec = 0;
       }
       else
       {
-        CDRsPerSec = (double)((batchRecordsProcessed*1000)/processingTime);
+        CDRsPerSec = (double)((getBatchRecordsProcessed()*1000)/getProcessingTime());
       }
 
-      return Long.toString(batchRecordsProcessed) + ":" +
-             Long.toString(processingTime) + ":" +
+      return Long.toString(getBatchRecordsProcessed()) + ":" +
+             Long.toString(getProcessingTime()) + ":" +
              Long.toString(streamsProcessed) + ":" +
              Double.toString(CDRsPerSec) + ":" +
              Long.toString(outBufferCapacity) + ":" +
-             Long.toString(bufferHits) + ":" +
+             Long.toString(getBufferHits()) + ":" +
              Long.toString(getBatchInbound().getEventCount());
     }
 
@@ -1072,7 +940,7 @@ public abstract class AbstractPlugIn
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error("Invalid number for number of threads. Passed value = <" + Parameter + ">");
+          getPipeLog().error("Invalid number for number of threads. Passed value = <" + Parameter + ">");
         }
 
         ResultCode = 0;
@@ -1084,18 +952,18 @@ public abstract class AbstractPlugIn
     {
       if (Parameter.equalsIgnoreCase("true"))
       {
-        Active = true;
+        active = true;
         ResultCode = 0;
       }
       else if (Parameter.equalsIgnoreCase("false"))
       {
-        Active = false;
+        active = false;
         ResultCode = 0;
       }
       else
       {
         // return the current status
-        if (Active)
+        if (    isActive())
         {
           return "true";
         }
@@ -1108,7 +976,7 @@ public abstract class AbstractPlugIn
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -1117,4 +985,267 @@ public abstract class AbstractPlugIn
       return "Command Not Understood";
     }
   }
+
+  // -----------------------------------------------------------------------------
+  // -------------------- Standard getter/setter functions -----------------------
+  // -----------------------------------------------------------------------------
+
+    /**
+     * @return the BatchSize
+     */
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    /**
+     * @return the Active
+     */
+    public boolean isActive() {
+        return active;
+    }
+    
+    /**
+     * @return the streamsProcessed
+     */
+    public long getStreamsProcessed() {
+        return streamsProcessed;
+    }
+
+   /**
+    * Increments the number of streams processed
+    */
+    public void incStreamsProcessed()
+    {
+      streamsProcessed++;
+    }
+
+    /**
+     * @return the bufferHits
+     */
+    public int getBufferHits() {
+        return bufferHits;
+    }
+
+    /**
+     * Increment the buffer hits
+     */
+    public void incBufferHits() {
+        this.setBufferHits(this.getBufferHits() + 1);
+    }
+
+    /**
+     * @return the processingTime
+     */
+    public long getProcessingTime() {
+        return processingTime;
+    }
+
+    /**
+     * @param processingTime the processingTime to set
+     */
+    public void setProcessingTime(long processingTime) {
+        this.processingTime = processingTime;
+    }
+
+    /**
+     * @param processingTimeUpdate the processingTime to set
+     */
+    public void updateProcessingTime(long processingTimeUpdate) {
+        this.processingTime += processingTimeUpdate;
+    }
+
+    /**
+     * @param bufferHits the bufferHits to set
+     */
+    public void setBufferHits(int bufferHits) {
+        this.bufferHits = bufferHits;
+    }
+
+    /**
+     * @return the bufferSize
+     */
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    /**
+     * @param bufferSize the bufferSize to set
+     */
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+
+    /**
+     * @return the batchRecordsProcessed
+     */
+    public long getBatchRecordsProcessed() {
+        return batchRecordsProcessed;
+    }
+
+    /**
+     * @param batchRecordsProcessed the batchRecordsProcessed to set
+     */
+    public void setBatchRecordsProcessed(long batchRecordsProcessed) {
+        this.batchRecordsProcessed = batchRecordsProcessed;
+    }
+    
+    /**
+     * @param batchRecordsProcessedUpdate the batchRecordsProcessed to set
+     */
+    public void updateBatchRecordsProcessed(long batchRecordsProcessedUpdate) {
+        this.batchRecordsProcessed += batchRecordsProcessedUpdate;
+    }
+    
+  /**
+   * Set the inbound delivery mechanism.
+   *
+   * @param s The supplier FIFO
+   */
+  @Override
+  public void setInbound(ISupplier s)
+  {
+    this.supplier = s;
+  }
+
+  /**
+   * supplier configured on the inbound side of the PlugIn.
+   *
+   * @return The supplier FIFO
+   */
+  public ISupplier getBatchInbound()
+  {
+    return this.supplier;
+  }
+
+  /**
+   * Set the outbound delivery mechanism.
+   *
+   * @param c The consumer FIFO
+   */
+  @Override
+  public void setOutbound(IConsumer c)
+  {
+    this.consumer = c;
+  }
+
+  /**
+   * consumer configured on the outbound side of this PlugIn.
+   *
+   * @return The consumer FIFO
+   */
+  public IConsumer getBatchOutbound()
+  {
+
+    return this.consumer;
+  }
+
+  /**
+   * Set the error delivery mechanism.
+   *
+   * @param err The error consumer FIFO
+   */
+  @Override
+  public void setErrorBuffer(IConsumer err)
+  {
+    this.errors = err;
+  }
+
+  /**
+   * return error buffer
+   *
+   * @return The error consumer FIFO
+   */
+  public IConsumer getErrorBuffer()
+  {
+
+    return this.errors;
+  }
+
+  /**
+   * Set the exception handler mechanism.
+   *
+   * @param handler The exception handler to be used for this class
+   */
+  @Override
+  public void setExceptionHandler(ExceptionHandler handler)
+  {
+    this.handler = handler;
+  }
+
+  /**
+   * return exception handler
+   *
+   * @return The exception handler to be used for this class
+   */
+  public ExceptionHandler getExceptionHandler()
+  {
+
+    return this.handler;
+  }
+
+  /**
+   * Method setNumThreads.
+   *
+   * @param val The number of threads to use for this plug-in
+   */
+  public void setNumThreads(int val)
+  {
+    numThreads = val;
+  }
+
+  /**
+   * Return the suggested number of threads to launch for this PlugIn.
+   * The number of threads is '1' by default.
+   *
+   * @return The number of threads to use for this plugin
+   */
+  @Override
+  public int numThreads()
+  {
+    return this.numThreads;
+  }
+
+ /**
+  * Return whether we have been asked to shutdown.
+  *
+  * @return true if a shutdown has been requested, otherwise false
+  */
+  public boolean getShutdownFlag()
+  {
+    return shutdownFlag;
+  }
+
+    /**
+     * @return the pipeline
+     */
+    public IPipeline getPipeline() {
+        return pipeline;
+    }
+
+    /**
+     * @param pipeline the pipeline to set
+     */
+    public void setPipeline(IPipeline pipeline) {
+        this.pipeline = pipeline;
+    }
+    
+   /**
+    * Get the name of the pipeline.
+    * 
+    * @return The pipeline name
+    */
+    public String getPipeName()
+    {
+      return pipeline.getSymbolicName();
+    }
+    
+   /**
+    * Get the logger for this pipeline.
+    * 
+    * @return The pipeline logger
+    */
+    public ILogger getPipeLog()
+    {
+      return pipeline.getPipeLog();
+    }
 }

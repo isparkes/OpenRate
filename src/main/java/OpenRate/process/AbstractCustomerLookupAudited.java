@@ -124,8 +124,8 @@ public abstract class AbstractCustomerLookupAudited
 
     if (CM == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays
@@ -133,8 +133,8 @@ public abstract class AbstractCustomerLookupAudited
 
     if (CC == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -179,10 +179,10 @@ public abstract class AbstractCustomerLookupAudited
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_CACHE_UPDATE, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CACHE_UPDATE, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -212,7 +212,7 @@ public abstract class AbstractCustomerLookupAudited
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }

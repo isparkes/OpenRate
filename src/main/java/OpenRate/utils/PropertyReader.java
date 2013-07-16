@@ -57,7 +57,6 @@ package OpenRate.utils;
 
 import OpenRate.exception.InitializationException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,11 +87,6 @@ public class PropertyReader
    */
   private HashMap<String, Element> xmlCache = new HashMap<>(5);
 
-  /**
-   * Index of the property files
-   */
-  //private HashMap<String, String> FileNameCache = new HashMap<String, String>(5);
-
  /**
   * Defines the name of the root element
   */
@@ -103,6 +97,12 @@ public class PropertyReader
   */
   private String PROPERTY_FOLDER = "properties";
 
+  // used to simplify logging and exception handling
+  public String message;
+  
+  // used for logging and messages
+  private String symbolicName = "PropertyUtils";
+  
  /**
   * Creates a new instance of PropertyReader with default values
   */
@@ -161,14 +161,13 @@ public class PropertyReader
       DocumentBuilder db = dbf.newDocumentBuilder();
       xmlDocument = db.parse(filename.openStream());
       xmlDocument.getDocumentElement().normalize();
-    } catch (IOException | ParserConfigurationException | SAXException e) {
-      throw new InitializationException(e);
+    } catch (IOException | ParserConfigurationException | SAXException ex) {
+      throw new InitializationException(ex,getSymbolicName());
     }
 
     // move the information over
     propXMLObject = xmlDocument.getDocumentElement();
     xmlCache.put(PropertyName,propXMLObject);
-    //FileNameCache.put(PropertyName,filename);
   }
 
   /**
@@ -186,7 +185,7 @@ public class PropertyReader
       }
       else
       {
-        throw new InitializationException("Cannot find properties set <" + PropertyName + ">");
+        throw new InitializationException("Cannot find properties set <" + PropertyName + ">",getSymbolicName());
       }
   }
 
@@ -410,13 +409,13 @@ public class PropertyReader
    * meaning that we will look for the prefix, a "." and then the value provided
    * and return the value of that.
    *
-   * @param     groupPrefix the group prefix to earch for
+   * @param     groupPrefix the group prefix to search for
    * @param     propertyName the property suffix to search for
    * @return    the value string that we are searching for if found, otherwise
    *            null
    */
   public String getGroupPropertyValue(String     groupPrefix,
-          String     propertyName)
+                                      String     propertyName)
   {
       String         searchKey;
       String         ValueFound;
@@ -440,8 +439,8 @@ public class PropertyReader
    *            defaultValue
    */
   public String getGroupPropertyValueDef(String     groupPrefix,
-          String     propertyName,
-          String     defaultValue) {
+                                         String     propertyName,
+                                         String     defaultValue) {
       String valueFound;
 
       valueFound = this.getGroupPropertyValue(groupPrefix,propertyName);
@@ -464,7 +463,7 @@ public class PropertyReader
   public String getPropertyValue(String propertyName) {
       String valueFound;
 
-      valueFound = this.getXMLContent(propertyName);
+      valueFound = getXMLContent(propertyName);
       return valueFound;
   }
 
@@ -569,4 +568,13 @@ public class PropertyReader
       return null;
     }
   }
+
+    /**
+     * Return the symbolic name of this module.
+     * 
+     * @return the symbolicName
+     */
+    public String getSymbolicName() {
+        return symbolicName;
+    }
 }

@@ -55,7 +55,6 @@
 
 package OpenRate.adapter;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 
 /**
@@ -83,19 +82,4 @@ public interface IAdapter
    * should be able to be ignored.
    */
   public void cleanup();
-
-  /**
-   * Set the handler used for reporting fatal errors during
-   * Filter processing. Since each Filter is run within a
-   * thread, the call stack is not an appropriate mechanism
-   * for reporting critical processing errors. Therefore, a
-   * Handler object is provided for the Filter to use for
-   * logging unrecoverable processing errors.
-   * Note: This handler must assume that any error is fatal.
-   * Non-fatal errors should be handled by adding errors to
-   * the record(s) being processed.
-   *
-   * @param h The exception handler used to handle fatal errors
-   */
-  public void setExceptionHandler(ExceptionHandler h);
 }

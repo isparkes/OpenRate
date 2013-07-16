@@ -59,8 +59,6 @@
 
 package OpenRate.logging;
 
-import OpenRate.exception.ExceptionHandler;
-
 /**
  * AstractLogger class. This abstract class needs to be overridden by a
  * concrete implementation instance for use. In normal cases this will be via
@@ -70,9 +68,6 @@ public abstract class AstractLogger implements ILogger
 {
   // This is the symbolic name of the resource
   private String symbolicName;
-
-  // reference to the exception handler
-  private ExceptionHandler handler;
 
   /**
    * @param symbolicName the SymbolicName to set
@@ -88,16 +83,5 @@ public abstract class AstractLogger implements ILogger
   public String getSymbolicName()
   {
     return symbolicName;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 }

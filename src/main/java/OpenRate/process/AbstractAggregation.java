@@ -147,16 +147,16 @@ public abstract class AbstractAggregation
                                                           "None");
     if (CacheObjectName.equalsIgnoreCase("None"))
     {
-      Message = "Could not find cache entry for <AggCache>";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <AggCache>";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     CMAggCache = CacheFactory.getGlobalManager(CacheObjectName);
 
     if (CMAggCache == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the reference to the Auth List
@@ -181,15 +181,15 @@ public abstract class AbstractAggregation
       }
       catch (NumberFormatException nfe)
       {
-        Message = "Invalid value <" + helper + "> for <" + SERVICE_WRITE_EVERY_N_TRANS + ">";
-        throw new InitializationException(Message);
+        message = "Invalid value <" + helper + "> for <" + SERVICE_WRITE_EVERY_N_TRANS + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // negative values not allowed
       if (tmpFreq < 1)
       {
-        Message = "Negative/zero value <" + helper + "> not supported for <" + SERVICE_WRITE_EVERY_N_TRANS + ">";
-        throw new InitializationException(Message);
+        message = "Negative/zero value <" + helper + "> not supported for <" + SERVICE_WRITE_EVERY_N_TRANS + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -364,10 +364,10 @@ public abstract class AbstractAggregation
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_WRITE_EVERY_N_TRANS, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_WRITE_EVERY_N_TRANS, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -400,7 +400,7 @@ public abstract class AbstractAggregation
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error("Invalid number for result write frequency. Passed value = <" + parameter + ">");
+          getPipeLog().error("Invalid number for result write frequency. Passed value = <" + parameter + ">");
         }
         ResultCode = 0;
       }
@@ -409,7 +409,7 @@ public abstract class AbstractAggregation
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, command, parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), command, parameter));
 
       return "OK";
     }

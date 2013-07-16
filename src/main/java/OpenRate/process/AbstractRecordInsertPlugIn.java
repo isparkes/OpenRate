@@ -55,22 +55,11 @@
 
 package OpenRate.process;
 
-import OpenRate.CommonConfig;
-import OpenRate.buffer.IConsumer;
-import OpenRate.buffer.IEvent;
-import OpenRate.buffer.IMonitor;
-import OpenRate.buffer.ISupplier;
-import OpenRate.configurationmanager.ClientManager;
-import OpenRate.configurationmanager.IEventInterface;
-import OpenRate.exception.ExceptionHandler;
-import OpenRate.exception.InitializationException;
+import OpenRate.OpenRate;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
-import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -78,153 +67,11 @@ import java.util.Iterator;
 /**
  * The AbstractRecordInsertPlugIn provides the base class for inserting records
  * in the processing chain at any point. It is not a general use transport
- * plug in and instead provides targeted functionality for creating records
+ * plug-in and instead provides targeted functionality for creating records
  * and inserting them into the processing chain.
  */
-public abstract class AbstractRecordInsertPlugIn
-  implements IPlugIn,
-             IMonitor,
-             IEventInterface
+public abstract class AbstractRecordInsertPlugIn extends AbstractPlugIn
 {
-  private String SymbolicName = "Unknown";
-
-  // Get the logs, for this and all child classes. The pipe log will be
-  // intialised during the init, up until then, all logging will go to the
-  // framework log.
-
-  /**
-   * The statistics log
-   */
-  protected ILogger StatsLog = LogUtil.getLogUtil().getLogger("Statistics");
-
-  /**
-   * The pipeline log
-   */
-  protected ILogger PipeLog  = null;
-
-  private ISupplier supplier;
-  private IConsumer consumer;
-  private IConsumer errors;
-
-  // for reporting fatal errors in a thread.
-  private ExceptionHandler handler;
-  private int     BatchSize;
-  private int     BufferSize;
-  private int     numThreads = 1;
-
- /**
-  * the shutdown flag needs to be volatile to ensure that each thread accesses
-  * the correct value. The flag is used to trigger a thread exit.
-  */
-  private volatile boolean ShutdownFlag = false;
-
-  /**
-   * This is the pipeline that we are in, used for logging
-   */
-  protected String pipeName;
-
-  // List of Services that this Client supports
-  private final static String SERVICE_BATCHSIZE  = CommonConfig.BATCH_SIZE;
-  private final static String SERVICE_BUFFERSIZE = CommonConfig.BUFFER_SIZE;
-  private final static String SERVICE_NUMTHREAD  = CommonConfig.NUM_PROCESSING_THREADS;
-  private final static String SERVICE_STATS      = CommonConfig.STATS;
-  private final static String SERVICE_STATSRESET = CommonConfig.STATS_RESET;
-  private final static String SERVICE_ACTIVE     = CommonConfig.ACTIVE;
-  private final static String DEFAULT_BATCHSIZE  = CommonConfig.DEFAULT_BATCH_SIZE;
-  private final static String DEFAULT_BUFFERSIZE = CommonConfig.DEFAULT_BUFFER_SIZE;
-  private final static String DEFAULT_NUMTHREAD  = CommonConfig.NUM_PROCESSING_THREADS_DEFAULT;
-  private final static String DEFAULT_ACTIVE     = CommonConfig.DEFAULT_ACTIVE;
-
-  //performance counters
-  private long processingTime = 0;
-  private long batchRecordsProcessed = 0;
-  private long streamsProcessed = 0;
-  private long ThisBatchRecordCount = 0;
-  private int  outBufferCapacity = 0;
-  private int  bufferHits = 0;
-
-  // this is used to control the active status
-  private boolean Active = true;
-
- /**
-  * Initialise the module. Called during pipeline creation.
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The name of this module in the pipeline
-  * @throws OpenRate.exception.InitializationException
-  */
-  @Override
-  public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
-    String ConfigHelper;
-
-    setSymbolicName(ModuleName);
-
-    registerClientManager();
-
-    // store the pipe we are in
-    this.pipeName = PipelineName;
-
-    // Get the pipe log
-    PipeLog = LogUtil.getLogUtil().getLogger(PipelineName);
-
-    // Get the batch size we should be working on
-    ConfigHelper = initGetBatchSize();
-    processControlEvent(SERVICE_BATCHSIZE, true, ConfigHelper);
-    ConfigHelper = initGetBufferSize();
-    processControlEvent(SERVICE_BUFFERSIZE, true, ConfigHelper);
-    ConfigHelper = initGetNumThread();
-    processControlEvent(SERVICE_NUMTHREAD, true, ConfigHelper);
-    ConfigHelper = initGetActive();
-    processControlEvent(SERVICE_ACTIVE, true, ConfigHelper);
-  }
-
-  /**
-   * Thread execution method. Inherited from Runnable. All this method does is
-   * call process() and catch any processing exception. Any exceptions that
-   * occur in the processing are intercepted and passed back via the exception
-   * handler that we nominated during the pipeline creation
-   */
-  @Override
-  public void run()
-  {
-    // monitor the inbound buffer
-    getBatchInbound().registerMonitor(this);
-
-    try
-    {
-      process();
-    }
-    catch (ProcessingException pe)
-    {
-      PipeLog.error("Processing exception caught in Plug In <" +
-                  getSymbolicName() + ">", pe);
-
-      getExceptionHandler().reportException(pe);
-    }
-    catch (ClassCastException cce)
-    {
-      PipeLog.error("Record Class Cast exception caught in Plug In <" +
-                  getSymbolicName() + ">", cce);
-
-      getExceptionHandler().reportException(new ProcessingException(cce));
-    }
-    catch (NullPointerException npe)
-    {
-      PipeLog.error("Null pointer exception caught in Plug In <" +
-                  getSymbolicName() + ">", npe);
-
-      getExceptionHandler().reportException(new ProcessingException(npe));
-    }
-    catch (Throwable t)
-    {
-      PipeLog.fatal("Unexpected exception caught in Plug In <" +
-                getSymbolicName() + ">", t);
-      getExceptionHandler().reportException(new ProcessingException(t));
-      }
-    }
-
  /**
   * Process() gets the records from the upstream FIFO and iterates through all
   * of the records in the collection that is gets. For each of these records,
@@ -247,7 +94,7 @@ public abstract class AbstractRecordInsertPlugIn
   * @throws OpenRate.exception.ProcessingException
   */
   @Override
-  public void process() throws ProcessingException
+  public void process()
   {
     Iterator<IRecord> iter;
     long startTime;
@@ -267,19 +114,18 @@ public abstract class AbstractRecordInsertPlugIn
     ArrayList<IRecord> outRTTemp = new ArrayList<>();
 
     // Print the thread startup message
-    StatsLog.debug("PlugIn <" + Thread.currentThread().getName() +
+    OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() +
                    "> started, pulling from buffer <" + getBatchInbound().toString() +
                    ">, pushing to buffer <" + getBatchOutbound().toString() + ">");
 
     // Check to see if we have the naughty batch size of 0. this is usually
     // because someone has overwritten the init() without calling the parent
     // init
-    if (BatchSize == 0)
+    if (getBatchSize() == 0)
     {
-      String Message = "Batch size is 0 in plugin <" + this.toString() + ">. " +
+      message = "Batch size is 0 in plugin <" + this.toString() + ">. " +
               "Please ensure that you have called the parent init().";
-      System.err.println(Message);
-      System.exit(-3);
+      getExceptionHandler().reportException(new ProcessingException(message,getSymbolicName()));
     }
 
     // main thread loop. This will not be exited until the thread is
@@ -291,13 +137,13 @@ public abstract class AbstractRecordInsertPlugIn
       startTime = System.currentTimeMillis();
 
       // get the batch records to process
-      in = (ArrayList<IRecord>) getBatchInbound().pull(BatchSize);
+      in = (ArrayList<IRecord>) getBatchInbound().pull(getBatchSize());
 
-      ThisBatchRecordCount = in.size();
+      int ThisBatchRecordCount = in.size();
 
       if (ThisBatchRecordCount > 0)
       {
-        if (Active)
+        if (isActive())
         {
           iter = in.iterator();
 
@@ -313,25 +159,25 @@ public abstract class AbstractRecordInsertPlugIn
             // the record
             if (r.isValid())
             {
-              rb = procValidRecord(r);
+              rb = procValidRecordBatch(r);
             }
             else
             {
               if (r.isErrored())
               {
-                rb = procErrorRecord(r);
+                rb = procErrorRecordBatch(r);
               }
               else
               {
                 if (r instanceof HeaderRecord)
                 {
-                  rb = procHeader(r);
-                  streamsProcessed++;
+                  rb = procHeaderBatch(r);
+                  incStreamsProcessed();
                 }
 
                 if (r instanceof TrailerRecord)
                 {
-                  rb = procTrailer(r);
+                  rb = procTrailerBatch(r);
                 }
               }
             }
@@ -351,18 +197,18 @@ public abstract class AbstractRecordInsertPlugIn
         // Push the list we constructed, not the original batch
         getBatchOutbound().push(outTemp);
 
-        StatsLog.debug("PlugIn <" + Thread.currentThread().getName() + "> pushed <" + String.valueOf(ThisBatchRecordCount) + "> batch records to buffer <" + getBatchOutbound().toString() + ">");
+        OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> pushed <" + String.valueOf(ThisBatchRecordCount) + "> batch records to buffer <" + getBatchOutbound().toString() + ">");
 
-        outBufferCapacity = getBatchOutbound().getEventCount();
+        int outBufferCapacity = getBatchOutbound().getEventCount();
 
         endTime = System.currentTimeMillis();
         BatchTime = (endTime - startTime);
-        processingTime += BatchTime;
+        updateProcessingTime(BatchTime);
 
-        while (outBufferCapacity > BufferSize)
+        while (outBufferCapacity > getBufferSize())
         {
-          bufferHits++;
-          StatsLog.debug("PlugIn <" + Thread.currentThread().getName() + "> buffer high water mark! Buffer max = <" + BufferSize + "> current count = <" + outBufferCapacity + ">");
+          incBufferHits();
+          OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> buffer high water mark! Buffer max = <" + getBufferSize() + "> current count = <" + outBufferCapacity + ">");
           try
           {
             Thread.sleep(100);
@@ -374,23 +220,22 @@ public abstract class AbstractRecordInsertPlugIn
           outBufferCapacity = getBatchOutbound().getEventCount();
         }
 
-        StatsLog.info(
+        OpenRate.getOpenRateStatsLog().info(
           "Plugin <" + Thread.currentThread().getName() + "> processed <" +
           String.valueOf(ThisBatchRecordCount) + "> events in <" + BatchTime + "> ms" );
 
         // Update the statistics
-        batchRecordsProcessed += ThisBatchRecordCount;
+        updateBatchRecordsProcessed(ThisBatchRecordCount);
       }
       else
       {
-        StatsLog.debug(
+        OpenRate.getOpenRateStatsLog().debug(
               "PlugIn <" + Thread.currentThread().getName() + "> going to sleep");
 
         // We want to shut down the processing
-        if (ShutdownFlag == true)
+        if (getShutdownFlag() == true)
         {
-        StatsLog.debug(
-              "PlugIn <" + Thread.currentThread().getName() + "> shut down. Exiting.");
+          OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() + "> shut down. Exiting.");
           break;
         }
 
@@ -411,273 +256,6 @@ public abstract class AbstractRecordInsertPlugIn
     } // while loop
   }
 
-  /**
-   * Shuts down the PlugIn. Use this to save any configuration or data before
-   * the plug in closes
-   */
-  @Override
-  public void shutdown()
-  {
-    // Not currently used
-  }
-
-  /**
-   * Tell the plug in to shutdown after it has done all of the work that
-   * is currently waiting. The pipeline assumes that this is the case when
-   * no more records are found for the whole of a cycle.
-   */
-  @Override
-  public void markForClosedown()
-  {
-    //log.debug("PlugIn <" + getSymbolicName() + "> marked for exit....");
-    this.ShutdownFlag = true;
-
-    // notify any listeners that are waiting that we are flushing
-    synchronized (this)
-    {
-      notifyAll();
-    }
-  }
-
-  /**
-   * Reset the plug in to ensure that it's ready to process records again
-   * after it has been exited. This method must be called after calling
-   * markForExit() to reset the state of the PlugIn.
-   */
-  @Override
-  public void reset()
-  {
-    //log.debug("reset called on PlugIn <" + getSymbolicName() + ">");
-    this.ShutdownFlag = false;
-  }
-
-  /**
-   * Set the inbound delivery mechanism.
-   *
-   * @param s The supplier FIFO
-   */
-  @Override
-  public void setInbound(ISupplier s)
-  {
-    this.supplier = s;
-  }
-
-  /**
-   * supplier configured on the inbound side of the PlugIn.
-   *
-   * @return The supplier FIFO
-   */
-  public ISupplier getBatchInbound()
-  {
-    return this.supplier;
-  }
-
-  /**
-   * Set the outbound delivery mechanism.
-   *
-   * @param c The consumer FIFO
-   */
-  @Override
-  public void setOutbound(IConsumer c)
-  {
-    this.consumer = c;
-  }
-
-  /**
-   * consumer configured on the outbound side of this PlugIn.
-   *
-   * @return The consumer FIFO
-   */
-  public IConsumer getBatchOutbound()
-  {
-
-    return this.consumer;
-  }
-
-  /**
-   * Set the error delivery mechanism.
-   *
-   * @param err The error consumer FIFO
-   */
-  @Override
-  public void setErrorBuffer(IConsumer err)
-  {
-    this.errors = err;
-  }
-
-  /**
-   * return error buffer
-   *
-   * @return The error consumer FIFO
-   */
-  public IConsumer getErrorBuffer()
-  {
-
-    return this.errors;
-  }
-
-  /**
-   * Set the exception handler mechanism.
-   *
-   * @param handler The exception handler to be used for this class
-   */
-  @Override
-  public void setExceptionHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
-
-  /**
-   * return exception handler
-   *
-   * @return The exception handler to be used for this class
-   */
-  public ExceptionHandler getExceptionHandler()
-  {
-
-    return this.handler;
-  }
-
-  /**
-   * Method setNumThreads.
-   *
-   * @param val The number of threads to use for this plugin
-   */
-  public void setNumThreads(int val)
-  {
-    numThreads = val;
-  }
-
-  /**
-   * Return the suggested number of threads to launch for this PlugIn.
-   * The number of threads is '1' by default.
-   *
-   * @return The number of threads to use for this plugin
-   */
-  @Override
-  public int numThreads()
-  {
-    return this.numThreads;
-  }
-
- /**
-  * Return whether we have been asked to shutdown.
-  *
-  * @return true if a shutdown has been requested, otherwise false
-  */
-  public boolean getShutdownFlag()
-  {
-    return ShutdownFlag;
-  }
-
-// -----------------------------------------------------------------------------
-// -------------------- Start of local utility functions -----------------------
-// -----------------------------------------------------------------------------
-
- /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
-  private String initGetBatchSize() throws InitializationException
-  {
-    String tmpValue;
-
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),SERVICE_BATCHSIZE, DEFAULT_BATCHSIZE);
-    return tmpValue;
-  }
-
- /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
-  private String initGetBufferSize() throws InitializationException
-  {
-    String tmpValue;
-
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),SERVICE_BUFFERSIZE, DEFAULT_BUFFERSIZE);
-    return tmpValue;
-  }
-
- /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
-  private String initGetNumThread() throws InitializationException
-  {
-    String tmpValue;
-
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),SERVICE_NUMTHREAD, DEFAULT_NUMTHREAD);
-    return tmpValue;
-  }
-
- /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
-  private String initGetActive() throws InitializationException
-  {
-    String tmpValue;
-
-    tmpValue = PropertyUtils.getPropertyUtils().getPluginPropertyValueDef(pipeName,getSymbolicName(),SERVICE_ACTIVE, DEFAULT_ACTIVE);
-
-    return tmpValue;
-  }
-
- /**
-  * return the symbolic name
-  *
-  * @return The symbolic name for this plugin
-  */
-  @Override
-  public String getSymbolicName()
-  {
-      return SymbolicName;
-  }
-
- /**
-  * set the symbolic name
-  *
-  * @param Name The new symbolic name for this plugin
-  */
-  @Override
-  public void setSymbolicName(String Name)
-  {
-      SymbolicName=Name;
-  }
-
- /**
-  * Do any non-record level processing required to finish this batch cycle. This
-  * is used for scheduling and flushing through the pipeline
-  *
-  * @return The number of events in the output FIFO buffer
-  */
-  @Override
-  public int getOutboundRecordCount()
-  {
-    outBufferCapacity = getBatchOutbound().getEventCount();
-
-    return outBufferCapacity;
-  }
-
-// -----------------------------------------------------------------------------
-// ----------------------- Start of IMonitor functions -------------------------
-// -----------------------------------------------------------------------------
-
- /**
-  * Simple implementation of Monitor interface based on Thread
-  * wait/notify mechanism.
-  *
-  * @param e The monitor event
-  */
-  @Override
-  public void notify(IEvent e)
-  {
-    synchronized (this)
-    {
-      notifyAll();
-    }
-  }
-
 // -----------------------------------------------------------------------------
 // ----------------- Start of published hookable functions ---------------------
 // -----------------------------------------------------------------------------
@@ -690,7 +268,7 @@ public abstract class AbstractRecordInsertPlugIn
   * @param r The record we are working on
   * @return The processed record
   */
-  public abstract Collection<IRecord> procHeader(IRecord r);
+  public abstract Collection<IRecord> procHeaderBatch(IRecord r);
 
  /**
   * This is called when a data record is encountered. You should do any normal
@@ -699,7 +277,7 @@ public abstract class AbstractRecordInsertPlugIn
   * @param r The record we are working on
   * @return The processed record
   */
-  public abstract Collection<IRecord> procValidRecord(IRecord r);
+  public abstract Collection<IRecord> procValidRecordBatch(IRecord r);
 
  /**
   * This is called when a data record with errors is encountered. You should do
@@ -709,7 +287,7 @@ public abstract class AbstractRecordInsertPlugIn
   * @param r The record we are working on
   * @return The processed record
   */
-  public abstract Collection<IRecord> procErrorRecord(IRecord r);
+  public abstract Collection<IRecord> procErrorRecordBatch(IRecord r);
 
  /**
   * This is called when the synthetic trailer record is encountered, and has the
@@ -719,216 +297,5 @@ public abstract class AbstractRecordInsertPlugIn
   * @param r The record we are working on
   * @return The processed record
   */
-  public abstract Collection<IRecord> procTrailer(IRecord r);
-
- /**
-  * This is called when a RT data record is encountered. You should do any normal
-  * processing here. For most purposes this is steered to the normal (batch)
-  * processing, but this can be overwritten
-  *
-  * @param r The record we are working on
-  * @return The processed record
-  */
-  @Override
-  public IRecord procRTValidRecord(IRecord r)
-  {
-    // pass through to batch version
-    return (IRecord) procValidRecord(r);
-  }
-
- /**
-  * This is called when a RT data record with errors is encountered. You should do
-  * any processing here that you have to do for error records, e.g. statistics,
-  * special handling, even error correction! For most purposes this is steered
-  * to the normal (batch) processing, but this can be overwritten
-  *
-  * @param r The record we are working on
-  * @return The processed record
-  */
-  @Override
-  public IRecord procRTErrorRecord(IRecord r)
-  {
-    return (IRecord) procErrorRecord(r);
-  }
-
-// -----------------------------------------------------------------------------
-// ------------- Start of inherited IEventInterface functions ------------------
-// -----------------------------------------------------------------------------
-
- /**
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
-  *
-  */
-  @Override
-  public void registerClientManager() throws InitializationException
-  {
-    //Register this Client
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
-
-    //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHSIZE, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_NUMTHREAD, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATS, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ACTIVE, ClientManager.PARAM_DYNAMIC);
-  }
-
- /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world, for
-  * example turning the dumping on and off.
-  *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
-  * @return The result message of the operation
-  */
-  @Override
-  public String processControlEvent(String Command, boolean Init, String Parameter)
-  {
-
-    int ResultCode = -1;
-    double CDRsPerSec;
-
-    // Set the batch size
-    if (Command.equalsIgnoreCase(SERVICE_BATCHSIZE))
-    {
-      if (Parameter.equals(""))
-      {
-        return Integer.toString(BatchSize);
-      }
-      else
-      {
-        try
-        {
-          BatchSize = Integer.parseInt(Parameter);
-        }
-        catch (NumberFormatException nfe)
-        {
-          PipeLog.error("Invalid number for batch size. Passed value = <" + Parameter + ">");
-        }
-        ResultCode = 0;
-      }
-    }
-
-    // Set the batch size
-    if (Command.equalsIgnoreCase(SERVICE_BUFFERSIZE))
-    {
-      if (Parameter.equals(""))
-      {
-        return Integer.toString(BufferSize);
-      }
-      else
-      {
-        try
-        {
-          BufferSize = Integer.parseInt(Parameter);
-        }
-        catch (NumberFormatException nfe)
-        {
-          PipeLog.error("Invalid number for buffer size. Passed value = <" + Parameter + ">");
-        }
-        ResultCode = 0;
-      }
-    }
-
-    // Reset the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_STATSRESET))
-    {
-      if (Parameter.equalsIgnoreCase("true"))
-      {
-        processingTime = 0;
-        batchRecordsProcessed = 0;
-        streamsProcessed = 0;
-        bufferHits = 0;
-        ResultCode = 0;
-      }
-      else
-      {
-        return "false";
-      }
-    }
-
-    // Return the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_STATS))
-    {
-      if (processingTime == 0)
-      {
-        CDRsPerSec = 0;
-      }
-      else
-      {
-        CDRsPerSec = (double)((batchRecordsProcessed*1000)/processingTime);
-      }
-
-      return Long.toString(batchRecordsProcessed) + ":" +
-             Long.toString(processingTime) + ":" +
-             Long.toString(streamsProcessed) + ":" +
-             Double.toString(CDRsPerSec) + ":" +
-             Long.toString(outBufferCapacity) + ":" +
-             Long.toString(bufferHits);
-    }
-
-    if (Command.equalsIgnoreCase(SERVICE_NUMTHREAD))
-    {
-      if (Parameter.equals(""))
-      {
-        return Integer.toString(numThreads);
-      }
-      else
-      {
-        try
-        {
-          numThreads = Integer.parseInt(Parameter);
-        }
-        catch (NumberFormatException nfe)
-        {
-          PipeLog.error("Invalid number for number of threads. Passed value = <" + Parameter + ">");
-        }
-
-        ResultCode = 0;
-      }
-    }
-
-    // Reset the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_ACTIVE))
-    {
-      if (Parameter.equalsIgnoreCase("true"))
-      {
-        Active = true;
-        ResultCode = 0;
-      }
-      else if (Parameter.equalsIgnoreCase("false"))
-      {
-        Active = false;
-        ResultCode = 0;
-      }
-      else
-      {
-        // return the current status
-        if (Active)
-        {
-          return "true";
-        }
-        else
-        {
-          return "false";
-        }
-      }
-    }
-
-    if (ResultCode == 0)
-    {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
-
-      return "OK";
-    }
-    else
-    {
-      return "Command Not Understood";
-    }
-  }
+  public abstract Collection<IRecord> procTrailerBatch(IRecord r);
 }

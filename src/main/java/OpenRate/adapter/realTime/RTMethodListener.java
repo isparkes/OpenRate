@@ -85,7 +85,7 @@ public class RTMethodListener
    * messages. This is instantiated during pipe startup, because at this
    * point we don't know the name of the pipe and therefore the logger to use.
    */
-  protected AstractLogger PipeLog = null;
+  protected AstractLogger pipeLog = null;
 
   /**
    * The PipeLog is the logger which should be used for all statistics related
@@ -174,8 +174,8 @@ public class RTMethodListener
     }
     catch(Exception e)
     {
-      PipeLog.error("OpenRate RT Listener error: " + e.getClass() + ": " +
-        e.getMessage());
+      pipeLog.error("OpenRate RT Listener error: " + e.getClass() + ": " +
+      e.getMessage());
     }
     finally
     {
@@ -200,7 +200,7 @@ public class RTMethodListener
   */
   void setPipelineLog(AstractLogger newPipeLog)
   {
-    this.PipeLog = newPipeLog;
+    this.pipeLog = newPipeLog;
   }
 
   void setThreadId(int connectionNumber)
@@ -220,7 +220,7 @@ public class RTMethodListener
 
     tmpProxy.setRTConsumer(PipeInputBuffer);
     tmpProxy.setParentAdapter(ParentRTAdapter);
-    tmpProxy.setPipelineLog(this.PipeLog);
+    tmpProxy.setPipelineLog(this.pipeLog);
 
     return tmpProxy;
   }

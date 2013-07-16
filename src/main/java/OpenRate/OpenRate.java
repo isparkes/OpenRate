@@ -71,7 +71,6 @@ import OpenRate.resource.ResourceContext;
 import OpenRate.resource.ResourceLoaderThread;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.PropertyUtils;
-import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -119,18 +118,24 @@ public class OpenRate
   implements IEventInterface,
              Runnable
 {
+
  /**
   * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
   * from resources or caches) should go into this log, as well as startup
   * and shutdown messages. Normally the messages will be application driven,
   * not stack traces, which should go into the error log.
   */
-  private ILogger FWLog = null;
+  private ILogger fwLog = null;
 
  /**
   * Access to the Error AstractLogger. All exception stack traces should go here.
   */
-  private ILogger ErrorLog = null;
+  private ILogger errorLog = null;
+
+ /**
+  * Access to the Statistics AstractLogger. All statistics info should go here.
+  */
+  private ILogger statsLog = null;
 
   /**
    * Return code for the OpenRate instance.
@@ -217,7 +222,7 @@ public class OpenRate
 
   // Concrete classes for the following member attributes are
   // loaded from a property file and instantiated via reflection.
-  private ExceptionHandler handler = new ExceptionHandler();
+  private ExceptionHandler frameworkExceptionHandler = new ExceptionHandler();
 
   // module symbolic name: set during initalisation
   private String symbolicName = "Framework";
@@ -230,6 +235,9 @@ public class OpenRate
   
   // Global application version
   private static String applicationVersion;
+  
+  // used to simplify logging and error handling
+  private String message;
   
   /**
    * default constructor
@@ -259,10 +267,10 @@ public class OpenRate
     int            status;
 
     // Create the openrate application object
-    appl = new OpenRate();
+    //appl = new OpenRate();
 
     // Create the application - this initialises the entire system
-    status = appl.createApplication(args);
+    status = OpenRate.getApplicationInstance().createApplication(args);
 
     // run it if we created the app correctly
     if (status == SUCCESS)
@@ -338,7 +346,8 @@ public class OpenRate
       
     if (versionResourceFile == null)
     {
-      throw new InitializationException("Version Information not found");
+      message = "Version Information not found";
+      throw new InitializationException(message,getSymbolicName());
     }
       
     input = getClass().getResourceAsStream("/VersionFile.txt");
@@ -420,7 +429,7 @@ public class OpenRate
     
     // Prepare the framework environment - Get the default logger until we
     // read the properties file to get the correct logger
-    LoadDefaultLogger();
+    loadDefaultLogger();
       
     // Start the dialogue with the user
     System.out.println("");
@@ -430,7 +439,7 @@ public class OpenRate
     System.out.println("--------------------------------------------------------");
 
     // Start up the framework and load the resources etc
-    if (StartupFramework() == true)
+    if (startupFramework() == true)
     {
       // Get a list of the pipelines that we are working with from the client
       // Manager instance
@@ -444,7 +453,7 @@ public class OpenRate
       {
         tmpPipelineToCreate = pipelineIterator.next();
         System.out.println("Creating pipeline:<" + tmpPipelineToCreate + ">");
-        if (CreatePipeline(tmpPipelineToCreate) == false)
+        if (createPipeline(tmpPipelineToCreate) == false)
         {
           initError = true;
 
@@ -470,6 +479,9 @@ public class OpenRate
     }
     else
     {
+      // Dump the error log
+      checkFrameworkExceptions();
+      
       System.err.println("Error during framework startup. See Error Log for details. Aborting.");
       status = FATAL_EXCEPTION;
     }
@@ -487,8 +499,8 @@ public class OpenRate
     System.out.println("Shutting down...");
     cleanup();
     System.out.println("Finished");
-    if(FWLog != null){
-        FWLog.info(":::: OpenRate Stopped ::::");
+    if( getFwLog() != null){
+      getFwLog().info(":::: OpenRate Stopped ::::");
     }
     System.out.println("---------------------------------------------------");
   }
@@ -505,7 +517,7 @@ public class OpenRate
    * @param args The arguments to pass to the framework
    * @return true if the startup went OK, otherwise false
    */
-  public boolean StartupFramework()
+  public boolean startupFramework()
   {
     try
     {
@@ -530,28 +542,32 @@ public class OpenRate
 
       // Now we can boot the exception handler in the LogUtils - this makes the
       // process of using it self contained (it can report its own exceptions)
-      LogUtil.getLogUtil().setHandler(handler);
+      LogUtil.getLogUtil().setHandler(frameworkExceptionHandler);
 
       // Set up the DBUtil handler as well
-      DBUtil.setHandler(handler);
+      DBUtil.setHandler(frameworkExceptionHandler);
 
       // Intialise the logger from the resource context. This overwrites the
       // default logger that was set up previously and rewire the logger in the
       // resource context which was forced to use the default logger up until
       // now
-      FWLog = LogUtil.getLogUtil().getLogger("Framework");
-      FWLog.info(":::: OpenRate Started ::::");
+      setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
+      getFwLog().info(":::: OpenRate Started ::::");
 
       // Set the Framework logger for the logger. It was not not possible to
       // set it earlier because it did not exist
-      LogUtil.getLogUtil().setLoggerLog(FWLog);
+      LogUtil.getLogUtil().setLoggerLog(getFwLog());
 
       // Initalise the error log - this is intended to log all stack trace
       // type events, keeping the main output as clean and businesslike as possible.
-      ErrorLog = LogUtil.getLogUtil().getLogger("ErrorLog");
+      setErrorLog(LogUtil.getLogUtil().getLogger("ErrorLog"));
+
+      // Initalise the stats log - this is intended to log all statistics
+      // information, dealing with performance and profiling
+      setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
 
       // Log our version
-      FWLog.info("OpenRate Build " + applicationVersion);
+      getFwLog().info("OpenRate Build " + applicationVersion);
 
       // Get the sequential loading flag
       sequentialLoading = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_SEQUENTIAL_LOADING, "true"));
@@ -563,24 +579,21 @@ public class OpenRate
 
       // register ourself as an event handler client
       registerClientManager();
-
-      // Check if we had any exceptions
-      checkFrameworkExceptions();
     }
     catch (InitializationException iex)
     {
       // last resort error handler
-      HandleOpenRateException(iex);
+      frameworkExceptionHandler.reportException(iex);
     }
     catch (Exception ex)
     {
       // last resort error handler
-      HandleOpenRateException(ex);
+      frameworkExceptionHandler.reportException(new InitializationException(ex,getSymbolicName()));
     }
     catch (Throwable th)
     {
       // even laster resort error handler
-      HandleOpenRateException(new Exception(th));
+      frameworkExceptionHandler.reportException(new InitializationException(th,getSymbolicName()));
     }
 
     // If we had an error starting up, tell the rest of the loading
@@ -604,7 +617,7 @@ public class OpenRate
     if (getHandler().hasError())
     {
       // Failure occurred, propagate the error
-      FWLog.error("Exception thrown in module <" + getSymbolicName() + ">");
+            getFwLog().error("Exception thrown in module <" + getSymbolicName() + ">");
 
       // report the exceptions to the ErrorLog
       Iterator<Exception> excList = getHandler().getExceptionList().iterator();
@@ -613,7 +626,7 @@ public class OpenRate
       {
         // Handle the exceptions in order
         Exception tmpException = excList.next();
-        HandleOpenRateException(tmpException);
+        handleOpenRateException(tmpException);
       }
 
       // Clear down the list
@@ -633,7 +646,7 @@ public class OpenRate
   *
   * @param ex
   */
-  public void HandleOpenRateException(Exception ex)
+  public void handleOpenRateException(Exception ex)
   {
     String Message;
 
@@ -651,10 +664,10 @@ public class OpenRate
       Message = "Exception thrown. Message <" + ex.getMessage() + ">";
     }
 
-    if (ErrorLog != null)
+    if (getErrorLog() != null)
     {
       // We have an Error Log initialised, so use it
-      ErrorLog.fatal(Message,ex);
+            getErrorLog().fatal(Message,ex);
     }
     else
     {
@@ -663,10 +676,10 @@ public class OpenRate
     }
 
     // see if we have the Framework log, and if yes, log to it
-    if (FWLog != null)
+    if (getFwLog() != null)
     {
       // We have a FWLog initialised, so use it
-      FWLog.fatal(Message);
+            getFwLog().fatal(Message);
     }
     else
     {
@@ -678,9 +691,9 @@ public class OpenRate
   /**
   * Load the default logger for the startup procedure
   */
-  private void LoadDefaultLogger()
+  private void loadDefaultLogger()
   {
-    FWLog = LogUtil.getLogUtil().getDefaultLogger();
+    setFwLog(LogUtil.getLogUtil().getDefaultLogger());
   }
 
  /**
@@ -692,7 +705,7 @@ public class OpenRate
   * @param pipelineName The name of the pipeline we are creating
   * @return true if the pipe was created OK, otherwise false
   */
-  public boolean CreatePipeline(String pipelineName)
+  public boolean createPipeline(String pipelineName)
   {
     boolean retVal = true;
 
@@ -704,7 +717,7 @@ public class OpenRate
     }
     catch (Exception ex)
     {
-      HandleOpenRateException(ex);
+      handleOpenRateException(ex);
       System.err.println("Error during startup in pipeline <" + pipelineName + ">, message <" + ex.getMessage() + ">. See Error Log for more details.");
       retVal = false;
     }
@@ -767,7 +780,7 @@ public class OpenRate
       if (!pipelineIter.hasNext())
       {
         // Seems the user has not defined any pipelines. Abort
-        FWLog.error("No Pipelines defined. Closing down...");
+                getFwLog().error("No Pipelines defined. Closing down...");
       }
       else
       {
@@ -837,7 +850,7 @@ public class OpenRate
             {
               // Mark that we are requesting a synch
               syncRequested = true;
-              FWLog.info("Sync point requested by pipeline <" + tmpPipeline.getSymbolicName() + ">");
+                            getFwLog().info("Sync point requested by pipeline <" + tmpPipeline.getSymbolicName() + ">");
 
               // Confirm that we have got the message
               tmpPipeline.setSyncStatus(ISyncPoint.SYNC_STATUS_SYNC_REQUESTED);
@@ -911,7 +924,7 @@ public class OpenRate
             {
               // Mark that we are requesting a synch
               syncRequested = true;
-              FWLog.info("Sync point requested by resource <" + tmpResource.getSymbolicName() + ">");
+                            getFwLog().info("Sync point requested by resource <" + tmpResource.getSymbolicName() + ">");
 
               // Confirm that we have got the message
               tmpResource.setSyncStatus(ISyncPoint.SYNC_STATUS_SYNC_REQUESTED);
@@ -958,12 +971,12 @@ public class OpenRate
           // FWLog some stuff
           if (syncReached)
           {
-            FWLog.info("Sync point reached");
+                        getFwLog().info("Sync point reached");
           }
 
           if (syncFinished)
           {
-            FWLog.info("Sync point finished");
+                        getFwLog().info("Sync point finished");
           }
 
           // Process any semaphore file ther is to process
@@ -990,14 +1003,14 @@ public class OpenRate
     }
     catch (Exception ex)
     {
-      HandleOpenRateException(ex);
+      handleOpenRateException(ex);
     }
   }
 
   /**
    * Perform any cleanup required before the application exits.
    */
-  protected void ClosePipelines()
+  protected void closePipelines()
   {
     if (pipelineSet != null)
     {
@@ -1026,7 +1039,7 @@ public class OpenRate
   public final void cleanup()
   {
     // Close pipelines
-    ClosePipelines();
+    closePipelines();
 
     // Close resources
     CloseResources();
@@ -1038,7 +1051,7 @@ public class OpenRate
   public final void stopAllPipelines()
   {
     // Set the shutdown flag
-    FWLog.info(
+        getFwLog().info(
         "Shutdown command received. Shutting down pipelines as soon as possible.");
     pipelineSet = pipelineMap.keySet();
     pipelineIter = pipelineSet.iterator();
@@ -1065,7 +1078,7 @@ public class OpenRate
                     // Stop all pipes
                     stopAllPipelines();
                     
-                    FWLog.info("Shutdown command called");
+                    getFwLog().info("Shutdown command called");
                 }
 
                 // increment the shutdown hook
@@ -1074,7 +1087,7 @@ public class OpenRate
                 // If the person shutting down is too insistent, we just abort
                 if (shutdownHookCalls == 3)
                 {
-                  FWLog.error("Hard shutdown forced by 3 kills. Aborting.");
+                    getFwLog().error("Hard shutdown forced by 3 kills. Aborting.");
                   System.exit(-99);
                 }
             }
@@ -1107,17 +1120,17 @@ public class OpenRate
 
     if (tmpResourceNameList == null || tmpResourceNameList.isEmpty())
     {
-      handler.reportException(new InitializationException("No resources defined. Aborting."));
+      frameworkExceptionHandler.reportException(new InitializationException("No resources defined. Aborting.",getSymbolicName()));
       
       // we are done
       return;
     }
 
-    // Check if we got the FWLog resource
+    // Check if we got the Framework Log resource
     if ((tmpResourceNameList.contains(AbstractLogFactory.RESOURCE_KEY) == false) & loggerOnly)
     {
       // No FWLog resource.
-      handler.reportException(new InitializationException("Log resource not found. Framework aborting."));
+      frameworkExceptionHandler.reportException(new InitializationException("Log resource not found. Framework aborting.",getSymbolicName()));
       return;
     }
 
@@ -1125,7 +1138,7 @@ public class OpenRate
     if ((tmpResourceNameList.contains(EventHandler.RESOURCE_KEY) == false) & (!loggerOnly))
     {
       // No FWLog resource.
-      handler.reportException(new InitializationException("ECI resource not found. Framework aborting."));
+      frameworkExceptionHandler.reportException(new InitializationException("ECI resource not found. Framework aborting.",getSymbolicName()));
       return;
     }
 
@@ -1157,14 +1170,8 @@ public class OpenRate
           // (Sequential is easier to use, but clearly takes longer to load)
           if (sequentialLoading)
           {
-            // Set the exception handler - we might need this during the intialisation
-            resource.setHandler(handler);
-
             // perform initialisation
             resource.init(tmpResourceName);
-
-            // Check for exceptions
-            //checkFrameworkExceptions();
 
             // register the created resource with the context so we can find it later
             resourceContext.register(tmpResourceName, resource);
@@ -1189,7 +1196,6 @@ public class OpenRate
             // Set up the thread with the information it will need
             resourceLoaderThread.setResource(resource);
             resourceLoaderThread.setResourceName(tmpResourceName);
-            resourceLoaderThread.setExceptionHandler(getHandler());
             resourceLoaderThread.setResourceContext(resourceContext);
             resourceLoaderThread.setsyncPointResourceMap(syncPointResourceMap);
 
@@ -1210,55 +1216,55 @@ public class OpenRate
     }
     catch (ClassNotFoundException e)
     {
-      handler.reportException(new InitializationException("ClassNotFoundException: " +
+      frameworkExceptionHandler.reportException(new InitializationException("ClassNotFoundException: " +
                                         "Class not found for Resource <" +
-                                        tmpResourceName + ">", e));
+                                        tmpResourceName + ">", e,getSymbolicName()));
     }
     catch (InstantiationException e)
     {
-      handler.reportException(new InitializationException("InstantiationException: " +
+      frameworkExceptionHandler.reportException(new InitializationException("InstantiationException: " +
                                         "No default constructor found for for Resource <" +
-                                        tmpResourceName + ">", e));
+                                        tmpResourceName + ">", e,getSymbolicName()));
     }
     catch (IllegalAccessException e)
     {
-      handler.reportException(new InitializationException("IllegalAccessException: " +
+      frameworkExceptionHandler.reportException(new InitializationException("IllegalAccessException: " +
                                         "Check that the Resource <" +
                                         tmpResourceName +
                                         "> has a public default constructor.",
-                                        e));
+                                        e,getSymbolicName()));
     }
     catch (ClassCastException e)
     {
-      handler.reportException(new InitializationException("ClassCastException: " +
+      frameworkExceptionHandler.reportException(new InitializationException("ClassCastException: " +
                                         "Class identified as Resource <" +
                                           tmpResourceName +
                                         "> does not implement " +
-                                        "Resource interface.", e));
+                                        "Resource interface.", e,getSymbolicName()));
     }
     catch (NullPointerException npe)
     {
-      handler.reportException(new InitializationException("Null pointer exception creating Resource <" +
-                                        tmpResourceName + ">", npe));
+      frameworkExceptionHandler.reportException(new InitializationException("Null pointer exception creating Resource <" +
+                                        tmpResourceName + ">", npe,getSymbolicName()));
     }
     catch (InitializationException iex)
     {
       // We don't need to nest/interpret this exception, just report it
-      handler.reportException(iex);
+      frameworkExceptionHandler.reportException(iex);
     }
     catch (OutOfMemoryError oome)
     {
-      handler.reportException(new InitializationException("Out of memory creating <" + tmpResourceName + ">",oome));
+      frameworkExceptionHandler.reportException(new InitializationException("Out of memory creating <" + tmpResourceName + ">",oome,getSymbolicName()));
     }
     catch (Exception ex)
     {
-      handler.reportException(new InitializationException("Unexpected exception creating Resource <" +
-                                        tmpResourceName + ">", ex));
+      frameworkExceptionHandler.reportException(new InitializationException("Unexpected exception creating Resource <" +
+                                        tmpResourceName + ">", ex,getSymbolicName()));
     }
     catch (Throwable th)
     {
-      handler.reportException(new InitializationException("Unexpected exception creating Resource <" +
-                                        tmpResourceName + ">", new Exception(th)));
+      frameworkExceptionHandler.reportException(new InitializationException("Unexpected exception creating Resource <" +
+                                        tmpResourceName + ">",th,getSymbolicName()));
     }
   }
 
@@ -1293,11 +1299,11 @@ public class OpenRate
     IEventInterface tmpEventIntf;
 
     //Register this Client
-    ClientManager.registerClient("Framework", getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Framework", getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(),SERVICE_FRAMEWORK_STOP,  ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(),SERVICE_SYNC_STATUS,     ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(),SERVICE_FRAMEWORK_STOP,  ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(),SERVICE_SYNC_STATUS,     ClientManager.PARAM_NONE);
 
     // Register each of the pipelines' services
     pipelineSet = pipelineMap.keySet();
@@ -1348,7 +1354,7 @@ public class OpenRate
 
     if (ResultCode == 0)
     {
-      FWLog.debug(LogUtil.LogECIFWCommand(Command, Parameter));
+            getFwLog().debug(LogUtil.LogECIFWCommand(Command, Parameter));
 
       return "OK";
     }
@@ -1379,26 +1385,125 @@ public class OpenRate
   }
 
  /**
+  * Create the OpenRate application instance
+  * 
+  * @return the instance
+  */
+  public static OpenRate getApplicationInstance() {
+    if (appl == null)
+    {
+      appl = new OpenRate();
+    }
+    
+    return appl;
+  }
+    
+ /**
   * Get the framework exception handler.
   *
   * @return The framework exception handler
   */
-  public static ExceptionHandler getOpenRateExceptionHandler()
+  public static ILogger getOpenRateFrameworkLog()
+  {
+    return appl.getFwLog();
+  }
+
+ /**
+  * Get the framework exception handler.
+  *
+  * @return The framework exception handler
+  */
+  public static ILogger getOpenRateErrorLog()
+  {
+    return appl.getErrorLog();
+  }
+
+ /**
+  * Get the framework exception handler.
+  *
+  * @return The framework exception handler
+  */
+  public static ILogger getOpenRateStatsLog()
+  {
+    return appl.getStatsLog();
+  }
+
+ /**
+  * Get the framework exception handler.
+  *
+  * @return The framework exception handler
+  */
+  public static ExceptionHandler getFrameworkExceptionHandler()
   {
     return appl.getHandler();
   }
 
   /**
+   * Return the Framework Exception handler.
+   * 
    * @return the handler
    */
   public ExceptionHandler getHandler() {
-    return handler;
+    return frameworkExceptionHandler;
   }
 
   /**
    * @param handler the handler to set
    */
   public void setHandler(ExceptionHandler handler) {
-    this.handler = handler;
+    this.frameworkExceptionHandler = handler;
   }
+
+    /**
+     * @return the fwLog
+     */
+    public ILogger getFwLog() {
+        return fwLog;
+    }
+
+    /**
+     * @param fwLog the fwLog to set
+     */
+    public void setFwLog(ILogger fwLog) {
+        this.fwLog = fwLog;
+    }
+
+    /**
+     * @return the errorLog
+     */
+    public ILogger getErrorLog() {
+        return errorLog;
+    }
+
+    /**
+     * @param errorLog the errorLog to set
+     */
+    public void setErrorLog(ILogger errorLog) {
+        this.errorLog = errorLog;
+    }
+
+    /**
+     * @return the statsLog
+     */
+    public ILogger getStatsLog() {
+        return statsLog;
+    }
+
+    /**
+     * @param statsLog the statsLog to set
+     */
+    public void setStatsLog(ILogger statsLog) {
+        this.statsLog = statsLog;
+    }
+    
+   /**
+    * Get the reference to a pipeline.
+    * 
+    * @param pipename The pipeline to get
+    * @return The pipeline reference
+    */
+    public static IPipeline getPipeline(String pipename)
+    {
+      return pipelineMap.get(pipename);
+    }
 }

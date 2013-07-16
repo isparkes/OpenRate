@@ -65,105 +65,60 @@ import OpenRate.exception.ProcessingException;
 import OpenRate.lang.BalanceGroup;
 import OpenRate.lang.Counter;
 import OpenRate.lang.DiscountInformation;
-import OpenRate.logging.AbstractLogFactory;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.BalanceImpact;
 import OpenRate.record.IRecord;
-import OpenRate.resource.CacheFactory;
-import OpenRate.resource.DataSourceFactory;
-import OpenRate.resource.IResource;
-import OpenRate.resource.ResourceContext;
 import OpenRate.transaction.ITransactionManager;
 import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.ConversionUtils;
 import OpenRate.utils.PropertyUtils;
 import TestUtils.TestRatingRecord;
 import TestUtils.TransactionUtils;
-import java.net.URL;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import org.junit.*;
 
 /**
- * Unit Test for the balance handler processing plug in. This test builds the
- * test environment step by step (meaning that we create all of the pieces
- * manually). There is also the possibility to perform the same test using 
- * the automatic application creation).
+ * Unit Test for the balance handler processing plug in. This test uses the 
+ * automatic application creation).
  *
  * @author TGDSPIA1
  */
-public class AbstractBalanceHandlerPlugInTest implements IPlugIn
+public class AbstractBalanceHandlerPlugInTestAuto implements IPlugIn
 {
-  private static URL FQConfigFileName;
-
-  private static String cacheDataSourceName;
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractBalanceHandlerPlugIn instance;
   private static ITransactionManager TM;
   
   // Used for logging and exception handling
   private static String message; 
 
-    public AbstractBalanceHandlerPlugInTest() {
+    public AbstractBalanceHandlerPlugInTestAuto() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception
     {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-    
-    FQConfigFileName = new URL("File:src/test/resources/TestBalanceHandler.properties.xml");
-    
-      // Get a properties object
-      try
+      // Create the openrate application object
+      String[] args = new String[2];
+      args[0] = "-p";
+      args[1] = "TestBalanceHandler.properties.xml";
+      
+      int status = OpenRate.getApplicationInstance().createApplication(args);
+
+      // Could not start up the framework correctly
+      if (status != 0)
       {
-        PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
-      }
-      catch (InitializationException ex)
-      {
-        message = "Error reading the configuration file <" + FQConfigFileName + ">" + System.getProperty("user.dir");
-        Assert.fail(message);
+        Assert.fail();
       }
 
       // Set up the OpenRate internal logger - this is normally done by app startup
       OpenRate.getApplicationInstance();
       
       // Get the data source name
-      cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
-                                                                                          "BalCache",
-                                                                                          "DataSource",
-                                                                                          "None");
-
-      // Get a logger
-      System.out.println("  Initialising Logger Resource...");
-      resourceName         = "LogFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // Get a data Source factory
-      System.out.println("  Initialising Data Source Resource...");
-      resourceName         = "DataSourceFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-
-      // The datasource property was added to allow database to database
-      // JDBC adapters to work properly using 1 configuration file.
-      if(DBUtil.initDataSource(cacheDataSourceName) == null)
-      {
-        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractBestMatchTest>.";
-        Assert.fail(message);
-      }
+      String cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
+                                                                                                 "BalCache",
+                                                                                                 "DataSource",
+                                                                                                 "None");
 
       // Get a connection
       Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
@@ -189,34 +144,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
       // Create the test table
       JDBCChcon.prepareStatement("CREATE TABLE TEST_COUNTER_BALS (BALANCE_GROUP int NOT NULL, COUNTER_ID int NOT NULL, RECORD_ID int NOT NULL, VALID_FROM int NOT NULL, VALID_TO int NOT NULL, CURRENT_BAL double);").execute();
 
-      // Get a cache factory
-      System.out.println("  Initialising Cache Factory Resource...");
-      resourceName         = "CacheFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-
-      // Get a transaction manager
-      System.out.println("  Initialising Transaction Manager Resource...");
-      resourceName         = "TransactionManagerFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(TransactionManagerFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // Link the logger
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-      
-      // Get the list of pipelines we are going to make
-      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
-      
-      // Create the pipeline skeleton instance (assume only one for tests)
-      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
-      
       // Check that we now have the row in the table - we might have to wait
       // a moment because the transaction closing is asynchronous
       TM = TransactionUtils.getTM();
@@ -244,7 +171,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
   @Test
   public void testInit() throws Exception
   {
-    System.out.println("init");
+    System.out.println("init auto creation");
 
     // get the instance
     getInstance();
@@ -255,9 +182,17 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
      * AbstractBalanceHandlerPlugIn.
      */
     @Test
-    public void testBalanceGroup()
+    public void testBalanceGroupAuto()
     {
-        System.out.println("getBalanceGroup");
+        System.out.println("getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
+        System.out.println("******getBalanceGroup auto creation");
 
         try
         {
@@ -293,7 +228,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
      * AbstractBalanceHandlerPlugIn.
      */
     @Test
-    public void testCheckBasicCounterManagement()
+    public void testCheckBasicCounterManagementAuto()
     {
         System.out.println("checkBasicCounterManagement");
 
@@ -385,7 +320,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
      * Test of discountConsumeRUM method, of class AbstractBalanceHandlerPlugIn.
      */
     @Test
-    public void testDiscountConsumeRUM()
+    public void testDiscountConsumeRUMAuto()
     {
         System.out.println("discountConsumeRUM");
 
@@ -510,7 +445,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
      * Test of refundConsumeRUM method, of class AbstractBalanceHandlerPlugIn.
      */
     @Test
-    public void testRefundConsumeRUM()
+    public void testRefundConsumeRUMAuto()
     {
         System.out.println("refundConsumeRUM");
 
@@ -714,7 +649,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
      * Test of discountAggregateRUM method, of class AbstractBalanceHandlerPlugIn.
      */
     @Test
-    public void testDiscountAggregateRUM() {
+    public void testDiscountAggregateRUMAuto() {
         System.out.println("discountAggregateRUM");
 
         // get the instance
@@ -964,7 +899,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     if (instance == null)
     {
       // Get an initialise the cache
-      instance = new AbstractBalanceHandlerPlugInTest.AbstractBalanceHandlerPlugInImpl();
+      instance = new AbstractBalanceHandlerPlugInTestAuto.AbstractBalanceHandlerPlugInImpl();
 
       // Get the instance
       instance.init("DBTestPipe", "AbstractBalanceHandlerPlugInTest");

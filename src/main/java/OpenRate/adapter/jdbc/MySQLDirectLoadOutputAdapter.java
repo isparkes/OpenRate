@@ -56,6 +56,7 @@
 package OpenRate.adapter.jdbc;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
@@ -95,17 +96,18 @@ public abstract class MySQLDirectLoadOutputAdapter
   // File writers
   private BufferedWriter   validWriter;
 
+  // paths components
   private String           filePath;
   private String           filePrefix;
   private String           fileSuffix;
   private boolean          DelEmptyOutFile = false;
 
   // This is the prefix that will be added during processing
-  private String ProcessingPrefix;
+  private String processingPrefix;
 
   // This tells us if we should look for a file to open
   // or continue reading from the one we have
-  private boolean OutputStreamOpen = false;
+  private boolean outputStreamOpen = false;
 
   // This is the base name of the file we are outputting
   private String fileBaseName = null;
@@ -129,12 +131,12 @@ public abstract class MySQLDirectLoadOutputAdapter
   /**
    * The query that is used to prepare the database for record insert
    */
-  protected String InitQuery;
+  protected String initQuery;
 
   /**
    * The insert query via direct load command
    */
-  protected String LoadQuery;
+  protected String loadQuery;
 
   /**
    * This is the name of the data source
@@ -149,7 +151,7 @@ public abstract class MySQLDirectLoadOutputAdapter
 /**
  * This is our connection object
  */
-  protected Connection JDBCcon;
+  protected Connection jdbcCon;
 
   // this is the persistent result set that we use to incrementally get the records
   ResultSet rs = null;
@@ -157,8 +159,8 @@ public abstract class MySQLDirectLoadOutputAdapter
   // This is used to hold the calculated file names
   private class TransControlStructure
   {
-    String OutputFileName;
-    String ProcOutputFileName;
+    String outputFileName;
+    String procOutputFileName;
   }
 
   // This holds the file names for the files that are in processing at any
@@ -237,9 +239,9 @@ public abstract class MySQLDirectLoadOutputAdapter
     // prepare the data source - this does not open a connection
     if(DBUtil.initDataSource(dataSourceName) == null)
     {
-      String Message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -263,22 +265,22 @@ public abstract class MySQLDirectLoadOutputAdapter
 
     // if we are not currently streaming, open the stream using the transaction
     // information for the transaction we are processing
-    if (!OutputStreamOpen)
+    if (!outputStreamOpen)
     {
       fileBaseName = tmpHeader.getStreamName();
       tmpTransNumber = tmpHeader.getTransactionNumber();
 
       // Calculate the names and open the writers
-      tmpFileNames.ProcOutputFileName = filePath + System.getProperty("file.separator") +
-                                        ProcessingPrefix + filePrefix + fileBaseName + fileSuffix;
-      tmpFileNames.OutputFileName     = filePath + System.getProperty("file.separator") +
+      tmpFileNames.procOutputFileName = filePath + System.getProperty("file.separator") +
+                                        processingPrefix + filePrefix + fileBaseName + fileSuffix;
+      tmpFileNames.outputFileName     = filePath + System.getProperty("file.separator") +
                                         filePrefix + fileBaseName + fileSuffix;
 
       // Store the names for later
       currentFileNames.put(tmpTransNumber, tmpFileNames);
 
-      openValidFile(tmpFileNames.ProcOutputFileName);
-      OutputStreamOpen = true;
+      openValidFile(tmpFileNames.procOutputFileName);
+      outputStreamOpen = true;
     }
 
     return r;
@@ -317,7 +319,7 @@ public abstract class MySQLDirectLoadOutputAdapter
         }
         catch (IOException ioe)
         {
-          this.getExceptionHandler().reportException(new ProcessingException(ioe));
+          getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
         }
       }
     }
@@ -373,14 +375,14 @@ public abstract class MySQLDirectLoadOutputAdapter
     {
       if (file.createNewFile() == false)
       {
-        pipeLog.error("output file already exists = " + filename);
+        getPipeLog().error("output file already exists = " + filename);
       }
 
       fwriter = new FileWriter(file);
     }
     catch (IOException ex)
     {
-      pipeLog.error("Error opening valid stream output for file " + filename);
+      getPipeLog().error("Error opening valid stream output for file " + filename);
     }
 
     validWriter = new BufferedWriter(fwriter, BUF_SIZE);
@@ -403,7 +405,7 @@ public abstract class MySQLDirectLoadOutputAdapter
     boolean ErrorFound = false;
     int ReturnCode = 0;
 
-    if (OutputStreamOpen)
+    if (outputStreamOpen)
     {
       try
       {
@@ -414,11 +416,11 @@ public abstract class MySQLDirectLoadOutputAdapter
       }
       catch (IOException ioe)
       {
-        pipeLog.error("Error closing output file", ioe);
+        getPipeLog().error("Error closing output file", ioe);
         ErrorFound = true;
       }
 
-      OutputStreamOpen = false;
+      outputStreamOpen = false;
 
       if (ErrorFound)
       {
@@ -484,12 +486,12 @@ public abstract class MySQLDirectLoadOutputAdapter
 
     // Correct the separators
     FQFileName = FQFileName.replaceAll("\\\\", "/");
-    pipeLog.info("Load of file <" + FQFileName + "> in module <" + getSymbolicName() + "> for transaction <" + transactionNumber + ">");
+    getPipeLog().info("Load of file <" + FQFileName + "> in module <" + getSymbolicName() + "> for transaction <" + transactionNumber + ">");
 
     // Perform the initialisation of the DB side
     try
     {
-      JDBCcon = DBUtil.getConnection(dataSourceName);
+      jdbcCon = DBUtil.getConnection(dataSourceName);
     }
     catch (InitializationException ex)
     {
@@ -503,29 +505,29 @@ public abstract class MySQLDirectLoadOutputAdapter
     catch (SQLException Sex)
     {
       // Not good. Abort the transaction
-      String Message = "Error preparing statement. Message <" + Sex.getMessage() + ">. Aborting transaction.";
-      getExceptionHandler().reportException(new ProcessingException(Message,Sex));
+      message = "Error preparing statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
+      getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
       this.setTransactionAbort(getTransactionNumber());
     }
     try
     {
       // Really do the load
-      statsLog.info("Output <" + getSymbolicName() + "> start load of file for transaction <" + transactionNumber + ">");
+      OpenRate.getOpenRateStatsLog().info("Output <" + getSymbolicName() + "> start load of file for transaction <" + transactionNumber + ">");
       stmtLoadQuery.executeUpdate();
-      statsLog.info("Output <" + getSymbolicName() + "> end load of file for transaction <" + transactionNumber + ">");
+      OpenRate.getOpenRateStatsLog().info("Output <" + getSymbolicName() + "> end load of file for transaction <" + transactionNumber + ">");
 
       // Clean up
       stmtLoadQuery.close();
-      JDBCcon.close();
+      jdbcCon.close();
     }
     catch (SQLException ex)
     {
-      pipeLog.error("Load for transaction <" + transactionNumber + "> failed. Message = <" + ex.getMessage() + ">");
+      getPipeLog().error("Load for transaction <" + transactionNumber + "> failed. message = <" + ex.getMessage() + ">");
       try
       {
         // Clean up
         stmtLoadQuery.close();
-        JDBCcon.close();
+        jdbcCon.close();
       }
       catch (SQLException ex1)
       {
@@ -676,14 +678,14 @@ public abstract class MySQLDirectLoadOutputAdapter
     {
       if (Init)
       {
-        InitQuery = Parameter;
+        initQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return InitQuery;
+          return initQuery;
         }
         else
         {
@@ -696,14 +698,14 @@ public abstract class MySQLDirectLoadOutputAdapter
     {
       if (Init)
       {
-        LoadQuery = Parameter;
+        loadQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return LoadQuery;
+          return loadQuery;
         }
         else
         {
@@ -815,14 +817,14 @@ public abstract class MySQLDirectLoadOutputAdapter
     {
       if (Init)
       {
-        ProcessingPrefix = Parameter;
+        processingPrefix = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return ProcessingPrefix;
+          return processingPrefix;
         }
         else
         {
@@ -833,7 +835,7 @@ public abstract class MySQLDirectLoadOutputAdapter
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -857,14 +859,14 @@ public abstract class MySQLDirectLoadOutputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FILE_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FILE_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FILE_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_OUT_FILE, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FILE_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FILE_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FILE_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_OUT_FILE, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
 
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_OUT_FILE_NAME, false, false);
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_ERR_FILE_NAME, false, false);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OUT_FILE_NAME, false, false);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ERR_FILE_NAME, false, false);
   }
 
   // -----------------------------------------------------------------------------
@@ -878,15 +880,15 @@ public abstract class MySQLDirectLoadOutputAdapter
   private void prepareStatement(String loadFileName) throws SQLException
   {
     // prepare the SQL for the Insert statement
-    if(LoadQuery == null || LoadQuery.isEmpty())
+    if(loadQuery == null || loadQuery.isEmpty())
     {
       stmtLoadQuery = null;
     }
     else
     {
       // Change the file name
-      String changedLoadQuery = LoadQuery.replace("load_file_name", loadFileName);
-      stmtLoadQuery = JDBCcon.prepareStatement(changedLoadQuery,
+      String changedLoadQuery = loadQuery.replace("load_file_name", loadFileName);
+      stmtLoadQuery = jdbcCon.prepareStatement(changedLoadQuery,
                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                  ResultSet.CONCUR_READ_ONLY);
     }
@@ -910,7 +912,7 @@ public abstract class MySQLDirectLoadOutputAdapter
                           throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_FILE_PATH);
 
     return tmpFile;
@@ -924,7 +926,7 @@ public abstract class MySQLDirectLoadOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_FILE_PREFIX);
 
     return tmpFile;
@@ -938,7 +940,7 @@ public abstract class MySQLDirectLoadOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_FILE_SUFFIX);
 
     return tmpFile;
@@ -952,7 +954,7 @@ public abstract class MySQLDirectLoadOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                      SERVICE_DEL_EMPTY_OUT_FILE,
                                                      "");
 
@@ -967,7 +969,7 @@ public abstract class MySQLDirectLoadOutputAdapter
                                  throws InitializationException
   {
     String tmpProcPrefix;
-    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
                                                                   "tmp");
 
@@ -983,24 +985,24 @@ public abstract class MySQLDirectLoadOutputAdapter
   */
   private void initFileName() throws InitializationException
   {
-    String ErrMessage;
+    String message;
     File   dir;
 
     if (filePath == null)
     {
       // The path has not been defined
-      ErrMessage = "Output Adapter <" + getSymbolicName() + "> processed file path has not been defined";
-      pipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Output Adapter <" + getSymbolicName() + "> processed file path has not been defined";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // if it is defined, is it valid?
     dir = new File(filePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Output Adapter <" + getSymbolicName() + "> used a processed file path <" + filePath + ">that does not exist or is not a directory";
-      pipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Output Adapter <" + getSymbolicName() + "> used a processed file path <" + filePath + ">that does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -1018,7 +1020,7 @@ public abstract class MySQLDirectLoadOutputAdapter
     // Get the name to work on
     tmpFileNames = currentFileNames.get(transactionNumber);
 
-    return tmpFileNames.ProcOutputFileName;
+    return tmpFileNames.procOutputFileName;
   }
 
  /**
@@ -1035,7 +1037,7 @@ public abstract class MySQLDirectLoadOutputAdapter
     // Get the name to work on
     tmpFileNames = currentFileNames.get(transactionNumber);
 
-    return tmpFileNames.OutputFileName;
+    return tmpFileNames.outputFileName;
   }
 
  /**
@@ -1052,15 +1054,15 @@ public abstract class MySQLDirectLoadOutputAdapter
     String query;
 
     // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    INIT_QUERY_KEY,
                                                    "None");
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INIT_QUERY_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INIT_QUERY_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1079,15 +1081,15 @@ public abstract class MySQLDirectLoadOutputAdapter
     String query;
 
     // Get the init statement from the properties
-   query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+   query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    LOAD_QUERY_KEY,
                                                    "None");
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + LOAD_QUERY_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + LOAD_QUERY_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1103,15 +1105,15 @@ public abstract class MySQLDirectLoadOutputAdapter
                         throws InitializationException
   {
     String DSN;
-    DSN = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    DSN = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                  DATASOURCE_KEY,
                                                  "None");
 
     if ((DSN == null) || DSN.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Datasource name not found from <" + DATASOURCE_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Datasource name not found from <" + DATASOURCE_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return DSN;

@@ -128,8 +128,8 @@ public abstract class AbstractTimeMatch
     // Check that we have something we can use
     if (CacheObjectName.equalsIgnoreCase("None"))
     {
-      Message = "Could not find data cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find data cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Try to access the cache object
@@ -137,8 +137,8 @@ public abstract class AbstractTimeMatch
 
     if (CTM == null)
     {
-      Message = "Could not find cache manager for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache manager for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays
@@ -146,8 +146,8 @@ public abstract class AbstractTimeMatch
 
     if (TM == null)
     {
-      Message = "Could not find cache for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Initialise variables that we will be using regularly - this is the
@@ -214,7 +214,7 @@ public abstract class AbstractTimeMatch
     }
     catch (ParseException ex)
     {
-      pipeLog.error("error parsing date <" + CDRDateAsString + ">");
+      getPipeLog().error("error parsing date <" + CDRDateAsString + ">");
       return null;
     }
 

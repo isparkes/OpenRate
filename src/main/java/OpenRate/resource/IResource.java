@@ -55,7 +55,6 @@
 
 package OpenRate.resource;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 
 /**
@@ -88,12 +87,5 @@ public interface IResource
   * Perform whatever cleanup is required of the underlying object..
   */
   public void close();
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  public void setHandler(ExceptionHandler handler);
 }
 

@@ -73,13 +73,13 @@ import java.util.Set;
  * of keys over a stream of records. The results can be purged using the
  * "writeResults" method.
  *
- * This has got more complicated with the introduction of "overlayed transaction
+ * This has got more complicated with the introduction of "overlaid transaction
  * handling" (processing multiple transactions in parallel). We now have to
  * manage many states in parallel, and in the case that they are not purged,
  * we have to merge into an overall aggregation state during the transaction
  * commit.
  *
- * The results are created for each transaction, and are kept seperate from
+ * The results are created for each transaction, and are kept separate from
  * the main results until the end of the transaction, and then at that point
  * they are merged into the main results.
  */
@@ -90,14 +90,15 @@ public class AggregationCache
              IEventInterface,
              ISyncPoint
 {
-  // this is the location of the config file
+  // this is the location of the configuration file
   private String AggregationConfigFile = null;
 
   // This is the directory where we will be writing the results
   private String AggregationResultPath;
 
+  // The size of the write buffer for writing the output aggregations
   private int    BUF_SIZE = 8192;
-
+  
  /**
   * This stores all the cacheable data. The KeyList is the list of aggregation
   * keys that we know about, the scenario list is the mapping of all the
@@ -123,7 +124,7 @@ public class AggregationCache
   // Variables for managing the sync points
   private int syncStatus = 0;
 
-  // The scnario list turns a key into a group of scenarios
+  // The scenario list turns a key into a group of scenarios
   private class AggScenarioList
   {
     ArrayList<String> scenarioMap;
@@ -272,9 +273,9 @@ public class AggregationCache
                  throws InitializationException
   {
     BufferedReader    inFile;
-    int               Command;
-    String[]          DefinitionLine;
-    int               FileLine = 0;
+    int               command;
+    String[]          definitionLine;
+    int               fileLine = 0;
     String            tmpFileRecord = null;
     File              dir;
 
@@ -291,8 +292,9 @@ public class AggregationCache
 
     if (AggregationConfigFile.equals("None"))
     {
-      getFWLog().error("Aggregation Config File not found for <" + getSymbolicName() + ">");
-      throw new InitializationException("Aggregation Config File not found for <" + getSymbolicName() + ">");
+      message = "Aggregation Config File not found for <" + getSymbolicName() + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Get the location of the results files
@@ -302,8 +304,9 @@ public class AggregationCache
 
     if (AggregationResultPath.equals("None"))
     {
-      getFWLog().error("Aggregation Result Path <AggResultPath> not found for <" + getSymbolicName() + ">");
-      throw new InitializationException("Aggregation Result Path <AggResultPath> not found for <" + getSymbolicName() + ">");
+      message = "Aggregation Result Path <AggResultPath> not found for <" + getSymbolicName() + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Now try to open the definition file, and work on it
@@ -313,12 +316,9 @@ public class AggregationCache
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      getFWLog().error(
-            "Not able to read the config file : <" +
-            AggregationConfigFile + ">");
-      throw new InitializationException("Not able to read the config file : <" +
-                                        AggregationConfigFile + ">",
-                                        exFileNotFound);
+      message = "Not able to read the config file : <" + AggregationConfigFile + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,exFileNotFound,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -327,7 +327,7 @@ public class AggregationCache
       while (inFile.ready())
       {
         tmpFileRecord = inFile.readLine();
-        FileLine++;
+        fileLine++;
 
         if ((tmpFileRecord.startsWith("#")) |
             tmpFileRecord.trim().equals(""))
@@ -336,101 +336,101 @@ public class AggregationCache
         }
         else
         {
-          DefinitionLine = tmpFileRecord.split(";",3);
+          definitionLine = tmpFileRecord.split(";",3);
 
-          Command = 0;
+          command = 0;
 
-          if (DefinitionLine[0].equalsIgnoreCase("SCENARIO"))
+          if (definitionLine[0].equalsIgnoreCase("SCENARIO"))
           {
-            Command = 1;
+            command = 1;
           }
 
-          if (DefinitionLine[0].equalsIgnoreCase("KEY"))
+          if (definitionLine[0].equalsIgnoreCase("KEY"))
           {
-            Command = 2;
+            command = 2;
           }
 
-          if (DefinitionLine[0].equalsIgnoreCase("OPERATION"))
+          if (definitionLine[0].equalsIgnoreCase("OPERATION"))
           {
-            Command = 3;
+            command = 3;
           }
 
-          if (DefinitionLine[0].equalsIgnoreCase("GROUPINGFIELDOFFSET"))
+          if (definitionLine[0].equalsIgnoreCase("GROUPINGFIELDOFFSET"))
           {
-            Command = 4;
+            command = 4;
           }
 
-          if (DefinitionLine[0].equalsIgnoreCase("INPFIELDOFFSET"))
+          if (definitionLine[0].equalsIgnoreCase("INPFIELDOFFSET"))
           {
-            Command = 5;
+            command = 5;
           }
 
-          if (DefinitionLine[0].equalsIgnoreCase("OUTPUTFILE"))
+          if (definitionLine[0].equalsIgnoreCase("OUTPUTFILE"))
           {
-            Command = 6;
+            command = 6;
           }
 
-          if (DefinitionLine[0].equalsIgnoreCase("MERGEOUTPUT"))
+          if (definitionLine[0].equalsIgnoreCase("MERGEOUTPUT"))
           {
-            Command = 7;
+            command = 7;
           }
 
-          switch (Command)
+          switch (command)
           {
             //case "SCENARIO":
             case 1:
             {
               // A new block - create the block
-              DefinitionLine = tmpFileRecord.split(";",3);
-              addAggregationScenario(DefinitionLine[1],DefinitionLine[2]);
+              definitionLine = tmpFileRecord.split(";",3);
+              addAggregationScenario(definitionLine[1],definitionLine[2]);
             }
             break;
 
            //case "KEY":
             case 2:
             {
-              DefinitionLine = tmpFileRecord.split(";",3);
-              addAggregationKey(DefinitionLine[1],DefinitionLine[2]);
+              definitionLine = tmpFileRecord.split(";",3);
+              addAggregationKey(definitionLine[1],definitionLine[2]);
             }
             break;
 
            //case "OPERATION":
             case 3:
             {
-              DefinitionLine = tmpFileRecord.split(";",3);
-              addAggregationOperation(DefinitionLine[1],DefinitionLine[2]);
+              definitionLine = tmpFileRecord.split(";",3);
+              addAggregationOperation(definitionLine[1],definitionLine[2]);
             }
             break;
 
            //case "GROUPINGFIELDOFFSET":
             case 4:
             {
-              DefinitionLine = tmpFileRecord.split(";",3);
-              AddAggregationGroupingField(DefinitionLine[1],DefinitionLine[2]);
+              definitionLine = tmpFileRecord.split(";",3);
+              addAggregationGroupingField(definitionLine[1],definitionLine[2]);
             }
             break;
 
            //case "INPFIELDOFFSET":
             case 5:
             {
-              DefinitionLine = tmpFileRecord.split(";",3);
-              AddAggregationAggField(DefinitionLine[1],DefinitionLine[2]);
+              definitionLine = tmpFileRecord.split(";",3);
+              addAggregationAggField(definitionLine[1],definitionLine[2]);
             }
             break;
 
            //case "OUTPUTFILE":
             case 6:
             {
-              DefinitionLine = tmpFileRecord.split(";",3);
-              AddAggregationFile(DefinitionLine[1],DefinitionLine[2]);
+              definitionLine = tmpFileRecord.split(";",3);
+              addAggregationFile(definitionLine[1],definitionLine[2]);
             }
             break;
 
            //case "MERGEOUTPUT":
             case 7:
             {
-              DefinitionLine = tmpFileRecord.split(";",4);
-              addMerge(DefinitionLine[1],DefinitionLine[2],DefinitionLine[3]);
+              definitionLine = tmpFileRecord.split(";",4);
+              addMerge(definitionLine[1],definitionLine[2],definitionLine[3]);
             }
             break;
           }
@@ -439,15 +439,15 @@ public class AggregationCache
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
-            "Error reading input file <" + AggregationConfigFile +
-            "> in record <" + FileLine + ">. IO Error. Message <" + ex.getMessage() + ">");
+      message = "Error reading input file <" + AggregationConfigFile +
+                "> in record <" + fileLine + ">. IO Error. message <" + ex.getMessage() + ">";
+      getFWLog().fatal(message);
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
-            "Error reading input file <" + AggregationConfigFile +
-            "> in record <" + FileLine + ">. Malformed Record: <" + tmpFileRecord + ">");
+      message = "Error reading input file <" + AggregationConfigFile +
+            "> in record <" + fileLine + ">. Malformed Record: <" + tmpFileRecord + ">";
+      getFWLog().fatal(message);
     }
     finally
     {
@@ -470,8 +470,9 @@ public class AggregationCache
     }
     else
     {
-      getFWLog().error("Aggregation Result Path <" + AggregationResultPath + "> either not defined or read only for <" + getSymbolicName() + ">");
-      throw new InitializationException("Aggregation Result Path <" + AggregationResultPath + "> either not defined or read only for <" + getSymbolicName() + ">");
+      message = "Aggregation Result Path <" + AggregationResultPath + "> either not defined or read only for <" + getSymbolicName() + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Done
@@ -496,8 +497,9 @@ public class AggregationCache
 
     if (scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + scenarioName + "> already defined");
-      throw new InitializationException("Aggregation scenario <" + scenarioName + "> already defined");
+      message = "Aggregation scenario <" + scenarioName + "> already defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     tmpAggScenario = new AggScenario();
@@ -538,8 +540,9 @@ public class AggregationCache
     // Now try to get the scenario to add to the key
     if (!scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + scenarioName + "> not defined");
-      throw new InitializationException("Aggregation scenario <" + scenarioName + "> not defined");
+      message = "Aggregation scenario <" + scenarioName + "> not defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -562,8 +565,9 @@ public class AggregationCache
 
     if (!scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + scenarioName + "> not defined");
-      throw new InitializationException("Aggregation scenario <" + scenarioName + "> not defined");
+      message = "Aggregation scenario <" + scenarioName + "> not defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -595,8 +599,9 @@ public class AggregationCache
 
       if (!operationUnderstood)
       {
-        getFWLog().error("Aggregation operation <" + operationValue + "> not understood in scenario <" + scenarioName + ">");
-        throw new InitializationException("Aggregation operation <" + operationValue + "> not understood in scenario <" + scenarioName + ">");
+        message = "Aggregation operation <" + operationValue + "> not understood in scenario <" + scenarioName + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
   }
@@ -604,33 +609,35 @@ public class AggregationCache
  /**
   * Add a grouping field to the aggregation
   *
-  * @param ScenarioName The name of the scenario that we are adding the grouping to
-  * @param AggregationOffset The offset of the field that we should group on
+  * @param scenarioName The name of the scenario that we are adding the grouping to
+  * @param aggregationOffset The offset of the field that we should group on
   * @throws IntializationException
   */
-  private void AddAggregationGroupingField(String ScenarioName, String AggregationOffset)
+  private void addAggregationGroupingField(String scenarioName, String aggregationOffset)
     throws InitializationException
   {
     AggScenario tmpAggScenario;
     int OffsetValue = -1;
 
-    if (!scenarioList.containsKey(ScenarioName))
+    if (!scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + ScenarioName + "> not defined");
-      throw new InitializationException("Aggregation scenario <" + ScenarioName + "> not defined");
+      message = "Aggregation scenario <" + scenarioName + "> not defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
-      tmpAggScenario = scenarioList.get(ScenarioName);
+      tmpAggScenario = scenarioList.get(scenarioName);
 
       try
       {
-        OffsetValue = Integer.parseInt(AggregationOffset);
+        OffsetValue = Integer.parseInt(aggregationOffset);
       }
       catch (NumberFormatException nfe)
       {
-        getFWLog().error("Aggregation field offset <" + AggregationOffset + "> not numeric in scenario <" + ScenarioName + ">");
-        throw new InitializationException("Aggregation field offset <" + AggregationOffset + "> not numeric in scenario <" + ScenarioName + ">");
+        message = "Aggregation field offset <" + aggregationOffset + "> not numeric in scenario <" + scenarioName + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       tmpAggScenario.groupingFieldList.add(OffsetValue);
@@ -641,33 +648,35 @@ public class AggregationCache
  /**
   * Add the field we are aggretaing on
   *
-  * @param ScenarioName The name of the scenario that we are adding the field to
-  * @param AggregationOffset The offset of the field that we should aggregate on
+  * @param scenarioName The name of the scenario that we are adding the field to
+  * @param aggregationOffset The offset of the field that we should aggregate on
   * @throws IntializationException
   */
-  private void AddAggregationAggField(String ScenarioName, String AggregationOffset)
+  private void addAggregationAggField(String scenarioName, String aggregationOffset)
     throws InitializationException
   {
     AggScenario tmpAggScenario;
     int OffsetValue = -1;
 
-    if (!scenarioList.containsKey(ScenarioName))
+    if (!scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + ScenarioName + "> not defined");
-      throw new InitializationException("Aggregation scenario <" + ScenarioName + "> not defined");
+      message = "Aggregation scenario <" + scenarioName + "> not defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
-      tmpAggScenario = scenarioList.get(ScenarioName);
+      tmpAggScenario = scenarioList.get(scenarioName);
 
       try
       {
-        OffsetValue = Integer.parseInt(AggregationOffset);
+        OffsetValue = Integer.parseInt(aggregationOffset);
       }
       catch (NumberFormatException nfe)
       {
-        getFWLog().error("Aggregation field offset <" + AggregationOffset + "> not numeric in scenario <" + ScenarioName + ">");
-        throw new InitializationException("Aggregation field offset <" + AggregationOffset + "> not numeric in scenario <" + ScenarioName + ">");
+        message = "Aggregation field offset <" + aggregationOffset + "> not numeric in scenario <" + scenarioName + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       tmpAggScenario.inpField = OffsetValue;
@@ -677,24 +686,25 @@ public class AggregationCache
  /**
   * Define the file name for the scenario
   *
-  * @param ScenarioName The name of the scenario that we are adding the file to
-  * @param FileName The file that we are writing to
+  * @param scenarioName The name of the scenario that we are adding the file to
+  * @param fileName The file that we are writing to
   * @throws IntializationException
   */
-  private void AddAggregationFile(String ScenarioName, String FileName)
+  private void addAggregationFile(String scenarioName, String fileName)
     throws InitializationException
   {
     AggScenario tmpAggScenario;
 
-    if (!scenarioList.containsKey(ScenarioName))
+    if (!scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + ScenarioName + "> not defined");
-      throw new InitializationException("Aggregation scenario <" + ScenarioName + "> not defined");
+      message = "Aggregation scenario <" + scenarioName + "> not defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
-      tmpAggScenario = scenarioList.get(ScenarioName);
-      tmpAggScenario.fileName = FileName;
+      tmpAggScenario = scenarioList.get(scenarioName);
+      tmpAggScenario.fileName = fileName;
     }
   }
 
@@ -710,20 +720,22 @@ public class AggregationCache
   {
     AggScenario tmpAggScenario;
     AggScenario tmpMergeIntoScenario;
-    int tmpMergeOrder;
+    int 		tmpMergeOrder;
     MergeString tmpMergeString;
 
     if (!scenarioList.containsKey(scenarioName))
     {
-      getFWLog().error("Aggregation scenario <" + scenarioName + "> not defined");
-      throw new InitializationException("Aggregation scenario <" + scenarioName + "> not defined");
+      message = "Aggregation scenario <" + scenarioName + "> not defined";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
       if (!scenarioList.containsKey(mergeIntoScenarioName))
       {
-        getFWLog().error("Aggregation scenario <" + mergeIntoScenarioName + "> not defined");
-        throw new InitializationException("Aggregation scenario <" + mergeIntoScenarioName + "> not defined");
+        message = "Aggregation scenario <" + mergeIntoScenarioName + "> not defined";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
       else
       {
@@ -737,8 +749,9 @@ public class AggregationCache
         }
         catch (NumberFormatException nfe)
         {
-          getFWLog().error("Merge order <" + mergeOrder + "> not numeric in scenario <" + scenarioName + ">");
-          throw new InitializationException("Merge order <" + mergeOrder + "> not numeric in scenario <" + scenarioName + ">");
+          message = "Merge order <" + mergeOrder + "> not numeric in scenario <" + scenarioName + ">";
+          getFWLog().error(message);
+          throw new InitializationException(message,getSymbolicName());
         }
 
         // If the merge order is 1 (the main merge target), we must have an output
@@ -749,8 +762,9 @@ public class AggregationCache
           // See if we already have the file defined
           if (tmpAggScenario.fileName == null)
           {
-            getFWLog().error("Aggregation scenario <" + scenarioName + "> does not have an output defined. Define the output destination before defining a merge.");
-            throw new InitializationException("Aggregation scenario <" + scenarioName + "> not defined");
+            message = "Aggregation scenario <" + scenarioName + "> does not have an output defined. Define the output destination before defining a merge.";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
           else
           {
@@ -766,16 +780,18 @@ public class AggregationCache
           // make sure that the file name is not defined
           if (tmpAggScenario.fileName != null)
           {
-            getFWLog().error("Aggregation scenario <" + scenarioName + "> has an output defined, but is a merge subordinate. You cannot define an output for this scenario.");
-            throw new InitializationException("Aggregation scenario <" + scenarioName + "> has an output defined, but is a merge subordinate. You cannot define an output for this scenario.");
+            message = "Aggregation scenario <" + scenarioName + "> has an output defined, but is a merge subordinate. You cannot define an output for this scenario.";
+            getFWLog().error(message);
+            throw new InitializationException(message,getSymbolicName());
           }
           else
           {
             // Check that the grouping keys are compatible
             if (tmpMergeIntoScenario.groupingFieldIndex != tmpAggScenario.groupingFieldIndex)
             {
-              getFWLog().error("Aggregation scenario <" + scenarioName + "> does not have the same key structure as merge scenario <" + mergeIntoScenarioName + ">. They cannot be merged.");
-              throw new InitializationException("Aggregation scenario <" + scenarioName + "> does not have the same key structure as merge scenario <" + mergeIntoScenarioName + ">. They cannot be merged.");
+              message = "Aggregation scenario <" + scenarioName + "> does not have the same key structure as merge scenario <" + mergeIntoScenarioName + ">. They cannot be merged.";
+              getFWLog().error(message);
+              throw new InitializationException(message,getSymbolicName());
             }
 
             // Now check that they are identical
@@ -783,8 +799,9 @@ public class AggregationCache
             {
               if (tmpMergeIntoScenario.groupingFieldList.get(Index) != tmpAggScenario.groupingFieldList.get(Index))
               {
-                getFWLog().error("Aggregation scenarios <" + scenarioName + "> and <" + mergeIntoScenarioName + "> do not have identical grouping keys. They cannot be merged.");
-                throw new InitializationException("Aggregation scenarios <" + scenarioName + "> and <" + mergeIntoScenarioName + "> do not have identical grouping keys. They cannot be merged.");
+                message = "Aggregation scenarios <" + scenarioName + "> and <" + mergeIntoScenarioName + "> do not have identical grouping keys. They cannot be merged.";
+                getFWLog().error(message);
+                throw new InitializationException(message,getSymbolicName());
               }
             }
 
@@ -821,12 +838,12 @@ public class AggregationCache
     AggScenario     tmpAggScenario;
     AggResult       tmpAggResult;
     AggResultList   tmpAggResultList;
-    int         i;
-    int         j;
-    String      tmpKey;
-    int         k;
-    String      tmpScenarioKey;
-    double      CurrentValue = 0;
+    int         	i;
+    int         	j;
+    String      	tmpKey;
+    int         	k;
+    String      	tmpScenarioKey;
+    double      	currentValue = 0;
 
     // Find the aggregations to do for the key list
     for ( i = 0 ; i < keysToAggregate.size() ; i++)
@@ -896,7 +913,7 @@ public class AggregationCache
           {
             String ErrorString = "Error accessing the aggregation result cache for scenario <" + tmpAggScenario + "> and transaction <" + transactionNumber + ">";
             getFWLog().error(ErrorString);
-            throw new ProcessingException (ErrorString);
+            throw new ProcessingException (ErrorString,getSymbolicName());
           }
 
           if (tmpAggScenario.operation > 1)
@@ -904,7 +921,7 @@ public class AggregationCache
             // Parse the input value and handle any errors
             try
             {
-              CurrentValue = Double.parseDouble(fieldList[tmpAggScenario.inpField-1]);
+              currentValue = Double.parseDouble(fieldList[tmpAggScenario.inpField-1]);
             }
             catch (NumberFormatException nfe)
             {
@@ -917,22 +934,22 @@ public class AggregationCache
             if (tmpAggScenario.operation == 2)
             {
               //perform the summing
-              tmpAggResult.sum += CurrentValue;
+              tmpAggResult.sum += currentValue;
             }
             else if (tmpAggScenario.operation == 3)
             {
               //perform the max
-              if (CurrentValue > tmpAggResult.max)
+              if (currentValue > tmpAggResult.max)
               {
-                tmpAggResult.max = CurrentValue;
+                tmpAggResult.max = currentValue;
               }
             }
             else if (tmpAggScenario.operation == 4)
             {
               //perform the min
-              if (CurrentValue < tmpAggResult.min)
+              if (currentValue < tmpAggResult.min)
               {
-                tmpAggResult.min = CurrentValue;
+                tmpAggResult.min = currentValue;
               }
             }
           }
@@ -942,7 +959,7 @@ public class AggregationCache
       {
         String ErrorString = "Aggregation cache does not contain key <" + keysToAggregate.get(i) +">";
         getFWLog().error(ErrorString);
-        throw new ProcessingException (ErrorString);
+        throw new ProcessingException (ErrorString,getSymbolicName());
       }
     }
   }
@@ -955,38 +972,38 @@ public class AggregationCache
   */
   public ArrayList<String> getResults()
   {
-    Set<String>         ScenarioKeySet;
-    Iterator<String>    ScenarioKeySetIterator;
-    Set         ResultKeySet;
-    Iterator ResKeySetIterator;
-    AggScenario tmpAggScenario;
-    AggResultList   tmpAggResultList;
-    AggResult   tmpAggResult;
-    String      tmpLine;
-    int         i;
-    String      tmpScenario;
-    String ResultIterator;
+    Set<String>         scenarioKeySet;
+    Iterator<String>    scenarioKeySetIterator;
+    Set<String>  		resultKeySet;
+    Iterator<String> 	resKeySetIterator;
+    AggScenario 		tmpAggScenario;
+    AggResultList   	tmpAggResultList;
+    AggResult   		tmpAggResult;
+    String      		tmpLine;
+    int         		i;
+    String      		tmpScenario;
+    String 				resultIterator;
 
-    ArrayList<String> Results = new ArrayList<>();
+    ArrayList<String>   results = new ArrayList<>();
 
     // get all of the scenarios
-    ScenarioKeySet = scenarioList.keySet();
-    ScenarioKeySetIterator = ScenarioKeySet.iterator();
+    scenarioKeySet = scenarioList.keySet();
+    scenarioKeySetIterator = scenarioKeySet.iterator();
 
     // for each of the scenarios
-    while (ScenarioKeySetIterator.hasNext())
+    while (scenarioKeySetIterator.hasNext())
     {
-      tmpScenario = ScenarioKeySetIterator.next();
+      tmpScenario = scenarioKeySetIterator.next();
       tmpAggScenario = scenarioList.get(tmpScenario);
 
       // dump all of the information
-      ResultKeySet = tmpAggScenario.resultCache.keySet();
-      ResKeySetIterator = ResultKeySet.iterator();
+      resultKeySet = tmpAggScenario.resultCache.keySet();
+      resKeySetIterator = resultKeySet.iterator();
 
-      while (ResKeySetIterator.hasNext())
+      while (resKeySetIterator.hasNext())
       {
-        ResultIterator = (String) ResKeySetIterator.next();
-        tmpAggResultList = tmpAggScenario.resultCache.get(ResultIterator);
+        resultIterator = (String) resKeySetIterator.next();
+        tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
         tmpAggResult = tmpAggResultList.AccumulatedResult;
 
         tmpLine = tmpScenario + ";";
@@ -1019,7 +1036,7 @@ public class AggregationCache
           }
           break;
 
-          // min
+          // minimum
           case 4:
           {
             tmpLine = tmpLine + tmpAggResult.min + ";";
@@ -1027,7 +1044,7 @@ public class AggregationCache
           break;
         }
 
-        Results.add(tmpLine);
+        results.add(tmpLine);
       }
     }
 
@@ -1035,7 +1052,7 @@ public class AggregationCache
     purgeResults();
 
     // Return what we have created
-    return Results;
+    return results;
   }
 
  /**
@@ -1047,39 +1064,39 @@ public class AggregationCache
   */
   public void writeResults(String baseName)
   {
-    Set<String>         ScenarioKeySet;
-    Iterator<String>    ScenarioKeySetIterator;
-    Set         resultKeySet;
-    Iterator resKeySetIterator;
-    AggScenario tmpAggScenario;
-    AggScenario tmpMergedScenario;
-    AggResult   tmpAggResult;
-    AggResult   tmpMergedResult;
-    String      tmpLine;
-    int         i;
-    String      tmpScenario;
-    File        tmpFile;
-    BufferedWriter writer;
-    String      resultIterator;
-    AggResultList tmpAggResultList;
-    AggResultList tmpMergedResultList;
+    Set<String>         scenarioKeySet;
+    Iterator<String>    scenarioKeySetIterator;
+    Set<String>         resultKeySet;
+    Iterator<String>    resKeySetIterator;
+    AggScenario 		tmpAggScenario;
+    AggScenario 		tmpMergedScenario;
+    AggResult   		tmpAggResult;
+    AggResult   		tmpMergedResult;
+    String      		tmpLine;
+    int         		i;
+    String      		tmpScenario;
+    File        		tmpFile;
+    BufferedWriter 		writer;
+    String      		resultIterator;
+    AggResultList 		tmpAggResultList;
+    AggResultList 		tmpMergedResultList;
     ArrayList<MergedAggregation> ResultCache;
-    MergedAggregation tmpMergedAggregation;
-    MergeString tmpMergeString;
-    Iterator<MergedAggregation> ResultsIterator;
-    int Index;
+    MergedAggregation 	tmpMergedAggregation;
+    MergeString 		tmpMergeString;
+    Iterator<MergedAggregation> resultsIterator;
+    int 				idx;
 
     // Create the output cache
     ResultCache = new ArrayList<>();
 
     // get all of the scenarios
-    ScenarioKeySet = scenarioList.keySet();
-    ScenarioKeySetIterator = ScenarioKeySet.iterator();
+    scenarioKeySet = scenarioList.keySet();
+    scenarioKeySetIterator = scenarioKeySet.iterator();
 
     // for each of the scenarios
-    while (ScenarioKeySetIterator.hasNext())
+    while (scenarioKeySetIterator.hasNext())
     {
-      tmpScenario = ScenarioKeySetIterator.next();
+      tmpScenario = scenarioKeySetIterator.next();
       tmpAggScenario = scenarioList.get(tmpScenario);
 
       // Merging works like this:
@@ -1136,7 +1153,7 @@ public class AggregationCache
             }
             break;
 
-            // min
+            // minimum
             case 4:
             {
               tmpLine = tmpLine + tmpAggResult.min + ";";
@@ -1146,10 +1163,10 @@ public class AggregationCache
 
           // Now get the rest of the results from the merge string
           tmpMergeString = MergeStrings.get(tmpScenario);
-          for (Index = 1 ; Index < tmpMergeString.MergeOrder.size() ; Index++)
+          for (idx = 1 ; idx < tmpMergeString.MergeOrder.size() ; idx++)
           {
             // Get the referenced scenario
-            tmpMergedScenario = tmpMergeString.MergeOrder.get(Index);
+            tmpMergedScenario = tmpMergeString.MergeOrder.get(idx);
             tmpMergedResultList = tmpMergedScenario.resultCache.get(resultIterator);
             tmpMergedResult = tmpMergedResultList.AccumulatedResult;
 
@@ -1260,11 +1277,11 @@ public class AggregationCache
     }
 
     // Now write the results to file
-    ResultsIterator = ResultCache.iterator();
+    resultsIterator = ResultCache.iterator();
 
-    while (ResultsIterator.hasNext())
+    while (resultsIterator.hasNext())
     {
-      tmpMergedAggregation = ResultsIterator.next();
+      tmpMergedAggregation = resultsIterator.next();
 
       try
       {
@@ -1272,9 +1289,9 @@ public class AggregationCache
         tmpFile = new File(tmpMergedAggregation.FileName);
         writer = new BufferedWriter(new FileWriter(tmpFile, true), BUF_SIZE);
 
-        for (Index = 0 ; Index < tmpMergedAggregation.ResultList.size() ; Index++)
+        for (idx = 0 ; idx < tmpMergedAggregation.ResultList.size() ; idx++)
         {
-          tmpLine = tmpMergedAggregation.ResultList.get(Index);
+          tmpLine = tmpMergedAggregation.ResultList.get(idx);
           writer.write(tmpLine);
           writer.newLine();
         }
@@ -1283,7 +1300,7 @@ public class AggregationCache
       }
       catch (IOException IOex)
       {
-        getFWLog().error("Error writing aggregation file for scenario <" + tmpMergedAggregation.Scenario + ">. Message <" + IOex.getMessage() + ">");
+        getFWLog().error("Error writing aggregation file for scenario <" + tmpMergedAggregation.Scenario + ">. message <" + IOex.getMessage() + ">");
       }
     }
 
@@ -1297,19 +1314,19 @@ public class AggregationCache
   */
   public void purgeResults()
   {
-    AggScenario tmpAggScenario;
-    String      tmpScenario;
-    Set<String>         ScenarioKeySet;
-    Iterator<String>    ScenarioKeySetIterator;
+    AggScenario 	tmpAggScenario;
+    String      	tmpScenario;
+    Set<String>     scenarioKeySet;
+    Iterator<String>scenarioKeySetIterator;
 
     // get all of the scenarios
-    ScenarioKeySet = scenarioList.keySet();
-    ScenarioKeySetIterator = ScenarioKeySet.iterator();
+    scenarioKeySet = scenarioList.keySet();
+    scenarioKeySetIterator = scenarioKeySet.iterator();
 
     // for each of the scenarios
-    while (ScenarioKeySetIterator.hasNext())
+    while (scenarioKeySetIterator.hasNext())
     {
-      tmpScenario = ScenarioKeySetIterator.next();
+      tmpScenario = scenarioKeySetIterator.next();
       tmpAggScenario = scenarioList.get(tmpScenario);
 
       tmpAggScenario.resultCache.clear();
@@ -1357,55 +1374,55 @@ public class AggregationCache
   */
   public void commitTransaction(int transactionNumber)
   {
-    Set<String>         ScenarioKeySet;
-    Iterator<String>    ScenarioKeySetIterator;
-    Set         ResultKeySet;
-    Iterator ResKeySetIterator;
-    AggScenario tmpAggScenario;
-    AggResult   tmpAggResult;
-    AggResult   MergedAggResult;
-    String      tmpScenario;
-    String      ResultIterator;
-    AggResultList tmpAggResultList;
+    Set<String>         scenarioKeySet;
+    Iterator<String>    scenarioKeySetIterator;
+    Set<String>         resultKeySet;
+    Iterator<String>    resKeySetIterator;
+    AggScenario 		tmpAggScenario;
+    AggResult   		tmpAggResult;
+    AggResult   		mergedAggResult;
+    String      		tmpScenario;
+    String      		resultIterator;
+    AggResultList 		tmpAggResultList;
 
     // get all of the scenarios
-    ScenarioKeySet = scenarioList.keySet();
-    ScenarioKeySetIterator = ScenarioKeySet.iterator();
+    scenarioKeySet = scenarioList.keySet();
+    scenarioKeySetIterator = scenarioKeySet.iterator();
 
     // for each of the scenarios
-    while (ScenarioKeySetIterator.hasNext())
+    while (scenarioKeySetIterator.hasNext())
     {
-      tmpScenario = ScenarioKeySetIterator.next();
+      tmpScenario = scenarioKeySetIterator.next();
       tmpAggScenario = scenarioList.get(tmpScenario);
 
       // dump all of the information
-      ResultKeySet = tmpAggScenario.resultCache.keySet();
-      ResKeySetIterator = ResultKeySet.iterator();
+      resultKeySet = tmpAggScenario.resultCache.keySet();
+      resKeySetIterator = resultKeySet.iterator();
 
-      while (ResKeySetIterator.hasNext())
+      while (resKeySetIterator.hasNext())
       {
-        ResultIterator = (String) ResKeySetIterator.next();
-        tmpAggResultList = tmpAggScenario.resultCache.get(ResultIterator);
+        resultIterator = (String) resKeySetIterator.next();
+        tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
 
         // See if we have information for this transaction
         if (tmpAggResultList.currentTransactionResults.containsKey(transactionNumber))
         {
           // yes, so merge the information
           tmpAggResult = tmpAggResultList.currentTransactionResults.get(transactionNumber);
-          MergedAggResult = tmpAggResultList.AccumulatedResult;
+          mergedAggResult = tmpAggResultList.AccumulatedResult;
 
           // do the merge of the current results into the accumulated object
-          MergedAggResult.count += tmpAggResult.count;
-          MergedAggResult.sum += tmpAggResult.sum;
+          mergedAggResult.count += tmpAggResult.count;
+          mergedAggResult.sum += tmpAggResult.sum;
 
-          if (tmpAggResult.max > MergedAggResult.max)
+          if (tmpAggResult.max > mergedAggResult.max)
           {
-            MergedAggResult.max = tmpAggResult.max;
+            mergedAggResult.max = tmpAggResult.max;
           }
 
-          if (tmpAggResult.min < MergedAggResult.min)
+          if (tmpAggResult.min < mergedAggResult.min)
           {
-            MergedAggResult.min = tmpAggResult.min;
+            mergedAggResult.min = tmpAggResult.min;
           }
         }
 
@@ -1425,12 +1442,12 @@ public class AggregationCache
   {
     Set<String>         scenarioKeySet;
     Iterator<String>    scenarioKeySetIterator;
-    Set         resultKeySet;
-    Iterator    resKeySetIterator;
-    AggScenario tmpAggScenario;
-    String      tmpScenario;
-    String      resultIterator;
-    AggResultList tmpAggResultList;
+    Set<String>         resultKeySet;
+    Iterator<String>    resKeySetIterator;
+    AggScenario 		tmpAggScenario;
+    String      		tmpScenario;
+    String      		resultIterator;
+    AggResultList 		tmpAggResultList;
 
     // get all of the scenarios
     scenarioKeySet = scenarioList.keySet();
@@ -1512,12 +1529,12 @@ public class AggregationCache
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PERSIST, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PERSIST, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

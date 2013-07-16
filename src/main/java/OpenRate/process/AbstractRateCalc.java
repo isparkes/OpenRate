@@ -115,8 +115,8 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
 
     if (CMR == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays, but only if we are the right type. This
@@ -128,8 +128,8 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
 
       if (RC == null)
       {
-        Message = "Could not find cache entry for <" + CacheObjectName + ">";
-        throw new InitializationException(Message);
+        message = "Could not find cache entry for <" + CacheObjectName + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
   }
@@ -470,7 +470,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // set the default value
@@ -495,9 +495,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
           tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
           if (tmpEntry == null)
           {
-            Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+            message = "CDR with <" + CDRDate + "> date not rated by model <" +
                              PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(Message);
+            throw new ProcessingException(message,getSymbolicName());
           }
 
           // Calculate the amount in this tier
@@ -555,9 +555,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
           tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
           if (tmpEntry == null)
           {
-            Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+            message = "CDR with <" + CDRDate + "> date not rated by model <" +
                       PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(Message);
+            throw new ProcessingException(message,getSymbolicName());
           }
 
           // Partial tier to do, and then we have finished
@@ -658,7 +658,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // We need to loop through all the tiers until we have finshed
@@ -679,9 +679,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
           tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
           if (tmpEntry == null)
           {
-            Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+            message = "CDR with <" + CDRDate + "> date not rated by model <" +
                       PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(Message);
+            throw new ProcessingException(message,getSymbolicName());
           }
 
           // Calculate the amount in this tier
@@ -741,9 +741,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
           tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
           if (tmpEntry == null)
           {
-            Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+            message = "CDR with <" + CDRDate + "> date not rated by model <" +
                       PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(Message);
+            throw new ProcessingException(message,getSymbolicName());
           }
 
           // Get the number of beats in this tier
@@ -822,7 +822,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // Get just the first tier
@@ -832,9 +832,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
     if (tmpEntry == null)
     {
-      Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+      message = "CDR with <" + CDRDate + "> date not rated by model <" +
                 PriceModel + "> because of missing validity coverage";
-      throw new ProcessingException(Message);
+      throw new ProcessingException(message,getSymbolicName());
     }
 
     // Calculate the value of the entry - there should be no others
@@ -908,7 +908,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // set the default value
@@ -933,9 +933,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
           tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
           if (tmpEntry == null)
           {
-            Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+            message = "CDR with <" + CDRDate + "> date not rated by model <" +
                              PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(Message);
+            throw new ProcessingException(message,getSymbolicName());
           }
 
           // Calculate the amount in this tier
@@ -985,9 +985,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
           tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
           if (tmpEntry == null)
           {
-            Message = "CDR with <" + CDRDate + "> date not rated by model <" +
+            message = "CDR with <" + CDRDate + "> date not rated by model <" +
                       PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(Message);
+            throw new ProcessingException(message,getSymbolicName());
           }
 
           // Partial tier to do, and then we have finished
@@ -1073,7 +1073,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // We need to loop through all the tiers until we have finished
@@ -1085,9 +1085,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
 
       if (tmpEntry == null)
       {
-        Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
+        message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
             PriceModel + ">";
-        throw new ProcessingException(Message);
+        throw new ProcessingException(message,getSymbolicName());
       }
 
       // Deal with the case that we have a tier without cost
@@ -1170,7 +1170,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // We need to loop through all the tiers and evaluate them, then return the
@@ -1218,7 +1218,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // Get just the first tier
@@ -1228,9 +1228,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
     if (tmpEntry == null || tmpEntry.getFactor() == 0 || tmpEntry.getChargeBase() == 0)
     {
-      Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
+      message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
                 PriceModel + ">, factor <"+tmpEntry.getFactor()+"and charge base <"+tmpEntry.getChargeBase()+">";
-      throw new ProcessingException(Message);
+      throw new ProcessingException(message,getSymbolicName());
     }
 
     // Calculate the value of the entry - there should be no others
@@ -1259,7 +1259,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     // check that we have something to work on
     if (tmpRateModel == null)
     {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined");
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
     }
 
     // Get just the first tier
@@ -1269,9 +1269,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
     if (tmpEntry == null)
     {
-      Message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
+      message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
                 PriceModel + ">";
-      throw new ProcessingException(Message);
+      throw new ProcessingException(message,getSymbolicName());
     }
 
     tmpcalculationResult = availableBalance / tmpEntry.getFactor();

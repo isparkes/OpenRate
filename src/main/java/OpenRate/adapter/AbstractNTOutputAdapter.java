@@ -56,6 +56,8 @@
 package OpenRate.adapter;
 
 import OpenRate.CommonConfig;
+import OpenRate.IPipeline;
+import OpenRate.OpenRate;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.IEvent;
 import OpenRate.buffer.IMonitor;
@@ -83,41 +85,22 @@ public abstract class AbstractNTOutputAdapter
   implements IOutputAdapter,
              IMonitor
 {
-  private String SymbolicName;
-
-  /**
-   * The PipeLog is the logger which should be used for all pipeline level
-   * messages. This is instantiated during pipe startup, because at this
-   * point we don't know the name of the pipe and therefore the logger to use.
-   */
-  protected ILogger        pipeLog = null;
-
-  /**
-   * The PipeLog is the logger which should be used for all statistics related
-   * messages.
-   */
-  protected ILogger        statsLog = LogUtil.getLogUtil().getLogger("Statistics");
+  private String           symbolicName;
 
   private int              sleepTime = 50;
   private ISupplier        inputValidBuffer = null;
   private IConsumer        outputValidBuffer = null;
-  private ExceptionHandler handler;
 
   // number of records to persist at once
-  private int              BatchSize;
-  private int              BufferSize;
+  private int              batchSize;
+  private int              bufferSize;
 
   // Whether we are to shut down or not
-  private volatile boolean ShutdownFlag = false;
+  private volatile boolean shutdownFlag = false;
 
   // Used to store the name of this output, for deciding if records should be
   // written to this output or not
-  private String           OutputName;
-
-  /**
-   * This is the pipeline that we are in, used for logging.
-   */
-  protected String         pipeName;
+  private String           outputName;
 
   // List of Services that this Client supports
   private final static String SERVICE_BATCHSIZE  = CommonConfig.BATCH_SIZE;
@@ -139,6 +122,9 @@ public abstract class AbstractNTOutputAdapter
 
   // If we are the terminating output adapter, default no
   private boolean TerminatingAdaptor = false;
+
+  // This is the pipeline that we are in, used for logging and property retrieval
+  private IPipeline pipeline;
 
  /**
   * Default constructor
@@ -162,10 +148,7 @@ public abstract class AbstractNTOutputAdapter
     setSymbolicName(ModuleName);
 
     // store the pipe we are in
-    this.pipeName = PipelineName;
-
-    // Get the pipe log
-    pipeLog = LogUtil.getLogUtil().getLogger(PipelineName);
+    setPipeline(OpenRate.getPipeline(PipelineName));
 
     RegisterClientManager();
 
@@ -212,31 +195,31 @@ public abstract class AbstractNTOutputAdapter
       do
       {
         Thread.sleep(this.sleepTime);
-        localDone = this.ShutdownFlag;
+        localDone = this.shutdownFlag;
         write();
       }
-      while ((!localDone) && (handler.hasError() == false));
+      while ((!localDone) && (getExceptionHandler().hasError() == false));
 
       // Do any flush processing that is required
       flush();
     }
     catch (ProcessingException pe)
     {
-      pipeLog.error("Processing exception caught in Output Adapter <" +
+            getPipeLog().error("Processing exception caught in Output Adapter <" +
                 getSymbolicName() + ">", pe);
       getExceptionHandler().reportException(pe);
     }
     catch (Throwable t)
     {
-      pipeLog.fatal("Unexpected exception caught in Output Adapter <" +
+            getPipeLog().fatal("Unexpected exception caught in Output Adapter <" +
                 getSymbolicName() + ">", t);
-      getExceptionHandler().reportException(new ProcessingException(t));
+      getExceptionHandler().reportException(new ProcessingException(t,getSymbolicName()));
     }
 
     endTime = System.currentTimeMillis();
     processingTime += (endTime - startTime);
 
-    this.ShutdownFlag = false;
+    this.shutdownFlag = false;
   }
 
   /**
@@ -277,13 +260,13 @@ public abstract class AbstractNTOutputAdapter
     {
     do
     {
-        in = getBatchInboundValidBuffer().pull(BatchSize);
+        in = getBatchInboundValidBuffer().pull(batchSize);
         size = in.size();
         recordsProcessed += size;
 
       if (size > 0)
       {
-        pipeLog.debug("Processing a batch of " + size + " valid records.");
+                    getPipeLog().debug("Processing a batch of " + size + " valid records.");
 
           out = new ArrayList<>();
 
@@ -301,11 +284,11 @@ public abstract class AbstractNTOutputAdapter
               // this is a call to the prep class, which in turn will call
               // the procValidRecord method, which is where the implementation
               // class gets its say.
-              if (r.getOutput(OutputName))
+              if (r.getOutput(outputName))
               {
                 r = prepValidRecord(r);
 
-                if (!r.deleteOutput(OutputName,TerminatingAdaptor))
+                if (!r.deleteOutput(outputName,TerminatingAdaptor))
                 {
                   // pass the record into the output stream
                   out.add(r);
@@ -320,11 +303,11 @@ public abstract class AbstractNTOutputAdapter
                 // this is a call to the prep class, which in turn will call
                 // the procErrorRecord method, which is where the implementation
                 // class gets its say
-                if (r.getOutput(OutputName))
+                if (r.getOutput(outputName))
                 {
                   r = prepErrorRecord(r);
 
-                  if (!r.deleteOutput(OutputName,TerminatingAdaptor))
+                  if (!r.deleteOutput(outputName,TerminatingAdaptor))
                   {
                     // drop the record
                     out.add(r);
@@ -351,14 +334,14 @@ public abstract class AbstractNTOutputAdapter
           }
 
           //validWriter.flush();
-          pipeLog.debug("persisted " + ThisBatchCounter + " valid records.");
+                    getPipeLog().debug("persisted " + ThisBatchCounter + " valid records.");
 
           // Push the records that survived into the output
           if (OutBatchHasValidRecords)
           {
             if (TerminatingAdaptor)
             {
-            pipeLog.error("Output adapter <" + getSymbolicName() + "> discarded <" +
+                            getPipeLog().error("Output adapter <" + getSymbolicName() + "> discarded <" +
                     out.size() + "> records at the end of the output adapter chain.");
             }
             else
@@ -366,10 +349,10 @@ public abstract class AbstractNTOutputAdapter
               // push the remaining records to the next adapter
               getBatchOutboundValidBuffer().push(out);
 
-              while (outBufferCapacity > BufferSize)
+              while (outBufferCapacity > bufferSize)
               {
                 bufferHits++;
-                statsLog.debug("Output <" + getSymbolicName() + "> buffer high water mark! Buffer max = <" + BufferSize + "> current count = <" + outBufferCapacity + ">");
+                OpenRate.getOpenRateStatsLog().debug("Output <" + getSymbolicName() + "> buffer high water mark! Buffer max = <" + bufferSize + "> current count = <" + outBufferCapacity + ">");
                 try {
                   Thread.sleep(sleepTime);
                 } catch (InterruptedException ex) {
@@ -388,16 +371,16 @@ public abstract class AbstractNTOutputAdapter
       }
       else
       {
-        pipeLog.debug("No valid records found.");
+                    getPipeLog().debug("No valid records found.");
       }
     }
     while (size > 0);
   }
-    catch (IOException ioe)
+  catch (IOException ioe)
   {
-      pipeLog.error("IOException writing records.", ioe);
-      throw new ProcessingException(ioe.toString(), ioe);
-      }
+            getPipeLog().error("IOException writing records.", ioe);
+      throw new ProcessingException(ioe,getSymbolicName());
+  }
   }
 
   /**
@@ -427,7 +410,7 @@ public abstract class AbstractNTOutputAdapter
   public void reset()
   {
     //log.debug("reset called on Output Adapter <" + getSymbolicName() + ">");
-    this.ShutdownFlag = false;
+    this.shutdownFlag = false;
   }
 
   /**
@@ -453,7 +436,7 @@ public abstract class AbstractNTOutputAdapter
   @Override
   public void markForClosedown()
   {
-    this.ShutdownFlag = true;
+    this.shutdownFlag = true;
 
     // notify any listeners that are waiting that we are flushing
     synchronized (this)
@@ -468,7 +451,7 @@ public abstract class AbstractNTOutputAdapter
   @Override
   public void close() throws ProcessingException
   {
-    pipeLog.debug("close");
+        getPipeLog().debug("close");
   }
 
  /**
@@ -477,7 +460,7 @@ public abstract class AbstractNTOutputAdapter
   @Override
   public void cleanup()
   {
-    pipeLog.debug("cleanup");
+        getPipeLog().debug("cleanup");
   }
 
  /**
@@ -516,16 +499,6 @@ public abstract class AbstractNTOutputAdapter
     return this.outputValidBuffer;
   }
 
-  /**
-   * Set the exception handler mechanism.
-   *
-   */
-  @Override
-  public void setExceptionHandler(ExceptionHandler h)
-  {
-    this.handler = h;
-  }
-
  /**
   * Get the batch size for commits
   *
@@ -533,17 +506,7 @@ public abstract class AbstractNTOutputAdapter
   */
   public int getBatchSize()
   {
-    return this.BatchSize;
-  }
-
- /**
-  * Get the current exception handler for this module
-  *
-  * @return The current exception handler
-  */
-  public ExceptionHandler getExceptionHandler()
-  {
-    return this.handler;
+    return this.batchSize;
   }
 
  /**
@@ -614,7 +577,7 @@ public abstract class AbstractNTOutputAdapter
   @Override
   public String getSymbolicName()
   {
-    return SymbolicName;
+    return symbolicName;
   }
 
  /**
@@ -623,7 +586,7 @@ public abstract class AbstractNTOutputAdapter
   @Override
   public void setSymbolicName(String name)
   {
-    SymbolicName = name;
+    symbolicName = name;
   }
 
 // -----------------------------------------------------------------------------
@@ -657,15 +620,15 @@ public abstract class AbstractNTOutputAdapter
   public void RegisterClientManager() throws InitializationException
   {
     // Set the client reference and the base services first
-    ClientManager.registerClient(pipeName, getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(), getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHSIZE,  ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_MAX_SLEEP,  ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATS,      ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OUTPUTNAME, ClientManager.PARAM_MANDATORY_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHSIZE,  ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_MAX_SLEEP,  ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATS,      ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OUTPUTNAME, ClientManager.PARAM_MANDATORY_DYNAMIC);
   }
 
  /**
@@ -724,17 +687,17 @@ public abstract class AbstractNTOutputAdapter
     {
       if (Parameter.equals(""))
       {
-        return Integer.toString(BatchSize);
+        return Integer.toString(batchSize);
       }
       else
       {
         try
         {
-          BatchSize = Integer.parseInt(Parameter);
+          batchSize = Integer.parseInt(Parameter);
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error(
+                    getPipeLog().error(
                 "Invalid number for batch size. Passed value = <" +
                 Parameter + ">");
         }
@@ -747,17 +710,17 @@ public abstract class AbstractNTOutputAdapter
     {
       if (Parameter.equals(""))
       {
-        return Integer.toString(BufferSize);
+        return Integer.toString(bufferSize);
       }
       else
       {
         try
         {
-          BufferSize = Integer.parseInt(Parameter);
+          bufferSize = Integer.parseInt(Parameter);
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error(
+                    getPipeLog().error(
                 "Invalid number for batch size. Passed value = <" +
                 Parameter + ">");
         }
@@ -770,14 +733,14 @@ public abstract class AbstractNTOutputAdapter
     {
       if (Init)
       {
-          OutputName = Parameter;
+          outputName = Parameter;
           ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return OutputName;
+          return outputName;
         }
         else
         {
@@ -800,7 +763,7 @@ public abstract class AbstractNTOutputAdapter
         }
         catch (NumberFormatException nfe)
         {
-          pipeLog.error(
+                    getPipeLog().error(
                 "Invalid number for sleep time. Passed value = <" +
                 Parameter + ">");
         }
@@ -811,7 +774,7 @@ public abstract class AbstractNTOutputAdapter
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+            getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -847,7 +810,7 @@ public abstract class AbstractNTOutputAdapter
                            throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, SymbolicName,
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), symbolicName,
                                                   SERVICE_BUFFERSIZE,DEFAULT_BUFFERSIZE);
 
     return tmpFile;
@@ -883,7 +846,8 @@ public abstract class AbstractNTOutputAdapter
       throw new InitializationException ("Output Adapter Name <" +
                                          getSymbolicName() +
                                          ".OutputName> not set for <" +
-                                         getSymbolicName() + ">");
+                                         getSymbolicName() + ">",
+                                         getSymbolicName());
     }
 
     return tmpParam;
@@ -897,4 +861,48 @@ public abstract class AbstractNTOutputAdapter
   {
     TerminatingAdaptor = Terminator;
   }
+
+    /**
+     * @return the pipeName
+     */
+    public String getPipeName() {
+      return pipeline.getSymbolicName();
+    }
+
+    /**
+     * @return the pipeline
+     */
+  @Override
+    public IPipeline getPipeline() {
+      return pipeline;
+    }
+
+ /**
+  * Set the pipeline reference so the input adapter can control the scheduler
+  *
+  * @param pipeline the Pipeline to set
+  */
+  @Override
+  public void setPipeline(IPipeline pipeline)
+  {
+    this.pipeline = pipeline;
+  }
+
+   /**
+    * Return the pipeline logger.
+    * 
+    * @return The logger
+    */
+    protected ILogger getPipeLog() {
+      return pipeline.getPipeLog();
+    }
+
+   /**
+    * Return the exception handler.
+    * 
+    * @return The exception handler
+    */
+    protected ExceptionHandler getExceptionHandler() {
+      return pipeline.getPipelineExceptionHandler();
+    }
 }

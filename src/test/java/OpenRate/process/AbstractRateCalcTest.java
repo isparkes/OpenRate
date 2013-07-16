@@ -54,10 +54,12 @@
  */
 package OpenRate.process;
 
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.AbstractLogFactory;
+import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
 import OpenRate.resource.CacheFactory;
 import OpenRate.resource.DataSourceFactory;
@@ -67,6 +69,7 @@ import OpenRate.utils.ConversionUtils;
 import OpenRate.utils.PropertyUtils;
 import java.net.URL;
 import java.sql.Connection;
+import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
@@ -83,6 +86,9 @@ public class AbstractRateCalcTest
   private static String tmpResourceClassName;
   private static ResourceContext ctx = new ResourceContext();
   private static AbstractRateCalc instance;
+
+  // Used for logging and exception handling
+  private static String message; 
 
     public AbstractRateCalcTest() {
     }
@@ -102,10 +108,13 @@ public class AbstractRateCalcTest
       }
       catch (InitializationException ex)
       {
-        String Message = "Error reading the configuration file <" + FQConfigFileName + ">" + System.getProperty("user.dir");
-        Assert.fail(Message);
+        message = "Error reading the configuration file <" + FQConfigFileName + ">" + System.getProperty("user.dir");
+        Assert.fail(message);
       }
 
+      // Set up the OpenRate internal logger - this is normally done by app startup
+      OpenRate.getApplicationInstance();
+      
       // Get the data source name
       cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
                                                                                           "RateTestCache",
@@ -134,8 +143,8 @@ public class AbstractRateCalcTest
       // JDBC adapters to work properly using 1 configuration file.
       if(DBUtil.initDataSource(cacheDataSourceName) == null)
       {
-        String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractRateCalcTest>.";
-        Assert.fail(Message);
+        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractRateCalcTest>.";
+        Assert.fail(message);
       }
 
       // Get a connection
@@ -154,8 +163,8 @@ public class AbstractRateCalcTest
         else
         {
           // Not OK, fail the case
-          String Message = "Error dropping table TEST_PRICE_MODEL in test <AbstractRateCalcTest>.";
-          Assert.fail(Message);
+          message = "Error dropping table TEST_PRICE_MODEL in test <AbstractRateCalcTest>.";
+          Assert.fail(message);
         }
       }
 
@@ -181,6 +190,16 @@ public class AbstractRateCalcTest
       Resource             = (IResource)ResourceClass.newInstance();
       Resource.init(resourceName);
       ctx.register(resourceName, Resource);
+      
+      // Link the logger
+      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
+      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
+      
+      // Get the list of pipelines we are going to make
+      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
+      
+      // Create the pipeline skeleton instance (assume only one for tests)
+      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
   }
 
     @AfterClass
@@ -210,8 +229,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Simple test using non-time bound non-tiered model
@@ -283,8 +302,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Simple test using non-time bound non-tiered model
@@ -365,8 +384,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Simple test using non-time bound non-tiered model
@@ -438,8 +457,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Simple test using non-time bound non-tiered model
@@ -511,8 +530,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Simple test using non-time bound non-tiered model
@@ -558,8 +577,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Simple test using non-time bound non-tiered model
@@ -604,8 +623,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Non-Tiered
@@ -655,8 +674,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Non-Tiered
@@ -708,8 +727,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Non-Tiered
@@ -761,8 +780,8 @@ public class AbstractRateCalcTest
         catch (InitializationException ie)
         {
           // Not OK, Assert.fail the case
-          String Message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(Message);
+          message = "Error getting cache instance in test <AbstractRateCalcTest>";
+          Assert.fail(message);
         }
 
         // Non-Tiered

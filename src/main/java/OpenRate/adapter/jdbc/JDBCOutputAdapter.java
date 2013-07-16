@@ -240,9 +240,9 @@ public abstract class JDBCOutputAdapter
     // prepare the data source - this does not open a connection
     if(DBUtil.initDataSource(dataSourceName) == null)
     {
-      String Message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Set up the optional statements
@@ -271,7 +271,7 @@ public abstract class JDBCOutputAdapter
     }
     catch (InitializationException ex)
     {
-      getExceptionHandler().reportException(new ProcessingException(ex));
+      getExceptionHandler().reportException(new ProcessingException(ex,getSymbolicName()));
     }
 
     // prepare the statements used for writing
@@ -282,9 +282,9 @@ public abstract class JDBCOutputAdapter
     catch (SQLException Sex)
     {
       // Not good. Abort the transaction
-      String Message = "Error preparing statements. Message <" + Sex.getMessage() + ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+      message = "Error preparing statements. message <" + Sex.getMessage() + ">. Aborting transaction.";
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
@@ -298,14 +298,14 @@ public abstract class JDBCOutputAdapter
       catch (SQLException Sex)
       {
         // Not good. Abort the transaction
-        String Message = "Could not count the parameters for insert statement. Message <" + Sex.getMessage() + ">. Aborting transaction.";
-        pipeLog.fatal(Message);
-        getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+        message = "Could not count the parameters for insert statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
+        getPipeLog().fatal(message);
+        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
 
-      String Message = "Parameter count for insert statement in module <" + getSymbolicName() + "> is <" + insertQueryParamCount + ">";
-      pipeLog.info(Message);
+      message = "Parameter count for insert statement in module <" + getSymbolicName() + "> is <" + insertQueryParamCount + ">";
+      getPipeLog().info(message);
     }
 
     // perform the Init (if defined)
@@ -318,9 +318,9 @@ public abstract class JDBCOutputAdapter
       catch (SQLException Sex)
       {
         // Not good. Abort the transaction
-        String Message = "Error executing init statement. Message <" + Sex.getMessage() + ">. Aborting transaction.";
-        pipeLog.fatal(Message);
-        getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+        message = "Error executing init statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
+        getPipeLog().fatal(message);
+        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
@@ -350,31 +350,31 @@ public abstract class JDBCOutputAdapter
     catch (ProcessingException pe)
     {
       // Pass the exception up
-      String Message = "Processing exception preparing valid record in module <" +
-                       getSymbolicName() + ">. Message <" + pe.getMessage() +
+      message = "Processing exception preparing valid record in module <" +
+                       getSymbolicName() + ">. message <" + pe.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(pe));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,pe,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (ArrayIndexOutOfBoundsException aiex)
     {
       // Not good. Abort the transaction
-      String Message = "Column Index preparing valid record in module <" +
-                       getSymbolicName() + ">. Message <" + aiex.getMessage() +
+      message = "Column Index preparing valid record in module <" +
+                       getSymbolicName() + ">. message <" + aiex.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (Exception ex)
     {
       // Not good. Abort the transaction
-      String Message = "Unexpected Exception preparing valid record in module <" +
-                        getSymbolicName() + ">. Message <" + ex.getMessage() +
+      message = "Unexpected Exception preparing valid record in module <" +
+                        getSymbolicName() + ">. message <" + ex.getMessage() +
                         ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, ex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
@@ -390,10 +390,10 @@ public abstract class JDBCOutputAdapter
         if (outRec.getOutputColumnCount() != insertQueryParamCount)
         {
           // columns we go does not match the expected columns
-          String Message = "Column count in module <" +
+          message = "Column count in module <" +
                           getSymbolicName() + "> does not match definition. Expected <" +
                           insertQueryParamCount + ">, got <" + outRec.getOutputColumnCount() + ">";
-          pipeLog.error(Message);
+          getPipeLog().error(message);
         }
         else
         {
@@ -460,42 +460,42 @@ public abstract class JDBCOutputAdapter
           catch (SQLException Sex)
           {
             // Not good. Abort the transaction
-            String Message = "SQL Exception inserting valid record in module <" +
-                            getSymbolicName() + ">. Message <" + Sex.getMessage() +
+            message = "SQL Exception inserting valid record in module <" +
+                            getSymbolicName() + ">. message <" + Sex.getMessage() +
                             ">. Aborting transaction.";
-            pipeLog.fatal(Message);
-            getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+            getPipeLog().fatal(message);
+            getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
           }
           catch (ArrayIndexOutOfBoundsException aiex)
           {
             // Not good. Abort the transaction
-            String Message = "Column Index inserting valid record in module <" +
-                            getSymbolicName() + ">. Message <" + aiex.getMessage() +
+            message = "Column Index inserting valid record in module <" +
+                            getSymbolicName() + ">. message <" + aiex.getMessage() +
                             ">. Aborting transaction.";
-            pipeLog.fatal(Message);
-            getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+            getPipeLog().fatal(message);
+            getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
           }
           catch (NumberFormatException nfe)
           {
             // Not good. Abort the transaction
-            String Message = "Number format inserting valid record in module <" +
-                            getSymbolicName() + ">. Message <" + nfe.getMessage() +
+            message = "Number format inserting valid record in module <" +
+                            getSymbolicName() + ">. message <" + nfe.getMessage() +
                             ">. Aborting transaction.";
-            pipeLog.fatal(Message);
-            getExceptionHandler().reportException(new ProcessingException(Message, nfe));
+            getPipeLog().fatal(message);
+            getExceptionHandler().reportException(new ProcessingException(message,nfe,getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
           }
           catch (Exception ex)
           {
             // Not good. Abort the transaction
-            String Message = "Unknown Exception inserting valid record in module <" +
-                            getSymbolicName() + ">. Message <" + ex.getMessage() +
+            message = "Unknown Exception inserting valid record in module <" +
+                            getSymbolicName() + ">. message <" + ex.getMessage() +
                             ">. Aborting transaction.";
-            pipeLog.fatal(Message);
+            getPipeLog().fatal(message);
 
-            getExceptionHandler().reportException(new ProcessingException(Message, ex));
+            getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
           }
         }
@@ -527,31 +527,31 @@ public abstract class JDBCOutputAdapter
     catch (ProcessingException pe)
     {
       // Pass the exception up
-      String Message = "Processing exception preparing error record in module <" +
-                       getSymbolicName() + ">. Message <" + pe.getMessage() +
+      message = "Processing exception preparing error record in module <" +
+                       getSymbolicName() + ">. message <" + pe.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(pe));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,pe,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (ArrayIndexOutOfBoundsException aiex)
     {
       // Not good. Abort the transaction
-      String Message = "Column Index preparing error record in module <" +
-                       getSymbolicName() + ">. Message <" + aiex.getMessage() +
+      message = "Column Index preparing error record in module <" +
+                       getSymbolicName() + ">. message <" + aiex.getMessage() +
                        ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
     catch (Exception ex)
     {
       // Not good. Abort the transaction
-      String Message = "Unknown Exception preparing error record in module <" +
-                        getSymbolicName() + ">. Message <" + ex.getMessage() +
+      message = "Unknown Exception preparing error record in module <" +
+                        getSymbolicName() + ">. message <" + ex.getMessage() +
                         ">. Aborting transaction.";
-      pipeLog.fatal(Message);
-      getExceptionHandler().reportException(new ProcessingException(Message, ex));
+      getPipeLog().fatal(message);
+      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
@@ -627,41 +627,41 @@ public abstract class JDBCOutputAdapter
         catch (SQLException Sex)
         {
           // Not good. Abort the transaction
-          String Message = "SQL Exception inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + Sex.getMessage() +
+          message = "SQL Exception inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + Sex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (ArrayIndexOutOfBoundsException aiex)
         {
           // Not good. Abort the transaction
-          String Message = "Column Index inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + aiex.getMessage() +
+          message = "Column Index inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + aiex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, aiex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (NumberFormatException nfe)
         {
           // Not good. Abort the transaction
-          String Message = "Number format inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + nfe.getMessage() +
+          message = "Number format inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + nfe.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, nfe));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,nfe,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
         catch (Exception ex)
         {
           // Not good. Abort the transaction
-          String Message = "Unknown Exception inserting error record in module <" +
-                          getSymbolicName() + ">. Message <" + ex.getMessage() +
+          message = "Unknown Exception inserting error record in module <" +
+                          getSymbolicName() + ">. message <" + ex.getMessage() +
                           ">. Aborting transaction.";
-          pipeLog.fatal(Message);
-          getExceptionHandler().reportException(new ProcessingException(Message, ex));
+          getPipeLog().fatal(message);
+          getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
       }
@@ -746,14 +746,14 @@ public abstract class JDBCOutputAdapter
       try
       {
         // Open the init statement
-        pipeLog.debug("Adapter <" + getSymbolicName() + "> performing commit.");
+        getPipeLog().debug("Adapter <" + getSymbolicName() + "> performing commit.");
         stmtCommitQuery.execute();
       }
       catch (SQLException Sex)
       {
-        String Message = "JDBCOutputAdapter Error performing commit <" + Sex.getMessage() + ">";
-        pipeLog.fatal(Message);
-        getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+        message = "JDBCOutputAdapter Error performing commit <" + Sex.getMessage() + ">";
+        getPipeLog().fatal(message);
+        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
@@ -772,14 +772,14 @@ public abstract class JDBCOutputAdapter
       try
       {
         // Open the init statement
-        pipeLog.debug("Adapter <" + getSymbolicName() + "> performing rollback.");
+        getPipeLog().debug("Adapter <" + getSymbolicName() + "> performing rollback.");
         stmtRollbackQuery.execute();
       }
       catch (SQLException Sex)
       {
-        String Message = "JDBCOutputAdapter Error performing rollback <" + Sex.getMessage() + ">";
-        pipeLog.fatal(Message);
-        getExceptionHandler().reportException(new ProcessingException(Message, Sex));
+        message = "JDBCOutputAdapter Error performing rollback <" + Sex.getMessage() + ">";
+        getPipeLog().fatal(message);
+        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
@@ -924,7 +924,7 @@ public abstract class JDBCOutputAdapter
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -948,12 +948,12 @@ public abstract class JDBCOutputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DATASOURCE_KEY, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_INIT_QUERY_KEY, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_INSERT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY,ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY,ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATUS_KEY,ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DATASOURCE_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INIT_QUERY_KEY, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INSERT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY,ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY,ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATUS_KEY,ClientManager.PARAM_DYNAMIC);
   }
 
   // -----------------------------------------------------------------------------
@@ -1064,15 +1064,15 @@ public abstract class JDBCOutputAdapter
     String query;
 
     // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    INIT_QUERY_KEY,
                                                    "None");
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INIT_QUERY_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INIT_QUERY_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1091,15 +1091,15 @@ public abstract class JDBCOutputAdapter
     String query;
 
     // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    INSERT_QUERY_KEY,
                                                    "None");
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INSERT_QUERY_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INSERT_QUERY_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1118,15 +1118,15 @@ public abstract class JDBCOutputAdapter
     String query;
 
     // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    COMMIT_QUERY_KEY,
                                                    "None");
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + COMMIT_QUERY_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + COMMIT_QUERY_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1145,15 +1145,15 @@ public abstract class JDBCOutputAdapter
     String query;
 
     // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    ROLLBACK_QUERY_KEY,
                                                    "None");
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + ROLLBACK_QUERY_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + ROLLBACK_QUERY_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1169,15 +1169,15 @@ public abstract class JDBCOutputAdapter
                         throws InitializationException
   {
     String DSN;
-    DSN = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    DSN = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                  DATASOURCE_KEY,
                                                  "None");
 
     if ((DSN == null) || DSN.equalsIgnoreCase("None"))
     {
-      String Message = "Output <" + getSymbolicName() + "> - Datasource name not found from <" + DATASOURCE_KEY + ">";
-      pipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Output <" + getSymbolicName() + "> - Datasource name not found from <" + DATASOURCE_KEY + ">";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return DSN;

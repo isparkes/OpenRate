@@ -58,7 +58,6 @@ package OpenRate.resource;
 import OpenRate.buffer.IBuffer;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.ISupplier;
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import java.util.HashMap;
 
@@ -82,9 +81,6 @@ public class LinkedBufferCache implements IResource
   // cache Categories
   private static HashMap<String, IBuffer> BufferList = new HashMap<>();
 
-  // reference to the exception handler
-  private ExceptionHandler handler;
-
   /**
    * default constructor - protected
    */
@@ -104,7 +100,7 @@ public class LinkedBufferCache implements IResource
   {
     if (ResourceName.equals(RESOURCE_KEY) == false)
     {
-      throw new InitializationException("The linked buffer cache must be called " + RESOURCE_KEY);
+      throw new InitializationException("The linked buffer cache must be called " + RESOURCE_KEY,getSymbolicName());
     }
   }
 
@@ -133,7 +129,7 @@ public class LinkedBufferCache implements IResource
     }
     else
     {
-      throw new InitializationException("Tried to get supplier <"+name+">, but this has not been stored");
+      throw new InitializationException("Tried to get supplier <"+name+">, but this has not been stored",getSymbolicName());
     }
   }
 
@@ -153,7 +149,7 @@ public class LinkedBufferCache implements IResource
     }
     else
     {
-      throw new InitializationException("Tried to get Consumer <"+name+">, but this has not been stored");
+      throw new InitializationException("Tried to get Consumer <"+name+">, but this has not been stored",getSymbolicName());
     }
   }
 
@@ -168,7 +164,7 @@ public class LinkedBufferCache implements IResource
   {
     if (BufferList.containsKey(name))
     {
-      throw new InitializationException("Buffer <"+name+"> has already been stored");
+      throw new InitializationException("Buffer <"+name+"> has already been stored",getSymbolicName());
     }
     else
     {
@@ -183,16 +179,5 @@ public class LinkedBufferCache implements IResource
   public String getSymbolicName()
   {
     return symbolicName;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 }

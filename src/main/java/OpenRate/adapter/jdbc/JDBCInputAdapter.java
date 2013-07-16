@@ -56,6 +56,7 @@
 package OpenRate.adapter.jdbc;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.adapter.AbstractTransactionalInputAdapter;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
@@ -131,32 +132,32 @@ public abstract class JDBCInputAdapter
   /**
    * This is the statement we use to validate the connection
    */
-  protected String ValidateQuery;
+  protected String validateQuery;
 
   /**
    * Count the number of records waiting for processing
    */
-  protected String CountQuery;
+  protected String countQuery;
 
   /**
    * Prepare the records for processing
    */
-  protected String InitQuery;
+  protected String initQuery;
 
   /**
    * Get the prepared records
    */
-  protected String SelectQuery;
+  protected String selectQuery;
 
   /**
    * Commit the processed records if the transaction ended correctly
    */
-  protected String CommitQuery;
+  protected String commitQuery;
 
   /**
    * Rollback the changes if the transaction did not end correctly
    */
-  protected String RollbackQuery;
+  protected String rollbackQuery;
 
   /**
    * This is the name of the data source
@@ -166,27 +167,27 @@ public abstract class JDBCInputAdapter
   /**
    * Prepared count query
    */
-  protected PreparedStatement StmtCountQuery;
+  protected PreparedStatement stmtCountQuery;
 
   /**
    * Prepared Init Query
    */
-  protected PreparedStatement StmtInitQuery;
+  protected PreparedStatement stmtInitQuery;
 
   /**
    * Prepared Select Query
    */
-  protected PreparedStatement StmtSelectQuery;
+  protected PreparedStatement stmtSelectQuery;
 
   /**
    * Prepared Commit Query
    */
-  protected PreparedStatement StmtCommitQuery;
+  protected PreparedStatement stmtCommitQuery;
 
   /**
    * Prepared Rollback Query
    */
-  protected PreparedStatement StmtRollbackQuery;
+  protected PreparedStatement stmtRollbackQuery;
 
   // this is the connection from the connection pool that we are using
   private static final String DATASOURCE_KEY = "DataSource";
@@ -284,9 +285,9 @@ public abstract class JDBCInputAdapter
     // prepare the data source - this does not open a connection
     if(DBUtil.initDataSource(dataSourceName) == null)
     {
-      String Message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      PipeLog.error(Message);
-      throw new InitializationException(Message);
+      message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -310,7 +311,7 @@ public abstract class JDBCInputAdapter
     DBRecord      tmpRecord;
     IRecord       batchRecord;
 
-    PipeLog.debug("loadBatch()");
+    getPipeLog().debug("loadBatch()");
     Outbatch = new ArrayList<>();
 
     // This layer deals with opening the stream if we need to
@@ -328,7 +329,7 @@ public abstract class JDBCInputAdapter
         {
           // Open the select statement
           prepareSelectStatement();
-          rs = StmtSelectQuery.executeQuery();
+          rs = stmtSelectQuery.executeQuery();
 
           // See if we get an empty result set
           rs.last();
@@ -366,8 +367,8 @@ public abstract class JDBCInputAdapter
           }
           else
           {
-            String Message = "Select statement did not return rows in <" + getSymbolicName() + ">";
-            PipeLog.error(Message);
+            message = "Select statement did not return rows in <" + getSymbolicName() + ">";
+            getPipeLog().error(message);
 
             // No work to do - return the empty batch
             return Outbatch;
@@ -375,8 +376,8 @@ public abstract class JDBCInputAdapter
         }
         catch (SQLException Sex)
         {
-          String Message = "Select SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-          PipeLog.error(Message);
+          message = "Select SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+          getPipeLog().error(message);
 
           // Stop any transactions that are open
           if (transactionNumber > 0)
@@ -388,7 +389,7 @@ public abstract class JDBCInputAdapter
           closeSelectStatement();
 
           // report the exception
-          throw new ProcessingException(Message);
+          throw new ProcessingException(message,getSymbolicName());
         }
       }
     }
@@ -402,7 +403,7 @@ public abstract class JDBCInputAdapter
         Rsmd = rs.getMetaData();
         ColumnCount = Rsmd.getColumnCount();
 
-        while ((ThisBatchCounter < BatchSize) & (!rs.isLast()))
+        while ((ThisBatchCounter < batchSize) & (!rs.isLast()))
         {
           // get next row
           rs.next();
@@ -436,7 +437,7 @@ public abstract class JDBCInputAdapter
         if (transactionAbortRequest(transactionNumber))
         {
           // if so, clear down the out batch, so we don't keep filling the pipe
-          PipeLog.warning("Pipe <"+ getSymbolicName() + "> discarded <" + Outbatch.size() + "> input records, because of pending abort.");
+          getPipeLog().warning("Pipe <"+ getSymbolicName() + "> discarded <" + Outbatch.size() + "> input records, because of pending abort.");
           Outbatch.clear();
         }
 
@@ -445,9 +446,9 @@ public abstract class JDBCInputAdapter
       }
       catch (SQLException Sex)
       {
-        String Message = "Retrieve SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
-        throw new ProcessingException(Message);
+        message = "Retrieve SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
+        throw new ProcessingException(message,getSymbolicName());
       }
 
       // See if we need to add a stream trailer record - this is done immediately
@@ -491,9 +492,9 @@ public abstract class JDBCInputAdapter
       }
       catch (SQLException Sex)
       {
-        String Message = "Close SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
-        throw new ProcessingException(Message);
+        message = "Close SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
+        throw new ProcessingException(message,getSymbolicName());
       }
     }
 
@@ -552,14 +553,14 @@ public abstract class JDBCInputAdapter
     {
       if (Init)
       {
-        InitQuery = Parameter;
+        initQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return InitQuery;
+          return initQuery;
         }
         else
         {
@@ -572,14 +573,14 @@ public abstract class JDBCInputAdapter
     {
       if (Init)
       {
-        CountQuery = Parameter;
+        countQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return CountQuery;
+          return countQuery;
         }
         else
         {
@@ -592,14 +593,14 @@ public abstract class JDBCInputAdapter
     {
       if (Init)
       {
-        SelectQuery = Parameter;
+        selectQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return SelectQuery;
+          return selectQuery;
         }
         else
         {
@@ -612,14 +613,14 @@ public abstract class JDBCInputAdapter
     {
       if (Init)
       {
-        CommitQuery = Parameter;
+        commitQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return CommitQuery;
+          return commitQuery;
         }
         else
         {
@@ -632,14 +633,14 @@ public abstract class JDBCInputAdapter
     {
       if (Init)
       {
-        RollbackQuery = Parameter;
+        rollbackQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return RollbackQuery;
+          return rollbackQuery;
         }
         else
         {
@@ -652,14 +653,14 @@ public abstract class JDBCInputAdapter
     {
       if (Init)
       {
-        ValidateQuery = Parameter;
+        validateQuery = Parameter;
         ResultCode = 0;
       }
       else
       {
         if (Parameter.equals(""))
         {
-          return ValidateQuery;
+          return validateQuery;
         }
         else
         {
@@ -690,7 +691,7 @@ public abstract class JDBCInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -714,13 +715,13 @@ public abstract class JDBCInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DATASOURCE_KEY, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_INIT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_SELECT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_COUNT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_CONNECTION_TEST_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DATASOURCE_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INIT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_SELECT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COUNT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CONNECTION_TEST_KEY,ClientManager.PARAM_MANDATORY);
   }
 
   // -----------------------------------------------------------------------------
@@ -810,7 +811,7 @@ public abstract class JDBCInputAdapter
   @Override
   public void cleanup()
   {
-    PipeLog.debug("JDBCInputAdapter running cleanup");
+    getPipeLog().debug("JDBCInputAdapter running cleanup");
 
     // Close the statements and connections
     closeInitStatement();
@@ -838,13 +839,13 @@ public abstract class JDBCInputAdapter
       openConnection();
 
       // prepare the SQL for the TestStatement
-      StmtInitQuery = JDBCcon.prepareStatement(InitQuery);
+      stmtInitQuery = JDBCcon.prepareStatement(initQuery);
     }
     catch (SQLException Sex)
     {
-      String Message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + InitQuery + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + initQuery + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -861,15 +862,15 @@ public abstract class JDBCInputAdapter
       openConnection();
 
       // prepare the SQL for the TestStatement
-      StmtCountQuery = JDBCcon.prepareStatement(CountQuery,
+      stmtCountQuery = JDBCcon.prepareStatement(countQuery,
                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                  ResultSet.CONCUR_READ_ONLY);
     }
     catch (SQLException Sex)
     {
-      String Message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + CountQuery + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + countQuery + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -885,25 +886,25 @@ public abstract class JDBCInputAdapter
       // Get the connection
       openConnection();
       // prepare the SQL for the TestStatement
-      StmtSelectQuery = JDBCcon.prepareStatement(SelectQuery,
+      stmtSelectQuery = JDBCcon.prepareStatement(selectQuery,
                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                  ResultSet.CONCUR_READ_ONLY);
-      if (StmtSelectQuery.getMaxRows() > BatchSize)
+      if (stmtSelectQuery.getMaxRows() > batchSize)
       {
-        String Message = "Input Adapter <" + getSymbolicName() + "> cannot get requested batch size <" + BatchSize + ">, setting to <" + StmtSelectQuery.getMaxRows() +">";
-        PipeLog.warning(Message);
-        StmtSelectQuery.setFetchSize(StmtSelectQuery.getMaxRows());
+        message = "Input Adapter <" + getSymbolicName() + "> cannot get requested batch size <" + batchSize + ">, setting to <" + stmtSelectQuery.getMaxRows() +">";
+        getPipeLog().warning(message);
+        stmtSelectQuery.setFetchSize(stmtSelectQuery.getMaxRows());
       }
       else
       {
-        StmtSelectQuery.setFetchSize(BatchSize);
+        stmtSelectQuery.setFetchSize(batchSize);
       }
     }
     catch (SQLException Sex)
     {
-      String Message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + SelectQuery + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + selectQuery + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -920,37 +921,37 @@ public abstract class JDBCInputAdapter
       openConnection();
 
       // prepare the SQL for the TestStatement
-      if(CommitQuery == null || CommitQuery.isEmpty()){
-          StmtCommitQuery = null;
+      if(commitQuery == null || commitQuery.isEmpty()){
+          stmtCommitQuery = null;
       }else{
-        StmtCommitQuery = JDBCcon.prepareStatement(CommitQuery,
+        stmtCommitQuery = JDBCcon.prepareStatement(commitQuery,
                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                  ResultSet.CONCUR_READ_ONLY);
       }
     }
     catch (SQLException Sex)
     {
-      String Message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + CommitQuery + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + commitQuery + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
 
     try
     {
       // prepare the SQL for the TestStatement
-      if(RollbackQuery == null || RollbackQuery.isEmpty()){
-          StmtRollbackQuery = null;
+      if(rollbackQuery == null || rollbackQuery.isEmpty()){
+          stmtRollbackQuery = null;
       }else{
-        StmtRollbackQuery = JDBCcon.prepareStatement(RollbackQuery,
+        stmtRollbackQuery = JDBCcon.prepareStatement(rollbackQuery,
                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                  ResultSet.CONCUR_READ_ONLY);
       }
     }
     catch (SQLException Sex)
     {
-      String Message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + RollbackQuery + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + rollbackQuery + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -959,16 +960,16 @@ public abstract class JDBCInputAdapter
   */
   public void closeCountStatement()
   {
-    if (StmtCountQuery != null)
+    if (stmtCountQuery != null)
     {
       try
       {
-        StmtCountQuery.close();
+        stmtCountQuery.close();
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + CountQuery + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + countQuery + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
       }
     }
 
@@ -982,16 +983,16 @@ public abstract class JDBCInputAdapter
   public void closeInitStatement()
   {
     // close all the connections and deallocate objects
-    if (StmtInitQuery != null)
+    if (stmtInitQuery != null)
     {
       try
       {
-        StmtInitQuery.close();
+        stmtInitQuery.close();
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + InitQuery + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + initQuery + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
       }
     }
 
@@ -1004,16 +1005,16 @@ public abstract class JDBCInputAdapter
   */
   public void closeSelectStatement()
   {
-    if (StmtSelectQuery != null)
+    if (stmtSelectQuery != null)
     {
       try
       {
-        StmtSelectQuery.close();
+        stmtSelectQuery.close();
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + SelectQuery + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + selectQuery + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
       }
     }
 
@@ -1026,29 +1027,29 @@ public abstract class JDBCInputAdapter
   */
   public void closeCommitRollbackStatement()
   {
-    if (StmtCommitQuery != null)
+    if (stmtCommitQuery != null)
     {
       try
       {
-        StmtCommitQuery.close();
+        stmtCommitQuery.close();
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + CommitQuery + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + commitQuery + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
       }
     }
 
-    if (StmtRollbackQuery != null)
+    if (stmtRollbackQuery != null)
     {
       try
       {
-        StmtRollbackQuery.close();
+        stmtRollbackQuery.close();
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + RollbackQuery + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + rollbackQuery + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
       }
     }
 
@@ -1071,12 +1072,12 @@ public abstract class JDBCInputAdapter
     }
     catch (SQLException Sex)
     {
-      String Message = "SQL Exception in <" + getSymbolicName() + "> opening connection. Message = <" + Sex.getMessage() +">";
-      handler.reportException(new ProcessingException(Message,Sex));
+      message = "SQL Exception in <" + getSymbolicName() + "> opening connection. message = <" + Sex.getMessage() +">";
+      getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
     }
     catch (InitializationException ie)
     {
-      handler.reportException(ie);
+      getExceptionHandler().reportException(ie);
     }
   }
 
@@ -1093,8 +1094,8 @@ public abstract class JDBCInputAdapter
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception in <" + getSymbolicName() + "> closing connection. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
+        message = "SQL Exception in <" + getSymbolicName() + "> closing connection. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
       }
     }
   }
@@ -1118,9 +1119,9 @@ public abstract class JDBCInputAdapter
       // prepare the count query
       prepareCountStatement();
 
-      if (StmtCountQuery.execute())
+      if (stmtCountQuery.execute())
       {
-        Trs = StmtCountQuery.getResultSet();
+        Trs = stmtCountQuery.getResultSet();
 
         if (Trs.next())
         {
@@ -1130,7 +1131,7 @@ public abstract class JDBCInputAdapter
           // Log what we have got
           if (InputAvail > 0)
           {
-            StatsLog.info("Input  <" + getSymbolicName() + "> found <" + InputAvail + "> events for processing");
+            OpenRate.getOpenRateStatsLog().info("Input  <" + getSymbolicName() + "> found <" + InputAvail + "> events for processing");
           }
         }
 
@@ -1142,9 +1143,9 @@ public abstract class JDBCInputAdapter
     }
     catch (SQLException Sex)
     {
-      String Message = "Count SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "Count SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
 
     return InputAvail;
@@ -1164,16 +1165,16 @@ public abstract class JDBCInputAdapter
       prepareInitStatement();
 
       // Execute it
-      StmtInitQuery.execute();
+      stmtInitQuery.execute();
 
       // Close the statement
       closeInitStatement();
     }
     catch (SQLException Sex)
     {
-      String Message = "Init SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "Init SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -1195,9 +1196,9 @@ public abstract class JDBCInputAdapter
       }
       catch (SQLException Sex)
       {
-        String Message = "SQL Exception closing resultset in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-        PipeLog.error(Message);
-        throw new ProcessingException(Message);
+        message = "SQL Exception closing resultset in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+        getPipeLog().error(message);
+        throw new ProcessingException(message,getSymbolicName());
       }
     }
   }
@@ -1216,7 +1217,7 @@ public abstract class JDBCInputAdapter
       prepareCommitRollbackStatement();
 
       // deinit the records so that we don't have to read them ever again
-      if(StmtCommitQuery != null){
+      if(stmtCommitQuery != null){
         perfomCommit();
       }
 
@@ -1225,9 +1226,9 @@ public abstract class JDBCInputAdapter
     }
     catch (SQLException Sex)
     {
-      String Message = "Commit SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "Commit SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
     }
   }
 
@@ -1245,7 +1246,7 @@ public abstract class JDBCInputAdapter
       prepareCommitRollbackStatement();
 
        // deinit the records so that we don't have to read them ever again
-       if(StmtRollbackQuery != null){
+       if(stmtRollbackQuery != null){
          perfomRollback();
        }
 
@@ -1254,9 +1255,9 @@ public abstract class JDBCInputAdapter
      }
      catch (SQLException Sex)
      {
-      String Message = "Rollback SQL Exception in <" + getSymbolicName() + ">. Message = <" + Sex.getMessage() +">";
-      PipeLog.error(Message);
-      throw new ProcessingException(Message);
+      message = "Rollback SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+      getPipeLog().error(message);
+      throw new ProcessingException(message,getSymbolicName());
      }
    }
 
@@ -1267,7 +1268,7 @@ public abstract class JDBCInputAdapter
    */
   public void perfomCommit() throws SQLException
   {
-    StmtCommitQuery.execute();
+    stmtCommitQuery.execute();
   }
 
   /**
@@ -1277,7 +1278,7 @@ public abstract class JDBCInputAdapter
    */
   public void perfomRollback() throws SQLException
   {
-    StmtRollbackQuery.execute();
+    stmtRollbackQuery.execute();
   }
 
   // -----------------------------------------------------------------------------
@@ -1305,12 +1306,9 @@ public abstract class JDBCInputAdapter
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      PipeLog.error(
-            "Initialisation statement not found from <" + INIT_QUERY_KEY +
-            ">");
-      throw new InitializationException("JDBCInputAdapter config error. " +
-                                        INIT_QUERY_KEY +
-                                        " property not found.");
+      message = "JDBCInputAdapter config error. " + INIT_QUERY_KEY + " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException();
     }
 
     return query;
@@ -1337,11 +1335,11 @@ public abstract class JDBCInputAdapter
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      PipeLog.error("Select statement not found from <" + SELECT_QUERY_KEY +
-                ">");
-      throw new InitializationException("JDBCInputAdapter config error. " +
+      message = "JDBCInputAdapter config error. " +
                                         SELECT_QUERY_KEY +
-                                        " property not found.");
+                                        " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1369,10 +1367,11 @@ public abstract class JDBCInputAdapter
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      PipeLog.error("Count statement not found from <" + COUNT_QUERY_KEY + ">");
-      throw new InitializationException("JDBCInputAdapter config error. " +
+      message = "JDBCInputAdapter config error. " +
                                         COUNT_QUERY_KEY +
-                                        " property not found.");
+                                        " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1398,12 +1397,11 @@ public abstract class JDBCInputAdapter
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      PipeLog.error(
-            "Deinitialisation statement not found from <" +
-            COMMIT_QUERY_KEY + ">");
-      throw new InitializationException("JDBCInputAdapter config error. " +
+      message = "JDBCInputAdapter config error. " +
                                         COMMIT_QUERY_KEY +
-                                        " property not found.");
+                                        " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1429,12 +1427,11 @@ public abstract class JDBCInputAdapter
 
     if ((query == null) || query.equalsIgnoreCase("None"))
     {
-      PipeLog.error(
-            "Deinitialisation statement not found from <" +
-            ROLLBACK_QUERY_KEY + ">");
-      throw new InitializationException("JDBCInputAdapter config error. " +
+      message = "JDBCInputAdapter config error. " +
                                         ROLLBACK_QUERY_KEY +
-                                        " property not found.");
+                                        " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;
@@ -1457,10 +1454,11 @@ public abstract class JDBCInputAdapter
 
     if ((DSN == null) || DSN.equalsIgnoreCase("None"))
     {
-      PipeLog.error("Datasource name not found from <" + DATASOURCE_KEY + ">");
-      throw new InitializationException("JDBCInputAdapter config error. " +
+      message = "JDBCInputAdapter config error. " +
                                         DATASOURCE_KEY +
-                                        " property not found.");
+                                        " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return DSN;

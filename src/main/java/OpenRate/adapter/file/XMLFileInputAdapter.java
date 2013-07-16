@@ -197,7 +197,7 @@ public abstract class XMLFileInputAdapter
   protected String ProcessingPrefix;
 
   // This is used for queueing up files ready for processing
-  private ArrayList<Integer> FileTransactionNumbers = new ArrayList<Integer>();
+  private ArrayList<Integer> FileTransactionNumbers = new ArrayList<>();
 
   // This is the current transaction number we are working on
   private int      transactionNumber = 0;
@@ -301,7 +301,7 @@ public abstract class XMLFileInputAdapter
     initFileName();
 
     // create the structure for storing filenames
-    CurrentFileNames = new HashMap <Integer, TransControlStructure>(10);
+    CurrentFileNames = new HashMap <>(10);
   }
 
  /**
@@ -330,7 +330,7 @@ public abstract class XMLFileInputAdapter
     //XMLRecord     tmpDataRecord;
     IRecord       batchRecord;
 
-    Outbatch = new ArrayList<IRecord>();
+    Outbatch = new ArrayList<>();
 
     // Check to see if there is any work to do, and if the transaction
     // manager can accept the new work (if it can't, no files will be assigned
@@ -380,11 +380,13 @@ public abstract class XMLFileInputAdapter
         }
         catch (FileNotFoundException exFileNotFound)
         {
-          PipeLog.error(
+          getPipeLog().error(
                 "Application is not able to read file : '" + getProcName(transactionNumber) +
                 "' ");
-          throw new ProcessingException("Application is not able to read file : '" +
-                                        getProcName(transactionNumber) + "' ", exFileNotFound);
+          throw new ProcessingException("Application is not able to read file <" +
+                                        getProcName(transactionNumber) + ">", 
+                                        exFileNotFound,
+                                        getSymbolicName());
         }
       }
 
@@ -392,11 +394,11 @@ public abstract class XMLFileInputAdapter
       try
       {
         // read from the file and prepare the batch
-        while ((reader.ready()) & (ThisBatchCounter < BatchSize))
+        while ((reader.ready()) & (ThisBatchCounter < batchSize))
         {
         	tmpFileRecord = new StringBuilder();
         	parser = new XMLParser(this);
-        	xmlValues = new HashMap<String, String>();
+        	xmlValues = new HashMap<>();
 
         	while(reader.ready())
           {
@@ -428,19 +430,19 @@ public abstract class XMLFileInputAdapter
         			}
         			catch (Exception exRecordError)
               {
-                String Message = "Application is not able to parse the record : '" +
+                message = "Application is not able to parse the record : '" +
                         getProcName(transactionNumber) + "' ";
-                PipeLog.error(Message);
-                throw new ProcessingException(Message, exRecordError);
-              }
-        			break;
-        		}
+                getPipeLog().error(message);
+                throw new ProcessingException(message,exRecordError,getSymbolicName());
+                }
+                    break;
+                    }
 
-	        	// skip blank records
-	        	if (tmpFileRecord.length() == 0)
-	        	{
-	        		continue;
-	        	}
+                    // skip blank records
+                    if (tmpFileRecord.length() == 0)
+                    {
+                            continue;
+                    }
         	}
 
           ThisBatchCounter++;
@@ -462,7 +464,7 @@ public abstract class XMLFileInputAdapter
         if (transactionAbortRequest(transactionNumber))
         {
           // if so, clear down the out batch, so we don't keep filling the pipe
-          PipeLog.warning("Pipe <"+ getSymbolicName() + "> discarded <" + Outbatch.size() + "> input records, because of pending abort.");
+          getPipeLog().warning("Pipe <"+ getSymbolicName() + "> discarded <" + Outbatch.size() + "> input records, because of pending abort.");
           Outbatch.clear();
         }
 
@@ -516,7 +518,7 @@ public abstract class XMLFileInputAdapter
           }
           catch (ProcessingException ex)
           {
-            PipeLog.error("Error flushing transaction in module <" + getSymbolicName() + ">. Message <" + ex.getMessage() + ">");
+            getPipeLog().error("Error flushing transaction in module <" + getSymbolicName() + ">. Message <" + ex.getMessage() + ">");
           }
 
           // Notify the transaction layer that we have finished
@@ -529,7 +531,7 @@ public abstract class XMLFileInputAdapter
       }
       catch (IOException ioex)
       {
-        PipeLog.fatal("Error reading input file. Message <" + ioex.getMessage() + ">");
+        getPipeLog().fatal("Error reading input file. Message <" + ioex.getMessage() + ">");
       }
     }
 
@@ -551,10 +553,12 @@ public abstract class XMLFileInputAdapter
     }
     catch (IOException exFileNotFound)
     {
-      PipeLog.error("Application is not able to close file : '" + getProcName(TransactionNumber) +
+      getPipeLog().error("Application is not able to close file : '" + getProcName(TransactionNumber) +
                 "' ");
-      throw new ProcessingException("Application is not able to read file : '" +
-                                    getProcName(TransactionNumber) + "' ", exFileNotFound);
+      throw new ProcessingException("Application is not able to read file <" +
+                                    getProcName(TransactionNumber) + ">", 
+                                    exFileNotFound,
+                                    getSymbolicName());
     }
   }
 
@@ -849,7 +853,7 @@ public abstract class XMLFileInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -873,16 +877,16 @@ public abstract class XMLFileInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_I_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_D_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_E_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_I_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_D_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_E_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 
   // -----------------------------------------------------------------------------
@@ -898,7 +902,7 @@ public abstract class XMLFileInputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PATH);
 
     return tmpFile;
   }
@@ -911,7 +915,7 @@ public abstract class XMLFileInputAdapter
                               throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PATH);
 
     return tmpFile;
   }
@@ -924,7 +928,7 @@ public abstract class XMLFileInputAdapter
                              throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PATH);
 
     return tmpFile;
   }
@@ -937,7 +941,7 @@ public abstract class XMLFileInputAdapter
                                  throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PREFIX);
 
     return tmpFile;
   }
@@ -950,7 +954,7 @@ public abstract class XMLFileInputAdapter
                                 throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PREFIX);
 
     return tmpFile;
   }
@@ -963,7 +967,7 @@ public abstract class XMLFileInputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PREFIX);
 
     return tmpFile;
   }
@@ -976,7 +980,7 @@ public abstract class XMLFileInputAdapter
                                  throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_I_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_SUFFIX);
 
     return tmpFile;
   }
@@ -989,7 +993,7 @@ public abstract class XMLFileInputAdapter
                                 throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_D_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_SUFFIX);
 
     return tmpFile;
   }
@@ -1002,7 +1006,7 @@ public abstract class XMLFileInputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(pipeName,getSymbolicName(),SERVICE_E_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_SUFFIX);
 
     return tmpFile;
   }
@@ -1015,7 +1019,7 @@ public abstract class XMLFileInputAdapter
                                  throws InitializationException
   {
     String tmpProcPrefix;
-    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
                                                                   "tmp");
 
@@ -1039,7 +1043,7 @@ public abstract class XMLFileInputAdapter
   private void initFileName()
                      throws InitializationException
   {
-    String  ErrMessage;
+    String  message;
     File    dir;
 
     /*
@@ -1052,49 +1056,49 @@ public abstract class XMLFileInputAdapter
     if (InputFilePath == null)
     {
       InputFilePath = ".";
-      ErrMessage = "Input file path not set. Defaulting to <.>.";
-      PipeLog.warning(ErrMessage);
+      message = "Input file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
     dir = new File(InputFilePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Input file path <" + InputFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Input file path <" + InputFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (DoneFilePath == null)
     {
       DoneFilePath = ".";
-      ErrMessage = "Done file path not set. Defaulting to <.>.";
-      PipeLog.warning(ErrMessage);
+      message = "Done file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
     dir = new File(DoneFilePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Done file path <" + DoneFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Done file path <" + DoneFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (ErrFilePath == null)
     {
       ErrFilePath = ".";
-      ErrMessage = "Error file path not set. Defaulting to <.>.";
-      PipeLog.warning(ErrMessage);
+      message = "Error file path not set. Defaulting to <.>.";
+      getPipeLog().warning(message);
     }
 
     // is the input file path valid?
     dir = new File(ErrFilePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Error file path <" + ErrFilePath + "> does not exist or is not a directory";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Error file path <" + ErrFilePath + "> does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
@@ -1102,9 +1106,9 @@ public abstract class XMLFileInputAdapter
           ErrFileSuffix))
     {
       // These look suspiciously similar
-      ErrMessage = "Done file and Error file cannot be the same";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Done file and Error file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
@@ -1112,9 +1116,9 @@ public abstract class XMLFileInputAdapter
           ErrFileSuffix))
     {
       // These look suspiciously similar
-      ErrMessage = "Input file and Error file cannot be the same";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Input file and Error file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
@@ -1122,9 +1126,9 @@ public abstract class XMLFileInputAdapter
           InputFileSuffix))
     {
       // These look suspiciously similar
-      ErrMessage = "Input file and Input file cannot be the same";
-      PipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Input file and Input file cannot be the same";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 
@@ -1166,7 +1170,7 @@ public abstract class XMLFileInputAdapter
     int            tmpTransNumber;
     int            FilesOpened;
     TransControlStructure tmpFileNames;
-    ArrayList<Integer> OpenedTransactions = new ArrayList<Integer>();
+    ArrayList<Integer> OpenedTransactions = new ArrayList<>();
 
     // This is the current filename we are working on
     String fileName;
@@ -1198,7 +1202,7 @@ public abstract class XMLFileInputAdapter
             // The transactional layer - we just trigger it here
             tmpTransNumber = createNewTransaction();
 
-            PipeLog.info("Input File name is <" + fileName + ">");
+            getPipeLog().info("Input File name is <" + fileName + ">");
 
             // Calculate the processing file name that we are using for this file
             procName = getProcFilePath(fileName,

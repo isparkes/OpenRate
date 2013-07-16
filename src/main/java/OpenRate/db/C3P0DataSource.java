@@ -86,6 +86,13 @@ public class C3P0DataSource implements IDBDataSource
 
   // reference to the exception handler
   private ExceptionHandler handler;
+  
+  // The symbolic name is used in the management of the pipeline (control and
+  // thread monitoring) and logging.
+  private String SymbolicName = "C3P0DataSource";
+
+  // used to simplify logging and exception handling
+  public String message;
 
   // -----------------------------------------------------------------------------
   // ------------------ C3P0 specific configuration options  ---------------------
@@ -150,30 +157,30 @@ public class C3P0DataSource implements IDBDataSource
 
       if (db_url == null || db_url.isEmpty())
       {
-        String Message = "Error recovering data source parameter <db_url> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <db_url> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       if (driver == null || driver.isEmpty())
       {
-        String Message = "Error recovering data source parameter <driver> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <driver> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       if (username == null || username.isEmpty())
       {
-        String Message = "Error recovering data source parameter <username> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <username> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       if (password == null)
       {
-        String Message = "Error recovering data source parameter <password> for data source <" + dataSourceName + ">";
-        FWlog.error(Message);
-        throw new InitializationException(Message);
+        message = "Error recovering data source parameter <password> for data source <" + dataSourceName + ">";
+        FWlog.error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       FWlog.info("Creating DataSource <" + dataSourceName + "> using driver <" + driver + "> from URL <" + db_url + ">");
@@ -183,9 +190,9 @@ public class C3P0DataSource implements IDBDataSource
     }
     catch (ClassNotFoundException cnfe)
     {
-      String Message = "Driver class <" + driver + "> not found for data source <" + dataSourceName + ">";
-      FWlog.error(Message);
-      throw new InitializationException(Message);
+      message = "Driver class <" + driver + "> not found for data source <" + dataSourceName + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     try
@@ -194,9 +201,9 @@ public class C3P0DataSource implements IDBDataSource
     }
     catch (PropertyVetoException ex)
     {
-      String Message = "Property veto for driver  <" + driver + "> for data source <" + dataSourceName + ">";
-      FWlog.error(Message);
-      throw new InitializationException(Message);
+      message = "Property veto for driver  <" + driver + "> for data source <" + dataSourceName + ">";
+      FWlog.error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     validationSQL = PropertyUtils.getPropertyUtils().getDataSourcePropertyValue(dataSourceName, VALIDATION_QUERY_KEY);
@@ -264,8 +271,8 @@ public class C3P0DataSource implements IDBDataSource
       }
       catch (SQLException ex)
       {
-        String Message = "Connection test failed for connection <" + dataSourceName + ">";
-        throw new InitializationException(Message);
+        message = "Connection test failed for connection <" + dataSourceName + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -282,4 +289,25 @@ public class C3P0DataSource implements IDBDataSource
   {
     this.handler = handler;
   }
+
+    /**
+     * @return the handler
+     */
+    public ExceptionHandler getHandler() {
+        return handler;
+    }
+
+    /**
+     * @return the SymbolicName
+     */
+    public String getSymbolicName() {
+        return SymbolicName;
+    }
+
+    /**
+     * @param SymbolicName the SymbolicName to set
+     */
+    public void setSymbolicName(String SymbolicName) {
+        this.SymbolicName = SymbolicName;
+    }
 }

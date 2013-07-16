@@ -186,9 +186,9 @@ public class RUMMapCache
     }
     catch (NumberFormatException nfe)
     {
-      String Message = "Could not parse initial object size <" + initialObjectSize +
+      message = "Could not parse initial object size <" + initialObjectSize +
                        "> for cache <" + getSymbolicName() + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // inform the user about the start of the price model phase
@@ -252,9 +252,9 @@ public class RUMMapCache
       }
       else
       {
-        String Message = "Unknown rating type <" + RUMType + ">";
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        message = "Unknown rating type <" + RUMType + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // so add the entry to the new map. No need to order it, it is the first
@@ -291,9 +291,9 @@ public class RUMMapCache
       }
       else
       {
-        String Message = "Unknown rating type <" + RUMType + ">";
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        message = "Unknown rating type <" + RUMType + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // Add the object to the ArrayList
@@ -359,10 +359,10 @@ public class RUMMapCache
     }
     catch (FileNotFoundException fnfe)
     {
-      String Message = "Not able to read file : <" +
-            CacheDataFile + ">. Message = <" + fnfe.getMessage() + ">";
-      getFWLog().error(Message);
-      throw new InitializationException(Message);
+      message = "Not able to read file : <" +
+            CacheDataFile + ">. message = <" + fnfe.getMessage() + ">";
+      getFWLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -396,18 +396,18 @@ public class RUMMapCache
     }
     catch (IOException ex)
     {
-      String Message = "Error reading input file <" + CacheDataFile +
+      message = "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      String Message =
+      message =
             "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record.";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     finally
     {
@@ -417,10 +417,10 @@ public class RUMMapCache
       }
       catch (IOException ex)
       {
-        String Message = "Error closing input file <" + CacheDataFile +
-                  ">. Message = <" + ex.getMessage() + ">";
-        getFWLog().error(Message);
-        throw new InitializationException(Message);
+        message = "Error closing input file <" + CacheDataFile +
+                  ">. message = <" + ex.getMessage() + ">";
+        getFWLog().error(message);
+        throw new InitializationException(message,getSymbolicName());
       }
     }
 
@@ -464,10 +464,10 @@ public class RUMMapCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Price Group Data for <" +
+      message = "Error performing SQL for retieving Price Group Data for <" +
                        getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -491,20 +491,20 @@ public class RUMMapCache
     }
     catch (SQLException Sex)
     {
-      String Message = "Error opening Price Group Data for <" +
+      message = "Error opening Price Group Data for <" +
                        getSymbolicName() + ">. SQL Error = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
     catch (NullPointerException npe)
     {
-      String Message = "Null value loading Price Group Data for <" +
+      message = "Null value loading Price Group Data for <" +
                        getSymbolicName() + ">. Group <" + tmpGroup +
                        ">, Model <" + tmpModel + ">, RUM <" + tmpRUM +
                        ">, Resource <" + tmpResource + ">, RUM Type <" +
                        tmpRUMType + ">, Step <" + tmpResCtr + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Close down stuff
@@ -516,10 +516,10 @@ public class RUMMapCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Price Group Data connection for <" +
+      message = "Error closing Price Group Data connection for <" +
             getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(Message);
-      throw new InitializationException(Message);
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     getFWLog().info(
@@ -535,7 +535,7 @@ public class RUMMapCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
  /**

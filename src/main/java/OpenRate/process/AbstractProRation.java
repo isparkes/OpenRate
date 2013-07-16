@@ -110,8 +110,8 @@ public abstract class AbstractProRation extends AbstractStubPlugIn
     }
     catch (ParseException ex)
     {
-      Message = "Error getting date in <" + getSymbolicName() + ">";
-      pipeLog.fatal(Message);
+      message = "Error getting date in <" + getSymbolicName() + ">";
+      getPipeLog().fatal(message);
     }
   }
 

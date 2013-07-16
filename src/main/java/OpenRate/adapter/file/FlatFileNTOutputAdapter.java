@@ -222,7 +222,7 @@ public abstract class FlatFileNTOutputAdapter
       }
       catch (IOException ioe)
       {
-        this.getExceptionHandler().reportException(new ProcessingException(ioe));
+        this.getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
       }
     }
 
@@ -253,7 +253,7 @@ public abstract class FlatFileNTOutputAdapter
       }
       catch (IOException ioe)
       {
-        this.getExceptionHandler().reportException(new ProcessingException(ioe));
+        this.getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
       }
     }
 
@@ -328,14 +328,14 @@ public abstract class FlatFileNTOutputAdapter
     {
       if (file.createNewFile() == false)
       {
-        pipeLog.error("output file already exists = " + filename);
+        getPipeLog().error("output file already exists = " + filename);
       }
 
       fwriter = new FileWriter(file);
     }
     catch (IOException ex)
     {
-      pipeLog.error("Error opening valid stream output for file " + filename);
+      getPipeLog().error("Error opening valid stream output for file " + filename);
     }
 
     validWriter = new BufferedWriter(fwriter, BUF_SIZE);
@@ -362,14 +362,14 @@ public abstract class FlatFileNTOutputAdapter
       {
         if (file.createNewFile() == false)
         {
-          pipeLog.error("output file already exists = " + filename);
+          getPipeLog().error("output file already exists = " + filename);
         }
 
         fwriter = new FileWriter(file);
       }
       catch (IOException ex)
       {
-        pipeLog.error("Error opening error stream output for file " + filename);
+        getPipeLog().error("Error opening error stream output for file " + filename);
       }
 
       errorWriter = new BufferedWriter(fwriter);
@@ -403,7 +403,7 @@ public abstract class FlatFileNTOutputAdapter
       }
       catch (IOException ioe)
       {
-        pipeLog.error("Error closing output file", ioe);
+        getPipeLog().error("Error closing output file", ioe);
         ErrorFound = true;
       }
 
@@ -418,7 +418,7 @@ public abstract class FlatFileNTOutputAdapter
         }
         catch (IOException ioe)
         {
-          pipeLog.error("Error closing output file", ioe);
+          getPipeLog().error("Error closing output file", ioe);
           ErrorFound = true;
         }
       }
@@ -826,7 +826,7 @@ public abstract class FlatFileNTOutputAdapter
 
     if (ResultCode == 0)
     {
-      pipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -850,19 +850,19 @@ public abstract class FlatFileNTOutputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FILE_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FILE_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_FILE_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ERR_PATH, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ERR_PREFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_ERR_SUFFIX, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_OUT_FILE, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_ERR_FILE, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FILE_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FILE_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_FILE_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ERR_PATH, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ERR_PREFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ERR_SUFFIX, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_OUT_FILE, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_ERR_FILE, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
 
 
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_OUT_FILE_NAME, false, false);
-    //ClientManager.registerClientService(getSymbolicName(), SERVICE_ERR_FILE_NAME, false, false);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OUT_FILE_NAME, false, false);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ERR_FILE_NAME, false, false);
   }
 
   // -----------------------------------------------------------------------------
@@ -877,7 +877,7 @@ public abstract class FlatFileNTOutputAdapter
                           throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_FILE_PATH);
 
     return tmpFile;
@@ -891,7 +891,7 @@ public abstract class FlatFileNTOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_FILE_PREFIX);
 
     return tmpFile;
@@ -905,7 +905,7 @@ public abstract class FlatFileNTOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_FILE_SUFFIX);
 
     return tmpFile;
@@ -919,7 +919,7 @@ public abstract class FlatFileNTOutputAdapter
                              throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_ERR_PATH);
 
     return tmpFile;
@@ -933,7 +933,7 @@ public abstract class FlatFileNTOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_ERR_PREFIX);
 
     return tmpFile;
@@ -947,7 +947,7 @@ public abstract class FlatFileNTOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
                                                   SERVICE_ERR_SUFFIX);
 
     return tmpFile;
@@ -961,7 +961,7 @@ public abstract class FlatFileNTOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                      SERVICE_DEL_EMPTY_OUT_FILE,
                                                      "");
 
@@ -976,7 +976,7 @@ public abstract class FlatFileNTOutputAdapter
                                throws InitializationException
   {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                      SERVICE_DEL_EMPTY_ERR_FILE,
                                                      "");
 
@@ -991,7 +991,7 @@ public abstract class FlatFileNTOutputAdapter
                                  throws InitializationException
   {
     String tmpProcPrefix;
-    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
                                                                   "tmp");
 
@@ -1007,31 +1007,31 @@ public abstract class FlatFileNTOutputAdapter
   */
   private void initFileName() throws InitializationException
   {
-    String ErrMessage;
+    String message;
     File   dir;
 
     if (filePath == null)
     {
       // we cannot do this, because we would open two files with the same name
-      pipeLog.fatal(
-            "Output adapter output file path has not been defined");
-      throw new InitializationException("Output adapter output file path has not been defined");
+      message = "Output adapter output file path has not been defined";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // if it is defined, is it valid?
     dir = new File(filePath);
     if (!dir.isDirectory())
     {
-      ErrMessage = "Processed file path does not exist or is not a directory";
-      pipeLog.fatal(ErrMessage);
-      throw new InitializationException(ErrMessage);
+      message = "Processed file path does not exist or is not a directory";
+      getPipeLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if (errPath == null)
     {
       // The path has not been defined
-      ErrMessage = "Using Single Output for Adapter <" + getSymbolicName() + ">";
-      pipeLog.info(ErrMessage);
+      message = "Using Single Output for Adapter <" + getSymbolicName() + ">";
+      getPipeLog().info(message);
       singleWriter = true;
     }
     else
@@ -1040,17 +1040,17 @@ public abstract class FlatFileNTOutputAdapter
       dir = new File(errPath);
       if (!dir.isDirectory())
       {
-        ErrMessage = "Output Adapter <" + getSymbolicName() + "> used an error file path <" + errPath + "> that does not exist or is not a directory";
-        pipeLog.fatal(ErrMessage);
-        throw new InitializationException(ErrMessage);
+        message = "Output Adapter <" + getSymbolicName() + "> used an error file path <" + errPath + "> that does not exist or is not a directory";
+        getPipeLog().fatal(message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       // Check that we do not have a collision
       if (filePrefix.equals(errPrefix) && fileSuffix.equals(errSuffix))
       {
         // use a single output file
-        ErrMessage = "Using Single Output for Adapter <" + getSymbolicName() + ">";
-        pipeLog.info(ErrMessage);
+        message = "Using Single Output for Adapter <" + getSymbolicName() + ">";
+        getPipeLog().info(message);
         singleWriter = true;
       }
     }

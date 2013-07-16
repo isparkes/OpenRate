@@ -63,7 +63,7 @@ import org.apache.log4j.Logger;
  * Log4JLogger
  *
  */
-public final class Log4JLogger extends OpenRate.logging.AstractLogger
+public final class Log4JLogger extends AstractLogger
 {
   /**
    * space for message templates.

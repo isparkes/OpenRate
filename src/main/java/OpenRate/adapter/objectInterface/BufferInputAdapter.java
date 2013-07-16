@@ -51,6 +51,7 @@
 
 package OpenRate.adapter.objectInterface;
 
+import OpenRate.OpenRate;
 import OpenRate.adapter.AbstractTransactionalInputAdapter;
 import OpenRate.buffer.ISupplier;
 import OpenRate.exception.InitializationException;
@@ -100,21 +101,21 @@ public abstract class BufferInputAdapter
   /**
    * Used to track the status of the number of the record we are processing
    */
-  protected int InputRecordNumber = 0;
+  protected int inputRecordNumber = 0;
 
   // This is our linked FIFO buffer
   private ISupplier linkedInputBuffer;
 
   // This tells us if we should look for new work or continue with something
   // that is going on at the moment
-  private boolean InputStreamOpen = false;
+  private boolean inputStreamOpen = false;
 
  /**
   * Holds the time stamp for the transaction
   */
-  protected String ORTransactionId = null;
+  protected String orTransactionId = null;
 
-  private int TransactionCounter = 0;
+  private int transactionCounter = 0;
 
   /**
    * Default Constructor
@@ -152,7 +153,7 @@ public abstract class BufferInputAdapter
 
     if (ConfigHelper == null || ConfigHelper.equals("NONE"))
     {
-      throw new InitializationException ("Please set the name of the buffer cache");
+      throw new InitializationException ("Please set the name of the buffer cache",getSymbolicName());
     }
 
     // get the buffer reference
@@ -163,15 +164,15 @@ public abstract class BufferInputAdapter
 
     if (LBC == null)
     {
-      String Message = "Could not find cache entry for <" + ConfigHelper + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + ConfigHelper + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     ConfigHelper = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(), "BufferName", "NONE");
 
     if (ConfigHelper == null || ConfigHelper.equals("NONE"))
     {
-      throw new InitializationException ("Please set the name of the module to link to");
+      throw new InitializationException ("Please set the name of the module to link to",getSymbolicName());
     }
 
     linkedInputBuffer = LBC.getSupplier(ConfigHelper);
@@ -179,9 +180,9 @@ public abstract class BufferInputAdapter
     // Check to see if we have the naughty batch size of 0. this is usually
     // because someone has overwritten the init() without calling the parent
     // init
-    if (BatchSize == 0)
+    if (batchSize == 0)
     {
-      throw new InitializationException("Batch size is zero");
+      throw new InitializationException("Batch size is zero",getSymbolicName());
     }
 
   }
@@ -208,7 +209,7 @@ public abstract class BufferInputAdapter
     Collection<IRecord> in;
 
     // Print the thread startup message
-    StatsLog.debug("PlugIn <" + Thread.currentThread().getName() +
+    OpenRate.getOpenRateStatsLog().debug("PlugIn <" + Thread.currentThread().getName() +
                    "> started, pulling from buffer <" + linkedInputBuffer.toString() +
                    ">, pushing to buffer <" + getBatchOutboundValidBuffer().toString() + ">");
 
@@ -218,12 +219,12 @@ public abstract class BufferInputAdapter
     // This layer deals with opening the stream if we need to
     if (linkedInputBuffer.getEventCount()>0 )
     {
-      if (InputStreamOpen == false)
+      if (inputStreamOpen == false)
       {
         if (canStartNewTransaction())
         {
           // we can start a new transaction
-          in = linkedInputBuffer.pull(BatchSize);
+          in = linkedInputBuffer.pull(batchSize);
 
           // Active loop
           iter = in.iterator();
@@ -251,21 +252,21 @@ public abstract class BufferInputAdapter
               {
                 if (r instanceof HeaderRecord)
                 {
-                  InputStreamOpen = true;
+                  inputStreamOpen = true;
 
                   // This is the transaction identifier for all records in this stream
-                  ORTransactionId = ""+new Date().getTime();
+                  orTransactionId = ""+new Date().getTime();
 
                   // Create a new transaction
-                  TransactionCounter = createNewTransaction();
+                  transactionCounter = createNewTransaction();
 
                   // Inform the transactional layer that we have started processing
-                  setTransactionProcessing(TransactionCounter);
+                  setTransactionProcessing(transactionCounter);
 
                   // Inject a stream header record into the stream
                   tmpHeader = (HeaderRecord) r;
-                  tmpHeader.setStreamName(ORTransactionId);
-                  tmpHeader.setTransactionNumber(TransactionCounter);
+                  tmpHeader.setStreamName(orTransactionId);
+                  tmpHeader.setTransactionNumber(transactionCounter);
 
                   // send for user processing
                   r = procHeader(r);
@@ -274,17 +275,17 @@ public abstract class BufferInputAdapter
                 if (r instanceof TrailerRecord)
                 {
                   tmpTrailer = (TrailerRecord) r;
-                  tmpTrailer.setStreamName(ORTransactionId);
-                  ORTransactionId = "";
-                  tmpTrailer.setTransactionNumber(TransactionCounter);
+                  tmpTrailer.setStreamName(orTransactionId);
+                  orTransactionId = "";
+                  tmpTrailer.setTransactionNumber(transactionCounter);
 
                   // Send the record for user processing
                   r = procTrailer(r);
 
                   // Notify the transaction layer that we have finished
-                  setTransactionFlushed(TransactionCounter);
+                  setTransactionFlushed(transactionCounter);
 
-                  InputStreamOpen = false;
+                  inputStreamOpen = false;
                 }
               }
             }
@@ -302,7 +303,7 @@ public abstract class BufferInputAdapter
       else
       {
         // we are already in a stream, continue
-        in = linkedInputBuffer.pull(BatchSize);
+        in = linkedInputBuffer.pull(batchSize);
 
         // Active loop
         iter = in.iterator();
@@ -330,21 +331,21 @@ public abstract class BufferInputAdapter
             {
               if (r instanceof HeaderRecord)
               {
-                InputStreamOpen = true;
+                inputStreamOpen = true;
 
                 // This is the transaction identifier for all records in this stream
-                ORTransactionId = ""+new Date().getTime();
+                orTransactionId = ""+new Date().getTime();
 
                 // Create a new transaction
-                TransactionCounter = createNewTransaction();
+                transactionCounter = createNewTransaction();
 
                 // Inform the transactional layer that we have started processing
-                setTransactionProcessing(TransactionCounter);
+                setTransactionProcessing(transactionCounter);
 
                 // Inject a stream header record into the stream
                 tmpHeader = (HeaderRecord) r;
-                tmpHeader.setStreamName(ORTransactionId);
-                tmpHeader.setTransactionNumber(TransactionCounter);
+                tmpHeader.setStreamName(orTransactionId);
+                tmpHeader.setTransactionNumber(transactionCounter);
 
                 // send for user processing
                 r = procHeader(r);
@@ -353,17 +354,17 @@ public abstract class BufferInputAdapter
               if (r instanceof TrailerRecord)
               {
                 tmpTrailer = (TrailerRecord) r;
-                tmpTrailer.setStreamName(ORTransactionId);
-                ORTransactionId = "";
-                tmpTrailer.setTransactionNumber(TransactionCounter);
+                tmpTrailer.setStreamName(orTransactionId);
+                orTransactionId = "";
+                tmpTrailer.setTransactionNumber(transactionCounter);
 
                 // Send the record for user processing
                 r = procTrailer(r);
 
                 // Notify the transaction layer that we have finished
-                setTransactionFlushed(TransactionCounter);
+                setTransactionFlushed(transactionCounter);
 
-                InputStreamOpen = false;
+                inputStreamOpen = false;
               }
             }
           }
@@ -451,7 +452,7 @@ public abstract class BufferInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -475,6 +476,6 @@ public abstract class BufferInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    //ClientManager.RegisterClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 }

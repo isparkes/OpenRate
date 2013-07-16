@@ -55,7 +55,9 @@
 
 package OpenRate;
 
+import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
+import OpenRate.logging.ILogger;
 import OpenRate.transaction.ISyncPoint;
 
 /**
@@ -138,4 +140,18 @@ public interface IPipeline
   * @return true if the pipeline aborted
   */
   public boolean isAborted();
+  
+ /**
+  * Returns the pipeline logger.
+  * 
+  * @return The logger for the pipeline
+  */
+  public ILogger getPipeLog();
+  
+ /**
+  * Returns the pipeline exception handler.
+  * 
+  * @return The exception handler for the pipeline
+  */
+  public ExceptionHandler getPipelineExceptionHandler();
 }

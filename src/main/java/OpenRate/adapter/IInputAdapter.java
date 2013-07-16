@@ -112,4 +112,9 @@ public interface IInputAdapter
   * @param pipeline the Pipeline to set
   */
   public void setPipeline(IPipeline pipeline);
+  
+  /**
+   * @return the pipeline
+   */
+  public IPipeline getPipeline();  
 }

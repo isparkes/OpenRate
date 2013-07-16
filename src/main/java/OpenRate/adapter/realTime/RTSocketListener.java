@@ -84,7 +84,7 @@ public class RTSocketListener implements Runnable, IRTListener
    * messages. This is instantiated during pipe startup, because at this
    * point we don't know the name of the pipe and therefore the logger to use.
    */
-  protected ILogger PipeLog = null;
+  protected ILogger pipeLog = null;
 
   /**
    * The PipeLog is the logger which should be used for all statistics related
@@ -99,7 +99,7 @@ public class RTSocketListener implements Runnable, IRTListener
   private int ourConnectionID;
 
   // The identifier of this thread
-  private String ThreadId;
+  private String threadId;
 
   // used for reporting exceptions to the pipe handler
   private ExceptionHandler handler;
@@ -146,13 +146,13 @@ public class RTSocketListener implements Runnable, IRTListener
       br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
       // Go into the accept loop
-      PipeLog.debug("Started to listed on <" + ThreadId + ">");
+      pipeLog.debug("Started to listed on <" + threadId + ">");
 
       //reads the input data
       while((input = br.readLine()) != null)
       {
         // tell what info we have got
-        PipeLog.debug("Got data <" + input + "> on <" + ThreadId + ">");
+        pipeLog.debug("Got data <" + input + "> on <" + threadId + ">");
 
         // Create the carrier record, and set the data and ID
         RTRecordToProcess = new FlatRecord();
@@ -165,7 +165,7 @@ public class RTSocketListener implements Runnable, IRTListener
         // Output the processed data
         if (OutRecord != null)
         {
-          PipeLog.debug("sent <" + OutRecord.getData() + ">");
+          pipeLog.debug("sent <" + OutRecord.getData() + ">");
           out.print(OutRecord.getData());
           out.flush();
         }
@@ -173,7 +173,7 @@ public class RTSocketListener implements Runnable, IRTListener
     }
     catch(IOException e)
     {
-      String Message = "OpenRate RT Listener IO error: " + e.getClass() + ": " +
+        String message = "OpenRate RT Listener IO error: " + e.getClass() + ": " +
         e.getMessage();
 
       // if we get a "Connection reset", ignore it
@@ -184,7 +184,7 @@ public class RTSocketListener implements Runnable, IRTListener
       else
       {
         // report the exception
-        handler.reportException(new ProcessingException(Message));
+        handler.reportException(new ProcessingException(message,threadId));
       }
     }
     catch(ProcessingException pe)
@@ -192,13 +192,13 @@ public class RTSocketListener implements Runnable, IRTListener
       // just pass it up
       handler.reportException(pe);
     }
-    catch(Exception e)
+    catch(Exception ex)
     {
-      String Message = "OpenRate RT Listener exception: " + e.getClass() + ": " +
-        e.getMessage();
+      String message = "OpenRate RT Listener exception: " + ex.getClass() + ": " +
+      ex.getMessage();
 
       // report the exception
-      handler.reportException(new ProcessingException(Message,e));
+      handler.reportException(new ProcessingException(message,ex,threadId));
     }
     finally
     {
@@ -222,7 +222,7 @@ public class RTSocketListener implements Runnable, IRTListener
       }
       catch(IOException e)
       {
-        PipeLog.error("SocketListener.run() error closing objects: " + e.getClass()
+        pipeLog.error("SocketListener.run() error closing objects: " + e.getClass()
         + ": " + e.getMessage(),e);
       }
       //removes one connection count from the SockectConnectionData since
@@ -249,7 +249,7 @@ public class RTSocketListener implements Runnable, IRTListener
   */
   void setPipelineLog(ILogger newPipeLog)
   {
-    this.PipeLog = newPipeLog;
+    this.pipeLog = newPipeLog;
   }
 
  /**
@@ -259,7 +259,7 @@ public class RTSocketListener implements Runnable, IRTListener
   */
   void setThreadId(String threadId)
   {
-    this.ThreadId = threadId;
+    this.threadId = threadId;
   }
 
  /**
@@ -269,7 +269,7 @@ public class RTSocketListener implements Runnable, IRTListener
   */
   String getThreadId()
   {
-    return ThreadId;
+    return threadId;
   }
 
  /**

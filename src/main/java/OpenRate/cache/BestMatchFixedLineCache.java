@@ -149,11 +149,10 @@ public class BestMatchFixedLineCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
-      String Message = "Application is not able to read file : <" +
-            CacheDataFile + ">";
-      throw new InitializationException(Message, exFileNotFound);
+      message = "Application is not able to read file : <" + CacheDataFile + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -179,11 +178,11 @@ public class BestMatchFixedLineCache
             if (formFactor != 0)
             {
               // this is a change - NO NO
-              String Message = "Form factor change <" + CacheDataFile +
+              message = "Form factor change <" + CacheDataFile +
               "> in record <" + ZonesLoaded + ">. Originally got <" + formFactor +
               "> fields in a record, not getting <" + ZoneFields.length + ">";
 
-              throw new InitializationException(Message);
+              throw new InitializationException(message,getSymbolicName());
             }
             else
             {
@@ -195,10 +194,10 @@ public class BestMatchFixedLineCache
           if (ZoneFields.length < 4)
           {
             // There are not enough fields
-            String Message = "Error reading input file <" + CacheDataFile +
+            message = "Error reading input file <" + CacheDataFile +
             "> in record <" + ZonesLoaded + ">. Malformed Record.";
 
-            throw new InitializationException(Message);
+            throw new InitializationException(message,getSymbolicName());
           }
 
           if (ZoneFields.length >= 4)
@@ -218,10 +217,10 @@ public class BestMatchFixedLineCache
           // Update to the log file
           if ((ZonesLoaded % loadingLogNotificationStep) == 0)
           {
-            String Message = "Best Match Data Loading: <" + ZonesLoaded +
+            String message = "Best Match Data Loading: <" + ZonesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
         }
       }
@@ -240,8 +239,8 @@ public class BestMatchFixedLineCache
       }
       catch (IOException ex)
       {
-        String Message = "Error closing input file <" + CacheDataFile + ">";
-        throw new InitializationException(Message, ex);
+        message = "Error closing input file <" + CacheDataFile + ">";
+        throw new InitializationException(message,ex,getSymbolicName());
       }
     }
 
@@ -286,8 +285,8 @@ public class BestMatchFixedLineCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Best Match data";
-      throw new InitializationException(Message,ex);
+      message = "Error performing SQL for retieving Best Match data";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -307,10 +306,9 @@ public class BestMatchFixedLineCache
         if (formFactor < 4)
         {
           // There are not enough fields
-          String Message = "Error reading input data from <" + cacheDataSourceName +
+          message = "Error reading input data from <" + cacheDataSourceName +
           "> in record <" + ZonesLoaded + ">. Not enough fields.";
-
-          throw new InitializationException(Message);
+          throw new InitializationException(message,getSymbolicName());
         }
 
         if (formFactor >= 4)
@@ -330,17 +328,17 @@ public class BestMatchFixedLineCache
         // Update to the log file
         if ((ZonesLoaded % loadingLogNotificationStep) == 0)
         {
-          String Message = "Best Match Data Loading: <" + ZonesLoaded +
+          message = "Best Match Data Loading: <" + ZonesLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Search Map Data for <" + cacheDataSourceName + ">";
-      throw new InitializationException(Message, ex);
+      message = "Error opening Search Map Data for <" + cacheDataSourceName + ">";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -352,9 +350,9 @@ public class BestMatchFixedLineCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Search Map Data connection for <" +
+      message = "Error closing Search Map Data connection for <" +
             cacheDataSourceName + ">";
-      throw new InitializationException(Message,ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     getFWLog().info(
@@ -402,10 +400,9 @@ public class BestMatchFixedLineCache
       if (formFactor < 4)
       {
         // There are not enough fields
-        String Message = "Error reading input data from <" + cacheDataSourceName +
+        message = "Error reading input data from <" + cacheDataSourceName +
         "> in record <" + ZonesLoaded + ">. Not enough fields.";
-
-        throw new InitializationException(Message);
+        throw new InitializationException(message,getSymbolicName());
       }
 
       ZonesLoaded++;
@@ -430,10 +427,10 @@ public class BestMatchFixedLineCache
       // Update to the log file
       if ((ZonesLoaded % loadingLogNotificationStep) == 0)
       {
-        String Message = "Best Match Data Loading: <" + ZonesLoaded +
+        message = "Best Match Data Loading: <" + ZonesLoaded +
               "> configurations loaded for <" + getSymbolicName() + "> from <" +
               cacheDataSourceName + ">";
-        getFWLog().info(Message);
+        getFWLog().info(message);
       }
     }
 
@@ -559,8 +556,8 @@ public class BestMatchFixedLineCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

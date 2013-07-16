@@ -177,18 +177,18 @@ public class NumberRangeCache
     // check that the range is OK
     if (RangeFrom > RangeTo)
     {
-      String Message = "Range From <" + RangeFrom +
+      message = "Range From <" + RangeFrom +
               "> cannot be larger than Range To <" + RangeTo + "> in group <" +
               Group + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     if ((ValidityFrom > ValidityTo) && (ValidityTo > 0))
     {
-      String Message = "Validity From <" + ValidityFrom +
+      message = "Validity From <" + ValidityFrom +
               "> cannot be larger than Validity To <" + ValidityTo +
               "> in group <" + Group + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // make sure that we deal with the "don't care" cases
@@ -260,10 +260,10 @@ public class NumberRangeCache
       }
 
       // If we get here, we could not insert the period
-      String Message = "Range From <" + RangeFrom +
+      message = "Range From <" + RangeFrom +
               "> to <" + RangeTo + "> overlaps with another range in group <" +
               Group + ">";
-      throw new InitializationException(Message);
+      throw new InitializationException(message,getSymbolicName());
     }
     else
     {
@@ -378,11 +378,11 @@ public class NumberRangeCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
-      String Message = "Application is not able to read file : <" +
+      message = "Application is not able to read file : <" +
             CacheDataFile + ">";
-      throw new InitializationException(Message, exFileNotFound);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -411,10 +411,10 @@ public class NumberRangeCache
             // Check that it is valid - we cannot accept less than 4 fields
             if(tmpFieldCount < 4)
             {
-              String Message = "The data must have >= 4 fields. We got <" + tmpFieldCount +
+              message = "The data must have >= 4 fields. We got <" + tmpFieldCount +
                                                 "> fields in this record <" +
                                                 tmpFileRecord + ">";
-              throw new InitializationException(Message);
+              throw new InitializationException(message,getSymbolicName());
             }
           }
           else
@@ -422,10 +422,10 @@ public class NumberRangeCache
             // Check that we remain consistent
             if (ObjectSplitFields.length != tmpFieldCount)
             {
-              String Message = "The data must have <" + tmpFieldCount +
+              message = "The data must have <" + tmpFieldCount +
                                                 "> fields. This record <" +
                                                 tmpFileRecord + "> does not conform.";
-              throw new InitializationException(Message);
+              throw new InitializationException(message,getSymbolicName());
             }
           }
 
@@ -448,10 +448,10 @@ public class NumberRangeCache
           // Update to the log file
           if ((ObjectLinesLoaded % loadingLogNotificationStep) == 0)
           {
-            String Message = "Number Range Data Loading: <" + ObjectLinesLoaded +
+            message = "Number Range Data Loading: <" + ObjectLinesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(Message);
+            getFWLog().info(message);
           }
         }
       }
@@ -521,8 +521,8 @@ public class NumberRangeCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error performing SQL for retieving Indexed Matchdata";
-      throw new InitializationException(Message,ex);
+      message = "Error performing SQL for retieving Indexed Matchdata";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -554,18 +554,18 @@ public class NumberRangeCache
         // Update to the log file
         if ((ObjectLinesLoaded % loadingLogNotificationStep) == 0)
         {
-          String Message = "Number Range Data Loading: <" + ObjectLinesLoaded +
+          message = "Number Range Data Loading: <" + ObjectLinesLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(Message);
+          getFWLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
-      String Message = "Error opening Search Map Data for <" +
+      message = "Error opening Search Map Data for <" +
             cacheDataSourceName + ">";
-      throw new InitializationException(Message, ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
@@ -577,9 +577,9 @@ public class NumberRangeCache
     }
     catch (SQLException ex)
     {
-      String Message = "Error closing Search Map Data connection for <" +
+      message = "Error closing Search Map Data connection for <" +
             cacheDataSourceName + ">";
-      throw new InitializationException(Message,ex);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     getFWLog().info(
@@ -595,7 +595,7 @@ public class NumberRangeCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
   // -----------------------------------------------------------------------------
@@ -618,8 +618,8 @@ public class NumberRangeCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_GROUP_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

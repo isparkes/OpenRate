@@ -110,7 +110,7 @@ public abstract class AbstractRTSocketAdapter extends AbstractRTAdapter
 
     if (ConfigHelper.equals("0"))
     {
-      throw new InitializationException ("Please set the port number to listen on using the ListenerPort property");
+      throw new InitializationException ("Please set the port number to listen on using the ListenerPort property",getSymbolicName());
     }
 
     // see if we can convert it
@@ -121,7 +121,7 @@ public abstract class AbstractRTSocketAdapter extends AbstractRTAdapter
     catch (NumberFormatException nfe)
     {
       // Could not use the value we got
-      throw new InitializationException ("Could not parse the ListenerPort value <" + ConfigHelper + ">");
+      throw new InitializationException ("Could not parse the ListenerPort value <" + ConfigHelper + ">",getSymbolicName());
     }
   }
 
@@ -137,11 +137,10 @@ public abstract class AbstractRTSocketAdapter extends AbstractRTAdapter
 
     // will be handling threads
     RTSocketServer.setParentAdapter(this);
-    RTSocketServer.setPipelineLog(PipeLog);
+    RTSocketServer.setPipelineLog(getPipeLog());
     RTSocketServer.setPort(listenerPort);
-    RTSocketServer.setPipelineName(pipeName);
+    RTSocketServer.setPipelineName(getPipeName());
     RTSocketServer.setThreadId("RTSocketServer");
-    RTSocketServer.setHandler(this.handler);
 
     // start thread in the listenerGroup thread group
     Thread socketThread = new Thread(RTSocketServer, "RTSocketServer");

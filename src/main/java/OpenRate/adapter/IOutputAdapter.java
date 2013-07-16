@@ -55,6 +55,7 @@
 
 package OpenRate.adapter;
 
+import OpenRate.IPipeline;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.ISupplier;
 import OpenRate.exception.ProcessingException;
@@ -172,4 +173,16 @@ public interface IOutputAdapter
   * @param name The symbolic name to set
   */
   public void setSymbolicName(String name);
+  
+ /**
+  * Set the pipeline reference so the input adapter can control the scheduler
+  *
+  * @param pipeline the Pipeline to set
+  */
+  public void setPipeline(IPipeline pipeline);
+  
+  /**
+   * @return the pipeline
+   */
+  public IPipeline getPipeline();  
 }

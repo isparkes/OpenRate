@@ -54,10 +54,12 @@
  */
 package OpenRate.process;
 
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.AbstractLogFactory;
+import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
 import OpenRate.resource.CacheFactory;
 import OpenRate.resource.DataSourceFactory;
@@ -72,6 +74,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import org.junit.*;
 
@@ -92,6 +95,9 @@ public class AbstractDuplicateCheckTest
   private static AbstractDuplicateCheck instance;
   private static ITransactionManager TM;
   private static int transNumber;
+
+  // Used for logging and exception handling
+  private static String message; 
 
  /**
   * Default constructor
@@ -116,10 +122,13 @@ public class AbstractDuplicateCheckTest
     }
     catch (InitializationException ex)
     {
-        String Message = "Error reading the configuration file <" + FQConfigFileName + ">";
-        Assert.fail(Message);
+        message = "Error reading the configuration file <" + FQConfigFileName + ">";
+        Assert.fail(message);
     }
 
+      // Set up the OpenRate internal logger - this is normally done by app startup
+      OpenRate.getApplicationInstance();
+      
     // Get the data source name
     cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
                                                                                         "DuplicateCheckTestCache",
@@ -151,8 +160,8 @@ public class AbstractDuplicateCheckTest
     System.out.println("  Initialising Data Source...");
     if(DBUtil.initDataSource(cacheDataSourceName) == null)
     {
-        String Message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractDuplicateCheckTest>.";
-        Assert.fail(Message);
+        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractDuplicateCheckTest>.";
+        Assert.fail(message);
     }
     System.out.println("  Initialised Data Source");
 
@@ -172,8 +181,8 @@ public class AbstractDuplicateCheckTest
         else
         {
         // Not OK, Assert.fail the case
-        String Message = "Error dropping table TEST_DUPLICATE_CHECK in test <AbstractDuplicateCheckTest>.";
-        Assert.fail(Message);
+        message = "Error dropping table TEST_DUPLICATE_CHECK in test <AbstractDuplicateCheckTest>.";
+        Assert.fail(message);
         }
     }
 
@@ -202,6 +211,16 @@ public class AbstractDuplicateCheckTest
     Resource.init(resourceName);
     ctx.register(resourceName, Resource);
 
+      // Link the logger
+      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
+      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
+      
+      // Get the list of pipelines we are going to make
+      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
+      
+      // Create the pipeline skeleton instance (assume only one for tests)
+      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
+      
     System.out.println("  Sleeping for 1S to allow things to settle...");
     try {
         Thread.sleep(1000);
@@ -210,7 +229,7 @@ public class AbstractDuplicateCheckTest
 
     // Check that we now have the row in the table - we might have to wait
     // a moment because the transaction closing is asynchronous
-    TM = TransactionUtils.getTM(TM);
+    TM = TransactionUtils.getTM();
   }
 
   @AfterClass
@@ -261,8 +280,8 @@ public class AbstractDuplicateCheckTest
     catch (InitializationException ie)
     {
       // Not OK, Assert.fail the case
-      String Message = "Error getting cache instance in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Error getting cache instance in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     // *************************** In Transaction ******************************
@@ -272,7 +291,7 @@ public class AbstractDuplicateCheckTest
     Assert.assertEquals(0, getTableRowCount(false));
 
     // Start a new transaction
-    transNumber = TransactionUtils.startTransactionPlugIn(TM,instance);
+    transNumber = TransactionUtils.startTransactionPlugIn(instance);
     System.out.println("testCheckDuplicate: Opened transaction <" + transNumber + ">");
 
     // Simple good case - unknown record from cache
@@ -286,8 +305,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (Exception ex)
     {
-      String Message = "Error getting event date in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Error getting event date in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     try
@@ -296,8 +315,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (ProcessingException ex)
     {
-      String Message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     expResult = false;
@@ -310,8 +329,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (ProcessingException ex)
     {
-      String Message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     expResult = true;
@@ -322,7 +341,7 @@ public class AbstractDuplicateCheckTest
 
     // Close the transaction - this will write the row into the table
     oldTransNum = transNumber;
-    transNumber = TransactionUtils.endTransactionPlugIn(TM,instance,transNumber);
+    transNumber = TransactionUtils.endTransactionPlugIn(instance,transNumber);
     System.out.println("testCheckDuplicate: Closed transaction <" + oldTransNum + ">");
 
     Assert.assertEquals(1, getTableRowCount(false));
@@ -331,7 +350,7 @@ public class AbstractDuplicateCheckTest
     System.out.println("testCheckDuplicate: Cross-Transaction Tests");
 
     // Start a new transaction
-    transNumber = TransactionUtils.startTransactionPlugIn(TM,instance);
+    transNumber = TransactionUtils.startTransactionPlugIn(instance);
     System.out.println("testCheckDuplicate: Opened transaction <" + transNumber + ">");
 
     // Same event again from a new transaction  - should be detected as a duplicate
@@ -341,8 +360,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (ProcessingException ex)
     {
-      String Message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     expResult = true;
@@ -356,8 +375,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (ProcessingException ex)
     {
-      String Message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     expResult = false;
@@ -365,14 +384,14 @@ public class AbstractDuplicateCheckTest
 
     // Close the transaction
     oldTransNum = transNumber;
-    transNumber = TransactionUtils.endTransactionPlugIn(TM,instance,transNumber);
+    transNumber = TransactionUtils.endTransactionPlugIn(instance,transNumber);
     System.out.println("testCheckDuplicate: Closed transaction <" + oldTransNum + ">");
 
     // *************************** Direct Insert ***************************
     System.out.println("testCheckDuplicate: Direct Insert Tests");
 
     // Start a new transaction
-    transNumber = TransactionUtils.startTransactionPlugIn(TM,instance);
+    transNumber = TransactionUtils.startTransactionPlugIn(instance);
     System.out.println("testCheckDuplicate: Opened transaction <" + transNumber + ">");
 
     // Same event again from transaction - should be detected as a duplicate
@@ -386,8 +405,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (Exception ex)
     {
-      String Message = "Error getting event date in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Error getting event date in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     try
@@ -396,8 +415,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (ProcessingException ex)
     {
-      String Message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     expResult = false;
@@ -410,8 +429,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (ProcessingException ex)
     {
-      String Message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
-      Assert.fail(Message);
+      message = "Unexpected processing exception in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
     }
 
     expResult = true;
@@ -419,7 +438,7 @@ public class AbstractDuplicateCheckTest
 
     // Close the transaction
     oldTransNum = transNumber;
-    transNumber = TransactionUtils.endTransactionPlugIn(TM,instance,transNumber);
+    transNumber = TransactionUtils.endTransactionPlugIn(instance,transNumber);
     System.out.println("testCheckDuplicate: Closed transaction <" + oldTransNum + ">");
 
     // Check that we still have the row in the table, no more no less
@@ -500,13 +519,13 @@ public class AbstractDuplicateCheckTest
 
     // Check that we now have the row in the table - we might have to wait
     // a moment because the transaction closing is asynchronous
-    TM = TransactionUtils.getTM(TM);
+    TM = TransactionUtils.getTM();
 
     if (inTransaction == false)
     {
-      while (TransactionUtils.getOpenTransactionCount(TM) > 0)
+      while (TransactionUtils.getOpenTransactionCount() > 0)
       {
-        System.out.println("  Sleeping for 100mS to allow <"+TransactionUtils.getOpenTransactionCount(TM)+"> transactions to close...");
+        System.out.println("  Sleeping for 100mS to allow <"+TransactionUtils.getOpenTransactionCount()+"> transactions to close...");
         try {
           Thread.sleep(100);
         } catch (InterruptedException ex) {
@@ -524,8 +543,8 @@ public class AbstractDuplicateCheckTest
       DBUtil.close(JDBCChcon);
     } catch (InitializationException | SQLException ex) {
       // Not OK, Assert.fail the case
-      String Message = "Error counting rows in test <AbstractDuplicateCheckTest>, message <"+ex.getMessage()+">";
-      Assert.fail(Message);
+      message = "Error counting rows in test <AbstractDuplicateCheckTest>, message <"+ex.getMessage()+">";
+      Assert.fail(message);
     }
 
     return rowCount;

@@ -57,6 +57,7 @@ package OpenRate.adapter;
 
 import OpenRate.CommonConfig;
 import OpenRate.IPipeline;
+import OpenRate.OpenRate;
 import OpenRate.buffer.IConsumer;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
@@ -83,43 +84,25 @@ public abstract class AbstractInputAdapter
 {
   // The symbolic name is used in the management of the pipeline (control and
   // thread monitoring) and logging.
-  private String SymbolicName;
-
-  /**
-   * The PipeLog is the logger which should be used for all pipeline level
-   * messages. This is instantiated during pipe startup, because at this
-   * point we don't know the name of the pipe and therefore the logger to use.
-   */
-  protected ILogger PipeLog = null;
-
-  /**
-   * The PipeLog is the logger which should be used for all statistics related
-   * messages.
-   */
-  protected ILogger StatsLog = LogUtil.getLogUtil().getLogger("Statistics");
+  private String symbolicName;
 
   /**
    * This is the local variable that we use to determine the batch size. This
    * determines the number of records which is pushed into the output FIFO.
    */
-  protected int BatchSize;
+  protected int batchSize;
 
  /**
   * This is the local variable that we use to determine the buffer high water
   * mark.
   */
-  protected int BufferSize;
+  private int bufferSize;
 
   // This is the buffer we will be writing to
   private IConsumer consumer;
 
- /**
-  *  This is the pipeline that we are in, used for logging and property retrieval
-  */
-  protected String pipeName;
-
-  // The exception handler that we use for reporting errors
-  protected ExceptionHandler handler;
+  // This is the pipeline that we are in, used for logging and property retrieval
+  private IPipeline pipeline;
 
   // List of Services that this Client supports
   private final static String SERVICE_BATCHSIZE  = CommonConfig.BATCH_SIZE;
@@ -136,11 +119,9 @@ public abstract class AbstractInputAdapter
   private int  outBufferCapacity = 0;
   private int  bufferHits = 0;
 
-  /**
-   *  The pipeline we belong to - used for scheduling
-   */
-  protected IPipeline ourPipeline = null;
-
+  // used to simplify logging and exception handling
+  public String message;
+  
   /**
    * Default constructor
    */
@@ -165,11 +146,9 @@ public abstract class AbstractInputAdapter
     setSymbolicName(ModuleName);
 
     // store the pipe we are in
-    this.pipeName = PipelineName;
+    setPipeline(OpenRate.getPipeline(PipelineName));
 
-    // Get the pipe log
-    PipeLog = LogUtil.getLogUtil().getLogger(PipelineName);
-
+    // Register the events that we can process with the event manager
     registerClientManager();
 
     // Get the batch size we should be working on
@@ -233,10 +212,10 @@ public abstract class AbstractInputAdapter
       recordsProcessed += size;
       outBufferCapacity = validBuffer.getEventCount();
 
-      while (outBufferCapacity > BufferSize)
+      while (outBufferCapacity > bufferSize)
       {
         bufferHits++;
-        StatsLog.debug("Input  <" + getSymbolicName() + "> buffer high water mark! Buffer max = <" + BufferSize + "> current count = <" + outBufferCapacity + ">");
+        OpenRate.getOpenRateStatsLog().debug("Input  <" + getSymbolicName() + "> buffer high water mark! Buffer max = <" + bufferSize + "> current count = <" + outBufferCapacity + ">");
         try {
           Thread.sleep(100);
         } catch (InterruptedException ex) {
@@ -249,25 +228,25 @@ public abstract class AbstractInputAdapter
     }
     catch (ProcessingException pe)
     {
-      PipeLog.error("Processing exception caught in Input Adapter <" +
+      getPipeLog().error("Processing exception caught in Input Adapter <" +
                 getSymbolicName() + ">", pe);
       getExceptionHandler().reportException(pe);
     }
     catch (NullPointerException npe)
     {
-      PipeLog.error("Null Pointer exception caught in Input Adapter <" +
+            getPipeLog().error("Null Pointer exception caught in Input Adapter <" +
                 getSymbolicName() + ">", npe);
-      getExceptionHandler().reportException(new ProcessingException(npe));
+      getExceptionHandler().reportException(new ProcessingException(npe,getSymbolicName()));
     }
     catch (Throwable t)
     {
       // ToDo: Force only allowed exception types up
-      PipeLog.fatal("Unexpected exception caught in Input Adapter <" +
+            getPipeLog().fatal("Unexpected exception caught in Input Adapter <" +
                 getSymbolicName() + ">", t);
-      getExceptionHandler().reportException(new ProcessingException(t));
+      getExceptionHandler().reportException(new ProcessingException(t,getSymbolicName()));
     }
 
-    StatsLog.debug(
+    OpenRate.getOpenRateStatsLog().debug(
           "Input  <" + getSymbolicName() + "> pushed <" +
           size + "> events into the valid buffer <" +
             validBuffer.toString() + "> in <" + BatchTime + "> ms" );
@@ -306,27 +285,6 @@ public abstract class AbstractInputAdapter
   }
 
  /**
-  * Set the exception handler mechanism.
-  *
-  * @param handler The parent handler to set
-  */
-  @Override
-  public void setExceptionHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
-
- /**
-  * return exception handler
-  *
-  * @return The parent handler that is currently in use
-  */
-  public ExceptionHandler getExceptionHandler()
-  {
-    return this.handler;
-  }
-
- /**
   * return the symbolic name
   *
   * @return The symbolic name for this class stack
@@ -334,7 +292,7 @@ public abstract class AbstractInputAdapter
   @Override
   public String getSymbolicName()
   {
-    return SymbolicName;
+    return symbolicName;
   }
 
   /**
@@ -345,18 +303,7 @@ public abstract class AbstractInputAdapter
   @Override
   public void setSymbolicName(String name)
   {
-    SymbolicName = name;
-  }
-
- /**
-  * Set the pipeline reference so the input adapter can control the scheduler
-  *
-  * @param pipeline the Pipeline to set
-  */
-  @Override
-  public void setPipeline(IPipeline pipeline)
-  {
-    ourPipeline = pipeline;
+    symbolicName = name;
   }
 
  /**
@@ -439,13 +386,13 @@ public abstract class AbstractInputAdapter
   public void registerClientManager() throws InitializationException
   {
     // Set the client reference and the base services first
-    ClientManager.registerClient(pipeName,getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BATCHSIZE, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATS, ClientManager.PARAM_NONE);
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHSIZE, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BUFFERSIZE, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATS, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATSRESET, ClientManager.PARAM_DYNAMIC);
   }
 
   /**
@@ -502,17 +449,17 @@ public abstract class AbstractInputAdapter
     {
       if (Parameter.equals(""))
       {
-        return Integer.toString(BatchSize);
+        return Integer.toString(batchSize);
       }
       else
       {
         try
         {
-          BatchSize = Integer.parseInt(Parameter);
+          batchSize = Integer.parseInt(Parameter);
         }
         catch (NumberFormatException nfe)
         {
-          PipeLog.error("Invalid number for batch size. Passed value = <" +
+                    getPipeLog().error("Invalid number for batch size. Passed value = <" +
                 Parameter + ">");
         }
 
@@ -524,17 +471,17 @@ public abstract class AbstractInputAdapter
     {
       if (Parameter.equals(""))
       {
-        return Integer.toString(BufferSize);
+        return Integer.toString(bufferSize);
       }
       else
       {
         try
         {
-          BufferSize = Integer.parseInt(Parameter);
+          bufferSize = Integer.parseInt(Parameter);
         }
         catch (NumberFormatException nfe)
         {
-          PipeLog.error(
+          getPipeLog().error(
                 "Invalid number for buffer size. Passed value = <" +
                 Parameter + ">");
         }
@@ -545,7 +492,7 @@ public abstract class AbstractInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -567,7 +514,7 @@ public abstract class AbstractInputAdapter
                            throws InitializationException
   {
     String tmpValue;
-    tmpValue = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpValue = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    SERVICE_BATCHSIZE, DEFAULT_BATCHSIZE);
 
     return tmpValue;
@@ -581,9 +528,56 @@ public abstract class AbstractInputAdapter
                            throws InitializationException
   {
     String tmpValue;
-    tmpValue = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(pipeName, getSymbolicName(),
+    tmpValue = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                    SERVICE_BUFFERSIZE, DEFAULT_BUFFERSIZE);
 
     return tmpValue;
   }
+
+  // -----------------------------------------------------------------------------
+  // -------------------- Standard getter/setter functions -----------------------
+  // -----------------------------------------------------------------------------
+
+    /**
+     * @return the pipeName
+     */
+    public String getPipeName() {
+      return pipeline.getSymbolicName();
+    }
+
+    /**
+     * @return the pipeline
+     */
+    public IPipeline getPipeline() {
+      return pipeline;
+    }
+
+ /**
+  * Set the pipeline reference so the input adapter can control the scheduler
+  *
+  * @param pipeline the Pipeline to set
+  */
+  @Override
+  public void setPipeline(IPipeline pipeline)
+  {
+    this.pipeline = pipeline;
+  }
+
+   /**
+    * Return the pipeline logger.
+    * 
+    * @return The logger
+    */
+    protected ILogger getPipeLog() {
+      return pipeline.getPipeLog();
+    }
+
+   /**
+    * Return the exception handler.
+    * 
+    * @return The exception handler
+    */
+    protected ExceptionHandler getExceptionHandler() {
+      return pipeline.getPipelineExceptionHandler();
+    }
 }

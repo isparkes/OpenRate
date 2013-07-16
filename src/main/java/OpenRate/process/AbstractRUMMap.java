@@ -122,8 +122,8 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
 
     if (CMRM == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays, but only if we are the right type. This
@@ -135,8 +135,8 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
 
       if (RMC == null)
       {
-        Message = "Could not find cache entry for <" + CacheObjectName + ">";
-        throw new InitializationException(Message);
+        message = "Could not find cache entry for <" + CacheObjectName + ">";
+        throw new InitializationException(message,getSymbolicName());
       }
     }
   }

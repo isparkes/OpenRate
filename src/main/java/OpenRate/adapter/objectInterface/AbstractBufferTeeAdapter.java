@@ -92,8 +92,8 @@ public abstract class AbstractBufferTeeAdapter
 
     if (LBC == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     String BufferName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(PipelineName, ModuleName, "BufferName");

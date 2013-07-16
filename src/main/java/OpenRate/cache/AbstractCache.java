@@ -81,6 +81,9 @@ public abstract class AbstractCache
   // The exception handler that we use for reporting errors
   private ExceptionHandler handler;
 
+  // used to simplify logging and exception handling
+  public String message;
+  
   /**
    * @return the symbolicName
    */

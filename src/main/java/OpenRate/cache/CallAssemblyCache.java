@@ -300,7 +300,7 @@ public class CallAssemblyCache
     super.registerClientManager();
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_STORE_LIMIT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STORE_LIMIT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**

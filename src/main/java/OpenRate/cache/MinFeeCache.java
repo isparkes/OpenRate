@@ -111,14 +111,15 @@ public class MinFeeCache
     {
       inFile = new BufferedReader(new FileReader(CacheDataFile));
     }
-    catch (FileNotFoundException exFileNotFound)
+    catch (FileNotFoundException ex)
     {
       getFWLog().error(
             "Application is not able to read file : <" +
             CacheDataFile + ">");
       throw new InitializationException("Application is not able to read file: <" +
                                         CacheDataFile + ">",
-                                        exFileNotFound);
+                                        ex,
+                                        getSymbolicName());
     }
 
     // File open, now get the stuff
@@ -204,8 +205,9 @@ public class MinFeeCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal("Error performing SQL for retieving MinFeeCache Cache data");
-      throw new InitializationException("Connection error. Error retieving MinFeeCache Cache data");
+      message = "Error performing SQL for retieving MinFeeCache Cache data";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // loop through the results for the customer login cache
@@ -226,28 +228,15 @@ public class MinFeeCache
     }
     catch (SQLException ex)
     {
-      getFWLog().fatal(
-            "Error opening Data for <" + cacheDataSourceName +
-            ">");
-      throw new InitializationException("Error opening Data for <" +
-                                        cacheDataSourceName + ">", ex);
+      message = "Error opening Data for <" + cacheDataSourceName + ">";
+      getFWLog().fatal(message);
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Close down stuff
-    try
-    {
-      mrs.close();
-      StmtCacheDataSelectQuery.close();
-      JDBCcon.close();
-    }
-    catch (SQLException ex)
-    {
-      getFWLog().fatal(
-            "Error closing Data connection for <" +
-            cacheDataSourceName + ">");
-      throw new InitializationException("Error closing Data connection for <" +
-                                        cacheDataSourceName + ">");
-    }
+    DBUtil.close(mrs);
+    DBUtil.close(StmtCacheDataSelectQuery);
+    DBUtil.close(JDBCcon);
 
     getFWLog().info(
           "Data Loading completed. " + dataLoaded +
@@ -262,7 +251,7 @@ public class MinFeeCache
   public void loadDataFromMethod()
                       throws InitializationException
   {
-    throw new InitializationException("Not implemented yet");
+    throw new InitializationException("Not implemented yet",getSymbolicName());
   }
 
   // -----------------------------------------------------------------------------

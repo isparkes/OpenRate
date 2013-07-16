@@ -55,6 +55,7 @@
 
 package OpenRate.logging;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
@@ -85,7 +86,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   private static String log4j_properties;
 
   // Get access to the framework logger - is set after initial load
-  private ILogger FWLog = null;
+  private ILogger fwLog = null;
 
   /*
    * Inititialization flag.
@@ -133,7 +134,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
       {
         // we are relying on this name to be able to find the resource
         // later, so stop if it is not right
-        handler.reportException(new InitializationException("Log ModuleName should be <" + RESOURCE_KEY + ">"));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Log ModuleName should be <" + RESOURCE_KEY + ">",getSymbolicName()));
       }
 
       // configure log4j if a log4j config file is provided in the
@@ -144,7 +145,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
       // See if we got a logger definition
       if (log4j_properties.equals("None"))
       {
-        handler.reportException(new InitializationException("Logger Configuration File <" + ResourceName + "> not defined in Logger resource"));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Logger Configuration File <" + ResourceName + "> not defined in Logger resource",getSymbolicName()));
       }
 
       // Get the file from the classpath
@@ -153,13 +154,13 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
       // Does it exist?
       if (fqConfigFileName == null)
       {
-        handler.reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource"));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
       }
       
       // Is it a file?
       if (new File(fqConfigFileName.getFile()).isFile() == false)
       {
-        handler.reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource"));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
       }
 
       if (log4j_properties.endsWith(".xml"))
@@ -238,7 +239,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   */
   public void setFrameworkLog(ILogger NewFWLog)
   {
-    this.FWLog = NewFWLog;
+    this.fwLog = NewFWLog;
   }
 
   // -----------------------------------------------------------------------------
@@ -258,10 +259,10 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   public void registerClientManager() throws InitializationException
   {
     //Register this Client
-    ClientManager.registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    ClientManager.registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_MANDATORY);
   }
 
   /**
@@ -296,7 +297,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
     // Currently this cannot handle any dynamic events
     if (ResultCode == 0)
     {
-      FWLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getSymbolicName(), Command, Parameter));
+      fwLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getSymbolicName(), Command, Parameter));
       return "OK";
     }
     else

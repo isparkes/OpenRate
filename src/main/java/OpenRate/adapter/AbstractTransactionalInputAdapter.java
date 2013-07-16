@@ -147,7 +147,7 @@ public abstract class AbstractTransactionalInputAdapter
   protected void setTransactionAbort(int transactionNumber)
   {
     TM.requestTransactionAbort(transactionNumber);
-    PipeLog.warning("Pipe <" + pipeName + "> requested abort for transaction <" + transactionNumber + ">");
+    getPipeLog().warning("Pipe <" + getPipeName() + "> requested abort for transaction <" + transactionNumber + ">");
   }
 
  /**
@@ -159,7 +159,7 @@ public abstract class AbstractTransactionalInputAdapter
   protected int createNewTransaction()
   {
     // create the new transaction
-    int currentTransactionNumber = TM.openTransaction(pipeName);
+    int currentTransactionNumber = TM.openTransaction(getPipeName());
 
     // Update the status of the transaction in the TM
     TM.setClientStatus(currentTransactionNumber, TMClientNumber, TMDefs.getTMDefs().TM_NONE);

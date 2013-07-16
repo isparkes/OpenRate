@@ -170,7 +170,7 @@ public abstract class ObjectInputAdapter
     }
     catch (ClassNotFoundException ex)
     {
-      PipeLog.error("Unable to find buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
+      getPipeLog().error("Unable to find buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
     }
     try
     {
@@ -178,11 +178,11 @@ public abstract class ObjectInputAdapter
     }
     catch (InstantiationException ex)
     {
-      PipeLog.error("Unable to instantiate buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
+      getPipeLog().error("Unable to instantiate buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
     }
     catch (IllegalAccessException ex)
     {
-      PipeLog.error("Unable to access buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
+      getPipeLog().error("Unable to access buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
     }
   }
 
@@ -212,7 +212,7 @@ public abstract class ObjectInputAdapter
     }
 
     // Get a batch of records
-    Outbatch = LocalBuffer.pull(BatchSize);
+    Outbatch = LocalBuffer.pull(batchSize);
 
     // Pass the batch back
     return Outbatch;
@@ -246,7 +246,7 @@ public abstract class ObjectInputAdapter
 
     while (canStartNewTransaction() == false)
     {
-      PipeLog.info("Waiting to be able to start new transaction");
+      getPipeLog().info("Waiting to be able to start new transaction");
       try
       {
         Thread.sleep(1000);
@@ -273,7 +273,7 @@ public abstract class ObjectInputAdapter
     tmpBatch.add(tmpHeader);
 
     // contine with the iterator
-    while ((Events.hasNext()) & (ThisBatchCounter < BatchSize))
+    while ((Events.hasNext()) & (ThisBatchCounter < batchSize))
     {
       // Get the raw object
       tmpObject = Events.next();
@@ -415,7 +415,7 @@ public abstract class ObjectInputAdapter
 
     if (ResultCode == 0)
     {
-      PipeLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), pipeName, Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
     }
@@ -439,7 +439,7 @@ public abstract class ObjectInputAdapter
     super.registerClientManager();
 
     //Register services for this Client
-    //ClientManager.RegisterClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
+    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
   }
 
   // -----------------------------------------------------------------------------

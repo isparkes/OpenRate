@@ -132,7 +132,8 @@ public abstract class SocketOutputAdapter
 
     if (ConfigHelper.equals("0"))
     {
-      throw new InitializationException ("Please set the host name using the HostName property");
+      message = "Please set the host name using the HostName property";
+      throw new InitializationException(message,getSymbolicName());
     }
     this.HostName = ConfigHelper;
     // Get the port number
@@ -140,7 +141,8 @@ public abstract class SocketOutputAdapter
 
     if (ConfigHelper.equals("0"))
     {
-      throw new InitializationException ("Please set the port number to listen on using the ListenerPort property");
+      message = "Please set the port number to listen on using the ListenerPort property";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // see if we can convert it
@@ -151,7 +153,8 @@ public abstract class SocketOutputAdapter
     catch (NumberFormatException nfe)
     {
       // Could not use the value we got
-      throw new InitializationException ("Could not parse the ListenerPort value <" + ConfigHelper + ">");
+      message = "Could not parse the ListenerPort value <" + ConfigHelper + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Check the file name scanning variables, throw initialisation exception
@@ -161,9 +164,9 @@ public abstract class SocketOutputAdapter
     }catch (IOException nfe)
     {
       // Could not use the value we got
-      throw new InitializationException ("Unable to open socket at host <"+HostName+"> with specified port <" + ListenerPort + ">");
+      message = "Unable to open socket at host <"+HostName+"> with specified port <" + ListenerPort + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
-
   }
 
  /**
@@ -224,7 +227,7 @@ public abstract class SocketOutputAdapter
         }
         catch (IOException ioe)
         {
-          this.getExceptionHandler().reportException(new ProcessingException(ioe));
+          this.getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
         }
         while (outRecIter.hasNext())
         {
@@ -272,7 +275,7 @@ public abstract class SocketOutputAdapter
         }
         catch (IOException ioe)
         {
-          this.getExceptionHandler().reportException(new ProcessingException(ioe));
+          this.getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
         }
 
         while (outRecIter.hasNext())
@@ -318,7 +321,7 @@ public abstract class SocketOutputAdapter
   {
     if(OutputSocket == null || OutputSocket.isConnected() == false){
         OutputSocket = new Socket(this.HostName, this.ListenerPort);
-        pipeLog.info("Input Socket Initialized @ host: "+this.HostName+" port: " + this.ListenerPort);
+        getPipeLog().info("Input Socket Initialized @ host: "+this.HostName+" port: " + this.ListenerPort);
     }
   }
 
@@ -334,7 +337,7 @@ public abstract class SocketOutputAdapter
             return true;
         }catch(IOException ex){
             tmpTries++;
-            pipeLog.info("Input Socket NOT Initialized @ host: "+this.HostName+" port: " + this.ListenerPort+" Try #: "+tmpTries);
+            getPipeLog().info("Input Socket NOT Initialized @ host: "+this.HostName+" port: " + this.ListenerPort+" Try #: "+tmpTries);
         }
 
       }

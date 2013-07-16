@@ -112,8 +112,8 @@ public abstract class AbstractTransientHash
 
     if (CMCH == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + "> in module <" + getSymbolicName() + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + "> in module <" + getSymbolicName() + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
 
     // Load up the mapping arrays
@@ -121,8 +121,8 @@ public abstract class AbstractTransientHash
 
     if (CH == null)
     {
-      Message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(Message);
+      message = "Could not find cache entry for <" + CacheObjectName + ">";
+      throw new InitializationException(message,getSymbolicName());
     }
   }
 

@@ -68,18 +68,20 @@ import org.junit.Assert;
  */
 public class TransactionUtils
 {
-  public static ITransactionManager getTM(ITransactionManager TM)
+  // Used for logging and exception handling
+  private static String message; 
+
+  public static ITransactionManager getTM()
   {
-    if (TM == null)
-    {
+      ITransactionManager TM = null;
+      
       try {
         // Create a transaction manager for the test pipe
         TM = TransactionManagerFactory.getTransactionManager("DBTestPipe");
       } catch (InitializationException ex) {
-        String Message = "Error getting transaction manager in <AbstractDuplicateCheckTest>";
-        Assert.fail(Message);
+        message = "Error getting transaction manager in <AbstractDuplicateCheckTest>";
+        Assert.fail(message);
       }
-    }
 
     return TM;
   }
@@ -91,12 +93,12 @@ public class TransactionUtils
   *
   * @param TM
   */
-  public static int startTransactionPlugIn(ITransactionManager TM, AbstractPlugIn instance)
+  public static int startTransactionPlugIn(AbstractPlugIn instance)
   {
     int transNumber;
 
     // Start a transaction
-    TM = TransactionUtils.getTM(TM);
+    ITransactionManager TM = TransactionUtils.getTM();
     transNumber = TM.openTransaction("test");
 
     // Create a header record to start the transaction management in the module
@@ -107,7 +109,7 @@ public class TransactionUtils
     return transNumber;
   }
 
-  public static int endTransactionPlugIn(ITransactionManager TM, AbstractPlugIn instance, int ourTransNumber)
+  public static int endTransactionPlugIn(AbstractPlugIn instance, int ourTransNumber)
   {
     int transNumber = ourTransNumber;
 
@@ -121,9 +123,10 @@ public class TransactionUtils
     return transNumber;
   }
 
-  public static int getOpenTransactionCount(ITransactionManager TM)
+  public static int getOpenTransactionCount()
   {
     // Create a trailer record to stop the transaction management in the module
+    ITransactionManager TM = TransactionUtils.getTM();
     return TM.getActiveTransactionCount();
   }
 

@@ -59,7 +59,6 @@
 
 package OpenRate.logging;
 
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.resource.IResource;
 
@@ -73,9 +72,6 @@ public abstract class AbstractLogFactory implements IResource
    * Resource context
    */
   public static final String RESOURCE_KEY = "LogFactory";
-
-  // reference to the exception handler
-  protected ExceptionHandler handler;
 
   /**
    * Get default logger. This method exists to support backward
@@ -125,46 +121,35 @@ public abstract class AbstractLogFactory implements IResource
     {
       if (factoryImpl == null)
       {
-        throw new InitializationException("LogFactory className == null");
+        throw new InitializationException("LogFactory className == null",RESOURCE_KEY);
       }
 
       Class<?> type = Class.forName(factoryImpl);
       Object   obj  = type.newInstance();
       factory     = (AbstractLogFactory) obj;
     }
-    catch (ClassCastException cce)
+    catch (ClassCastException ex)
     {
       throw new InitializationException("LogFactory.getFactory(): " +
-        "LogFactory class name is not a LogFactory sub-class.", cce);
+        "LogFactory class name is not a LogFactory sub-class.",ex,RESOURCE_KEY);
     }
-    catch (ClassNotFoundException cnfe)
+    catch (ClassNotFoundException ex)
     {
       throw new InitializationException("LogFactory.getFactory(): " +
-        "LogFactory implementation class not found in classpath.", cnfe);
+        "LogFactory implementation class not found in classpath.",ex,RESOURCE_KEY);
     }
-    catch (InstantiationException ie)
+    catch (InstantiationException ex)
     {
       throw new InitializationException("LogFactory.getFactory(): " +
-        "No default constructor for LogFactory", ie);
+        "No default constructor for LogFactory",ex,RESOURCE_KEY);
     }
-    catch (IllegalAccessException iae)
+    catch (IllegalAccessException ex)
     {
       throw new InitializationException("LogFactory.getFactory(): " +
         "Cannot invoke default constructor on LogFactory. " +
-        "Check that it's visibility is public.", iae);
+        "Check that it's visibility is public.",ex,RESOURCE_KEY);
     }
 
     return factory;
-  }
-
-  /**
-   * Set the exception handler for handling any exceptions.
-   *
-   * @param handler the handler to set
-   */
-  @Override
-  public void setHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
   }
 }
