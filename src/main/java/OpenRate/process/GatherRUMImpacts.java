@@ -147,7 +147,7 @@ public class GatherRUMImpacts extends AbstractStubPlugIn
       tmpCP = CurrentRecord.getChargePacket(Index);
 
       tmpResource = tmpCP.resource;
-      tmpResID = tmpCP.ResCounter;
+      tmpResID = tmpCP.resCounter;
 
       // if the resource is not set, we cannot do anything with the record
       if (tmpResource == null)
@@ -180,7 +180,7 @@ public class GatherRUMImpacts extends AbstractStubPlugIn
             tmpImpactsRider.child = new SummarizationArray();
             tmpImpactsRider.child.ResourceName = tmpResource;
             tmpImpactsRider.child.ResourceValue = tmpCP.chargedValue;
-            tmpImpactsRider.child.ResourceID = tmpCP.ResCounter;
+            tmpImpactsRider.child.ResourceID = tmpCP.resCounter;
             tmpImpactsRider.child.CounterPeriod = CurrentRecord.getCounterCycle();
             break;
           }

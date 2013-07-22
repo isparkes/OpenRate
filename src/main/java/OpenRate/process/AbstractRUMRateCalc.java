@@ -253,10 +253,10 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
                 // Get the value of the RUM
                 RUMValue = CurrentRecord.getRUMValue(tmpRUMMapEntry.RUM);
                 tmpCPNew.priceModel = tmpRUMMapEntry.PriceModel;
-                tmpCPNew.RUMQuantity = RUMValue;
-                tmpCPNew.RUMName = tmpRUMMapEntry.RUM;
+                tmpCPNew.rumQuantity = RUMValue;
+                tmpCPNew.rumName = tmpRUMMapEntry.RUM;
                 tmpCPNew.resource = tmpRUMMapEntry.Resource;
-                tmpCPNew.ResCounter = tmpRUMMapEntry.ResourceCounter;
+                tmpCPNew.resCounter = tmpRUMMapEntry.ResourceCounter;
                 tmpCPNew.ratingType  = tmpRUMMapEntry.RUMType;
 
 
@@ -321,7 +321,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
             else
             {
               // Fill the default fields in the CP
-              tmpCP.RUMName = "";
+              tmpCP.rumName = "";
               tmpCP.priceModel = "";
               tmpCP.resource = "";
               tmpCP.Valid = false;

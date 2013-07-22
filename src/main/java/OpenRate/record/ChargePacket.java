@@ -129,12 +129,12 @@ public class ChargePacket
  /**
   * The name of the RUM used in this charge packet
   */
-  public String  RUMName;
+  public String  rumName;
 
  /**
   * The amount of RUM rated in this packet
   */
-  public double  RUMQuantity = 0;
+  public double  rumQuantity = 0;
 
  /**
   * The name of the resource to impact
@@ -144,7 +144,7 @@ public class ChargePacket
  /**
   * The counter ID of the resource to impact
   */
-  public int     ResCounter = 0;
+  public int     resCounter = 0;
 
  /**
   * The calculated value for this packet
@@ -226,8 +226,8 @@ public class ChargePacket
     this.service              = toClone.service;
     this.priceGroup           = toClone.priceGroup;
     this.priceModel           = toClone.priceModel;
-    this.RUMName              = toClone.RUMName;
-    this.RUMQuantity          = toClone.RUMQuantity;
+    this.rumName              = toClone.rumName;
+    this.rumQuantity          = toClone.rumQuantity;
     this.resource             = toClone.resource;
     this.chargedValue         = toClone.chargedValue;
     this.priority             = toClone.priority;

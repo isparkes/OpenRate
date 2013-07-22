@@ -214,20 +214,20 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
 
       // Get the value of the RUM
       tmpCPNew.priceModel  = tmpRUMMapEntry.PriceModel;
-      tmpCPNew.RUMName     = tmpRUMMapEntry.RUM;
+      tmpCPNew.rumName     = tmpRUMMapEntry.RUM;
 
       // deal with the time splitting flag
       if (tmpCPNew.timeSplitting == AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING)
       {
-        tmpCPNew.RUMQuantity = CurrentRecord.getRUMValue(tmpCPNew.RUMName) * tmpCPNew.splittingFactor;
+        tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCPNew.rumName) * tmpCPNew.splittingFactor;
       }
       else
       {
-        tmpCPNew.RUMQuantity = CurrentRecord.getRUMValue(tmpCPNew.RUMName);
+        tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCPNew.rumName);
       }
 
       tmpCPNew.resource    = tmpRUMMapEntry.Resource;
-      tmpCPNew.ResCounter  = tmpRUMMapEntry.ResourceCounter;
+      tmpCPNew.resCounter  = tmpRUMMapEntry.ResourceCounter;
       tmpCPNew.ratingType  = tmpRUMMapEntry.RUMType;
 
       // get the rating type description
@@ -332,19 +332,19 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
 
           // Get the value of the RUM
           tmpCP.priceModel  = tmpRUMMapEntry.PriceModel;
-          tmpCP.RUMName     = tmpRUMMapEntry.RUM;
+          tmpCP.rumName     = tmpRUMMapEntry.RUM;
           tmpCP.resource    = tmpRUMMapEntry.Resource;
-          tmpCP.ResCounter  = tmpRUMMapEntry.ResourceCounter;
+          tmpCP.resCounter  = tmpRUMMapEntry.ResourceCounter;
           tmpCP.ratingType  = tmpRUMMapEntry.RUMType;
 
           // deal with the time splitting flag
           if (tmpCP.timeSplitting == AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING)
           {
-            tmpCP.RUMQuantity = CurrentRecord.getRUMValue(tmpCP.RUMName) * tmpCP.splittingFactor;
+            tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName) * tmpCP.splittingFactor;
           }
           else
           {
-            tmpCP.RUMQuantity = CurrentRecord.getRUMValue(tmpCP.RUMName);
+            tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
           }
 
           // get the rating type
@@ -396,19 +396,19 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
 
             // Get the value of the RUM
             tmpCPNew.priceModel  = tmpRUMMapEntry.PriceModel;
-            tmpCPNew.RUMName     = tmpRUMMapEntry.RUM;
+            tmpCPNew.rumName     = tmpRUMMapEntry.RUM;
             tmpCPNew.resource    = tmpRUMMapEntry.Resource;
-            tmpCPNew.ResCounter  = tmpRUMMapEntry.ResourceCounter;
+            tmpCPNew.resCounter  = tmpRUMMapEntry.ResourceCounter;
             tmpCPNew.ratingType  = tmpRUMMapEntry.RUMType;
 
             // deal with the time splitting flag
             if (tmpCP.timeSplitting == AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING)
             {
-              tmpCP.RUMQuantity = CurrentRecord.getRUMValue(tmpCP.RUMName) * tmpCP.splittingFactor;
+              tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName) * tmpCP.splittingFactor;
             }
             else
             {
-              tmpCP.RUMQuantity = CurrentRecord.getRUMValue(tmpCP.RUMName);
+              tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
             }
 
             // get the rating type

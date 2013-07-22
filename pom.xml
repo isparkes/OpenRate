@@ -19,22 +19,22 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
-				 <showDeprecation>true</showDeprecation>
+					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
 
       <!-- Create JAR -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.3.1</version>
-        <configuration>
-          <excludes>
-            <exclude>VersionFileTemplate.txt</exclude>
-            <exclude>*netbeans*</exclude>
-          </excludes>
-          </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<excludes>
+						<exclude>VersionFileTemplate.txt</exclude>
+						<exclude>*netbeans*</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
       
       <!-- Create source code JAR -->
 			<plugin>
@@ -53,95 +53,96 @@
 			</plugin>
 			
       <!-- Revision Info -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.2</version>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>create</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <doCheck>false</doCheck>
-          <username>readonlyuser</username>
-          <password>readonly</password>
-          <revisionOnScmFailure>001</revisionOnScmFailure>
-          <buildNumberPropertyName>sources.version</buildNumberPropertyName>
-          <timestampPropertyName>build.custtimestamp</timestampPropertyName>
-          <timestampFormat>{0,date,yyyyMMdd}</timestampFormat>
-          <providerImplementations>
-            <svn>javasvn</svn>
-          </providerImplementations>
-        </configuration>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.2</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!--doCheck>true</doCheck>
+					<username>tgdspia1</username>
+					<password>T1gger123</password-->
+					<revisionOnScmFailure>001</revisionOnScmFailure>
+					<buildNumberPropertyName>sources.version</buildNumberPropertyName>
+					<timestampPropertyName>build.custtimestamp</timestampPropertyName>
+					<timestampFormat>{0,date,yyyyMMdd}</timestampFormat>
+					<providerImplementations>
+						<svn>javasvn</svn>
+					</providerImplementations>
+				</configuration>
+        
         <!-- SVN Version 1.7 -->
-        <dependencies>
-          <dependency>
-            <groupId>org.tmatesoft.svnkit</groupId>
-            <artifactId>svnkit</artifactId>
-            <version>1.7.5</version>
-          </dependency>
-        </dependencies>
-      </plugin>
+				<dependencies>
+					<dependency>
+						<groupId>org.tmatesoft.svnkit</groupId>
+						<artifactId>svnkit</artifactId>
+						<version>1.7.5</version>
+					</dependency>
+				</dependencies>
+			</plugin>
       
       <!-- Update version file -->
-      <plugin>
-        <groupId>com.google.code.maven-replacer-plugin</groupId>
-        <artifactId>replacer</artifactId>
-        <version>1.5.2</version>
-        <executions>
-          <execution>
-          	<phase>compile</phase>
-            <goals>
-              <goal>replace</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <file>${basedir}/src/main/resources/VersionFileTemplate.txt</file>
-          <outputFile>${basedir}/target/classes/VersionFile.txt</outputFile>
-          <regex>false</regex>
-          <replacements>
-            <replacement>
-              <token>PROJECT_VERSION</token>
-              <value>${project.version}</value>
-            </replacement>
-            <replacement>
-              <token>SVN_REVISION</token>
-              <value>${sources.version}</value>
-            </replacement>
-            <replacement>
-              <token>BUILD_TIMESTAMP</token>
-              <value>${build.custtimestamp}</value>
-            </replacement>
-          </replacements>
-        </configuration>
-      </plugin>
+			<plugin>
+				<groupId>com.google.code.maven-replacer-plugin</groupId>
+				<artifactId>replacer</artifactId>
+				<version>1.5.2</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>replace</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<file>${basedir}/src/main/resources/VersionFileTemplate.txt</file>
+					<outputFile>${basedir}/target/classes/VersionFile.txt</outputFile>
+					<regex>false</regex>
+					<replacements>
+						<replacement>
+							<token>PROJECT_VERSION</token>
+							<value>${project.version}</value>
+						</replacement>
+						<replacement>
+							<token>SVN_REVISION</token>
+							<value>${sources.version}</value>
+						</replacement>
+						<replacement>
+							<token>BUILD_TIMESTAMP</token>
+							<value>${build.custtimestamp}</value>
+						</replacement>
+					</replacements>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
-
+	
 	<properties>
 		<version.junit>4.8</version.junit>
 		<version.common.logging>1.1.1</version.common.logging>
 		<version.common.lang>2.6</version.common.lang>
 		<version.java.source>1.7</version.java.source>
 		<version.java.target>1.7</version.java.target>
-    <version.commons.collections>3.2.1</version.commons.collections>
-    <version.commons.pool>1.5.5</version.commons.pool>
-    <version.c3p0>0.9.1.2</version.c3p0>
-    <version.bonecp>0.7.1.RELEASE</version.bonecp>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.mysql.connector>5.1.13</version.mysql.connector>
-    <version.log4j>1.2.13</version.log4j>
-    <version.oro>2.0.8</version.oro>
-    <org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+		<version.commons.collections>3.2.1</version.commons.collections>
+		<version.commons.pool>1.5.5</version.commons.pool>
+		<version.c3p0>0.9.1.2</version.c3p0>
+		<version.bonecp>0.7.1.RELEASE</version.bonecp>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<version.mysql.connector>5.1.13</version.mysql.connector>
+		<version.log4j>1.2.13</version.log4j>
+		<version.oro>2.0.8</version.oro>
+		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
 	</properties>
-
+	
 	<dependencies>
-    <!-- JUnit -->
+		<!-- JUnit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -149,28 +150,28 @@
 			<scope>test</scope>
 		</dependency>
 
-    <!-- common logging -->
+		<!-- common logging -->
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>${version.common.logging}</version>
 		</dependency>
 
-    <!-- common lang -->
+		<!-- common lang -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>${version.common.lang}</version>
 		</dependency>
 
-    <!-- common collections -->
+		<!-- common collections -->
 		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>${version.commons.collections}</version>
 		</dependency>
 
-    <!-- common pool -->
+		<!-- common pool -->
 		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
@@ -183,7 +184,7 @@
 			<artifactId>c3p0</artifactId>
 			<version>${version.c3p0}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.jolbox</groupId>
 			<artifactId>bonecp-spring</artifactId>
@@ -195,19 +196,19 @@
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
 		</dependency-->
-
+		
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${version.mysql.connector}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>${version.log4j}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>
@@ -215,31 +216,31 @@
 		</dependency>
 
     <!-- Spring -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${org.springframework.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-expression</artifactId>
-      <version>${org.springframework.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${org.springframework.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>${org.springframework.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context-support</artifactId>
-      <version>${org.springframework.version}</version>
-    </dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
     
 <!-- <dependency>
             <groupId>drools</groupId>
@@ -278,7 +279,7 @@
             <version>1.8.0.7</version>
         </dependency>
 -->
-
+		
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -307,12 +308,12 @@
 	</reporting>
 	
   <!-- link to our subversion repository -->
-  <scm>
-    <developerConnection>scm:svn:http://tsm-consulting.de/svn/OpenRate</developerConnection>
-  </scm>
+	<scm>
+		<developerConnection>scm:svn:http://tsm-consulting.de/svn/OpenRate</developerConnection>
+	</scm>
   
   <!-- link to our Jenkins -->
-  <ciManagement>
-    <url>http://obrm:8888/job/snocsFaces/</url>
-  </ciManagement>
+	<ciManagement>
+		<url>http://obrm:8888/job/snocsFaces/</url>
+	</ciManagement>
 </project>

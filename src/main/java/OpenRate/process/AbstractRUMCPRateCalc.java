@@ -195,7 +195,7 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc
             case ChargePacket.RATING_TYPE_FLAT:
               {
                 // Flat Rating
-                tmpRatingResult = rateCalculateFlat(tmpCP.priceModel, tmpCP.RUMQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                tmpRatingResult = rateCalculateFlat(tmpCP.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                 tmpCP.chargedValue += tmpRatingResult.RatedValue;
                 tmpCP.breakDown = tmpRatingResult.breakdown;
                 break;
@@ -203,7 +203,7 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc
             case ChargePacket.RATING_TYPE_TIERED:
               {
                 // Tiered Rating
-                tmpRatingResult = rateCalculateTiered(tmpCP.priceModel, tmpCP.RUMQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                tmpRatingResult = rateCalculateTiered(tmpCP.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                 tmpCP.chargedValue += tmpRatingResult.RatedValue;
                 tmpCP.breakDown = tmpRatingResult.breakdown;
                 break;
@@ -211,7 +211,7 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc
             case ChargePacket.RATING_TYPE_THRESHOLD:
               {
                 // Threshold Rating
-                tmpRatingResult = rateCalculateThreshold(tmpCP.priceModel, tmpCP.RUMQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                tmpRatingResult = rateCalculateThreshold(tmpCP.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                 tmpCP.chargedValue += tmpRatingResult.RatedValue;
                 tmpCP.breakDown = tmpRatingResult.breakdown;
                 break;
@@ -219,7 +219,7 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc
             case ChargePacket.RATING_TYPE_EVENT:
               {
                 // Event Rating
-                tmpRatingResult = rateCalculateEvent(tmpCP.priceModel, tmpCP.RUMQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                tmpRatingResult = rateCalculateEvent(tmpCP.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                 tmpCP.chargedValue += tmpRatingResult.RatedValue;
                 tmpCP.breakDown = tmpRatingResult.breakdown;
                 break;

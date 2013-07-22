@@ -614,26 +614,28 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
       for (int i = 0 ; i < tmpChargePacketCount ; i++)
       {
         tmpCP = this.getChargePacket(i);
-        tmpDumpList.add("    Rate Plan Name " + pad + "= <" + tmpCP.ratePlanName + ">");
-        tmpDumpList.add("    Packet Type    " + pad + "= <" + tmpCP.packetType + ">");
-        tmpDumpList.add("    Service        " + pad + "= <" + tmpCP.service + ">");
-        tmpDumpList.add("    SubscriptionID " + pad + "= <" + tmpCP.subscriptionID + ">");
-        tmpDumpList.add("    Priority       " + pad + "= <" + tmpCP.priority + ">");
-        tmpDumpList.add("    RUM Name       " + pad + "= <" + tmpCP.RUMName + ">");
-        tmpDumpList.add("    RUM Value      " + pad + "= <" + tmpCP.RUMQuantity + ">");
-        tmpDumpList.add("    Resource       " + pad + "= <" + tmpCP.resource + ">");
-        tmpDumpList.add("    Resource ID    " + pad + "= <" + tmpCP.ResCounter + ">");
-        tmpDumpList.add("    Time Model     " + pad + "= <" + tmpCP.timeModel + ">");
-        tmpDumpList.add("    Time Result    " + pad + "= <" + tmpCP.timeResult + ">");
-        tmpDumpList.add("    Zone Model     " + pad + "= <" + tmpCP.zoneModel + ">");
-        tmpDumpList.add("    Zone Result    " + pad + "= <" + tmpCP.zoneResult + ">");
-        tmpDumpList.add("    Price Group    " + pad + "= <" + tmpCP.priceGroup + ">");
-        tmpDumpList.add("    Price Model    " + pad + "= <" + tmpCP.priceModel + ">");
-        tmpDumpList.add("    Rated Value    " + pad + "= <" + tmpCP.chargedValue + ">");
-        tmpDumpList.add("    ----------------");
+        
         // Add the breakdowns
         if (tmpCP != null)
         {
+          tmpDumpList.add("    Rate Plan Name " + pad + "= <" + tmpCP.ratePlanName + ">");
+          tmpDumpList.add("    Packet Type    " + pad + "= <" + tmpCP.packetType + ">");
+          tmpDumpList.add("    Service        " + pad + "= <" + tmpCP.service + ">");
+          tmpDumpList.add("    SubscriptionID " + pad + "= <" + tmpCP.subscriptionID + ">");
+          tmpDumpList.add("    Priority       " + pad + "= <" + tmpCP.priority + ">");
+          tmpDumpList.add("    RUM Name       " + pad + "= <" + tmpCP.rumName + ">");
+          tmpDumpList.add("    RUM Value      " + pad + "= <" + tmpCP.rumQuantity + ">");
+          tmpDumpList.add("    Resource       " + pad + "= <" + tmpCP.resource + ">");
+          tmpDumpList.add("    Resource ID    " + pad + "= <" + tmpCP.resCounter + ">");
+          tmpDumpList.add("    Time Model     " + pad + "= <" + tmpCP.timeModel + ">");
+          tmpDumpList.add("    Time Result    " + pad + "= <" + tmpCP.timeResult + ">");
+          tmpDumpList.add("    Zone Model     " + pad + "= <" + tmpCP.zoneModel + ">");
+          tmpDumpList.add("    Zone Result    " + pad + "= <" + tmpCP.zoneResult + ">");
+          tmpDumpList.add("    Price Group    " + pad + "= <" + tmpCP.priceGroup + ">");
+          tmpDumpList.add("    Price Model    " + pad + "= <" + tmpCP.priceModel + ">");
+          tmpDumpList.add("    Rated Value    " + pad + "= <" + tmpCP.chargedValue + ">");
+          tmpDumpList.add("    ----------------");
+            
           if (tmpCP.breakDown != null)
           {
             for (int j = 0 ; j < tmpCP.breakDown.size() ; j++)
@@ -709,6 +711,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
               tmpDumpList.add("    Rating Impact");
               tmpDumpList.add("    Resource       " + pad + "= <" + tmpBalImp.Resource + ">");
               tmpDumpList.add("    Impact         " + pad + "= <" + tmpBalImp.balanceDelta + ">");
+              tmpDumpList.add("    Balance Group  " + pad + "= <" + tmpBalImp.balanceGroup + ">");
               tmpDumpList.add("    Counter ID     " + pad + "= <" + tmpBalImp.counterID + ">");
               tmpDumpList.add("    Counter Rec ID " + pad + "= <" + tmpBalImp.recID + ">");
               tmpDumpList.add("    ----------------");
@@ -721,6 +724,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
               tmpDumpList.add("    RUM            " + pad + "= <" + tmpBalImp.rumUsed + ">");
               tmpDumpList.add("    Impact on RUM  " + pad + "= <" + tmpBalImp.rumValueUsed + ">");
               tmpDumpList.add("    RUM Value After" + pad + "= <" + tmpBalImp.rumValueAfter + ">");
+              tmpDumpList.add("    Balance Group  " + pad + "= <" + tmpBalImp.balanceGroup + ">");
               tmpDumpList.add("    Counter ID     " + pad + "= <" + tmpBalImp.counterID + ">");
               tmpDumpList.add("    Counter Rec ID " + pad + "= <" + tmpBalImp.recID + ">");
               tmpDumpList.add("    Counter Delta  " + pad + "= <" + tmpBalImp.balanceDelta + ">");
