@@ -87,7 +87,7 @@ public class OpenRateTest {
         System.out.println("checkVersionString");
 
         // The revision number has to be changed to match the current revision
-        int    revisionNumber = 15;
+        int    revisionNumber = 16;
         
         // get the date portion of the version string
         String revision = String.valueOf(revisionNumber);
