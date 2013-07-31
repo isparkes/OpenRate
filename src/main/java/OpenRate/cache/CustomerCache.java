@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.lang.ProductList;
@@ -293,7 +294,7 @@ public class CustomerCache
     else
     {
         // Otherwise write an error and ignore it
-        getFWLog().error("Alias ID <" + alias + "> already exists.");
+        OpenRate.getOpenRateFrameworkLog().error("Alias ID <" + alias + "> already exists.");
     }
   }
 
@@ -316,7 +317,7 @@ public class CustomerCache
       if (ValidTo <= ValidFrom)
       {
         // Otherwise write an error and ignore it
-        getFWLog().error("Customer ID <" + CustId + "> valid from <" + ValidFrom + "> is after valid to <" + ValidTo + ">. Add failed.");
+        OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> valid from <" + ValidFrom + "> is after valid to <" + ValidTo + ">. Add failed.");
         return;
       }
 
@@ -332,7 +333,7 @@ public class CustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Customer ID <" + CustId + "> already exists. Add failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> already exists. Add failed.");
     }
   }
 
@@ -367,7 +368,7 @@ public class CustomerCache
       if (ValidTo <= ValidFrom)
       {
         // Otherwise write an error and ignore it
-        getFWLog().error("Customer ID <" + CustId + "> product <" + ProdID + "> valid from <" + ValidFrom + "> is after valid to <" + ValidTo + ">. Add failed.");
+        OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> product <" + ProdID + "> valid from <" + ValidFrom + "> is after valid to <" + ValidTo + ">. Add failed.");
         return;
       }
 
@@ -384,7 +385,7 @@ public class CustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Customer ID <" + CustId + "> not found. Add CPI failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> not found. Add CPI failed.");
     }
   }
 
@@ -411,7 +412,7 @@ public class CustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Customer ID <" + CustId + "> not found. Add/modify ERA failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> not found. Add/modify ERA failed.");
     }
   }
 
@@ -505,7 +506,7 @@ public class CustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Alias <" + alias + "> not found. Lookup failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Alias <" + alias + "> not found. Lookup failed.");
     }
 
     return null;
@@ -534,7 +535,7 @@ public class CustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Customer ID <" + CustId + "> not found. Lookup failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> not found. Lookup failed.");
     }
 
     return 0;
@@ -615,7 +616,7 @@ public class CustomerCache
     SimpleDateFormat sdfInput = new SimpleDateFormat (internalDateFormat);
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Customer Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Customer Cache Loading from File");
 
     // Try to open the file
     try
@@ -625,7 +626,7 @@ public class CustomerCache
     catch (FileNotFoundException exFileNotFound)
     {
       message = "Application is not able to read file <" + CacheDataFile + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,
                                         exFileNotFound,
                                         getSymbolicName());
@@ -659,7 +660,7 @@ public class CustomerCache
               }
               catch (ParseException ex)
               {
-                getFWLog().error("Date formats for record <" + tmpFileRecord + "> on line <" + lineCounter + "> are not correct. Data discarded." );
+                OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + tmpFileRecord + "> on line <" + lineCounter + "> are not correct. Data discarded." );
               }
 
               addCustId(recordFields[1],tmpFromDate,tmpToDate,Integer.parseInt(recordFields[4]));
@@ -668,7 +669,7 @@ public class CustomerCache
               // Update status for long operations
               if ( (custLoaded % loadingLogNotificationStep) == 0)
               {
-                getFWLog().info("Customer Map Data Loaded " + custLoaded + " Customer Records");
+                OpenRate.getOpenRateFrameworkLog().info("Customer Map Data Loaded " + custLoaded + " Customer Records");
               }
             }
 
@@ -682,7 +683,7 @@ public class CustomerCache
               }
               catch (ParseException ex)
               {
-                getFWLog().error("Date formats for record <" + tmpFileRecord + "> are not correct. Data discarded." );
+                OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + tmpFileRecord + "> are not correct. Data discarded." );
               }
 
               addCPI(recordFields[1],recordFields[2],recordFields[3],tmpFromDate,tmpToDate);
@@ -691,7 +692,7 @@ public class CustomerCache
               // Update status for long operations
               if ( (CPILoaded % loadingLogNotificationStep) == 0)
               {
-                getFWLog().info("Customer Map Data Loaded " + CPILoaded + " Product Records");
+                OpenRate.getOpenRateFrameworkLog().info("Customer Map Data Loaded " + CPILoaded + " Product Records");
               }
             }
 
@@ -713,13 +714,13 @@ public class CustomerCache
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + lineCounter + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + lineCounter + ">. Malformed Record.");
     }
@@ -731,19 +732,19 @@ public class CustomerCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
                   ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Customer Cache Data Loading completed. " + lineCounter +
           " configuration lines loaded from <" + CacheDataFile +
           ">");
-    getFWLog().info("Alias Loaded:    " + aliasLoaded);
-    getFWLog().info("Customers Loaded: " + custLoaded);
-    getFWLog().info("Products Loaded:  " + CPILoaded);
-    getFWLog().info("ERAs Loaded:      " + ERALoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Alias Loaded:    " + aliasLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Customers Loaded: " + custLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Products Loaded:  " + CPILoaded);
+    OpenRate.getOpenRateFrameworkLog().info("ERAs Loaded:      " + ERALoaded);
   }
 
  /**
@@ -774,14 +775,14 @@ public class CustomerCache
     SimpleDateFormat sdfInput = new SimpleDateFormat (internalDateFormat);
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Customer Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Customer Cache Loading from DB");
 
     // The datasource property was added to allow database to database
     // JDBC adapters to work properly using 1 configuration file.
     if(DBUtil.initDataSource(cacheDataSourceName) == null)
     {
       message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -799,7 +800,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving Alias data. message: <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -821,7 +822,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error opening Alias Data for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -834,7 +835,7 @@ public class CustomerCache
     {
       message = "Error closing Result Set for Alias information from <" +
             cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -846,7 +847,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving Customer data. message: " + ex.getMessage();
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -871,7 +872,7 @@ public class CustomerCache
         }
         catch (ParseException ex)
         {
-          getFWLog().error("Date formats for record <" + custLoaded + "> are not correct. Data discarded." );
+          OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + custLoaded + "> are not correct. Data discarded." );
         }
 
         balGrp = Integer.parseInt(tmpBalGrp);
@@ -883,7 +884,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error opening Customer Data for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -896,7 +897,7 @@ public class CustomerCache
     {
       message = "Error closing Result Set for Customer information from <" +
             cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -908,7 +909,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving Product data. message: " + ex.getMessage();
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -934,7 +935,7 @@ public class CustomerCache
         }
         catch (ParseException ex)
         {
-          getFWLog().error("Date formats for record <" + custLoaded + "> are not correct. Data discarded." );
+          OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + custLoaded + "> are not correct. Data discarded." );
         }
 
         // Add the map
@@ -944,7 +945,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error opening Product Data for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -957,7 +958,7 @@ public class CustomerCache
     {
       message = "Error closing Result Set for Product information from <" +
             cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -969,7 +970,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving ERA data";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -992,7 +993,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error opening Product Data for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -1009,17 +1010,17 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error closing Search Map Data connection for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Customer Cache Data Loading completed from <" + cacheDataSourceName +
           ">");
-    getFWLog().info("Alias Loaded:     " + aliasLoaded);
-    getFWLog().info("Customers Loaded: " + custLoaded);
-    getFWLog().info("Products Loaded:  " + CPILoaded);
-    getFWLog().info("ERAs Loaded:      " + ERALoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Alias Loaded:     " + aliasLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Customers Loaded: " + custLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Products Loaded:  " + CPILoaded);
+    OpenRate.getOpenRateFrameworkLog().info("ERAs Loaded:      " + ERALoaded);
   }
 
  /**
@@ -1140,7 +1141,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + aliasSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -1154,7 +1155,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + customerSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -1168,7 +1169,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + productSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -1182,7 +1183,7 @@ public class CustomerCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + eraSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
   }

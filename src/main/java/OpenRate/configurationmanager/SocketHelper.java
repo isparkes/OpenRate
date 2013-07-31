@@ -77,7 +77,7 @@ public class SocketHelper
 
   public static void displayWelcomeMessage(PrintStream out)
   {
-    out.print(appendOpenRate(SocketConstants.WELCOMEMESSAGE));
+    out.print(appendOpenRate(SocketProtocol.getWelcomeMessage()));
     out.flush();
   }
 

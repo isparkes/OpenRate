@@ -177,7 +177,7 @@ public class DBRecord extends AbstractRecord
 
  /**
   * Set the output to have the list of columns passed as the input. This sets
-  * all columns to use the default string type
+  * all columns to use the default string type.
   *
   * @param Columns the number of columns we are setting
   * @param Data The data that we should set in the columns
@@ -197,7 +197,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the number of output columns we are using
+  * Set the number of output columns we are using. The values then have to
+  * be set using the "setOutputColumnString", "setOutputColumnInt" etc
+  * methods. The number of columns should match up with the number of bind
+  * parameter variables in the SQL statement. OpenRate expects to receive one
+  * column variable per bind parameter.
   *
   * @param Columns The number of columns to set
   */
@@ -216,9 +220,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a string format
+  * Set the output column as a string format. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Data The value to set
   */
   public void setOutputColumnString(int Column, String Data)
@@ -228,9 +234,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a integer format
+  * Set the output column as a integer format. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnInt(int Column, Integer Value)
@@ -240,9 +248,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a double format
+  * Set the output column as a double format. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnDouble(int Column, Double Value)
@@ -252,9 +262,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a long format
+  * Set the output column as a long format. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnLong(int Column, Long Value)
@@ -264,9 +276,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a date format, using a date as an input
+  * Set the output column as a date format, using a date as an input. Set value 
+  * of a single output column. Set the number of columns to put into the output
+  * using "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnDate(int Column, Date Value)
@@ -276,9 +290,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a date format, using a long as an input
+  * Set the output column as a date format, using a long as an input. Set value 
+  * of a single output column. Set the number of columns to put into the output 
+  * using "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnDate(int Column, Long Value)
@@ -288,9 +304,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a boolean format
+  * Set the output column as a boolean format. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnBool(int Column, Boolean Value)
@@ -307,9 +325,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as a time format
+  * Set the output column as a time format. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnTime(int Column, Date Value)
@@ -319,9 +339,11 @@ public class DBRecord extends AbstractRecord
   }
 
  /**
-  * Set the output column as bytes
+  * Set the output column as bytes. Set value of a single output 
+  * column. Set the number of columns to put into the output using 
+  * "setOutputColumnCount".
   *
-  * @param Column The column number to set
+  * @param Column The column number to set, first parameter has index 1
   * @param Value The value to set
   */
   public void setOutputColumnBytes(int Column, byte[] Value)

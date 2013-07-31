@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -369,7 +370,7 @@ public class BalanceCache extends AbstractCache
     setSymbolicName(CacheName);
 
     // Find the location of the configuration data
-    getFWLog().info("Starting cache loading for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting cache loading for <" + getSymbolicName() + ">");
 
     cacheDataSourceType = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                        CacheName,
@@ -387,7 +388,7 @@ public class BalanceCache extends AbstractCache
                                         getSymbolicName() +
                                         "> must be File or DB, found <" +
                                         cacheDataSourceType + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -413,12 +414,12 @@ public class BalanceCache extends AbstractCache
       if (cacheDataSourceName.equals("None"))
       {
         message = "Data source file name not found for cache <" + getSymbolicName() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
       else
       {
-        getFWLog().debug("Found Cache Data File <" + cacheDataSourceName + "> for cache <" + getSymbolicName() + ">");
+        OpenRate.getOpenRateFrameworkLog().debug("Found Cache Data File <" + cacheDataSourceName + "> for cache <" + getSymbolicName() + ">");
       }
 
       loadDataFromFile();
@@ -435,12 +436,12 @@ public class BalanceCache extends AbstractCache
       if (cacheDataSourceName.equals("None"))
       {
         message = "Data source DB name not found for cache <" + getSymbolicName() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
       else
       {
-        getFWLog().debug("Found Cache Data DB <" + cacheDataSourceName + "> for cache <" + getSymbolicName() + ">");
+        OpenRate.getOpenRateFrameworkLog().debug("Found Cache Data DB <" + cacheDataSourceName + "> for cache <" + getSymbolicName() + ">");
       }
 
       // Get the Select statement
@@ -453,12 +454,12 @@ public class BalanceCache extends AbstractCache
       {
         message = "Data source select statement not found for cache <" +
               getSymbolicName() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
       else
       {
-        getFWLog().debug(
+        OpenRate.getOpenRateFrameworkLog().debug(
               "Found Select Query <" + cacheDataSelectQuery + "> for cache <" +
               getSymbolicName() + ">");
       }
@@ -468,7 +469,7 @@ public class BalanceCache extends AbstractCache
       if(DBUtil.initDataSource(cacheDataSourceName) == null)
       {
         message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -504,7 +505,7 @@ public class BalanceCache extends AbstractCache
     long           balanceGroupId;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Balance Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Balance Cache Loading from File");
 
     // Try to open the file
     try
@@ -515,7 +516,7 @@ public class BalanceCache extends AbstractCache
     {
       message = "Application is not able to read file : <" +
             cacheDataSourceName + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,
                                         exFileNotFound,
                                         getSymbolicName());
@@ -554,7 +555,7 @@ public class BalanceCache extends AbstractCache
           catch (ParseException ex)
           {
             message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -565,7 +566,7 @@ public class BalanceCache extends AbstractCache
           catch (ParseException ex)
           {
             message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -578,13 +579,13 @@ public class BalanceCache extends AbstractCache
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + cacheDataSourceName +
             "> in record <" + balsLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + cacheDataSourceName +
             "> in record <" + balsLoaded + ">. Malformed Record.");
     }
@@ -596,12 +597,12 @@ public class BalanceCache extends AbstractCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error closing input file <" + cacheDataSourceName +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + cacheDataSourceName +
                   ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Balance Cache Data Loading completed. " + balsLoaded +
           " configuration lines loaded from <" + cacheDataSourceName +
           ">");
@@ -631,7 +632,7 @@ public class BalanceCache extends AbstractCache
     long           balanceGroupId;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Balance Cache Loading from DB for<" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Balance Cache Loading from DB for<" + getSymbolicName() + ">");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -647,7 +648,7 @@ public class BalanceCache extends AbstractCache
       catch (SQLException Sex)
       {
         message = "Error performing SQL for retieving Balance data. message <" + Sex.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -673,7 +674,7 @@ public class BalanceCache extends AbstractCache
           catch (ParseException ex)
           {
             message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -684,7 +685,7 @@ public class BalanceCache extends AbstractCache
           catch (ParseException ex)
           {
             message = "Error converting date in cache <" + getSymbolicName() + ">. Could not convert date <" + tmpValidFrom + "> using formatter <" + conv.getInputDateFormat() + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -697,7 +698,7 @@ public class BalanceCache extends AbstractCache
       catch (SQLException ex)
       {
         message = "Error opening retreiving customer data. SQL error: " + ex.getMessage();
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,ex,getSymbolicName());
       }
 
@@ -712,11 +713,11 @@ public class BalanceCache extends AbstractCache
       {
         message = "Error closing Result Set for Customer information from <" +
               cacheDataSourceName + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,ex,getSymbolicName());
       }
 
-      getFWLog().info("Balance Loading completed. " + balsLoaded +
+      OpenRate.getOpenRateFrameworkLog().info("Balance Loading completed. " + balsLoaded +
         " lines loaded from <" + cacheDataSourceName + ">");
     }
 
@@ -802,7 +803,7 @@ public class BalanceCache extends AbstractCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }
@@ -835,7 +836,7 @@ public class BalanceCache extends AbstractCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + cacheDataSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
   }
@@ -861,7 +862,7 @@ public class BalanceCache extends AbstractCache
     Counter tmpCounter;
 
     // Log that we are starting the saving
-    getFWLog().info("Starting Balance Cache Saving to File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Balance Cache Saving to File");
 
     // Set the timestamp
     long timestamp = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
@@ -908,13 +909,13 @@ public class BalanceCache extends AbstractCache
     }
     catch (IOException IOex)
     {
-      getFWLog().error(
+      OpenRate.getOpenRateFrameworkLog().error(
             "Application is not able to write file : <" +
             cacheDataSourceName + ">");
     }
 
     // Log that we have finished the saving
-    getFWLog().info("Finished Balance Cache Saving to File");
+    OpenRate.getOpenRateFrameworkLog().info("Finished Balance Cache Saving to File");
   }
 
 // -----------------------------------------------------------------------------
@@ -929,7 +930,7 @@ public class BalanceCache extends AbstractCache
   */
   private void dumpBalanceGroup(String filename, long tmpBalGroup)
   {
-    getFWLog().info("Dumping balance group <" + tmpBalGroup + "> to file <" + filename + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Dumping balance group <" + tmpBalGroup + "> to file <" + filename + ">");
 
     try
     {
@@ -963,10 +964,10 @@ public class BalanceCache extends AbstractCache
     }
     catch (IOException ioex)
     {
-      getFWLog().error("Exception <" + ioex.getMessage() + "> while dumping balance group <" + tmpBalGroup + "> to file <" + filename + ">");
+      OpenRate.getOpenRateFrameworkLog().error("Exception <" + ioex.getMessage() + "> while dumping balance group <" + tmpBalGroup + "> to file <" + filename + ">");
     }
 
-    getFWLog().info("Dumping balance group <" + tmpBalGroup + "> to file <" + filename + "> completed");
+    OpenRate.getOpenRateFrameworkLog().info("Dumping balance group <" + tmpBalGroup + "> to file <" + filename + "> completed");
   }
 
  /**
@@ -976,7 +977,7 @@ public class BalanceCache extends AbstractCache
   */
   private void dumpBalanceGroups(String filename)
   {
-    getFWLog().info("Dumping balance groups to file <" + filename + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Dumping balance groups to file <" + filename + ">");
 
     try
     {
@@ -1015,9 +1016,9 @@ public class BalanceCache extends AbstractCache
     }
     catch (IOException ioex)
     {
-      getFWLog().error("Exception <" + ioex.getMessage() + "> while dumping balance groups to file <" + filename + ">");
+      OpenRate.getOpenRateFrameworkLog().error("Exception <" + ioex.getMessage() + "> while dumping balance groups to file <" + filename + ">");
     }
 
-    getFWLog().info("Dumping balance groups to file <" + filename + "> completed");
+    OpenRate.getOpenRateFrameworkLog().info("Dumping balance groups to file <" + filename + "> completed");
   }
 }

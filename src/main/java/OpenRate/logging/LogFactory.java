@@ -85,9 +85,6 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   // The properties we are working from
   private static String log4j_properties;
 
-  // Get access to the framework logger - is set after initial load
-  private ILogger fwLog = null;
-
   /*
    * Inititialization flag.
    * Only allows the logging factory to be initialized once per
@@ -194,6 +191,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   public void close()
   {
     LogStreams.clear();
+    loaded = false;
   }
 
   /**
@@ -230,16 +228,6 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   protected boolean isLoaded()
   {
     return loaded;
-  }
-
- /**
-  * Set the framework log after it has been initialised.
-  *
-  * @param NewFWLog
-  */
-  public void setFrameworkLog(ILogger NewFWLog)
-  {
-    this.fwLog = NewFWLog;
   }
 
   // -----------------------------------------------------------------------------
@@ -297,7 +285,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
     // Currently this cannot handle any dynamic events
     if (ResultCode == 0)
     {
-      fwLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getSymbolicName(), Command, Parameter));
       return "OK";
     }
     else

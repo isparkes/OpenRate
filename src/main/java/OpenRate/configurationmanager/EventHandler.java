@@ -54,6 +54,7 @@
  */
 package OpenRate.configurationmanager;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
@@ -79,11 +80,6 @@ import java.util.Calendar;
  */
 public class EventHandler implements IResource
 {
-  /**
-   * Get access to the framework logger
-   */
-  protected ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
   // This is the symbolic name of the resource
   private String SymbolicName;
 
@@ -95,6 +91,9 @@ public class EventHandler implements IResource
 
   // The socket used for communication
   private OpenRateSocket openRateSoc;
+  
+  // 
+  Thread socketThread;
 
   // The full path of the semaphore file
   private String semaphoreFileLocation;
@@ -158,13 +157,14 @@ public class EventHandler implements IResource
         String newSemaphoreFileName = semaphoreFileLocation + "_STARTUP_" + Calendar.getInstance().getTimeInMillis();
         File newSemaphoreFile = new File(newSemaphoreFileName);
         semaphoreFile.renameTo(newSemaphoreFile);
-        FWLog.debug("renamed semaphore file <" + semaphoreFile.getAbsolutePath() + "> to <" + newSemaphoreFile.getAbsolutePath() + ">");
+        OpenRate.getOpenRateFrameworkLog().debug("renamed semaphore file <" + semaphoreFile.getAbsolutePath() + "> to <" + newSemaphoreFile.getAbsolutePath() + ">");
       }
     }
 
     // Open the socket listener
     openRateSoc = new OpenRateSocket(ResourceName);
-    new Thread(openRateSoc, "OpenRate ECI Listener").start();
+    socketThread = new Thread(openRateSoc, "OpenRate ECI Listener");
+    socketThread.start();
   }
 
   /**
@@ -194,7 +194,8 @@ public class EventHandler implements IResource
   @Override
   public void close()
   {
-    //nothing to do as of now
+    //close the socket and release
+    openRateSoc.stop();
   }
 
  /**
@@ -219,7 +220,7 @@ public class EventHandler implements IResource
       String newSemaphoreFileName = semaphoreFileLocation + "_" + Calendar.getInstance().getTimeInMillis();
       File newSemaphoreFile = new File(newSemaphoreFileName);
       semaphoreFile.renameTo(newSemaphoreFile);
-      FWLog.debug("renamed semaphore file <" + semaphoreFile.getAbsolutePath() + "> to <" + newSemaphoreFile.getAbsolutePath() + ">");
+      OpenRate.getOpenRateFrameworkLog().debug("renamed semaphore file <" + semaphoreFile.getAbsolutePath() + "> to <" + newSemaphoreFile.getAbsolutePath() + ">");
 
       try
       {
@@ -229,19 +230,19 @@ public class EventHandler implements IResource
 
           while ((semaphoreRequest = inputFile.readLine()) != null)
           {
-            FWLog.info("Processing Semaphore <" + semaphoreRequest + ">");
+            OpenRate.getOpenRateFrameworkLog().info("Processing Semaphore <" + semaphoreRequest + ">");
             semaphoreResponse = processSemaphoreInput(semaphoreRequest);
-            FWLog.info("Semaphore Result <" + semaphoreResponse + ">");
+            OpenRate.getOpenRateFrameworkLog().info("Semaphore Result <" + semaphoreResponse + ">");
           }
         }
       }
       catch (FileNotFoundException ex)
       {
-        FWLog.info("Error reading semaphore file <" + semaphoreFile.getAbsolutePath() + ">");
+        OpenRate.getOpenRateFrameworkLog().info("Error reading semaphore file <" + semaphoreFile.getAbsolutePath() + ">");
       }
       catch (IOException ex)
       {
-        FWLog.info("Error accessing semaphore file <" + semaphoreFile.getAbsolutePath() + ">");
+        OpenRate.getOpenRateFrameworkLog().info("Error accessing semaphore file <" + semaphoreFile.getAbsolutePath() + ">");
       }
     }
   }
@@ -300,7 +301,7 @@ public class EventHandler implements IResource
         }
         else
         {
-          FWLog.error("Module <" + CmdModuleSymbolicName + "> is not able to respond to the event interface");
+          OpenRate.getOpenRateFrameworkLog().error("Module <" + CmdModuleSymbolicName + "> is not able to respond to the event interface");
         }
       }
     }

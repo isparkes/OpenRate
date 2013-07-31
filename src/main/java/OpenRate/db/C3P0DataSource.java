@@ -55,10 +55,9 @@
 
 package OpenRate.db;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.utils.PropertyUtils;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.beans.PropertyVetoException;
@@ -68,6 +67,10 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
+  * The data source is a a pooled collection of connections that can be used
+  * by elements of the framework, taken more or less intact from Apache
+  * because it works, and it's stable.
+  * 
  * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Data_Source_Manager'>click here</a> to go to wiki page.
  * <br>
  * <p>
@@ -76,14 +79,6 @@ import javax.sql.DataSource;
  */
 public class C3P0DataSource implements IDBDataSource
 {
- /**
-  * The data source is a a pooled collection of connections that can be used
-  * by elements of the framework, taken more or less intact from Apache
-  * because it works, and it's stable.
-  *
-  */
-  private static final ILogger FWlog = LogUtil.getLogUtil().getLogger("Framework");
-
   // reference to the exception handler
   private ExceptionHandler handler;
   
@@ -145,7 +140,7 @@ public class C3P0DataSource implements IDBDataSource
 
     ComboPooledDataSource dataSource = new ComboPooledDataSource();
 
-    FWlog.debug("Creating new DataSource <" + dataSourceName + ">");
+    OpenRate.getOpenRateFrameworkLog().debug("Creating new DataSource <" + dataSourceName + ">");
 
     try
     {
@@ -158,40 +153,40 @@ public class C3P0DataSource implements IDBDataSource
       if (db_url == null || db_url.isEmpty())
       {
         message = "Error recovering data source parameter <db_url> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
       if (driver == null || driver.isEmpty())
       {
         message = "Error recovering data source parameter <driver> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
       if (username == null || username.isEmpty())
       {
         message = "Error recovering data source parameter <username> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
       if (password == null)
       {
         message = "Error recovering data source parameter <password> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
-      FWlog.info("Creating DataSource <" + dataSourceName + "> using driver <" + driver + "> from URL <" + db_url + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Creating DataSource <" + dataSourceName + "> using driver <" + driver + "> from URL <" + db_url + ">");
 
       Class<?> driverClass = Class.forName(driver);
-      FWlog.debug("jdbc driver loaded. name = <" + driverClass.getName() + ">");
+      OpenRate.getOpenRateFrameworkLog().debug("jdbc driver loaded. name = <" + driverClass.getName() + ">");
     }
     catch (ClassNotFoundException cnfe)
     {
       message = "Driver class <" + driver + "> not found for data source <" + dataSourceName + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -202,7 +197,7 @@ public class C3P0DataSource implements IDBDataSource
     catch (PropertyVetoException ex)
     {
       message = "Property veto for driver  <" + driver + "> for data source <" + dataSourceName + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -252,7 +247,7 @@ public class C3P0DataSource implements IDBDataSource
 
     if (validationSQL == null || validationSQL.isEmpty())
     {
-      FWlog.warning("No SQL validation statement found for Datasource <" + dataSourceName + ">");
+      OpenRate.getOpenRateFrameworkLog().warning("No SQL validation statement found for Datasource <" + dataSourceName + ">");
     }
     else
     {
@@ -265,14 +260,14 @@ public class C3P0DataSource implements IDBDataSource
           stmt.executeQuery();
         }
 
-        FWlog.debug("Data source <" + dataSourceName + "> num_connections: " + dataSource.getNumConnectionsDefaultUser());
-        FWlog.debug("Data source <" + dataSourceName + "> max_pool:        " + dataSource.getMaxPoolSize());
-        FWlog.debug("Data source <" + dataSourceName + "> min_pool:        " + dataSource.getMinPoolSize());
+        OpenRate.getOpenRateFrameworkLog().debug("Data source <" + dataSourceName + "> num_connections: " + dataSource.getNumConnectionsDefaultUser());
+        OpenRate.getOpenRateFrameworkLog().debug("Data source <" + dataSourceName + "> max_pool:        " + dataSource.getMaxPoolSize());
+        OpenRate.getOpenRateFrameworkLog().debug("Data source <" + dataSourceName + "> min_pool:        " + dataSource.getMinPoolSize());
       }
       catch (SQLException ex)
       {
         message = "Connection test failed for connection <" + dataSourceName + ">";
-        throw new InitializationException(message,getSymbolicName());
+        throw new InitializationException(message,ex,getSymbolicName());
       }
     }
 

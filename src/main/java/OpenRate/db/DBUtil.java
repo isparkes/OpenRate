@@ -55,11 +55,9 @@
 
 package OpenRate.db;
 
+import OpenRate.OpenRate;
 import OpenRate.resource.DataSourceFactory;
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.resource.ResourceContext;
 import java.sql.*;
 import javax.sql.DataSource;
@@ -70,17 +68,8 @@ import javax.sql.DataSource;
  */
 public class DBUtil
 {
-  // Get the FWLog for this class
-  private static ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
-  // The reference to the exception handler
-  //@Autowired
-  private static ExceptionHandler handler;
-
-  //long lastInitTime = 0;
-
   // module symbolic name: set during initialisation
-  private static String SymbolicName = "Unknown";
+  private static String symbolicName = "Unknown";
 
   /**
    * Get a specific DataSource
@@ -98,8 +87,8 @@ public class DBUtil
 
     if (factory == null)
     {
-      FWLog.error("DataSourceFactory invalid.");
-      throw new InitializationException("unable to load datasourcefactory.",SymbolicName);
+      OpenRate.getOpenRateFrameworkLog().error("DataSourceFactory invalid.");
+      throw new InitializationException("unable to load datasourcefactory.",symbolicName);
     }
 
     DataSource ds = factory.getDataSource(dataSourceName);
@@ -123,7 +112,7 @@ public class DBUtil
       }
       catch (SQLException Sex)
       {
-        FWLog.error("Error closing connection. Message <" + Sex.getMessage() + ">");
+        OpenRate.getOpenRateFrameworkLog().error("Error closing connection. Message <" + Sex.getMessage() + ">");
       }
     }
   }
@@ -144,7 +133,7 @@ public class DBUtil
       }
       catch (SQLException Sex)
       {
-        FWLog.error("Error closing statement. Message <" + Sex.getMessage() + ">");
+        OpenRate.getOpenRateFrameworkLog().error("Error closing statement. Message <" + Sex.getMessage() + ">");
       }
     }
   }
@@ -165,7 +154,7 @@ public class DBUtil
       }
       catch (SQLException Sex)
       {
-        FWLog.error("Error closing result set. Message <" + Sex.getMessage() + ">");
+        OpenRate.getOpenRateFrameworkLog().error("Error closing result set. Message <" + Sex.getMessage() + ">");
       }
     }
   }
@@ -213,7 +202,7 @@ public class DBUtil
     if (JDBCds == null)
     {
       String message = "Data source <" + dataSourceName + "> not known.";
-      throw new InitializationException(message,SymbolicName);
+      throw new InitializationException(message,symbolicName);
     }
 
     // try to get a connection from the data source
@@ -223,7 +212,7 @@ public class DBUtil
         tmpConn = JDBCds.getConnection();
       } catch (SQLException ex) {
         String message = "Exception getting Data source connection <" + dataSourceName + "> not known.";
-        throw new InitializationException(message,ex,SymbolicName);
+        throw new InitializationException(message,ex,symbolicName);
       }
 
       // Increment the retries, we don't want to do this forever
@@ -232,11 +221,11 @@ public class DBUtil
         if (tmpConn.isClosed())
         {
           String message = "Data source <" + dataSourceName + "> provided a closed connection.";
-          throw new InitializationException(message,SymbolicName);
+          throw new InitializationException(message,symbolicName);
         }
       } catch (SQLException ex) {
         String message = "Exception checking Data source connection <" + dataSourceName + ">.";
-        throw new InitializationException(message,ex,SymbolicName);
+        throw new InitializationException(message,ex,symbolicName);
       }
     }
 
@@ -267,36 +256,26 @@ public class DBUtil
     }
     catch (SQLException | NullPointerException ex)
     {
-      FWLog.error("Error preparing the statement <" + StatementToPrep + ">");
+      OpenRate.getOpenRateFrameworkLog().error("Error preparing the statement <" + StatementToPrep + ">");
       throw new InitializationException("Error preparing the statement <" +
-                                        StatementToPrep + ">",ex,SymbolicName);
+                                        StatementToPrep + ">",ex,symbolicName);
     }
 
     return tmpPrepStmt;
   }
 
- /**
-  * Set the exception handler for the DBUtils
-  *
-  * @param newHandler The handler we are setting
-  */
-  public static void setHandler(ExceptionHandler newHandler)
-  {
-    handler = newHandler;
-  }
-
     /**
      * @return the SymbolicName
      */
-    public String getSymbolicName() {
-        return SymbolicName;
+    public static String getSymbolicName() {
+        return symbolicName;
     }
 
     /**
      * @param SymbolicName the SymbolicName to set
      */
-    public void setSymbolicName(String SymbolicName) {
-        this.SymbolicName = SymbolicName;
+    public static void setSymbolicName(String SymbolicName) {
+        symbolicName = SymbolicName;
     }
 
 }

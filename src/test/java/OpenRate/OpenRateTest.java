@@ -5,8 +5,14 @@
 package OpenRate;
 
 import OpenRate.exception.InitializationException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.*;
 
 /**
@@ -16,6 +22,10 @@ import org.junit.*;
  */
 public class OpenRateTest {
 
+    // The revision number has to be changed to match the current revision
+    int    revisionNumber = 16;
+    String revisionDate   = "20130731";
+        
     public OpenRateTest() {
     }
 
@@ -80,31 +90,242 @@ public class OpenRateTest {
     }
     
     /**
-     * Test of main method, of class OpenRate.
+     * Test of version string method, of class OpenRate.
      */
     @Test
     public void testGetVersionString() {
         System.out.println("checkVersionString");
 
-        // The revision number has to be changed to match the current revision
-        int    revisionNumber = 16;
-        
         // get the date portion of the version string
         String revision = String.valueOf(revisionNumber);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); 
-        String revisionDate = sdf.format(Calendar.getInstance().getTime());
         String result = null;
         
         OpenRate appl = new OpenRate();
         try {
-            result = appl.getApplicationVersion();
+          result = appl.getApplicationVersion();
         }
         catch (InitializationException ex) {
             Assert.fail(ex.getMessage());
         }
         
         String expResult = "OpenRate V1.5.2.0, Build "+revision+" ("+revisionDate+")";
-        
         Assert.assertEquals(expResult,result);
     }
+    
+    /**
+     * Test of application startup. This test builds a real (but very simple)
+     * processing pipeline using the standard framework startup procedure.
+     */
+    @Test
+    public void testApplicationStartup() {
+        System.out.println("OpenRate startup");
+
+        // get the date portion of the version string
+        int expResult = 0;
+
+        // Define the property file we are using
+        String[] args = new String[2];
+        args[0] = "-p";
+        args[1] = "TestFramework.properties.xml";
+        
+        // Start up the framework
+        OpenRate appl = OpenRate.getApplicationInstance();
+        int status = appl.createApplication(args);
+
+        // check the start up of the framework
+        Assert.assertEquals(expResult,status);
+        
+        Thread openRateThread = new Thread(appl);
+        openRateThread.start();
+        
+        // And test the shutdown
+        appl.stopAllPipelines();
+        
+        // wait for it to stop
+        while (appl.isFrameworkActive())
+        {
+          try {
+            Thread.sleep(100);
+          }
+          catch (InterruptedException ex) {
+            Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        }
+
+        // Finish off
+        appl.finaliseApplication();
+    }
+    
+    /**
+     * Test of application startup. This test builds a real (but very simple)
+     * processing pipeline using the standard framework startup procedure.
+     */
+    @Test
+    public void testApplicationStartupFail() {
+        System.out.println("OpenRate startup failure: Properties not found");
+
+        // get the date portion of the version string
+        int expResult = -5;
+
+        // Define the property file we are using
+        String[] args = new String[2];
+        args[0] = "-p";
+        args[1] = "DoesNotExist.properties.xml";
+        
+        // Start up the framework
+        OpenRate appl = OpenRate.getApplicationInstance();
+        int status = appl.createApplication(args);
+
+        // check the start up of the framework
+        Assert.assertEquals(expResult,status);
+    }
+    
+    /**
+     * Test of application startup. This test builds a real (but very simple)
+     * processing pipeline using the standard framework startup procedure.
+     */
+    @Test
+    public void testApplicationConsole() {
+        System.out.println("OpenRate console");
+
+        // get the date portion of the version string
+        int expResult = 0;
+
+        // Define the property file we are using
+        String[] args = new String[2];
+        args[0] = "-p";
+        args[1] = "TestFramework.properties.xml";
+        
+        // Start up the framework
+        OpenRate appl = OpenRate.getApplicationInstance();
+        int status = appl.createApplication(args);
+
+        // check the start up of the framework
+        Assert.assertEquals(expResult,status);
+        
+        // Now test that we can connect via socket
+        Socket testSocket = null;
+        try {
+          testSocket = new Socket("localhost", 8086);
+        }
+        catch (UnknownHostException ex) {
+          Assert.fail("Unable to open socket");
+        }
+        catch (IOException ex) {
+          Assert.fail("Unable to open socket");
+        }
+        
+        if (testSocket == null)
+        {
+          Assert.fail("Could not get socket");
+          return;
+        }
+        
+        BufferedReader inputReader = null;
+        try {
+          inputReader = new BufferedReader(new InputStreamReader(testSocket.getInputStream()));
+        }
+        catch (IOException ex) {
+          Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if (inputReader == null)
+        {
+          Assert.fail("Unable to get reader");
+          return;
+        }
+        
+        String[] headerResponse = new String[7];
+        headerResponse[0] = "--------------------------------------------------------------";
+        headerResponse[1] = "OpenRate Admin Console, " + OpenRate.getApplicationVersionString();
+        headerResponse[2] = "Copyright Tiger Shore Management Ltd, 2006-2013";
+        headerResponse[3] = headerResponse[0];
+        headerResponse[4] = "";
+        headerResponse[5] = "Type 'Help' for more information.";
+        headerResponse[6] = "";
+        
+        // Get the welcome message
+        String responseLine;
+        int index = 0;
+        try {
+        while ((responseLine = inputReader.readLine()) != null) {
+          // Check that we got the right response
+          Assert.assertEquals(headerResponse[index++], responseLine);
+          System.out.println("Server: " + responseLine);
+          if (index == 7) {
+            break;
+            }
+          }
+        }
+        catch (IOException ex) {
+          Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        char responseVal;
+        index = 1;
+        try {
+          // Now see if we got the promt (this is not a full line)
+          while ((responseVal = (char) inputReader.read()) != -1)
+          {
+            System.out.print(responseVal);
+            if (index++ == 10)
+              break;
+          }
+        }
+        catch (IOException ex) {
+          Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        // Now check the list of modules
+        PrintWriter out = null;
+        try {
+          out = new PrintWriter(testSocket.getOutputStream(), true);
+        }
+        catch (IOException ex) {
+          Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        out.println("m");
+        String[] moduleResponse = new String[7];
+        moduleResponse[0] = "OpenRate module listing:";
+        moduleResponse[1] = "+--------------------+----------------------------------------+----------------------------------------------------+";
+        moduleResponse[2] = "| Pipeline Name      | Module Name                            | Class                                              |";
+        moduleResponse[3] = moduleResponse[1];
+        moduleResponse[4] = "| DBTestPipe         | DBTestPipe                             | OpenRate.Pipeline                                  | ";
+        moduleResponse[5] = "| Framework          | Framework                              | OpenRate.OpenRate                                  | ";
+        moduleResponse[6] = "| Resource           | LogFactory                             | OpenRate.logging.LogFactory                        | ";
+
+        index = 0;
+        try {
+        while ((responseLine = inputReader.readLine()) != null) {
+          // Check that we got the right response
+          Assert.assertEquals(moduleResponse[index++], responseLine);
+          System.out.println("Server: " + responseLine);
+          if (index == 7) {
+            break;
+            }
+          }
+        }
+        catch (IOException ex) {
+          Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        // And test the shutdown
+        appl.stopAllPipelines();
+        
+        // wait for it to stop
+        while (appl.isFrameworkActive())
+        {
+          try {
+            Thread.sleep(100);
+          }
+          catch (InterruptedException ex) {
+            Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        }
+
+        // Finish off
+        appl.finaliseApplication();
+    }    
 }

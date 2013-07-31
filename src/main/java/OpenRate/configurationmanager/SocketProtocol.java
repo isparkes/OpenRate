@@ -55,8 +55,7 @@
 
 package OpenRate.configurationmanager;
 
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
+import OpenRate.OpenRate;
 
 /**
  * This object serves as the Protocol for the command issued in the socket<br/>
@@ -66,9 +65,6 @@ import OpenRate.logging.LogUtil;
  */
 public class SocketProtocol implements ISocketProtocol
 {
-  // get the log
-  private ILogger log = LogUtil.getLogUtil().getLogger("Framework");
-
   // holds if we are in GUI mode or not
   private boolean GUIMode = false;
 
@@ -206,7 +202,7 @@ public class SocketProtocol implements ISocketProtocol
           }
           else
           {
-            log.error("Module <" + CmdModuleSymbolicName + "> is not able to respond to the event interface");
+            OpenRate.getOpenRateFrameworkLog().error("Module <" + CmdModuleSymbolicName + "> is not able to respond to the event interface");
           }
         }
       }
@@ -221,4 +217,15 @@ public class SocketProtocol implements ISocketProtocol
     //returns the response of the listener
     return output;
   }
+  
+  public static String getWelcomeMessage() {
+    return 
+    "--------------------------------------------------------------\r\n" +
+    "OpenRate Admin Console, "+OpenRate.getApplicationVersionString()+"\r\n" +
+    "Copyright Tiger Shore Management Ltd, 2006-2013\r\n" +
+    "--------------------------------------------------------------\r\n\r\n" +
+    "Type 'Help' for more information.\r\n\r\n";
+    
+  }
+  
 }

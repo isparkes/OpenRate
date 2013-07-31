@@ -55,8 +55,10 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.exception.InitializationException;
+import OpenRate.exception.ProcessingException;
 import OpenRate.lang.AssemblyCtx;
 import OpenRate.logging.LogUtil;
 import OpenRate.utils.PropertyUtils;
@@ -120,7 +122,7 @@ public class CallAssemblyCache
   * small and non-persistent, we store them in a flat file format.
   */
   @Override
-  public void saveCacheObjectsToFile()
+  public void saveCacheObjectsToFile() throws ProcessingException
   {
     int            ObjectsLoaded = 0;
     BufferedWriter outFile = null;
@@ -131,7 +133,7 @@ public class CallAssemblyCache
     AssemblyCtx    tmpInfo;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Assembly Cache saving to file");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Assembly Cache saving to file");
 
     try
     {
@@ -140,7 +142,8 @@ public class CallAssemblyCache
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error opening output file");
+      message = "Error opening output file";
+      throw new ProcessingException(message,ex,getSymbolicName());
     }
 
     objectSet = ObjectList.keySet();
@@ -165,7 +168,7 @@ public class CallAssemblyCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error writing to file");
+        OpenRate.getOpenRateFrameworkLog().error("Error writing to file");
       }
     }
 
@@ -176,10 +179,10 @@ public class CallAssemblyCache
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error closing file");
+      OpenRate.getOpenRateFrameworkLog().error("Error closing file");
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Assembly Data Saving completed. " + ObjectsLoaded +
           " configuration lines saved <" + CachePersistenceName +
           ">");
@@ -202,7 +205,7 @@ public class CallAssemblyCache
     long storeCutoff = new Date().getTime()/1000 - StoreLimit*86400;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Persistent Partial Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Persistent Partial Cache Loading from File");
 
     // Try to open the file
     try
@@ -211,7 +214,7 @@ public class CallAssemblyCache
     }
     catch (FileNotFoundException exFileNotFound)
     {
-      getFWLog().warning(
+      OpenRate.getOpenRateFrameworkLog().warning(
             "Application is not able to read file : <" +
             CachePersistenceName + ">");
     }
@@ -252,13 +255,13 @@ public class CallAssemblyCache
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CachePersistenceName +
             "> in record <" + ObjectsLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CachePersistenceName +
             "> in record <" + ObjectsLoaded + ">. Malformed Record.");
     }
@@ -270,12 +273,12 @@ public class CallAssemblyCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error closing input file <" + CachePersistenceName +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CachePersistenceName +
                   ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Persistent Partial Data Loading completed. " + ObjectsLoaded +
           " configuration lines loaded from <" + CachePersistenceName +
           ">");
@@ -346,7 +349,7 @@ public class CallAssemblyCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

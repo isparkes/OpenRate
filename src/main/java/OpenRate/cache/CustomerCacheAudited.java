@@ -56,6 +56,7 @@
 package OpenRate.cache;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -84,10 +85,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * historicised.
  *
  * The loading process goes like this:
- *  1) Get a list of the aliases and the associated service ids. This means that
+ *  1) Get a list of the aliases and the associated service IDs. This means that
  *     we are able to deal with aliases more easily later
- *  2) Get a list of all the audit segements (history segments) for each service
- *  3) For each segment, get a list of the products, with validities
+ *  2) Get a list of all the audit segments (history segments) for each service
+ *  3) For each segment, get a list of the products, with validity
  *
  * ------------------------------ File Interface -------------------------------
  *
@@ -179,9 +180,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CustomerCacheAudited
     extends AbstractSyncLoaderCache
 {
-  // Get access to the FWlog
-  protected ILogger FWlog = LogUtil.getLogUtil().getLogger("Framework");
-
   // this is the persistent result set that we use to incrementally get the records
   protected ResultSet crs = null;
   protected ResultSet ars = null;
@@ -298,7 +296,7 @@ public class CustomerCacheAudited
     if (validFrom > validTo)
     {
       // Otherwise write an error and ignore it
-      FWlog.error("Alias ID <" + alias + "> validity period from <" + validFrom + "> is after validity period to <" + validTo + ">. Ignoring.");
+      OpenRate.getOpenRateFrameworkLog().error("Alias ID <" + alias + "> validity period from <" + validFrom + "> is after validity period to <" + validTo + ">. Ignoring.");
 
       return;
     }
@@ -420,7 +418,7 @@ public class CustomerCacheAudited
 
     // if we get here, we could not insert correctly
     message = "Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">";
-    FWlog.error(message);
+    OpenRate.getOpenRateFrameworkLog().error(message);
   }
 
  /**
@@ -484,7 +482,7 @@ public class CustomerCacheAudited
       // Null response means that we were not able to cover the period
       // without overlaps
       message = "Attempting to add an audit segment to custId <" + custId + "> with start date <" + audSegValidFrom + ">, but this already exists";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
     else
     {
@@ -522,7 +520,7 @@ public class CustomerCacheAudited
     if (tmpAuditSegment == null)
     {
       message = "Attempting to add a product <" + productRefId + "> to a non-existent audit segment <" + auditSegId + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
     else
     {
@@ -556,7 +554,7 @@ public class CustomerCacheAudited
     if (tmpAuditSegment == null)
     {
       message = "Attempting to add an ERA <" + ERAKey + "> to a non-existent audit segment <" + AuditSegId + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
     else
     {
@@ -656,7 +654,7 @@ public class CustomerCacheAudited
 
     if (tmpAuditSegment != null)
     {
-      FWlog.debug("Using audit segment <" + tmpAuditSegment.getAuditSegmentID() + "> for Cust ID <" + CustId + "> at time <" + CDRDate + ">");
+      OpenRate.getOpenRateFrameworkLog().debug("Using audit segment <" + tmpAuditSegment.getAuditSegmentID() + "> for Cust ID <" + CustId + "> at time <" + CDRDate + ">");
 
       // Check the validity of the customer account
       if ((tmpAuditSegment.getUTCAccountValidFrom() <= CDRDate) && (tmpAuditSegment.getUTCAccountValidTo() > CDRDate))
@@ -963,7 +961,7 @@ public class CustomerCacheAudited
 
         if (tmpAuditSegment != null)
         {
-          FWlog.debug("Using audit segment <" + tmpAuditSegment.getAuditSegmentID() + "> for alias <" + alias + "> at time <" + cdrDate + ">");
+          OpenRate.getOpenRateFrameworkLog().debug("Using audit segment <" + tmpAuditSegment.getAuditSegmentID() + "> for alias <" + alias + "> at time <" + cdrDate + ">");
 
           return tmpAuditSegment.getERA(eraKey);
         }
@@ -1063,7 +1061,7 @@ public class CustomerCacheAudited
     long             AuditSegID;
 
     // Log that we are starting the loading
-    FWlog.info("Starting Customer Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Customer Cache Loading from File");
 
     // Try to open the file
     try
@@ -1074,7 +1072,7 @@ public class CustomerCacheAudited
     {
       message = "Application is not able to read file : <" +
             cacheDataSourceName + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,
                                         exFileNotFound,
                                         getSymbolicName());
@@ -1120,7 +1118,7 @@ public class CustomerCacheAudited
               }
               catch (ParseException ex)
               {
-                FWlog.error("Date formats for record <" + tmpFileRecord + "> on line <" + lineCounter + "> are not correct. Data discarded." );
+                OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + tmpFileRecord + "> on line <" + lineCounter + "> are not correct. Data discarded." );
               }
 
               addAuditSegment(AuditSegID,custId,tmpExtCustID,balGroup,audSegValidFrom,custFromDate,custToDate);
@@ -1129,7 +1127,7 @@ public class CustomerCacheAudited
               // Update status for long operations
               if ( (auditSegsLoaded % loadingLogNotificationStep) == 0)
               {
-                FWlog.info("Customer Map Data Loaded " + auditSegsLoaded + " Customer Records");
+                OpenRate.getOpenRateFrameworkLog().info("Customer Map Data Loaded " + auditSegsLoaded + " Customer Records");
               }
             }
 
@@ -1151,7 +1149,7 @@ public class CustomerCacheAudited
               }
               catch (ParseException ex)
               {
-                FWlog.error("Date formats for record <" + tmpFileRecord + "> are not correct. Data discarded." );
+                OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + tmpFileRecord + "> are not correct. Data discarded." );
               }
 
               addAuditedCPI(0, AuditSegID,tmpProdName,tmpSubID,tmpService,tmpFromDate,tmpToDate);
@@ -1160,7 +1158,7 @@ public class CustomerCacheAudited
               // Update status for long operations
               if ( (cpiLoaded % loadingLogNotificationStep) == 0)
               {
-                FWlog.info("Customer Map Data Loaded " + cpiLoaded + " Product Records");
+                OpenRate.getOpenRateFrameworkLog().info("Customer Map Data Loaded " + cpiLoaded + " Product Records");
               }
             }
 
@@ -1181,7 +1179,7 @@ public class CustomerCacheAudited
               }
               catch (ParseException ex)
               {
-                FWlog.error("Date formats for record <" + tmpFileRecord + "> are not correct. Data discarded." );
+                OpenRate.getOpenRateFrameworkLog().error("Date formats for record <" + tmpFileRecord + "> are not correct. Data discarded." );
               }
 
               // AuditSegID of 0 indicates that we do not allow update
@@ -1208,13 +1206,13 @@ public class CustomerCacheAudited
     }
     catch (IOException ex)
     {
-      FWlog.fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + lineCounter + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      FWlog.fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + lineCounter + ">. Malformed Record.");
     }
@@ -1226,7 +1224,7 @@ public class CustomerCacheAudited
       }
       catch (IOException ex)
       {
-        FWlog.error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
                   ">", ex);
       }
     }
@@ -1235,14 +1233,14 @@ public class CustomerCacheAudited
     lastUpdate = System.currentTimeMillis();
 
     // finished
-    FWlog.info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Customer Cache Data Loading completed. " + lineCounter +
           " configuration lines loaded from <" + CacheDataFile +
           ">");
-    FWlog.info("Alias Loaded:                  " + aliasLoaded);
-    FWlog.info("CustomerAudit Segments Loaded: " + auditSegsLoaded);
-    FWlog.info("Products Loaded:               " + cpiLoaded);
-    FWlog.info("ERAs Loaded:                   " + eraLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Alias Loaded:                  " + aliasLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("CustomerAudit Segments Loaded: " + auditSegsLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Products Loaded:               " + cpiLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("ERAs Loaded:                   " + eraLoaded);
   }
 
  /**
@@ -1286,7 +1284,7 @@ public class CustomerCacheAudited
     String         tmpERAValue;
 
     // Find the location of the  zone configuration file
-    FWlog.info("Starting Customer Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Customer Cache Loading from DB");
 
     // Try - finally wrapper
     try
@@ -1331,7 +1329,7 @@ public class CustomerCacheAudited
           if (lastUpdate == 0)
           {
             // warn that the initial load did not return any results
-            FWlog.warning("No results found for customer alias data");
+            OpenRate.getOpenRateFrameworkLog().warning("No results found for customer alias data");
           }
         }
         else
@@ -1361,7 +1359,7 @@ public class CustomerCacheAudited
               message = "Customer Cache Alias Loading: <" + aliasLoaded +
                     "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
                     cacheDataSourceName + ">";
-              getFWLog().info(message);
+              OpenRate.getOpenRateFrameworkLog().info(message);
             }
         } while (crs.next());
         }
@@ -1373,7 +1371,7 @@ public class CustomerCacheAudited
         throw new InitializationException(message,ex,getSymbolicName());
       }
 
-      FWlog.info("Alias Loading completed. " + aliasLoaded +
+      OpenRate.getOpenRateFrameworkLog().info("Alias Loading completed. " + aliasLoaded +
         " configuration lines loaded from <" + cacheDataSourceName + ">");
 
       // set the where parameter to allow incremental loading
@@ -1411,7 +1409,7 @@ public class CustomerCacheAudited
           if (lastUpdate == 0)
           {
             // warn that the initial load did not return any results
-            FWlog.warning("No results found for customer audit segment data");
+            OpenRate.getOpenRateFrameworkLog().warning("No results found for customer audit segment data");
           }
         }
         else
@@ -1442,7 +1440,7 @@ public class CustomerCacheAudited
               message = "Customer Cache Audit Segment Loading: <" + auditSegsLoaded +
                     "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
                     cacheDataSourceName + ">";
-              getFWLog().info(message);
+              OpenRate.getOpenRateFrameworkLog().info(message);
             }
           } while (ars.next());
         }
@@ -1453,7 +1451,7 @@ public class CustomerCacheAudited
         throw new InitializationException(message,ex,getSymbolicName());
       }
 
-      FWlog.info("Audit segment Loading completed. " + auditSegsLoaded +
+      OpenRate.getOpenRateFrameworkLog().info("Audit segment Loading completed. " + auditSegsLoaded +
         " configuration lines loaded from <" + cacheDataSourceName + ">");
 
       // set the where parameter to allow incremental loading
@@ -1491,7 +1489,7 @@ public class CustomerCacheAudited
           if (lastUpdate == 0)
           {
             // warn that the initial load did not return any results
-            FWlog.warning("No results found for customer product data");
+            OpenRate.getOpenRateFrameworkLog().warning("No results found for customer product data");
           }
         }
         else
@@ -1521,7 +1519,7 @@ public class CustomerCacheAudited
               message = "Customer Cache Product Loading: <" + cpiLoaded +
                     "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
                     cacheDataSourceName + ">";
-              getFWLog().info(message);
+              OpenRate.getOpenRateFrameworkLog().info(message);
             }
           } while (prs.next());
         }
@@ -1567,7 +1565,7 @@ public class CustomerCacheAudited
           if (lastUpdate == 0)
           {
             // warn that the initial load did not return any results
-            FWlog.warning("No results found for customer ERA data");
+            OpenRate.getOpenRateFrameworkLog().warning("No results found for customer ERA data");
           }
         }
         else
@@ -1618,12 +1616,12 @@ public class CustomerCacheAudited
     lastUpdate = System.currentTimeMillis();
 
     // finished
-    FWlog.info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Customer Cache Data Loading completed from <" + cacheDataSourceName + ">");
-    FWlog.info("Alias Loaded:                  " + aliasLoaded);
-    FWlog.info("CustomerAudit Segments Loaded: " + auditSegsLoaded);
-    FWlog.info("Products Loaded:               " + cpiLoaded);
-    FWlog.info("ERAs Loaded:                   " + eraLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Alias Loaded:                  " + aliasLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("CustomerAudit Segments Loaded: " + auditSegsLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Products Loaded:               " + cpiLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("ERAs Loaded:                   " + eraLoaded);
   }
 
  /**
@@ -1672,12 +1670,12 @@ public class CustomerCacheAudited
         }
         catch (InitializationException ex)
         {
-          getFWLog().error("Error performing incremental update: " + ex.getMessage());
+          OpenRate.getOpenRateFrameworkLog().error("Error performing incremental update: " + ex.getMessage());
         }
       }
       else
       {
-        getFWLog().error("Cannot perform incremental update from file source");
+        OpenRate.getOpenRateFrameworkLog().error("Cannot perform incremental update from file source");
       }
     }
   }
@@ -1710,14 +1708,14 @@ public class CustomerCacheAudited
     {
       if (file.createNewFile() == false)
       {
-        getFWLog().error("Error creating file <" + filename + ">");
+        OpenRate.getOpenRateFrameworkLog().error("Error creating file <" + filename + ">");
       }
 
       fwriter = new FileWriter(file);
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error opening dump file <" + filename + ">. message <" + ex.getMessage() +">");
+      OpenRate.getOpenRateFrameworkLog().error("Error opening dump file <" + filename + ">. message <" + ex.getMessage() +">");
     }
 
     dumpWriter = new BufferedWriter(fwriter);
@@ -1734,7 +1732,7 @@ public class CustomerCacheAudited
       }
       catch (IOException ioe)
       {
-        getFWLog().error("Error writing dump file", ioe);
+        OpenRate.getOpenRateFrameworkLog().error("Error writing dump file", ioe);
       }
 
       aliasIter = aliasCache.keySet().iterator();
@@ -1754,7 +1752,7 @@ public class CustomerCacheAudited
       }
       catch (IOException ioe)
       {
-        getFWLog().error("Error writing dump file", ioe);
+        OpenRate.getOpenRateFrameworkLog().error("Error writing dump file", ioe);
       }
       IDIter = custCache.keySet().iterator();
 
@@ -1775,7 +1773,7 @@ public class CustomerCacheAudited
       }
       catch (IOException ioe)
       {
-        getFWLog().error("Error writing dump file", ioe);
+        OpenRate.getOpenRateFrameworkLog().error("Error writing dump file", ioe);
       }
 
       writeAliasInfo(alias,dumpWriter);
@@ -1790,7 +1788,7 @@ public class CustomerCacheAudited
       }
       catch (IOException ioe)
       {
-        getFWLog().error("Error writing dump file", ioe);
+        OpenRate.getOpenRateFrameworkLog().error("Error writing dump file", ioe);
       }
 
       // Get a list of all the Cust IDs that have used the alias
@@ -1814,7 +1812,7 @@ public class CustomerCacheAudited
     }
     catch (IOException ioe)
     {
-      getFWLog().error("Error closing dump file", ioe);
+      OpenRate.getOpenRateFrameworkLog().error("Error closing dump file", ioe);
     }
 
     return filename;
@@ -1915,7 +1913,7 @@ public class CustomerCacheAudited
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error writing to dump file. message <" + ex.getMessage() + ">");
+      OpenRate.getOpenRateFrameworkLog().error("Error writing to dump file. message <" + ex.getMessage() + ">");
     }
   }
 
@@ -1959,7 +1957,7 @@ public class CustomerCacheAudited
     }
     catch (IOException ex)
     {
-      getFWLog().error("Error writing to dump file. message <" + ex.getMessage() + ">");
+      OpenRate.getOpenRateFrameworkLog().error("Error writing to dump file. message <" + ex.getMessage() + ">");
     }
   }
 
@@ -2056,7 +2054,7 @@ public class CustomerCacheAudited
     catch(SQLException ex)
     {
       message = "Error preparing the statement " + aliasSelectQuery + "SQL Error:" + ex.getMessage();
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -2068,7 +2066,7 @@ public class CustomerCacheAudited
     catch(SQLException ex)
     {
       message = "Error preparing the statement <" + auditSelectQuery + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -2080,7 +2078,7 @@ public class CustomerCacheAudited
     catch(SQLException ex)
     {
       message = "Error preparing the statement <" + productSelectQuery + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -2092,7 +2090,7 @@ public class CustomerCacheAudited
     catch(SQLException ex)
     {
       message = "Error preparing the statement <" + eraSelectQuery + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
   }
@@ -2202,7 +2200,7 @@ public class CustomerCacheAudited
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

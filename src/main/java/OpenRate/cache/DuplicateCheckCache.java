@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -206,7 +207,7 @@ public class DuplicateCheckCache
     // Variable declarations
     String            strBufferLimit,strStoreLimit;
 
-    getFWLog().info("Starting Duplicate Check Cache Loading");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Duplicate Check Cache Loading");
 
     setSymbolicName(CacheName);
 
@@ -219,12 +220,12 @@ public class DuplicateCheckCache
     if (DataSourceType.equals("None"))
     {
       message = "Data source type not found for cache <" + getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
     {
-      getFWLog().debug(
+      OpenRate.getOpenRateFrameworkLog().debug(
             "Found Duplicate Check Data Source Type Configuration:" +
             DataSourceType);
     }
@@ -248,7 +249,7 @@ public class DuplicateCheckCache
       }
       else
       {
-        getFWLog().debug("Found Duplicate Check Data Source Configuration:" +
+        OpenRate.getOpenRateFrameworkLog().debug("Found Duplicate Check Data Source Configuration:" +
               cacheDataSourceName);
       }
 
@@ -264,7 +265,7 @@ public class DuplicateCheckCache
       }
       else
       {
-        getFWLog().debug("Found Duplicate Check Select statement Configuration:" +
+        OpenRate.getOpenRateFrameworkLog().debug("Found Duplicate Check Select statement Configuration:" +
               InsertQuery);
       }
 
@@ -280,7 +281,7 @@ public class DuplicateCheckCache
       }
       else
       {
-        getFWLog().debug("Found Duplicate Check Insert statement Configuration:" +
+        OpenRate.getOpenRateFrameworkLog().debug("Found Duplicate Check Insert statement Configuration:" +
               InsertQuery);
       }
 
@@ -296,7 +297,7 @@ public class DuplicateCheckCache
       }
       else
       {
-        getFWLog().debug(
+        OpenRate.getOpenRateFrameworkLog().debug(
               "Purge Duplicate Check Insert statement Configuration:" +
               PurgeQuery);
       }
@@ -318,7 +319,7 @@ public class DuplicateCheckCache
     {
       // use default limit
       bufferLimitDays = DEFAULT_BUFFER_LIMIT_DAYS;
-      getFWLog().info("Set default value for <" + SERVICE_BUFFER + "> to <" + new Date(bufferLimit*1000) + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Set default value for <" + SERVICE_BUFFER + "> to <" + new Date(bufferLimit*1000) + ">");
     }
     else
     {
@@ -329,7 +330,7 @@ public class DuplicateCheckCache
         // calculate the buffer limit cutoff date
         bufferLimit = Calendar.getInstance().getTimeInMillis()/1000 - bufferLimitDays * 86400;
 
-        getFWLog().info("Set value for <" + SERVICE_BUFFER + "> to <" + new Date(bufferLimit*1000) + ">");
+        OpenRate.getOpenRateFrameworkLog().info("Set value for <" + SERVICE_BUFFER + "> to <" + new Date(bufferLimit*1000) + ">");
       }
       catch (NumberFormatException nfe)
       {
@@ -348,7 +349,7 @@ public class DuplicateCheckCache
     {
       // use default limit
       storeLimitDays = DEFAULT_STORE_LIMIT_DAYS;
-      getFWLog().info("Set default value for <" + SERVICE_STORE + "> to <" + new Date(storeLimit*1000) + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Set default value for <" + SERVICE_STORE + "> to <" + new Date(storeLimit*1000) + ">");
     }
     else
     {
@@ -359,7 +360,7 @@ public class DuplicateCheckCache
         // calculate the store limit cutoff date
         storeLimit = Calendar.getInstance().getTimeInMillis()/1000 - storeLimitDays * 86400;
 
-        getFWLog().info("Set value for <" + SERVICE_STORE + "> to <" + new Date(storeLimit*1000) + ">");
+        OpenRate.getOpenRateFrameworkLog().info("Set value for <" + SERVICE_STORE + "> to <" + new Date(storeLimit*1000) + ">");
       }
       catch (NumberFormatException nfe)
       {
@@ -390,7 +391,7 @@ public class DuplicateCheckCache
     if(DBUtil.initDataSource(cacheDataSourceName) == null)
     {
       message = "Could not initialise DB connection <" + cacheDataSourceName + "> to in module <" + getSymbolicName() + ">.";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -476,7 +477,7 @@ public class DuplicateCheckCache
             // other SQL exception
             message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
                 + "check data on direct DB insert. message=<" + ex.getMessage()+">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new ProcessingException(message,ex,getSymbolicName());
           }
         }
@@ -522,7 +523,7 @@ public class DuplicateCheckCache
     {
       // Something wrong, we don't expect this
       message = "No record elements found for transaction <" + TransactionNumber + "> in module <" + getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
     else
     {
@@ -555,14 +556,14 @@ public class DuplicateCheckCache
                 // other SQL exception
                 message = "Duplicate Error inserting into <" + cacheDataSourceName + "> for the duplicate "
                     + "check data on transaction commit for key <" + key+"> in transaction <" + TransactionNumber + ">";
-                getFWLog().warning(message);
+                OpenRate.getOpenRateFrameworkLog().warning(message);
               }
               else
               {
                 // other SQL exception
                 message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
                     + "check data on transaction commit. message=<" + ex.getMessage()+"> in transaction <" + TransactionNumber + ">";
-                getFWLog().error(message);
+                OpenRate.getOpenRateFrameworkLog().error(message);
               }
             }
           }
@@ -586,7 +587,7 @@ public class DuplicateCheckCache
       // Log what we did
       message = "Inserted <" + recordCount + "> records into duplicate check table" +
                         " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
-      getFWLog().info(message);
+      OpenRate.getOpenRateFrameworkLog().info(message);
     }
   }
 
@@ -671,7 +672,7 @@ public class DuplicateCheckCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }
@@ -710,7 +711,7 @@ public class DuplicateCheckCache
     String            CDRKey;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Duplicate Check Cache Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Duplicate Check Cache Loading from DB for <" + getSymbolicName() + ">");
 
     // Try to open the DS for lookup
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -719,7 +720,7 @@ public class DuplicateCheckCache
     prepareSelectStatement();
 
     // get our cutoff date
-    getFWLog().info("Duplicate check retrieve cutoff date is <" + new Date(bufferLimit) + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Duplicate check retrieve cutoff date is <" + new Date(bufferLimit) + ">");
 
      // Execute the query
     try
@@ -729,7 +730,7 @@ public class DuplicateCheckCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving Duplicate Check data in module <"+getSymbolicName()+">. message <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -744,7 +745,7 @@ public class DuplicateCheckCache
         // we're not going to be able to use this
         message = "You must define 2 entries in the record, you have defined  <" +
               ColumnCount + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -774,14 +775,14 @@ public class DuplicateCheckCache
           message = "Duplicate Check Data Loading: <" + recordsLoaded +
                 "> records buffered and <" + recordsDiscarded + "> records in duplicate data table for <" +
                 getSymbolicName() + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
       message = "Error opening Data for <" + getSymbolicName() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -793,7 +794,7 @@ public class DuplicateCheckCache
     message = "Duplicate Check Data Loading completed. <" + recordsLoaded +
           "> records buffered and <" + recordsDiscarded +
           "> records in duplicate data table for <" + getSymbolicName() + ">";
-    getFWLog().info(message);
+    OpenRate.getOpenRateFrameworkLog().info(message);
 
   }
 
@@ -818,7 +819,7 @@ public class DuplicateCheckCache
     int recordsPurgedDatabase = 0;
 
     // log the cutoff date
-    getFWLog().info("Duplicate check purge started. Original cache size = <" + recordList.size() + "> records.");
+    OpenRate.getOpenRateFrameworkLog().info("Duplicate check purge started. Original cache size = <" + recordList.size() + "> records.");
 
     // re-calculate the buffer limit cutoff date
     bufferLimit = Calendar.getInstance().getTimeInMillis()/1000 - bufferLimitDays * 86400;
@@ -856,7 +857,7 @@ public class DuplicateCheckCache
       recordList = NewRecordList;
 
       // log that we have moved onto the DB part
-      getFWLog().info("Duplicate check DB purge started.");
+      OpenRate.getOpenRateFrameworkLog().info("Duplicate check DB purge started.");
 
       // **** Clean up the database ****
       // get the connection for DB Modification
@@ -877,7 +878,7 @@ public class DuplicateCheckCache
       catch (InitializationException ie)
       {
         message = "Error preparing purge statement for Duplicate Check data purge in module <"+getSymbolicName()+">. message <" + ie.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
       }
 
       // purge the database
@@ -891,7 +892,7 @@ public class DuplicateCheckCache
       {
         message = "Error purging the duplicate check database. Query: <" +
                 PurgeQuery + "> message: <" + ex.getMessage() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
       }
     }
     finally
@@ -903,7 +904,7 @@ public class DuplicateCheckCache
     // log what we have saved
     message = "Duplicate check data purging finished. Purged <" + recordsPurgedMemory + "> records "
             + "from memory, <" + recordsPurgedDatabase + "> records from database";
-    getFWLog().info(message);
+    OpenRate.getOpenRateFrameworkLog().info(message);
   }
 
   // -----------------------------------------------------------------------------
@@ -928,14 +929,14 @@ public class DuplicateCheckCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + SelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
       message = "Error preparing the statement <" + SelectQuery +
                        ">. message: " + ex.getMessage();
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
   }
@@ -958,14 +959,14 @@ public class DuplicateCheckCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + PurgeQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
       message = "Error preparing the statement <" + PurgeQuery +
                        ">. message: " + ex.getMessage();
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
   }
@@ -1073,13 +1074,13 @@ public class DuplicateCheckCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + InsertQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
     catch (Exception ex)
     {
       message = "Error preparing the statement <" + InsertQuery +
                        ">. message: " + ex.getMessage();
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
     }
 
     return tmpStatement;

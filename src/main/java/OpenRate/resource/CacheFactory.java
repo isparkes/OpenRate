@@ -59,9 +59,8 @@ import OpenRate.OpenRate;
 import OpenRate.cache.*;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
+import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.ConversionUtils;
@@ -95,14 +94,6 @@ public class CacheFactory
              IEventInterface,
              ISyncPoint
 {
- /**
-  * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
-  * from resources or caches) should go into this log, as well as startup
-  * and shutdown messages. Normally the messages will be application driven,
-  * not stack traces, which should go into the error log.
-  */
-  protected ILogger FWLog;
-
   // The symbolic module name of the class stack
   private String symbolicName;
 
@@ -168,13 +159,10 @@ public class CacheFactory
     Iterator<String>  cacheableClassIter;
     String            configHelper;
 
-    // Get the log before we start
-    FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
     // Start timer for loading
     loadStartTime = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
 
-    FWLog.info("Starting CacheFactory initialisation");
+    OpenRate.getOpenRateFrameworkLog().info("Starting CacheFactory initialisation");
     symbolicName = resourceName;
 
     if (!symbolicName.equalsIgnoreCase(RESOURCE_KEY))
@@ -223,7 +211,7 @@ public class CacheFactory
         }
         else
         {
-          FWLog.info("Loading Cacheable Class <" + tmpCacheableClassName + ">...");
+          OpenRate.getOpenRateFrameworkLog().info("Loading Cacheable Class <" + tmpCacheableClassName + ">...");
           System.out.println("    Loading Cacheable Class <" + tmpCacheableClassName + ">...");
 
           //Add the CacheManager to the manager list.
@@ -247,7 +235,7 @@ public class CacheFactory
             if (sequentialLoading)
             {
               ((ICacheLoader)cacheableObject).loadCache(resourceName, tmpCacheableClassName);
-              FWLog.info("Loaded  Cacheable Class <" + tmpCacheableClassName + ">...");
+              OpenRate.getOpenRateFrameworkLog().info("Loaded  Cacheable Class <" + tmpCacheableClassName + ">...");
               System.out.println("    Loaded  Cacheable Class <" + tmpCacheableClassName + ">...");
             }
             else
@@ -260,7 +248,6 @@ public class CacheFactory
               cacheLoaderThread.setCacheName(tmpCacheableClassName);
               cacheLoaderThread.setResourceName(resourceName);
               cacheLoaderThread.setLoadStartTime(ConversionUtils.getConversionUtilsObject().getCurrentUTCms());
-              cacheLoaderThread.setLog(FWLog);
 
               // Launch the thread
               cacheLoaderThread.start();
@@ -305,7 +292,7 @@ public class CacheFactory
       catch (OutOfMemoryError ex)
       {
         message = "Out of memory creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,getSymbolicName(),true,true,ex));
       }
       catch (ArrayIndexOutOfBoundsException ex)
       {
@@ -320,7 +307,7 @@ public class CacheFactory
       catch (Throwable ex)
       {
         message = "Unexpected Exception in <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,getSymbolicName(),true,true,ex));
       }
 
       // Set the auto reload parameter
@@ -413,7 +400,7 @@ public class CacheFactory
           }
 
           // Log the fact that we are reloading this cache
-          FWLog.info("Cache <" + tmpCacheableClassName + "> is set to auto reload with a period of <" + autoLoadPeriod +">");
+          OpenRate.getOpenRateFrameworkLog().info("Cache <" + tmpCacheableClassName + "> is set to auto reload with a period of <" + autoLoadPeriod +">");
         }
 
         // Now see if we have to register with the config manager
@@ -433,7 +420,7 @@ public class CacheFactory
         }
 
         // Log the creation of the cacheable class
-        FWLog.info("Created Cacheable Class <" + tmpCacheableClassName + ">");
+        OpenRate.getOpenRateFrameworkLog().info("Created Cacheable Class <" + tmpCacheableClassName + ">");
       }
       catch (NullPointerException ex)
       {
@@ -481,7 +468,7 @@ public class CacheFactory
     }
 
     loadEndTime = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
-    FWLog.info("CacheFactory initialised in " + (loadEndTime-loadStartTime) + "ms.");
+    OpenRate.getOpenRateFrameworkLog().info("CacheFactory initialised in " + (loadEndTime-loadStartTime) + "ms.");
   }
 
   /**
@@ -525,8 +512,15 @@ public class CacheFactory
         System.out.println(
               "  Destroying Cacheable Class <" + tmpCacheableClassName +
               ">...");
-        ((ICacheSaver)cacheableObject).saveCache();
-        FWLog.info("Saved Cacheable Class <" + tmpCacheableClassName + ">...");
+        
+        try {
+          ((ICacheSaver)cacheableObject).saveCache();
+        }
+        catch (ProcessingException ex) {
+          OpenRate.getFrameworkExceptionHandler().reportException(ex);
+        }
+        
+        OpenRate.getOpenRateFrameworkLog().info("Saved Cacheable Class <" + tmpCacheableClassName + ">...");
         System.out.println(
               "  Unloaded Cacheable Class <" + tmpCacheableClassName +
               ">...");
@@ -772,7 +766,7 @@ public class CacheFactory
 
     if (ResultCode == 0)
     {
-      FWLog.debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

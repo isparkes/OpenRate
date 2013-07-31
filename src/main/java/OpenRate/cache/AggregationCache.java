@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
@@ -283,7 +284,7 @@ public class AggregationCache
     setSymbolicName(cacheName);
 
     // Find the location of the configuration file
-    getFWLog().info("Starting Aggregation Cache Configuration <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Aggregation Cache Configuration <" + getSymbolicName() + ">");
 
     AggregationConfigFile = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(resourceName,
                                                                       cacheName,
@@ -293,7 +294,7 @@ public class AggregationCache
     if (AggregationConfigFile.equals("None"))
     {
       message = "Aggregation Config File not found for <" + getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -305,7 +306,7 @@ public class AggregationCache
     if (AggregationResultPath.equals("None"))
     {
       message = "Aggregation Result Path <AggResultPath> not found for <" + getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -317,7 +318,7 @@ public class AggregationCache
     catch (FileNotFoundException exFileNotFound)
     {
       message = "Not able to read the config file : <" + AggregationConfigFile + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,exFileNotFound,getSymbolicName());
     }
 
@@ -441,13 +442,13 @@ public class AggregationCache
     {
       message = "Error reading input file <" + AggregationConfigFile +
                 "> in record <" + fileLine + ">. IO Error. message <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       message = "Error reading input file <" + AggregationConfigFile +
             "> in record <" + fileLine + ">. Malformed Record: <" + tmpFileRecord + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     finally
     {
@@ -457,7 +458,7 @@ public class AggregationCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error closing input file <" + AggregationConfigFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + AggregationConfigFile +
                   ">", ex);
       }
     }
@@ -466,17 +467,17 @@ public class AggregationCache
     dir = new File(AggregationResultPath);
     if ( dir.exists() & dir.canWrite())
     {
-      getFWLog().info("Aggregation Result Path <" + AggregationResultPath + "> set for <" + getSymbolicName() + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Aggregation Result Path <" + AggregationResultPath + "> set for <" + getSymbolicName() + ">");
     }
     else
     {
       message = "Aggregation Result Path <" + AggregationResultPath + "> either not defined or read only for <" + getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
     // Done
-    getFWLog().info("Completed Aggregation Cache Configuration <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Completed Aggregation Cache Configuration <" + getSymbolicName() + ">");
   }
 
   // -----------------------------------------------------------------------------
@@ -498,7 +499,7 @@ public class AggregationCache
     if (scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> already defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -541,7 +542,7 @@ public class AggregationCache
     if (!scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> not defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
@@ -566,7 +567,7 @@ public class AggregationCache
     if (!scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> not defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
@@ -600,7 +601,7 @@ public class AggregationCache
       if (!operationUnderstood)
       {
         message = "Aggregation operation <" + operationValue + "> not understood in scenario <" + scenarioName + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
@@ -622,7 +623,7 @@ public class AggregationCache
     if (!scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> not defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
@@ -636,7 +637,7 @@ public class AggregationCache
       catch (NumberFormatException nfe)
       {
         message = "Aggregation field offset <" + aggregationOffset + "> not numeric in scenario <" + scenarioName + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -661,7 +662,7 @@ public class AggregationCache
     if (!scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> not defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
@@ -675,7 +676,7 @@ public class AggregationCache
       catch (NumberFormatException nfe)
       {
         message = "Aggregation field offset <" + aggregationOffset + "> not numeric in scenario <" + scenarioName + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -698,7 +699,7 @@ public class AggregationCache
     if (!scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> not defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
@@ -726,7 +727,7 @@ public class AggregationCache
     if (!scenarioList.containsKey(scenarioName))
     {
       message = "Aggregation scenario <" + scenarioName + "> not defined";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     else
@@ -734,7 +735,7 @@ public class AggregationCache
       if (!scenarioList.containsKey(mergeIntoScenarioName))
       {
         message = "Aggregation scenario <" + mergeIntoScenarioName + "> not defined";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
       else
@@ -750,7 +751,7 @@ public class AggregationCache
         catch (NumberFormatException nfe)
         {
           message = "Merge order <" + mergeOrder + "> not numeric in scenario <" + scenarioName + ">";
-          getFWLog().error(message);
+          OpenRate.getOpenRateFrameworkLog().error(message);
           throw new InitializationException(message,getSymbolicName());
         }
 
@@ -763,7 +764,7 @@ public class AggregationCache
           if (tmpAggScenario.fileName == null)
           {
             message = "Aggregation scenario <" + scenarioName + "> does not have an output defined. Define the output destination before defining a merge.";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
           else
@@ -781,7 +782,7 @@ public class AggregationCache
           if (tmpAggScenario.fileName != null)
           {
             message = "Aggregation scenario <" + scenarioName + "> has an output defined, but is a merge subordinate. You cannot define an output for this scenario.";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
           else
@@ -790,7 +791,7 @@ public class AggregationCache
             if (tmpMergeIntoScenario.groupingFieldIndex != tmpAggScenario.groupingFieldIndex)
             {
               message = "Aggregation scenario <" + scenarioName + "> does not have the same key structure as merge scenario <" + mergeIntoScenarioName + ">. They cannot be merged.";
-              getFWLog().error(message);
+              OpenRate.getOpenRateFrameworkLog().error(message);
               throw new InitializationException(message,getSymbolicName());
             }
 
@@ -800,7 +801,7 @@ public class AggregationCache
               if (tmpMergeIntoScenario.groupingFieldList.get(Index) != tmpAggScenario.groupingFieldList.get(Index))
               {
                 message = "Aggregation scenarios <" + scenarioName + "> and <" + mergeIntoScenarioName + "> do not have identical grouping keys. They cannot be merged.";
-                getFWLog().error(message);
+                OpenRate.getOpenRateFrameworkLog().error(message);
                 throw new InitializationException(message,getSymbolicName());
               }
             }
@@ -912,7 +913,7 @@ public class AggregationCache
           catch (NullPointerException npe)
           {
             String ErrorString = "Error accessing the aggregation result cache for scenario <" + tmpAggScenario + "> and transaction <" + transactionNumber + ">";
-            getFWLog().error(ErrorString);
+            OpenRate.getOpenRateFrameworkLog().error(ErrorString);
             throw new ProcessingException (ErrorString,getSymbolicName());
           }
 
@@ -926,7 +927,7 @@ public class AggregationCache
             catch (NumberFormatException nfe)
             {
               // log the error
-              getFWLog().error("Error converting non numeric value <" +
+              OpenRate.getOpenRateFrameworkLog().error("Error converting non numeric value <" +
                 fieldList[tmpAggScenario.inpField-1] + "> in scenario <" +
                 keysToAggregate.get(i) + " in module <" + getSymbolicName() +">");
             }
@@ -958,7 +959,7 @@ public class AggregationCache
       else
       {
         String ErrorString = "Aggregation cache does not contain key <" + keysToAggregate.get(i) +">";
-        getFWLog().error(ErrorString);
+        OpenRate.getOpenRateFrameworkLog().error(ErrorString);
         throw new ProcessingException (ErrorString,getSymbolicName());
       }
     }
@@ -1300,7 +1301,7 @@ public class AggregationCache
       }
       catch (IOException IOex)
       {
-        getFWLog().error("Error writing aggregation file for scenario <" + tmpMergedAggregation.Scenario + ">. message <" + IOex.getMessage() + ">");
+        OpenRate.getOpenRateFrameworkLog().error("Error writing aggregation file for scenario <" + tmpMergedAggregation.Scenario + ">. message <" + IOex.getMessage() + ">");
       }
     }
 
@@ -1602,7 +1603,7 @@ public class AggregationCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

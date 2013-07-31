@@ -98,7 +98,7 @@ public class Pipeline
 {
   // Get the logs, for this and all child classes. The pipe log will be
   // intialised during the init, up until then, all logging will go to the
-  // framework FWLog, or the default logger (console).
+  // framework log, or the default logger (console).
 
   /**
    * Pipeline Level AstractLogger. This logger is used for logging messages specific
@@ -367,7 +367,7 @@ public class Pipeline
     {
       // Unexpected exception. Wrap it and pass it up, nesting the original message
       message = "Unexpected exception configuring pipeline <" + getSymbolicName() + ">, message <" + ex.getMessage() + ">";
-      throw new InitializationException(message,ex,getSymbolicName());
+      throw new InitializationException(message,getSymbolicName(),true,true,ex);
     }
   }
 

@@ -55,10 +55,9 @@
 
 package OpenRate.db;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.utils.PropertyUtils;
 import com.jolbox.bonecp.BoneCPDataSource;
 import java.sql.Connection;
@@ -84,7 +83,6 @@ public class BCPDataSource implements IDBDataSource
   *
   * * @author ddijak
   */
-  private static final ILogger FWlog = LogUtil.getLogUtil().getLogger("Framework");
 
   // -----------------------------------------------------------------------------
   // ------------------ BoneCP specific configuration options  ---------------------
@@ -167,7 +165,7 @@ public class BCPDataSource implements IDBDataSource
 
     BoneCPDataSource dataSource = new BoneCPDataSource();
 
-    FWlog.debug("Creating new DataSource <" + dataSourceName + ">");
+    OpenRate.getOpenRateFrameworkLog().debug("Creating new DataSource <" + dataSourceName + ">");
 
     try
     {
@@ -180,40 +178,40 @@ public class BCPDataSource implements IDBDataSource
       if (db_url == null || db_url.isEmpty())
       {
         message = "Error recovering data source parameter <db_url> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
       if (driver == null || driver.isEmpty())
       {
         message = "Error recovering data source parameter <driver> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
       if (username == null || username.isEmpty())
       {
         message = "Error recovering data source parameter <username> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
       if (password == null)
       {
         message = "Error recovering data source parameter <password> for data source <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
-      FWlog.info("Creating DataSource <" + dataSourceName + "> using driver <" + driver + "> from URL <" + db_url + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Creating DataSource <" + dataSourceName + "> using driver <" + driver + "> from URL <" + db_url + ">");
 
       Class<?> driverClass = Class.forName(driver);
-      FWlog.debug("jdbc driver loaded. name = <" + driverClass.getName() + ">");
+      OpenRate.getOpenRateFrameworkLog().debug("jdbc driver loaded. name = <" + driverClass.getName() + ">");
     }
     catch (ClassNotFoundException cnfe)
     {
       message = "Driver class <" + driver + "> not found for data source <" + dataSourceName + ">";
-      FWlog.error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -240,7 +238,7 @@ public class BCPDataSource implements IDBDataSource
     // If AcquireIncrement is > MaxConnectionsPerPartition then use default value of 1
     if (AcquireIncrement > MaxConnPerPartition)
     {
-    	FWlog.warning("AcquireIncrement can't be bigger than MaxConnectionsPerPartition. Setting default value of: "+DEFAULT_ACQUIRE_INCREMENT_COUNT);
+    	OpenRate.getOpenRateFrameworkLog().warning("AcquireIncrement can't be bigger than MaxConnectionsPerPartition. Setting default value of: "+DEFAULT_ACQUIRE_INCREMENT_COUNT);
     	AcquireIncrement = Integer.parseInt(DEFAULT_ACQUIRE_INCREMENT_COUNT);
     }
     String stmtCacheSize 		= PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName,STMT_CACHE_KEY, DEFAULT_STMTS_CACHE_SIZE);
@@ -264,7 +262,7 @@ public class BCPDataSource implements IDBDataSource
 
     if (validationSQL == null || validationSQL.isEmpty())
     {
-      FWlog.warning("No SQL validation statement found for Datasource <" + dataSourceName + ">");
+      OpenRate.getOpenRateFrameworkLog().warning("No SQL validation statement found for Datasource <" + dataSourceName + ">");
     }
     else
     {
@@ -281,7 +279,7 @@ public class BCPDataSource implements IDBDataSource
       catch (SQLException ex)
       {
         message = "Connection test failed for connection <" + dataSourceName + ">";
-        FWlog.error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }

@@ -55,7 +55,7 @@
 
 package OpenRate.logging;
 
-import OpenRate.exception.ExceptionHandler;
+import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
 import OpenRate.resource.ResourceContext;
 
@@ -67,9 +67,6 @@ public class LogUtil
 {
   // Get the utilities for handling the XML configuration
   private static LogUtil logUtilsObj;
-
-  // Exception handler
-  private static ExceptionHandler handler;
 
  /**
   * This utility function returns the singleton instance of LogUtils
@@ -105,7 +102,7 @@ public class LogUtil
     if (factory == null)
     {
       // no factory registered, error
-      handler.reportException(new InitializationException("No log factory found","LogUtil"));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("No log factory found","LogUtil"));
     }
     else
     {
@@ -114,7 +111,7 @@ public class LogUtil
 
     if (logger == null)
     {
-      handler.reportException(new InitializationException("unable to load logger. Resource not found","LogUtil"));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("unable to load logger. Resource not found","LogUtil"));
     }
 
     return logger;
@@ -139,7 +136,7 @@ public class LogUtil
     if (factory == null)
     {
       // no factory registered, error
-      handler.reportException(new InitializationException("No log factory found","LogUtil"));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("No log factory found","LogUtil"));
     }
     else
     {
@@ -148,26 +145,10 @@ public class LogUtil
 
     if (logger == null)
     {
-      handler.reportException(new InitializationException("unable to load logger. Resource not found","LogUtil"));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("unable to load logger. Resource not found","LogUtil"));
     }
 
     return logger;
-  }
-
- /**
-  * Set the logger for the log factory itself. This is not possible at creation
-  * time because the log is not yet initialised
-  *
-  * @param FWLog
-  */
-  public void setLoggerLog(ILogger FWLog)
-  {
-    ResourceContext ctx    = new ResourceContext();
-
-    // try the new Logging model.
-    LogFactory factory = (LogFactory) ctx.get(AbstractLogFactory.RESOURCE_KEY);
-
-    factory.setFrameworkLog(FWLog);
   }
 
   /**
@@ -218,20 +199,6 @@ public class LogUtil
   public static String LogECICacheCommand(String SymbolicName, String Command, String Parameter)
   {
     return "Command <" + Command + "> handled by <" + SymbolicName + "> with parameter <" + Parameter + ">";
-  }
-
-  /**
-   * @return the handler
-   */
-  public ExceptionHandler getHandler() {
-    return handler;
-  }
-
-  /**
-   * @param handler the handler to set
-   */
-  public void setHandler(ExceptionHandler handler) {
-    LogUtil.handler = handler;
   }
 }
 

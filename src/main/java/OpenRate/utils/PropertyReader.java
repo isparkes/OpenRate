@@ -161,8 +161,9 @@ public class PropertyReader
       DocumentBuilder db = dbf.newDocumentBuilder();
       xmlDocument = db.parse(filename.openStream());
       xmlDocument.getDocumentElement().normalize();
-    } catch (IOException | ParserConfigurationException | SAXException ex) {
-      throw new InitializationException(ex,getSymbolicName());
+    } catch (IOException | ParserConfigurationException | NullPointerException | SAXException ex) {
+      message = "Exception creating DOM parser";
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // move the information over
@@ -213,47 +214,50 @@ public class PropertyReader
 
     // copy the internal XML object into the working XML object
     propsXML = propXMLObject;
-
+    
     tmpElemName = ROOT_ELEMENT+"." + elementName;
     PathName = tmpElemName.split("\\.");
 
     // Search through the tree
     for ( i = 0 ; i < PathName.length ; i++)
     {
-      if (i==0)
+      if (propsXML != null)
       {
-        // check the root path
-        if (propsXML.getNodeName().equals(PathName[i]))
+        if (i==0)
         {
-          found = true;
-          foundXML = propsXML;
-        }
-      }
-      else
-      {
-        NodeList Children = propsXML.getElementsByTagName(PathName[i]);
-
-        if (Children.getLength() > 0)
-        {
-          boolean childFound = false;
-          for (int idx1 = 0 ; idx1 < propsXML.getChildNodes().getLength() ; idx1++)
+          // check the root path
+          if (propsXML.getNodeName().equals(PathName[i]))
           {
-            Node myNode = propsXML.getChildNodes().item(idx1);
-            if ((myNode.getNodeType() == Node.ELEMENT_NODE) && (myNode.getNodeName().equals(PathName[i])))
-            {
-              foundXML = (Element) myNode;
-              childFound = true;
-            }
-          }
-          if (childFound == false)
-          {
-            found = false;
+            found = true;
+            foundXML = propsXML;
           }
         }
         else
         {
-          // we did not find the path
-          found = false;
+          NodeList Children = propsXML.getElementsByTagName(PathName[i]);
+
+          if (Children.getLength() > 0)
+          {
+            boolean childFound = false;
+            for (int idx1 = 0 ; idx1 < propsXML.getChildNodes().getLength() ; idx1++)
+            {
+              Node myNode = propsXML.getChildNodes().item(idx1);
+              if ((myNode.getNodeType() == Node.ELEMENT_NODE) && (myNode.getNodeName().equals(PathName[i])))
+              {
+                foundXML = (Element) myNode;
+                childFound = true;
+              }
+            }
+            if (childFound == false)
+            {
+              found = false;
+            }
+          }
+          else
+          {
+            // we did not find the path
+            found = false;
+          }
         }
       }
 
@@ -268,7 +272,7 @@ public class PropertyReader
     }
 
     // We should have the right element now
-    if (foundPath)
+    if (foundPath && (propsXML != null))
     {
       return propsXML.getTextContent().trim();
     } else
@@ -336,38 +340,41 @@ public class PropertyReader
     // Search through the tree - because we are getting a list, we need to stop earlier
     for ( idxo = 0 ; idxo < PathName.length ; idxo++)
     {
-      if (idxo==0)
+      if (propsXML != null)
       {
-        // check the root path
-        if (propsXML.getNodeName().equals(PathName[idxo]))
+        if (idxo==0)
         {
-          foundXML = propsXML;
-        }
-      }
-      else
-      {
-        NodeList Children = propsXML.getElementsByTagName(PathName[idxo]);
-
-        if (Children.getLength() > 0)
-        {
-          boolean childFound = false;
-          for (int idx1 = 0 ; idx1 < propsXML.getChildNodes().getLength() ; idx1++)
+          // check the root path
+          if (propsXML.getNodeName().equals(PathName[idxo]))
           {
-            Node myNode = propsXML.getChildNodes().item(idx1);
-            if ((myNode.getNodeType() == Node.ELEMENT_NODE) && (myNode.getNodeName().equals(PathName[idxo])))
-            {
-              foundXML = (Element) myNode;
-              childFound = true;
-            }
-          }
-          if (childFound == false)
-          {
-            found = false;
+            foundXML = propsXML;
           }
         }
         else
         {
-          found = false;
+          NodeList Children = propsXML.getElementsByTagName(PathName[idxo]);
+
+          if (Children.getLength() > 0)
+          {
+            boolean childFound = false;
+            for (int idx1 = 0 ; idx1 < propsXML.getChildNodes().getLength() ; idx1++)
+            {
+              Node myNode = propsXML.getChildNodes().item(idx1);
+              if ((myNode.getNodeType() == Node.ELEMENT_NODE) && (myNode.getNodeName().equals(PathName[idxo])))
+              {
+                foundXML = (Element) myNode;
+                childFound = true;
+              }
+            }
+            if (childFound == false)
+            {
+              found = false;
+            }
+          }
+          else
+          {
+            found = false;
+          }
         }
       }
 
@@ -382,7 +389,7 @@ public class PropertyReader
     }
 
     // We should have the right element now
-    if (foundPath)
+    if (foundPath && (propsXML != null))
     {
       // Create the arraylist out of the node list
       ArrayList<Element> resultList = new ArrayList<>();
@@ -528,23 +535,26 @@ public class PropertyReader
     // Search through the tree
     for ( i = 0 ; i < PathName.length ; i++)
     {
-      if (i==0)
+      if (propsXML != null)
       {
-        // check the root path
-        if (propsXML.getNodeName().equals(PathName[i]))
+        if (i==0)
         {
-          found = true;
-          foundXML = propsXML;
+          // check the root path
+          if (propsXML.getNodeName().equals(PathName[i]))
+          {
+            found = true;
+            foundXML = propsXML;
+          }
         }
-      }
-      else
-      {
-        NodeList Children = propsXML.getElementsByTagName(PathName[i]);
-
-        if (Children.getLength() > 0)
+        else
         {
-          foundXML = (Element) Children.item(0);
-          found = true;
+          NodeList Children = propsXML.getElementsByTagName(PathName[i]);
+
+          if (Children.getLength() > 0)
+          {
+            foundXML = (Element) Children.item(0);
+            found = true;
+          }
         }
       }
 

@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -210,7 +211,7 @@ public abstract class AbstractSyncLoaderCache
     setSymbolicName(CacheName);
 
     // Find the location of the configuration data
-    getFWLog().info("Starting cache loading for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting cache loading for <" + getSymbolicName() + ">");
 
     // Get the type of source we are to read from
     tmpCacheSource = initGetCacheSourceType(ResourceName, CacheName);
@@ -271,7 +272,7 @@ public abstract class AbstractSyncLoaderCache
       }
       else
       {
-        getFWLog().debug("Found Cache Data DB <" + cacheDataSourceName + "> for cache <" + getSymbolicName() + ">");
+        OpenRate.getOpenRateFrameworkLog().debug("Found Cache Data DB <" + cacheDataSourceName + "> for cache <" + getSymbolicName() + ">");
       }
 
       // get the data statement(s)
@@ -285,7 +286,7 @@ public abstract class AbstractSyncLoaderCache
       }
       else
       {
-        getFWLog().debug(
+        OpenRate.getOpenRateFrameworkLog().debug(
               "Found select Query <" + CacheDataSelectQuery + "> for cache <" +
               getSymbolicName() + ">");
       }
@@ -312,7 +313,7 @@ public abstract class AbstractSyncLoaderCache
       }
       else
       {
-        getFWLog().debug(
+        OpenRate.getOpenRateFrameworkLog().debug(
               "Found Select Method <" + CacheMethodName + "> for cache <" +
               getSymbolicName() + ">");
       }
@@ -445,7 +446,7 @@ public abstract class AbstractSyncLoaderCache
     else
     {
       // log that we skipped it
-      getFWLog().info("Skipped auto reloading cache <" + getSymbolicName() + "> because it is excluded from AutoReload");
+      OpenRate.getOpenRateFrameworkLog().info("Skipped auto reloading cache <" + getSymbolicName() + "> because it is excluded from AutoReload");
     }
   }
 
@@ -472,7 +473,7 @@ public abstract class AbstractSyncLoaderCache
     {
       message = "Error finding data cache class <" + MethodClassName +
                                         "> in data cache <" + getSymbolicName() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -486,7 +487,7 @@ public abstract class AbstractSyncLoaderCache
       message = "Data method class <" + MethodClassName +
                                         "> instantiation error in cache <" +
                                         getSymbolicName() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (IllegalAccessException ex)
@@ -494,7 +495,7 @@ public abstract class AbstractSyncLoaderCache
       message = "Data method class  <" + MethodClassName +
                                         "> access error in pipeline <" +
                                         getSymbolicName() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -619,7 +620,7 @@ public abstract class AbstractSyncLoaderCache
           catch (InitializationException ex)
           {
             message = "SERVICE_RELOAD not executed because of InitializationException thrown by loadData()";
-            getFWLog().fatal(message,ex);
+            OpenRate.getOpenRateFrameworkLog().fatal(message,ex);
           }
         }
       }
@@ -760,7 +761,7 @@ public abstract class AbstractSyncLoaderCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }
@@ -793,14 +794,14 @@ public abstract class AbstractSyncLoaderCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + CacheDataSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
       message = "Error preparing the statement <" + CacheDataSelectQuery +
                        ">. message: " + ex.getMessage();
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
   }

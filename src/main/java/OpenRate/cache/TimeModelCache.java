@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -313,7 +314,7 @@ public class TimeModelCache
         message = "From time <" + From + "> is later than To time <" +
                           To + "> in model <" + Model + "> and day <" + Day +
                           "> in module <" +getSymbolicName() + ">" ;
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
       tmpIntervalNode.Result = ZoneResult;
@@ -349,14 +350,14 @@ public class TimeModelCache
 
     if (tmpTimeMap == null)
     {
-      getFWLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
+      OpenRate.getOpenRateFrameworkLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
       return NO_TIME_MATCH;
     }
 
     // Get the root node for the day
     if (Day < 0 | Day > 6)
     {
-      getFWLog().warning("Day <" + Day + "> is outside of the valid range of 0 (Sunday) to 6 (Saturday)");
+      OpenRate.getOpenRateFrameworkLog().warning("Day <" + Day + "> is outside of the valid range of 0 (Sunday) to 6 (Saturday)");
       return NO_TIME_MATCH;
     }
 
@@ -371,7 +372,7 @@ public class TimeModelCache
     {
       if (tmpIntervalNode == null)
       {
-        getFWLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
+        OpenRate.getOpenRateFrameworkLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
         return NO_TIME_MATCH;
       }
 
@@ -625,14 +626,14 @@ public class TimeModelCache
 
       if (tmpTimeMap == null)
       {
-        getFWLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
+        OpenRate.getOpenRateFrameworkLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
         return null;
       }
 
       // Get the root node for the day
       if (Day < 0 | Day > 6)
       {
-        getFWLog().warning("Day <" + Day + "> is outside of the valid range of 0 (Sunday) to 6 (Saturday)");
+        OpenRate.getOpenRateFrameworkLog().warning("Day <" + Day + "> is outside of the valid range of 0 (Sunday) to 6 (Saturday)");
         return null;
       }
 
@@ -647,7 +648,7 @@ public class TimeModelCache
       {
           if (tmpIntervalNode == null)
           {
-            getFWLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
+            OpenRate.getOpenRateFrameworkLog().warning("TimeMap for model <" + Plan + "> and day <" + Day + "> is empty in <" + getSymbolicName() + ">");
             return null;
           }
 
@@ -697,7 +698,7 @@ public class TimeModelCache
       String[] ZoneFields;
 
       // Find the location of the  zone configuration file
-      getFWLog().info("Starting Time Cache Loading from File for cache <" + getSymbolicName() + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Starting Time Cache Loading from File for cache <" + getSymbolicName() + ">");
 
       // Try to open the file
       try {
@@ -705,7 +706,7 @@ public class TimeModelCache
       } catch (FileNotFoundException fnfe) {
           message = "Not able to read time model data file <" +
                   CacheDataFile + "> in <" + getSymbolicName() + ">" ;
-          getFWLog().error(message);
+          OpenRate.getOpenRateFrameworkLog().error(message);
           throw new InitializationException(message,getSymbolicName());
       }
 
@@ -735,25 +736,25 @@ public class TimeModelCache
           message = "Error reading input file in <" + getSymbolicName() +
                   "> at record <" + LinesLoaded + ">. IO Error message = <" +
                   ioe.getMessage() + ">";
-          getFWLog().fatal(message);
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
           throw new InitializationException(message,getSymbolicName());
       } catch (ArrayIndexOutOfBoundsException aiobe) {
           message = "Error reading input file in <" + getSymbolicName() +
                   "> at record <" + LinesLoaded + ">. Malformed Record.";
-          getFWLog().fatal(message);
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
       } finally {
           try {
               inFile.close();
           } catch (IOException ioe) {
             message = "Error closing input file in <" + getSymbolicName() +
                     ">. IO Error message = <" + ioe.getMessage() + ">";
-            getFWLog().fatal(message);
+            OpenRate.getOpenRateFrameworkLog().fatal(message);
           }
       }
 
-      getFWLog().info("Time Model Cache: <" + IntervalsLoaded + "> Model intervals Loaded");
-      getFWLog().info("Time Model Cache: <" + ModelsLoaded + "> Mappings Loaded");
-      getFWLog().info(
+      OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + IntervalsLoaded + "> Model intervals Loaded");
+      OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + ModelsLoaded + "> Mappings Loaded");
+      OpenRate.getOpenRateFrameworkLog().info(
               "Time Model Data Loading completed. <" + LinesLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + " > from <"
           + CacheDataFile + ">");
@@ -781,7 +782,7 @@ public class TimeModelCache
     String Value;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Time Model Cache Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Time Model Cache Loading from DB for <" + getSymbolicName() + ">");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -799,7 +800,7 @@ public class TimeModelCache
             mrsc = StmtDayMappingSelectQuery.executeQuery();
         } catch (SQLException Sex) {
           message = "Error performing SQL for retieving day map data in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-          getFWLog().fatal(message);
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
           throw new InitializationException(message,getSymbolicName());
         }
 
@@ -815,7 +816,7 @@ public class TimeModelCache
             }
         } catch (SQLException Sex) {
           message = "Error performing SQL for retieving day map data in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-          getFWLog().fatal(message);
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
           throw new InitializationException(message,getSymbolicName());
         }
 
@@ -825,7 +826,7 @@ public class TimeModelCache
             StmtDayMappingSelectQuery.close();
         } catch (SQLException Sex) {
           message = "Error closing day map data result set in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-          getFWLog().fatal(message);
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
           throw new InitializationException(message,getSymbolicName());
         }
     }
@@ -835,7 +836,7 @@ public class TimeModelCache
         mrsa = StmtModelSelectQuery.executeQuery();
     } catch (SQLException Sex) {
         message = "Error performing SQL for retieving time map data in <" +getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
     }
 
@@ -852,7 +853,7 @@ public class TimeModelCache
             if (Day == null)
             {
               message = "Error reading Map Data for <" + getSymbolicName() + ">. No day map found for day value <" + mrsa.getString(2) + ">";
-              getFWLog().fatal(message);
+              OpenRate.getOpenRateFrameworkLog().fatal(message);
               throw new InitializationException(message,getSymbolicName());
             }
 
@@ -864,7 +865,7 @@ public class TimeModelCache
         }
     } catch (SQLException Sex) {
         message = "SQL Error reading Map Data for <" + getSymbolicName() + ">. Messge = <" + Sex.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
     }
 
@@ -874,7 +875,7 @@ public class TimeModelCache
         StmtModelSelectQuery.close();
     } catch (SQLException Sex) {
       message = "Error closing time map data result set in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -883,7 +884,7 @@ public class TimeModelCache
       mrsb = StmtMappingSelectQuery.executeQuery();
     } catch (SQLException Sex) {
       message = "Error performing SQL for retieving time model data in <" +getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -900,7 +901,7 @@ public class TimeModelCache
         }
     } catch (SQLException Sex) {
       message = "SQL Error reading Model Data for <" + getSymbolicName() + ">. Messge = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -913,18 +914,18 @@ public class TimeModelCache
         JDBCcon.close();
     } catch (SQLException Sex) {
       message = "Error closing time model data result set in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
     // check that we have complete coverage of the time models
-    getFWLog().info("Time Model Cache: <" + IntervalsLoaded + "> Checking Model intervals");
+    OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + IntervalsLoaded + "> Checking Model intervals");
 
 
-    getFWLog().info("Time Model Cache: <" + IntervalsLoaded + "> Model intervals Loaded");
-    getFWLog().info("Time Model Cache: <" + ModelsLoaded + "> Mappings Loaded");
-    getFWLog().info("Time Model Cache: <" + DaysLoaded + "> Days Loaded");
-    getFWLog().info("Time Model Data Loading completed from <" + cacheDataSourceName + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + IntervalsLoaded + "> Model intervals Loaded");
+    OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + ModelsLoaded + "> Mappings Loaded");
+    OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + DaysLoaded + "> Days Loaded");
+    OpenRate.getOpenRateFrameworkLog().info("Time Model Data Loading completed from <" + cacheDataSourceName + ">");
   }
 
  /**
@@ -950,7 +951,7 @@ public class TimeModelCache
       ArrayList<String>    tmpMethodResult;
 
       // Find the location of the  zone configuration file
-      getFWLog().info("Starting Time Model Cache Loading from Method for <" + getSymbolicName() + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Starting Time Model Cache Loading from Method for <" + getSymbolicName() + ">");
 
       // Execute the user domain method
       Collection<ArrayList<String>> methodLoadResultSet;
@@ -961,7 +962,7 @@ public class TimeModelCache
 
         if (methodLoadResultSet == null)
         {
-          getFWLog().debug("No day map data returned by method <" + DayCacheMethodName +
+          OpenRate.getOpenRateFrameworkLog().debug("No day map data returned by method <" + DayCacheMethodName +
                         "> in cache <" + getSymbolicName() + ">");
         }
         else
@@ -989,7 +990,7 @@ public class TimeModelCache
 
       if (methodLoadResultSet == null)
       {
-        getFWLog().warning("No model map data returned by method <" + MapCacheMethodName +
+        OpenRate.getOpenRateFrameworkLog().warning("No model map data returned by method <" + MapCacheMethodName +
                       "> in cache <" + getSymbolicName() + ">");
       }
       else
@@ -1008,7 +1009,7 @@ public class TimeModelCache
           if (Day == null)
           {
             message = "Error reading Map Data for <" + getSymbolicName() + ">. No day map found for day value <" + tmpMethodResult.get(1) + ">";
-            getFWLog().fatal(message);
+            OpenRate.getOpenRateFrameworkLog().fatal(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -1025,7 +1026,7 @@ public class TimeModelCache
 
       if (methodLoadResultSet == null)
       {
-        getFWLog().warning("No model map data returned by method <" + ModelCacheMethodName +
+        OpenRate.getOpenRateFrameworkLog().warning("No model map data returned by method <" + ModelCacheMethodName +
                       "> in cache <" + getSymbolicName() + ">");
       }
       else
@@ -1044,10 +1045,10 @@ public class TimeModelCache
         }
       }
 
-      getFWLog().info("Time Model Cache: <" + IntervalsLoaded + "> Model intervals Loaded");
-      getFWLog().info("Time Model Cache: <" + ModelsLoaded + "> Mappings Loaded");
-      getFWLog().info("Time Model Cache: <" + DaysLoaded + "> Days Loaded");
-      getFWLog().info("Time Model Data Loading completed from <" + cacheDataSourceName + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + IntervalsLoaded + "> Model intervals Loaded");
+      OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + ModelsLoaded + "> Mappings Loaded");
+      OpenRate.getOpenRateFrameworkLog().info("Time Model Cache: <" + DaysLoaded + "> Days Loaded");
+      OpenRate.getOpenRateFrameworkLog().info("Time Model Data Loading completed from <" + cacheDataSourceName + ">");
   }
 
  /**
@@ -1172,7 +1173,7 @@ public class TimeModelCache
                   ResultSet.CONCUR_READ_ONLY);
       } catch (SQLException ex) {
           message = "Error preparing the statement " + ModelSelectQuery;
-          getFWLog().error(message);
+          OpenRate.getOpenRateFrameworkLog().error(message);
           throw new InitializationException(message,ex,getSymbolicName());
       }
 
@@ -1183,7 +1184,7 @@ public class TimeModelCache
                   ResultSet.CONCUR_READ_ONLY);
       } catch (SQLException ex) {
           message = "Error preparing the statement " + MappingSelectQuery;
-          getFWLog().error(message);
+          OpenRate.getOpenRateFrameworkLog().error(message);
           throw new InitializationException(message,ex,getSymbolicName());
 
       }
@@ -1196,7 +1197,7 @@ public class TimeModelCache
                       ResultSet.CONCUR_READ_ONLY);
           } catch (SQLException ex) {
             message = "Error preparing the statement " + DayMappingSelectQuery;
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,ex,getSymbolicName());
           }
       }
@@ -1249,7 +1250,7 @@ public class TimeModelCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

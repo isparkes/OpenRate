@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!-- Properties file for supporting unit tests. This is not a Typical properties
+     file and should not be taken as a general example because it won't work
+     outside of the context of unit tests!!! -->
+<config>
+  <Application>
+    FrameworkTest
+  </Application>
+
+  <PipelineList>
+    <DBTestPipe>
+      <Active>True</Active>
+    </DBTestPipe>
+  </PipelineList>
+
+  <DBTestPipe>
+    <Configuration>
+      <TestValue>
+        testPipelinePropertyValue
+      </TestValue>
+    </Configuration>
+
+    <InputAdapter>
+      <TestInpAdapter>
+        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </TestInpAdapter>
+    </InputAdapter>
+
+    <Process>
+    </Process>
+    
+    <OutputAdapter>
+      <SOutAdapter>
+        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+        <OutputName>default</OutputName>
+        <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+      </SOutAdapter>
+    </OutputAdapter>
+  </DBTestPipe>
+
+  <Resource>
+    <LogFactory>
+      <ClassName>OpenRate.logging.LogFactory</ClassName>
+      <Properties>logUnitTest.properties</Properties>
+      <DefaultCategory>RatingTest</DefaultCategory>
+    </LogFactory>
+
+    <ECI>
+      <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+      <Port>8086</Port>
+      <MaxConnection>2</MaxConnection>
+    </ECI>
+
+    <TransactionManagerFactory>
+      <ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+    </TransactionManagerFactory>
+  </Resource>
+</config>

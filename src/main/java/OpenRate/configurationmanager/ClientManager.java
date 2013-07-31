@@ -55,9 +55,9 @@
 
 package OpenRate.configurationmanager;
 
+import OpenRate.OpenRate;
 import OpenRate.Pipeline;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -73,7 +73,7 @@ import java.util.*;
 public class ClientManager
 {
   // This is the map of the clients we know, indexed by the symbolic name
-  private HashMap<String, ClientContainer> HMClientMap = new HashMap<>();
+  private static HashMap<String, ClientContainer> HMClientMap = new HashMap<>();
 
   // This is the ingleton instance
   private static ClientManager clientManager = null;
@@ -108,11 +108,6 @@ public class ClientManager
    * Dynamic and Sync
    */
   public static int PARAM_DYNAMIC_SYNC = 0x06;
-
-  /**
-   * Get access to the logger
-   */
-  protected ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
 
   // module symbolic name: never changes in this module, so not set dynamically
   private String SymbolicName = "ClientManager";
@@ -205,8 +200,8 @@ public class ClientManager
   *
   */
   public void registerClientService(String symbolicName,
-                                           String commandName,
-                                           int    paramFlags)
+                                    String commandName,
+                                    int    paramFlags)
   {
     ClientContainer clCont = get(symbolicName);
 
@@ -215,7 +210,7 @@ public class ClientManager
     boolean RequireSync = (paramFlags & PARAM_SYNC) == PARAM_SYNC;
 
     clCont.addService(commandName, Mandatory, Dynamic, RequireSync);
-    LogUtil.getStaticLogger("Framework").debug("Registered Client Service <" + commandName  + ">");
+    OpenRate.getOpenRateFrameworkLog().debug("Registered Client Service <" + commandName  + ">");
   }
 
 // -----------------------------------------------------------------------------
@@ -272,7 +267,7 @@ public class ClientManager
   }
 
  /**
-  * Get a list of the plugin modules to create for a given pipeline
+  * Get a list of the plug in modules to create for a given pipeline
   *
   * @param PipelineName The pipeline name we are querying
   * @return List of the modules the pipeline contains

@@ -85,11 +85,8 @@ import javax.sql.DataSource;
  */
 public class DataSourceFactory implements IResource, IEventInterface
 {
-  // Get access to the framework logger
-  private ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
   // This is the symbolic name of the resource
-  private String SymbolicName;
+  private String symbolicName;
 
   /**
    * the configuration key used by the ResourceContext to look for & return
@@ -131,7 +128,7 @@ public class DataSourceFactory implements IResource, IEventInterface
     ArrayList<String> DataSourceList;
 
     // Set the symbolic name
-    SymbolicName = ResourceName;
+    symbolicName = ResourceName;
 
     // Register with the event manager
     registerClientManager();
@@ -159,21 +156,21 @@ public class DataSourceFactory implements IResource, IEventInterface
       builderClass = Class.forName(builderClassName);
       this.builder = (IDBDataSource) builderClass.newInstance();
     }
-    catch (ClassNotFoundException cnfe)
+    catch (ClassNotFoundException ex)
     {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Data source builder class not found <" + builderClassName + ">",cnfe,getSymbolicName()));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Data source builder class not found <" + builderClassName + ">",ex,getSymbolicName()));
     }
-    catch (InstantiationException ie)
+    catch (InstantiationException ex)
     {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not instantiate data source builder class <" + builderClassName + ">",ie,getSymbolicName()));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not instantiate data source builder class <" + builderClassName + ">",ex,getSymbolicName()));
     }
-    catch (IllegalAccessException iae)
+    catch (IllegalAccessException ex)
     {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Error accessing data source builder class <" + builderClassName + ">",iae,getSymbolicName()));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Error accessing data source builder class <" + builderClassName + ">",ex,getSymbolicName()));
     }
-    catch (NoClassDefFoundError ncdfe)
+    catch (NoClassDefFoundError ex)
     {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source builder class <" + builderClassName + ">",ncdfe,getSymbolicName()));
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source builder class <" + builderClassName + ">",getSymbolicName(),false,true,ex));
     }
 
     // Now go and get all the data sources that have to be created
@@ -191,19 +188,19 @@ public class DataSourceFactory implements IResource, IEventInterface
         if (sources.get(tmpDataSourceName) == null)
         {
           sources.put(tmpDataSourceName, getDataSourceBuilder().getDataSource(ResourceName,tmpDataSourceName));
-          FWLog.info("Successfully created DataSource <" + tmpDataSourceName + ">");
+          OpenRate.getOpenRateFrameworkLog().info("Successfully created DataSource <" + tmpDataSourceName + ">");
           System.out.println("    Created DataSource <" + tmpDataSourceName + ">");
         }
       }
     }
-    catch (NoClassDefFoundError ncdfe)
+    catch (NoClassDefFoundError ex)
     {
       OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source class for data source<" +
-              tmpDataSourceName + ">",ncdfe,getSymbolicName()));
+              tmpDataSourceName + ">",getSymbolicName(),false,true,ex));
     }
-    catch (InitializationException ie)
+    catch (InitializationException ex)
     {
-      OpenRate.getFrameworkExceptionHandler().reportException(ie);
+      OpenRate.getFrameworkExceptionHandler().reportException(ex);
     }
   }
 
@@ -234,7 +231,7 @@ public class DataSourceFactory implements IResource, IEventInterface
   @Override
   public void close()
   {
-    FWLog.debug("Shutdown Data Source Factory");
+    OpenRate.getOpenRateFrameworkLog().debug("Shutdown Data Source Factory");
   }
 
   /**
@@ -255,7 +252,7 @@ public class DataSourceFactory implements IResource, IEventInterface
   @Override
   public String getSymbolicName()
   {
-    return SymbolicName;
+    return symbolicName;
   }
 
  /**
@@ -281,7 +278,7 @@ public class DataSourceFactory implements IResource, IEventInterface
 
     if (ResultCode == 0)
     {
-      FWLog.debug(LogUtil.LogECIPipeCommand(getSymbolicName(), SymbolicName, Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), symbolicName, Command, Parameter));
 
       return "OK";
     }

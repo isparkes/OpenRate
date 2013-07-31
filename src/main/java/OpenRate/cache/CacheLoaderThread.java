@@ -55,9 +55,9 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
 import OpenRate.utils.ConversionUtils;
 
 /**
@@ -68,10 +68,8 @@ import OpenRate.utils.ConversionUtils;
 public class CacheLoaderThread extends Thread
 {
   private String           cacheName;
-  private ExceptionHandler handler;
   private ICacheable       cacheableObject;
   private String           resourceName;
-  private ILogger          FWLog;
   private long             loadStartTime;
   private long             loadEndTime;
   private long             loadTime;
@@ -97,17 +95,6 @@ public class CacheLoaderThread extends Thread
     this.cacheName = cacheName;
   }
 
-  /**
-   * Setter for the exception handler. Used to pass up exceptions for
-   * correct management.
-   *
-   * @param handler The exception handler.
-   */
-  public void setExceptionHandler(ExceptionHandler handler)
-  {
-    this.handler = handler;
-  }
-
  /**
   * Runs the loading
   */
@@ -119,7 +106,6 @@ public class CacheLoaderThread extends Thread
 
     // set the handler
     tmpCacheableIntf = (ICacheable)cacheableObject;
-    tmpCacheableIntf.setHandler(handler);
 
     // Try to load the cache
     try
@@ -130,7 +116,7 @@ public class CacheLoaderThread extends Thread
     catch (InitializationException ie)
     {
       // report the exception up
-      handler.reportException(ie);
+      OpenRate.getFrameworkExceptionHandler().reportException(ie);
     }
 
     // Get the load end time
@@ -140,7 +126,7 @@ public class CacheLoaderThread extends Thread
     loadTime = loadEndTime - loadStartTime;
 
     // display it
-    FWLog.info("Loaded  Cacheable Class <" + cacheName + "> in <" + loadTime + "ms>...");
+    OpenRate.getOpenRateFrameworkLog().info("Loaded  Cacheable Class <" + cacheName + "> in <" + loadTime + "ms>...");
     System.out.println("    Loaded  Cacheable Class <" + cacheName + "> in <" + loadTime + "ms>...");
   }
 
@@ -163,16 +149,6 @@ public class CacheLoaderThread extends Thread
   public void setResourceName(String resourceName)
   {
     this.resourceName = resourceName;
-  }
-
-  /**
-   * Setter for the Framework Log.
-   *
-   * @param FWLog The framework log
-   */
-  public void setLog(ILogger FWLog)
-  {
-    this.FWLog = FWLog;
   }
 
   /**

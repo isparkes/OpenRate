@@ -56,6 +56,7 @@
 package OpenRate.cache;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.RateMapEntry;
@@ -153,7 +154,7 @@ public class RateCache
       message = "Beat in model <" + PriceModel + "> and step number <" +
                         Step + "> is invalid <" + Beat + "> in module <" +
                         getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -258,7 +259,7 @@ public class RateCache
     String         PriceModel;
 
     // Find the location of the configuration file
-    getFWLog().info("Starting Rate Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Rate Cache Loading from File");
 
     // Try to open the file
     try
@@ -269,7 +270,7 @@ public class RateCache
     {
         
       message = "Application is not able to read file : <" + CacheDataFile + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -296,7 +297,7 @@ public class RateCache
             message = "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record <" + tmpFileRecord +
             ">. Expecting <7> fields but got <" + RateFields.length + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
           }
           else
           {
@@ -318,7 +319,7 @@ public class RateCache
               message = "Rate Cache Data Loading: <" + RatesLoaded +
                     "> configurations loaded for <" + getSymbolicName() + "> from <" +
                     CacheDataFile + ">";
-              getFWLog().info(message);
+              OpenRate.getOpenRateFrameworkLog().info(message);
             }
           }
         }
@@ -326,7 +327,7 @@ public class RateCache
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.");
     }
@@ -338,12 +339,12 @@ public class RateCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
                   ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Rate Cache Data Loading completed. " + RatesLoaded +
           " configuration lines loaded from <" + CacheDataFile +
           ">");
@@ -366,7 +367,7 @@ public class RateCache
     double  tmpChargeBase;
 
     // Find the location of the configuration file
-    getFWLog().info("Starting Rate Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Rate Cache Loading from DB");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -382,7 +383,7 @@ public class RateCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving Rate Cache data";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -411,14 +412,14 @@ public class RateCache
           message = "Rate Cache Data Loading: <" + RatesLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
       message = "Error opening Search Map Data for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -427,7 +428,7 @@ public class RateCache
     DBUtil.close(StmtCacheDataSelectQuery);
     DBUtil.close(JDBCcon);
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Rate Cache Data Loading completed. " + RatesLoaded +
           " configuration lines loaded from <" + cacheDataSourceName +
           ">");

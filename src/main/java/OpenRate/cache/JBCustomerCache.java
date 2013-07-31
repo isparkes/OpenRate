@@ -55,6 +55,7 @@
 package OpenRate.cache;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -259,7 +260,7 @@ public abstract class JBCustomerCache
     else
     {
       // We could find no alias
-      getFWLog().error("Alias <" + alias + "> not found. Lookup failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Alias <" + alias + "> not found. Lookup failed.");
 
       // Just return null
       return null;
@@ -352,7 +353,7 @@ public abstract class JBCustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Customer ID <" + CustId + "> not found. Lookup failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + CustId + "> not found. Lookup failed.");
     }
 
     return 0;
@@ -435,7 +436,7 @@ public abstract class JBCustomerCache
     int            quantity;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Customer Cache Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Customer Cache Loading from DB for <" + getSymbolicName() + ">");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -478,7 +479,7 @@ public abstract class JBCustomerCache
 
         if ((prodName == null) | (alias == null) | (service == null) | (subscription == null))
         {
-          getFWLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">." );
+          OpenRate.getOpenRateFrameworkLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">." );
           continue;
         }
 
@@ -496,7 +497,7 @@ public abstract class JBCustomerCache
         }
         catch (ParseException ex)
         {
-          getFWLog().error("Start Date format for record <" + custLoaded + "> are not correct. Date <" + tmpStartDate + ">, format <" + conv.getInputDateFormat() + "> order <" + orderId + ">. Data discarded." );
+          OpenRate.getOpenRateFrameworkLog().error("Start Date format for record <" + custLoaded + "> are not correct. Date <" + tmpStartDate + ">, format <" + conv.getInputDateFormat() + "> order <" + orderId + ">. Data discarded." );
         }
 
         // parse the end date
@@ -513,14 +514,14 @@ public abstract class JBCustomerCache
         }
         catch (ParseException ex)
         {
-          getFWLog().error("End Date format for record <" + custLoaded + "> are not correct. Date <" + tmpEndDate + ">, format <" + conv.getInputDateFormat() + "> order <" + orderId + ">. Data discarded." );
+          OpenRate.getOpenRateFrameworkLog().error("End Date format for record <" + custLoaded + "> are not correct. Date <" + tmpEndDate + ">, format <" + conv.getInputDateFormat() + "> order <" + orderId + ">. Data discarded." );
         }
 
         // parse the Quantity
         quantity = Integer.parseInt(tmpQuantity);
 
         // print the information to the log
-        getFWLog().info("Adding service ID <" + alias + "> to account <" + custId + "> with product <" + prodName + "> validity <" + tmpStartDate + " (" + startDate + ") - " + tmpEndDate + " (" + endDate + ")>, Qty: <" + quantity + "> order <" + orderId + ">.");
+        OpenRate.getOpenRateFrameworkLog().info("Adding service ID <" + alias + "> to account <" + custId + "> with product <" + prodName + "> validity <" + tmpStartDate + " (" + startDate + ") - " + tmpEndDate + " (" + endDate + ")>, Qty: <" + quantity + "> order <" + orderId + ">.");
 
         // Add the map
         addAlias(alias,custId,startDate,endDate);
@@ -548,11 +549,11 @@ public abstract class JBCustomerCache
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Customer Cache Data Loading completed from <" + cacheDataSourceName +
           ">");
 
-    getFWLog().info("Products Loaded:  " + custLoaded);
+    OpenRate.getOpenRateFrameworkLog().info("Products Loaded:  " + custLoaded);
   }
 
  /**
@@ -598,7 +599,7 @@ public abstract class JBCustomerCache
     if (validFrom > validTo)
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Alias ID <" + alias + "> validity period from <" + validFrom + "> is after validity period to <" + validTo + ">. Ignoring.");
+      OpenRate.getOpenRateFrameworkLog().error("Alias ID <" + alias + "> validity period from <" + validFrom + "> is after validity period to <" + validTo + ">. Ignoring.");
 
       return;
     }
@@ -680,12 +681,12 @@ public abstract class JBCustomerCache
       {
         // remove the whole key that we couldn't add.
         aliasCache.remove(alias);
-        getFWLog().error("Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">. Removed key.");
+        OpenRate.getOpenRateFrameworkLog().error("Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">. Removed key.");
       }
       else
       {
         // Otherwise write an error and ignore it
-        getFWLog().error("Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">");
+        OpenRate.getOpenRateFrameworkLog().error("Alias ID <" + alias + "> already exists for time <" + validFrom + "-" + validTo + ">");
       }
     }
   }
@@ -755,7 +756,7 @@ public abstract class JBCustomerCache
     else
     {
       // Otherwise write an error and ignore it
-      getFWLog().error("Customer ID <" + custId + "> not found. Add CPI failed.");
+      OpenRate.getOpenRateFrameworkLog().error("Customer ID <" + custId + "> not found. Add CPI failed.");
     }
   }
 
@@ -916,7 +917,7 @@ public abstract class JBCustomerCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

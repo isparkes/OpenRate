@@ -54,6 +54,7 @@
  */
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import java.io.BufferedReader;
@@ -104,7 +105,7 @@ public class MinFeeCache
     String         tmpMinCost;
     String         tmpName;
     // Find the location of the configuration file
-    getFWLog().info("Starting MinFeeCache Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting MinFeeCache Cache Loading from File");
 
     // Try to open the file
     try
@@ -113,7 +114,7 @@ public class MinFeeCache
     }
     catch (FileNotFoundException ex)
     {
-      getFWLog().error(
+      OpenRate.getOpenRateFrameworkLog().error(
             "Application is not able to read file : <" +
             CacheDataFile + ">");
       throw new InitializationException("Application is not able to read file: <" +
@@ -149,13 +150,13 @@ public class MinFeeCache
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + dataLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + dataLoaded + ">. Malformed Record.");
     }
@@ -167,12 +168,12 @@ public class MinFeeCache
       }
       catch (IOException ex)
       {
-        getFWLog().error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
                   ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "MinFeeCache Cache Data Loading completed. " + dataLoaded +
           " configuration lines loaded from <" + CacheDataFile +
           ">");
@@ -190,7 +191,7 @@ public class MinFeeCache
    String         tmpName;
 
    // Find the location of the configuration file
-    getFWLog().info("Starting MinFeeCache Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting MinFeeCache Cache Loading from DB");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -206,7 +207,7 @@ public class MinFeeCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retieving MinFeeCache Cache data";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -229,7 +230,7 @@ public class MinFeeCache
     catch (SQLException ex)
     {
       message = "Error opening Data for <" + cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -238,7 +239,7 @@ public class MinFeeCache
     DBUtil.close(StmtCacheDataSelectQuery);
     DBUtil.close(JDBCcon);
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Data Loading completed. " + dataLoaded +
           " configuration lines loaded from <" + cacheDataSourceName +
           ">");

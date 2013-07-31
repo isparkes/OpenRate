@@ -55,6 +55,7 @@
 package OpenRate.cache;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.RateMapEntry;
@@ -258,7 +259,7 @@ public class RUMRateCache
     }
 
     // inform the user about the start of the price model phase
-    getFWLog().debug("Setting initial hash map size to <" + initialObjectSize + "> for cache <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().debug("Setting initial hash map size to <" + initialObjectSize + "> for cache <" + getSymbolicName() + ">");
 
     PriceModelCache = new HashMap<>(initialObjectSize);
     RUMMapCache = new HashMap<>(initialObjectSize);
@@ -304,7 +305,7 @@ public class RUMRateCache
       message = "Beat in model <" + PriceModel + "> and step number <" +
                         Step + "> is invalid <" + Beat + "> in module <" +
                         getSymbolicName() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -381,7 +382,7 @@ public class RUMRateCache
             message = "Two steps in model <" + PriceModel + "> and step number <" +
                              Step + "> have the same start date <" + StartTime + "> in module <" +
                              getSymbolicName() + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
         }
@@ -463,7 +464,7 @@ public class RUMRateCache
       else
       {
         message = "Unknown rating type <" + RUMType + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -502,7 +503,7 @@ public class RUMRateCache
       else
       {
         message = "Unknown rating type <" + RUMType + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -570,7 +571,7 @@ public class RUMRateCache
     // ****** perform the loading of the raw price models ******
 
     // Find the location of the configuration file
-    getFWLog().info("Starting Price Model Data Loading from file for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Price Model Data Loading from file for <" + getSymbolicName() + ">");
 
     // Try to open the file
     try
@@ -581,12 +582,12 @@ public class RUMRateCache
     {
       message = "Not able to read file : <" +
             PriceModelDataFile + ">. message = <" + fnfe.getMessage() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
     // inform the user about the start of the price model phase
-    getFWLog().info("Starting Price Model Data Loading from file for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Price Model Data Loading from file for <" + getSymbolicName() + ">");
 
     // File open, now get the stuff
     try
@@ -630,7 +631,7 @@ public class RUMRateCache
               message = "Error in price model <" + PriceModel +
                                "> in module <" + getSymbolicName() +
                                ">. Charge base cannot be 0.";
-              getFWLog().fatal(message);
+              OpenRate.getOpenRateFrameworkLog().fatal(message);
               throw new InitializationException(message,getSymbolicName());
             }
 
@@ -643,7 +644,7 @@ public class RUMRateCache
                              getSymbolicName() + "> at line <" + RatesLoaded +
                              ">. Expecting <7> or <8>, but got <" + RateFields.length +
                              ">. Line was <" + tmpFileRecord + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
         }
@@ -653,7 +654,7 @@ public class RUMRateCache
     {
       message = "Error reading input file <" + PriceModelDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (ArrayIndexOutOfBoundsException ex)
@@ -661,7 +662,7 @@ public class RUMRateCache
       message =
             "Error reading input file <" + PriceModelDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record.";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (ParseException pe)
@@ -669,7 +670,7 @@ public class RUMRateCache
       message =
             "Error converting date from <" + PriceModelDataFile +
             "> in record <" + RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -683,19 +684,19 @@ public class RUMRateCache
       {
         message = "Error closing input file <" + PriceModelDataFile +
                   ">. message = <" + ex.getMessage() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Price Model Data Loading completed. " + RatesLoaded +
           " configuration lines loaded from <" + getSymbolicName() +
           ">");
 
     // ****** perform the loading of the model descriptors ******
     // Find the location of the configuration file
-    getFWLog().info("Starting Price Group Data Loading from file for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Price Group Data Loading from file for <" + getSymbolicName() + ">");
 
     // Try to open the file
     try
@@ -706,7 +707,7 @@ public class RUMRateCache
     {
       message = "Not able to read file : <" +
             RUMMapDataFile + ">. message = <" + fnfe.getMessage() + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -745,7 +746,7 @@ public class RUMRateCache
             message = "Invalid number of fields in price map loading for module <" +
                              getSymbolicName() + ">. Expecting <6>, but got <" + RateFields.length +
                              ">. Line was <" + tmpFileRecord + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
         }
@@ -755,7 +756,7 @@ public class RUMRateCache
     {
       message = "Error reading input file <" + RUMMapDataFile +
             "> in record <" + MapsLoaded + ">. IO Error.";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (ArrayIndexOutOfBoundsException ex)
@@ -763,7 +764,7 @@ public class RUMRateCache
       message =
             "Error reading input file <" + RUMMapDataFile +
             "> in record <" + MapsLoaded + ">. Malformed Record.";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
     finally
@@ -776,12 +777,12 @@ public class RUMRateCache
       {
         message = "Error closing input file <" + RUMMapDataFile +
                   ">. message = <" + ex.getMessage() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Price Group Data Loading completed. " + MapsLoaded +
           " configuration lines loaded from <" + RUMMapDataFile +
           ">");
@@ -817,7 +818,7 @@ public class RUMRateCache
     String         tmpStringStartTime = null;
 
     // Find the location of the configuration file
-    getFWLog().info("Starting RUM Rate Cache Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting RUM Rate Cache Loading from DB for <" + getSymbolicName() + ">");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -827,7 +828,7 @@ public class RUMRateCache
     prepareStatements();
 
     // inform the user about the start of the price model phase
-    getFWLog().info("Starting Price Model Data Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Price Model Data Loading from DB for <" + getSymbolicName() + ">");
 
     // Execute the query
     try
@@ -839,7 +840,7 @@ public class RUMRateCache
     {
       message = "Error performing SQL for retieving Price Model Data for <" +
                        getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -876,7 +877,7 @@ public class RUMRateCache
             message = "Error in price model <" + PriceModel +
                              "> in module <" + getSymbolicName() +
                              ">. Charge base cannot be 0.";
-            getFWLog().fatal(message);
+            OpenRate.getOpenRateFrameworkLog().fatal(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -888,7 +889,7 @@ public class RUMRateCache
       {
         message = "Error opening Price Model Data for <" + getSymbolicName() +
               ">. SQL Error = <" + ex.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
       catch (ParseException pe)
@@ -896,7 +897,7 @@ public class RUMRateCache
         message =
               "Error converting date from <" + getSymbolicName() + "> in record <" +
               RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
@@ -905,7 +906,7 @@ public class RUMRateCache
       // Not a valid number of fields
       message = "Invalid number of fields in price map loading for module <" +
                        getSymbolicName() + ">. Expecting <7> or <8>, but got <" + Columns + ">.";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -919,18 +920,18 @@ public class RUMRateCache
     {
       message = "Error closing Price Model Data connection for <" +
                        getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Price Model Data Loading completed. " + RatesLoaded +
           " configuration lines loaded from <" + getSymbolicName() +
           ">");
 
     // ****** perform the loading of the model descriptors ******
     // Find the location of the configuration file
-    getFWLog().info("Starting Price Group Data Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Price Group Data Loading from DB for <" + getSymbolicName() + ">");
 
     // Execute the query
     try
@@ -941,7 +942,7 @@ public class RUMRateCache
     {
       message = "Error performing SQL for retieving Price Group Data for <" +
                        getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -972,7 +973,7 @@ public class RUMRateCache
       {
         message = "Error opening Price Group Data for <" +
                          getSymbolicName() + ">. SQL Error = <" + Sex.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
       catch (NullPointerException npe)
@@ -982,7 +983,7 @@ public class RUMRateCache
                          ">, Model <" + tmpModel + ">, RUM <" + tmpRUM +
                          ">, Resource <" + tmpResource + ">, RUM Type <" +
                          tmpRUMType + ">, Step <" + tmpResCtr + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
@@ -991,7 +992,7 @@ public class RUMRateCache
       // Not a valid number of fields
       message = "Invalid number of fields in rum map loading for module <" +
                        getSymbolicName() + ">. Expecting <7>, but got <" + Columns + ">.";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -1006,11 +1007,11 @@ public class RUMRateCache
     {
       message = "Error closing Price Group Data connection for <" +
             getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Price Group Data Loading completed. " + MapsLoaded +
           " configuration lines loaded from <" + getSymbolicName() +
           ">");
@@ -1128,13 +1129,13 @@ public class RUMRateCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + RUMMapDataSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
       message = "Error preparing the statement <" + RUMMapDataSelectQuery + ">. message: " + ex.getMessage();
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -1149,13 +1150,13 @@ public class RUMRateCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + PriceModelDataSelectQuery;
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
     catch (Exception ex)
     {
       message = "Error preparing the statement <" + PriceModelDataSelectQuery + ">. message: " + ex.getMessage();
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
   }

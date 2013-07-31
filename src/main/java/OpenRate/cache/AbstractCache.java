@@ -55,8 +55,6 @@
 package OpenRate.cache;
 
 import OpenRate.exception.ExceptionHandler;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 
 /**
  * This class encapsulates the most fundamental elements of a cache class, thus
@@ -67,14 +65,6 @@ import OpenRate.logging.LogUtil;
 public abstract class AbstractCache
            implements ICacheable
 {
- /**
-  * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
-  * from resources or caches) should go into this log, as well as startup
-  * and shutdown messages. Normally the messages will be application driven,
-  * not stack traces, which should go into the error log.
-  */
-  private ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
   // The symbolic module name of the class stack
   private String symbolicName;
 
@@ -97,21 +87,7 @@ public abstract class AbstractCache
   public void setSymbolicName(String symbolicName) {
     this.symbolicName = symbolicName;
   }
-
-  /**
-   * @return the FWLog
-   */
-  public ILogger getFWLog() {
-    return FWLog;
-  }
-
-  /**
-   * @param FWLog the FWLog to set
-   */
-  public void setFWLog(ILogger FWLog) {
-    this.FWLog = FWLog;
-  }
-
+  
   /**
    * @return the handler
    */

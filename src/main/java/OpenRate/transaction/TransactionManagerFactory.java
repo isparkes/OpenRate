@@ -55,10 +55,9 @@
 
 package OpenRate.transaction;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.resource.IResource;
 import java.util.Collection;
 import java.util.HashMap;
@@ -71,9 +70,6 @@ import java.util.Iterator;
  */
 public class TransactionManagerFactory implements IResource
 {
-  // The logger for this class
-  private ILogger fwLog = LogUtil.getLogUtil().getLogger("Framework");
-
   // This is the symbolic name of the resource
   private String symbolicName;
 
@@ -186,7 +182,7 @@ public class TransactionManagerFactory implements IResource
     }
     catch (Exception e)
     {
-      fwLog.error("exception caught = " + e);
+      OpenRate.getOpenRateFrameworkLog().error("exception caught = " + e);
     }
   }
 

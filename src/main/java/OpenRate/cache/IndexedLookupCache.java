@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -380,7 +381,7 @@ public class IndexedLookupCache
       }
       else
       {
-        getFWLog().error("Cache <" + getSymbolicName() +
+        OpenRate.getOpenRateFrameworkLog().error("Cache <" + getSymbolicName() +
               "> index <" + Index + "> already contains value <" +
               Keys[Index] + ">");
         AddedOK = false;
@@ -525,7 +526,7 @@ public class IndexedLookupCache
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Indexed Match Data Loading completed. <" + ObjectLinesLoaded +
           "> configuration lines loaded from <" +
           CacheDataFile + ">");
@@ -547,7 +548,7 @@ public class IndexedLookupCache
     int      ObjectLinesLoaded = 0;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Indexed Lookup Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Indexed Lookup Cache Loading from DB");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -618,7 +619,7 @@ public class IndexedLookupCache
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Indexed Match Data Loading completed. <" + ObjectLinesLoaded +
           "> configuration lines loaded from <" +
           cacheDataSourceName + ">");
@@ -681,7 +682,7 @@ public class IndexedLookupCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

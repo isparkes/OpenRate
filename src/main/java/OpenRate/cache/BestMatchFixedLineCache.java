@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -220,14 +221,14 @@ public class BestMatchFixedLineCache
             String message = "Best Match Data Loading: <" + ZonesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
       }
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + ZonesLoaded + ">. IO Error.");
     }
@@ -244,11 +245,11 @@ public class BestMatchFixedLineCache
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Best Match Cache Data Loading completed. " + ZonesLoaded +
           " configuration lines loaded from <" + CacheDataFile +
           ">");
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Loaded <4> base fields and <" + (formFactor - 4) +
           "> additional data fields");
   }
@@ -270,7 +271,7 @@ public class BestMatchFixedLineCache
     int               childDataCounter;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Best Match Fixed Line Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Best Match Fixed Line Cache Loading from DB");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -331,7 +332,7 @@ public class BestMatchFixedLineCache
           message = "Best Match Data Loading: <" + ZonesLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
       }
     }
@@ -355,11 +356,11 @@ public class BestMatchFixedLineCache
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Best Match Cache Data Loading completed. " + ZonesLoaded +
           " configuration lines loaded from <" + cacheDataSourceName +
           ">");
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Loaded <4> base fields and <" + (formFactor - 4) +
           "> additional data fields");
   }
@@ -381,7 +382,7 @@ public class BestMatchFixedLineCache
     ArrayList<String> tmpMethodResult;
 
     // Log that we are starting the loading
-    getFWLog().info("Starting Best Match Lixed Line Cache Loading from Method for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Best Match Lixed Line Cache Loading from Method for <" + getSymbolicName() + ">");
 
     // Execute the user domain method
     Collection<ArrayList<String>> methodLoadResultSet;
@@ -430,15 +431,15 @@ public class BestMatchFixedLineCache
         message = "Best Match Data Loading: <" + ZonesLoaded +
               "> configurations loaded for <" + getSymbolicName() + "> from <" +
               cacheDataSourceName + ">";
-        getFWLog().info(message);
+        OpenRate.getOpenRateFrameworkLog().info(message);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Best Match Fixed Line Cache Data Loading completed. " + ZonesLoaded +
           " configuration lines loaded from <" + cacheDataSourceName +
           ">");
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Loaded <4> base fields and <" + (formFactor - 4) +
           "> additional data fields");
   }
@@ -604,7 +605,7 @@ public class BestMatchFixedLineCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

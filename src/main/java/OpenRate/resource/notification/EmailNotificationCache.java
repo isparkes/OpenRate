@@ -139,14 +139,6 @@ public class EmailNotificationCache implements IResource, IEventInterface
   // used to simplify logging and exception handling
   public String message;
   
- /**
-  * Access to the Framework AstractLogger. All non-pipeline specific messages (e.g.
-  * from resources or caches) should go into this log, as well as startup
-  * and shutdown messages. Normally the messages will be application driven,
-  * not stack traces, which should go into the error log.
-  */
-  protected ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
   /**
    * constructor
    */
@@ -358,15 +350,12 @@ public class EmailNotificationCache implements IResource, IEventInterface
     // extended debugging
     if(debug)
     {
-      FWLog.debug("Mail debugging turned on.");
+      OpenRate.getOpenRateFrameworkLog().debug("Mail debugging turned on.");
       mailSession.setDebug(true);
     }
 
     // get the mailer
     emailer = new EmailerThread();
-
-    // will be handling threads
-    emailer.setFWLog(FWLog);
 
     // Pass the mail session (for authentication) down to the handler thread
     emailer.setMailSession(mailSession);
@@ -472,7 +461,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
     }
     catch (MessagingException ex)
     {
-      FWLog.error("Error sending message");
+      OpenRate.getOpenRateFrameworkLog().error("Error sending message");
       return false;
     }
 
@@ -537,7 +526,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
     }
     catch (MessagingException ex)
     {
-      FWLog.error("Error sending message");
+      OpenRate.getOpenRateFrameworkLog().error("Error sending message");
       return false;
     }
       try {
@@ -575,7 +564,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
     emailer.markForClosedown();
     while (emailerThread != null &&  emailerThread.isAlive())
     {
-      FWLog.info("Waiting for emailer thread to finish. Still <" + emailer.getMessageCount() + "> mails to send.");
+      OpenRate.getOpenRateFrameworkLog().info("Waiting for emailer thread to finish. Still <" + emailer.getMessageCount() + "> mails to send.");
       try
       {
         Thread.sleep(1000);

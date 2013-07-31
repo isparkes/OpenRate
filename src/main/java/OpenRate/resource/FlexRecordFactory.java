@@ -54,9 +54,8 @@
  */
 package OpenRate.resource;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.flexRecord.FlexRecord;
 import OpenRate.utils.PropertyUtils;
 import java.io.BufferedReader;
@@ -78,11 +77,6 @@ import java.io.IOException;
  */
 public class FlexRecordFactory implements IResource
 {
-  /**
-   * Get the log for this and all child classes
-   */
-  private ILogger fwLog;
-
   // This is the symbolic name of the resource
   private String symbolicName;
 
@@ -166,11 +160,8 @@ public class FlexRecordFactory implements IResource
     int            tmpFieldCount;
     int            tmpFieldOffset;
 
-    // Get the log before we start
-        setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-
     // here we go
-        getFwLog().info("Starting FlexRecordFactory initialisation");
+    OpenRate.getOpenRateFrameworkLog().info("Starting FlexRecordFactory initialisation");
 
     // Set the symbolic name
     symbolicName = ResourceName;
@@ -191,7 +182,7 @@ public class FlexRecordFactory implements IResource
     }
     catch (FileNotFoundException exFileNotFound)
     {
-            getFwLog().error(
+            OpenRate.getOpenRateFrameworkLog().error(
             "Not able to read the record definition file : <" +
             tmpRecordDefinitionName + ">");
       throw new InitializationException("Not able to read the record definition file : <" +
@@ -281,13 +272,13 @@ public class FlexRecordFactory implements IResource
     }
     catch (IOException ex)
     {
-            getFwLog().fatal(
+            OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + tmpRecordDefinitionName +
             "> in record <" + FileLine + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-            getFwLog().fatal(
+            OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + tmpRecordDefinitionName +
             "> on line <" + FileLine + ">. Malformed Record.");
     }
@@ -299,12 +290,12 @@ public class FlexRecordFactory implements IResource
       }
       catch (IOException ex)
       {
-                getFwLog().error("Error closing input file <" + tmpRecordDefinitionName +
+                OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + tmpRecordDefinitionName +
                   ">", ex);
       }
     }
 
-        getFwLog().info("FlexRecordFactory initialised");
+        OpenRate.getOpenRateFrameworkLog().info("FlexRecordFactory initialised");
   }
 
   /**
@@ -366,18 +357,4 @@ public class FlexRecordFactory implements IResource
   {
     return symbolicName;
   }
-
-    /**
-     * @return the fwLog
-     */
-    public ILogger getFwLog() {
-        return fwLog;
-    }
-
-    /**
-     * @param fwLog the fwLog to set
-     */
-    public void setFwLog(ILogger fwLog) {
-        this.fwLog = fwLog;
-    }
 }

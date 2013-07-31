@@ -70,7 +70,7 @@ public class SocketConnectionData
 
   //boolean value for the listener's while looping.
   private boolean loop = true;
-
+  
   /**
    * add a connection to the number managed
    */

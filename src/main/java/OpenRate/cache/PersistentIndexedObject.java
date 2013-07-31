@@ -55,9 +55,11 @@
 
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
+import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.PropertyUtils;
@@ -134,7 +136,7 @@ public class PersistentIndexedObject
     setSymbolicName(CacheName);
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Persistent Cache Loading <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Persistent Cache Loading <" + getSymbolicName() + ">");
 
     DataSourceType = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                        CacheName,
@@ -149,7 +151,7 @@ public class PersistentIndexedObject
     if (DataSourceType.equalsIgnoreCase("DB"))
     {
       message = "Persistent Cache does not yet support DB persistence sources";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -157,7 +159,7 @@ public class PersistentIndexedObject
     {
       message = "DataSourceType for cache <" + getSymbolicName() +
                 "> must be File, found <" + DataSourceType + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -172,12 +174,12 @@ public class PersistentIndexedObject
       if (CachePersistenceName.equals("None"))
       {
         message = "Data source file name not found for cache <" + getSymbolicName() + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
       else
       {
-        getFWLog().debug(
+        OpenRate.getOpenRateFrameworkLog().debug(
               "Found Persistence File Configuration <" +
               CachePersistenceName + ">");
       }
@@ -298,7 +300,7 @@ public class PersistentIndexedObject
   * Save the internal object store to the persistence target
   */
   @Override
-  public void saveCache()
+  public void saveCache() throws ProcessingException
   {
     saveCacheObjectsToFile();
   }
@@ -381,7 +383,7 @@ public class PersistentIndexedObject
       //}
       //catch (InitializationException ex)
       //{
-      //  FWLog.error("Command SERVICE_PERSIST not executed because of InitializationException thrown by loadData()", ex);
+      //  OpenRate.getOpenRateFrameworkLog().error("Command SERVICE_PERSIST not executed because of InitializationException thrown by loadData()", ex);
       //  return "Command not executed because of InitializationException thrown by loadData()";
       //}
       ResultCode = 0;
@@ -389,7 +391,7 @@ public class PersistentIndexedObject
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }
@@ -404,7 +406,7 @@ public class PersistentIndexedObject
   * in the case that yours are not, you must overwrite this in an inherited
   * class.
   */
-  public void saveCacheObjectsToFile()
+  public void saveCacheObjectsToFile() throws ProcessingException
   {
     FileOutputStream   outStream = null;
     ObjectOutputStream objOutStream;
@@ -419,7 +421,7 @@ public class PersistentIndexedObject
       catch (FileNotFoundException ex)
       {
         message = "File not found saving persistent objects";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
       }
 
       try
@@ -436,14 +438,14 @@ public class PersistentIndexedObject
           }
           else
           {
-            getFWLog().error("Class contains non-serializable data");
+            OpenRate.getOpenRateFrameworkLog().error("Class contains non-serializable data");
           }
         }
       }
       catch (IOException ex)
       {
         message = "IO Exception saving persistent objects";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
       }
     }
   }
@@ -465,7 +467,7 @@ public class PersistentIndexedObject
     }
     catch (FileNotFoundException fnfe)
     {
-      getFWLog().warning(
+      OpenRate.getOpenRateFrameworkLog().warning(
             "Persistent data file <" + CachePersistenceName +
             "> not found.");
 
@@ -478,7 +480,7 @@ public class PersistentIndexedObject
     }
     catch (IOException ex)
     {
-      getFWLog().warning(
+      OpenRate.getOpenRateFrameworkLog().warning(
             "Persistent data file <" + CachePersistenceName +
             "> could not be opened.");
 
@@ -491,14 +493,14 @@ public class PersistentIndexedObject
     }
     catch (IOException ex)
     {
-      getFWLog().warning(
+      OpenRate.getOpenRateFrameworkLog().warning(
             "Persistent data file <" + CachePersistenceName +
             "> could not be read.");
     }
     catch (ClassNotFoundException ex)
     {
         message = "Class not found loading persistent objects";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
  }
 

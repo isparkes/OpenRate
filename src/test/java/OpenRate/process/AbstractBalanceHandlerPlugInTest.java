@@ -148,6 +148,9 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
       Resource.init(resourceName);
       ctx.register(resourceName, Resource);
       
+      // set the log - this is normally done by application startup
+      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
+
       // Get a data Source factory
       System.out.println("  Initialising Data Source Resource...");
       resourceName         = "DataSourceFactory";
@@ -156,7 +159,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
       Resource             = (IResource)ResourceClass.newInstance();
       Resource.init(resourceName);
       ctx.register(resourceName, Resource);
-
+      
       // The datasource property was added to allow database to database
       // JDBC adapters to work properly using 1 configuration file.
       if(DBUtil.initDataSource(cacheDataSourceName) == null)

@@ -55,6 +55,7 @@
 
 package OpenRate.resource;
 
+import OpenRate.logging.LogFactory;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -114,19 +115,33 @@ public class ResourceContext
   }
 
  /**
-  * Perform whatever cleanup is required of the
-  * underlying object.
+  * Perform whatever cleanup is required of the underlying object. We take two
+  * goes at this, shutting down all non-log resources first, then the log last.
   */
   public void cleanup()
   {
     Collection<IResource> resources = resourceMap.values();
     Iterator<IResource>   iter      = resources.iterator();
 
+    IResource logResource = null;
+    
     while (iter.hasNext())
     {
       IResource resource = iter.next();
-      resource.close();
+      
+      if (resource.getSymbolicName().equals(LogFactory.RESOURCE_KEY))
+      {
+        logResource = resource;
+      }
+      else
+      {
+        resource.close();
+      }
     }
+    
+    // Now do the log resource
+    if (logResource != null)
+      logResource.close();
 
     resourceMap.clear();
   }

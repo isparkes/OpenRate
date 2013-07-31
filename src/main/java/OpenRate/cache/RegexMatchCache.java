@@ -54,6 +54,7 @@
  */
 package OpenRate.cache;
 
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -220,7 +221,7 @@ public class RegexMatchCache
       {
         message = "KeyFields entry for cache <" + getSymbolicName() +
                           "> not numeric. Found value <" + tmpValue + ">";
-        getFWLog().error(message);
+        OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
@@ -360,7 +361,7 @@ public class RegexMatchCache
           {
             message = "Error compiling regex pattern <" + fields[i] +
                       "> in module <" + getSymbolicName() + ">. message <" + pse.getMessage() + ">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -487,7 +488,7 @@ public class RegexMatchCache
               if (Parameters[i] == null)
               {
                 // we cannot match on null values - warn once and out...
-                getFWLog().warning("Null value found in regex match on parameter <" + i + "> in module <" + getSymbolicName() + ">");
+                OpenRate.getOpenRateFrameworkLog().warning("Null value found in regex match on parameter <" + i + "> in module <" + getSymbolicName() + ">");
                 return null;
               }
 
@@ -759,7 +760,7 @@ public class RegexMatchCache
     ArrayList<String> tmpResultList;
 
     // Find the location of the configuration file
-    getFWLog().info("Starting Regex Match Cache Loading from file for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Regex Match Cache Loading from file for <" + getSymbolicName() + ">");
 
     // Try to open the file
     try
@@ -770,7 +771,7 @@ public class RegexMatchCache
     {
       message = "Application is not able to read file : <" +
             CacheDataFile + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -808,7 +809,7 @@ public class RegexMatchCache
               // we're not going to be able to use this
               message = "You must define at least 3 entries in the record, you have defined  <" +
                     ColumnCount + "> in module <"+getSymbolicName()+">";
-              getFWLog().fatal(message);
+              OpenRate.getOpenRateFrameworkLog().fatal(message);
               throw new InitializationException(message,getSymbolicName());
             }
 
@@ -823,7 +824,7 @@ public class RegexMatchCache
                                Integer.toString(KeyFormFactor) + "> and Result = <" +
                                Integer.toString(ResultFormFactor) + 
                                "> in module <"+getSymbolicName()+">";
-              getFWLog().info(message);
+              OpenRate.getOpenRateFrameworkLog().info(message);
             }
             else
             {
@@ -834,7 +835,7 @@ public class RegexMatchCache
                                Integer.toString(KeyFormFactor) + "> and Result = <" +
                                Integer.toString(ResultFormFactor) + "> in module <"+ 
                                getSymbolicName()+">";
-              getFWLog().info(message);
+              OpenRate.getOpenRateFrameworkLog().info(message);
             }
           }
 
@@ -865,7 +866,7 @@ public class RegexMatchCache
             message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor) +
                   "> + Payload = <" + Integer.toString(ResultFormFactor) +
                   ">, but received <" + MapEntryFields.length + "> in module <"+getSymbolicName()+">";
-            getFWLog().error(message);
+            OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -875,7 +876,7 @@ public class RegexMatchCache
             message = "Regex Map Data Loading: <" + MapsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
       }
@@ -884,19 +885,19 @@ public class RegexMatchCache
     {
       message = "Error reading input file  <" + CacheDataFile +
             "> in record <" + MapsLoaded + ">. IO Error.";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       message = "Error reading input file  <" + CacheDataFile +
             "> in record <" + MapsLoaded + ">. Malformed Record.";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     catch (NullPointerException npe)
     {
       message = "Error reading input file  <" + CacheDataFile +
             "> in record <" + MapsLoaded + ">. Malformed Record in module <"+getSymbolicName()+">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     finally
     {
@@ -908,14 +909,14 @@ public class RegexMatchCache
       {
         message = "Error closing input file <" + CacheDataFile + 
                          "> in module <"+getSymbolicName()+">";
-        getFWLog().error(message, ex);
+        OpenRate.getOpenRateFrameworkLog().error(message, ex);
       }
     }
 
     message = "Regex Map Data Loading completed. <" + MapsLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
           CacheDataFile + ">";
-    getFWLog().info(message);
+    OpenRate.getOpenRateFrameworkLog().info(message);
   }
 
   /**
@@ -935,7 +936,7 @@ public class RegexMatchCache
     ArrayList<String> tmpResultList;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Regex Match Cache Loading from DB for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Regex Match Cache Loading from DB for <" + getSymbolicName() + ">");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -951,7 +952,7 @@ public class RegexMatchCache
     catch (SQLException ex)
     {
       message = "Error performing SQL for retrieving Regex Match data in module <"+getSymbolicName()+">. message <" + ex.getMessage() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -976,7 +977,7 @@ public class RegexMatchCache
           // we're not going to be able to use this
           message = "You must define at least 3 entries in the record, you have defined  <" +
                 ColumnCount + ">";
-          getFWLog().fatal(message);
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
           throw new InitializationException(message,getSymbolicName());
         }
 
@@ -990,7 +991,7 @@ public class RegexMatchCache
                            cacheDataSourceName + ">. Assuming Key = <" +
                            Integer.toString(KeyFormFactor) + "> and Result = <" +
                            Integer.toString(ResultFormFactor) + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
         else
         {
@@ -1003,7 +1004,7 @@ public class RegexMatchCache
             message = "Error in module <" +
                   cacheDataSourceName + ">. Key fields >= total columns. Got KeyFields <" +
                     KeyFormFactor + "> and columns <" + ColumnCount + ">";
-            getFWLog().fatal(message);
+            OpenRate.getOpenRateFrameworkLog().fatal(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -1011,7 +1012,7 @@ public class RegexMatchCache
                            getSymbolicName() + ">. Using Key = <" +
                            Integer.toString(KeyFormFactor) + "> and Result = <" +
                            Integer.toString(ResultFormFactor) + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
       }
 
@@ -1045,20 +1046,20 @@ public class RegexMatchCache
           message = "Regex Map Data Loading: <" + ConfigsLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
       }
     }
     catch (SQLException ex)
     {
       message = "Error opening Search Map Data for <" + getSymbolicName() + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
     catch (NullPointerException ex)
     {
       message = "Error opening Search Map Data for <" + getSymbolicName() + "> in config <" + ConfigsLoaded + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -1073,14 +1074,14 @@ public class RegexMatchCache
     {
       message = "Error closing Search Map Data connection for <" +
             cacheDataSourceName + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
     message = "Regex Map Data Loading completed. <" + ConfigsLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
           cacheDataSourceName + ">";
-    getFWLog().info(message);
+    OpenRate.getOpenRateFrameworkLog().info(message);
   }
 
  /**
@@ -1100,7 +1101,7 @@ public class RegexMatchCache
     ArrayList<String> tmpResultList;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Regex Match Cache Loading from Method for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Regex Match Cache Loading from Method for <" + getSymbolicName() + ">");
 
     // Execute the user domain method
     Collection<ArrayList<String>> methodLoadResultSet;
@@ -1109,7 +1110,7 @@ public class RegexMatchCache
 
     if (methodLoadResultSet == null)
     {
-      getFWLog().warning("No cache data returned by method <" + CacheMethodName +
+      OpenRate.getOpenRateFrameworkLog().warning("No cache data returned by method <" + CacheMethodName +
                     "> in cache <" + getSymbolicName() + ">");
     }
     else
@@ -1138,7 +1139,7 @@ public class RegexMatchCache
             // we're not going to be able to use this
             message = "You must define at least 3 entries in the record, you have defined  <" +
                   ColumnCount + ">";
-            getFWLog().fatal(message);
+            OpenRate.getOpenRateFrameworkLog().fatal(message);
             throw new InitializationException(message,getSymbolicName());
           }
 
@@ -1152,7 +1153,7 @@ public class RegexMatchCache
                              cacheDataSourceName + ">. Assuming Key = <" +
                              Integer.toString(KeyFormFactor) + "> and Result = <" +
                              Integer.toString(ResultFormFactor) + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
           else
           {
@@ -1162,7 +1163,7 @@ public class RegexMatchCache
                              cacheDataSourceName + ">. Using Key = <" +
                              Integer.toString(KeyFormFactor) + "> and Result = <" +
                              Integer.toString(ResultFormFactor) + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
 
@@ -1194,7 +1195,7 @@ public class RegexMatchCache
             message = "Regex Map Data Loading: <" + ConfigsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   cacheDataSourceName + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
         else
@@ -1203,7 +1204,7 @@ public class RegexMatchCache
           message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor) +
                 "> + Payload = <" + Integer.toString(ResultFormFactor) +
                 ">, but received <" + tmpMethodResult.size() + ">";
-          getFWLog().error(message);
+          OpenRate.getOpenRateFrameworkLog().error(message);
           throw new InitializationException(message,getSymbolicName());
         }
       }
@@ -1211,7 +1212,7 @@ public class RegexMatchCache
 
     message = "Regex Map Data Loading completed. " + ConfigsLoaded +
           " configuration lines loaded for <" + getSymbolicName() + ">";
-    getFWLog().info(message);
+    OpenRate.getOpenRateFrameworkLog().info(message);
   }
 
  /**
@@ -1228,15 +1229,15 @@ public class RegexMatchCache
     String      		PrintHelper;
     int         		counter = 0;
 
-    getFWLog().info("Dumping Map Data for RegexMatchCache <" + getSymbolicName() + ">");
-    getFWLog().info("Groups:");
+    OpenRate.getOpenRateFrameworkLog().info("Dumping Map Data for RegexMatchCache <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Groups:");
 
     // Iterate thorough the entries in the group
     GroupIter = GroupCache.keySet().iterator();
     while (GroupIter.hasNext())
     {
       Helper = GroupIter.next();
-      getFWLog().info("  " + Helper);
+      OpenRate.getOpenRateFrameworkLog().info("  " + Helper);
     }
 
     // Now dump the data
@@ -1244,13 +1245,13 @@ public class RegexMatchCache
     while (GroupIter.hasNext())
     {
       Helper = GroupIter.next();
-      getFWLog().info("Dumping group map data for <" + Helper + ">");
+      OpenRate.getOpenRateFrameworkLog().info("Dumping group map data for <" + Helper + ">");
       tmpSearchGroup = GroupCache.get(Helper);
       PatternIterator = tmpSearchGroup.SearchGroup.iterator();
 
       while(PatternIterator.hasNext())
       {
-        getFWLog().info("===ENTRY " + counter++ + "===");
+        OpenRate.getOpenRateFrameworkLog().info("===ENTRY " + counter++ + "===");
         PrintHelper = "  (";
 
         tmpSearchMap = PatternIterator.next();
@@ -1272,7 +1273,7 @@ public class RegexMatchCache
         }
 
         PrintHelper += ")";
-        getFWLog().info(PrintHelper);
+        OpenRate.getOpenRateFrameworkLog().info(PrintHelper);
       }
     }
   }
@@ -1367,7 +1368,7 @@ public class RegexMatchCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

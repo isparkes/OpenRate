@@ -1308,7 +1308,7 @@ public abstract class JDBCInputAdapter
     {
       message = "JDBCInputAdapter config error. " + INIT_QUERY_KEY + " property not found.";
       getPipeLog().error(message);
-      throw new InitializationException();
+      throw new InitializationException(message,getSymbolicName());
     }
 
     return query;

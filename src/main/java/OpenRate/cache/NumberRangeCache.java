@@ -56,6 +56,7 @@
 package OpenRate.cache;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -451,20 +452,20 @@ public class NumberRangeCache
             message = "Number Range Data Loading: <" + ObjectLinesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
       }
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + ObjectLinesLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + ObjectLinesLoaded + ">. Malformed Record.");
     }
@@ -476,13 +477,13 @@ public class NumberRangeCache
       }
       catch (IOException ex)
       {
-        getFWLog().error(
+        OpenRate.getOpenRateFrameworkLog().error(
               "Error closing input file <" + CacheDataFile +
               ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Number Range Data Loading completed. <" + ObjectLinesLoaded +
           "> configuration lines loaded from <" +
           CacheDataFile + ">");
@@ -506,7 +507,7 @@ public class NumberRangeCache
     long              tmpValidityTo;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Zone Cache Loading from DB");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Zone Cache Loading from DB");
 
     // Try to open the DS
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
@@ -557,7 +558,7 @@ public class NumberRangeCache
           message = "Number Range Data Loading: <" + ObjectLinesLoaded +
                 "> configurations loaded for <" + getSymbolicName() + "> from <" +
                 cacheDataSourceName + ">";
-          getFWLog().info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
         }
       }
     }
@@ -582,7 +583,7 @@ public class NumberRangeCache
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Number Range Data Loading completed. <" + ObjectLinesLoaded +
           "> configuration lines loaded from <" +
           cacheDataSourceName + ">");
@@ -673,7 +674,7 @@ public class NumberRangeCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

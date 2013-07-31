@@ -55,6 +55,7 @@
 package OpenRate.cache;
 
 import OpenRate.CommonConfig;
+import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -413,7 +414,7 @@ public class MultipleValidityCache
     String            tmpEndDate = null;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Multiple Validity Cache Loading from File");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Multiple Validity Cache Loading from File");
 
     // Try to open the file
     try
@@ -424,7 +425,7 @@ public class MultipleValidityCache
     {
       message = "Application is not able to read file : <" +
             cacheDataSourceName + ">";
-      getFWLog().error(message);
+      OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -481,20 +482,20 @@ public class MultipleValidityCache
             message = "Multiple Validity Data Loading: <" + ValidityPeriodsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   CacheDataFile + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
       }
     }
     catch (IOException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + ValidityPeriodsLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      getFWLog().fatal(
+      OpenRate.getOpenRateFrameworkLog().fatal(
             "Error reading input file <" + CacheDataFile +
             "> in record <" + ValidityPeriodsLoaded + ">. Malformed Record.");
     }
@@ -504,7 +505,7 @@ public class MultipleValidityCache
             "Error converting date from <" + getSymbolicName() + "> in record <" +
             ValidityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
             ">, <" + tmpEndDate + ">";
-      getFWLog().fatal(message);
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
     }
 
@@ -516,13 +517,13 @@ public class MultipleValidityCache
       }
       catch (IOException ex)
       {
-        getFWLog().error(
+        OpenRate.getOpenRateFrameworkLog().error(
               "Error closing input file <" + CacheDataFile +
               ">", ex);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Multiple Validity Map Data Loading completed. " +
           ValidityPeriodsLoaded + " configuration lines loaded from <" +
           CacheDataFile + ">");
@@ -547,7 +548,7 @@ public class MultipleValidityCache
     String            tmpEndDate = null;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Multiple Validity Cache Loading from DB in <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Multiple Validity Cache Loading from DB in <" + getSymbolicName() + ">");
 
     try
     {
@@ -565,7 +566,7 @@ public class MultipleValidityCache
       catch (SQLException ex)
       {
         message = "Error performing SQL for retrieving Multiple Validity Match data in <" + getSymbolicName() + ">. message = <" + ex.getMessage() + ">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -604,14 +605,14 @@ public class MultipleValidityCache
             message = "Multiple Validity Data Loading: <" + ValidityPeriodsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   cacheDataSourceName + ">";
-            getFWLog().info(message);
+            OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
       }
       catch (SQLException ex)
       {
         message = "Error opening Multiple Validity Match Data for <" + getSymbolicName() + ">. message = <" + ex.getMessage() +">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
       catch (ParseException pe)
@@ -620,7 +621,7 @@ public class MultipleValidityCache
               "Error converting date from <" + getSymbolicName() + "> in record <" +
               ValidityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
               ">, <" + tmpEndDate + ">. message = <" + pe.getMessage() + ">";
-        getFWLog().fatal(message,pe);
+        OpenRate.getOpenRateFrameworkLog().fatal(message,pe);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -634,7 +635,7 @@ public class MultipleValidityCache
       catch (SQLException ex)
       {
         message = "Error closing Multiple Validity Match Data for <" + getSymbolicName() + ">. message = <" + ex.getMessage() +">";
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
     }
@@ -645,7 +646,7 @@ public class MultipleValidityCache
       DBUtil.close(JDBCcon);
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Multiple Validity Map Data Loading completed. " +
           ValidityPeriodsLoaded + " configuration lines loaded from <" +
           cacheDataSourceName + ">");
@@ -670,7 +671,7 @@ public class MultipleValidityCache
     ArrayList<String> tmpMethodResult;
 
     // Find the location of the  zone configuration file
-    getFWLog().info("Starting Multiple Validity Cache Loading from Method for <" + getSymbolicName() + ">");
+    OpenRate.getOpenRateFrameworkLog().info("Starting Multiple Validity Cache Loading from Method for <" + getSymbolicName() + ">");
 
     // Execute the user domain method
     Collection<ArrayList<String>> methodLoadResultSet;
@@ -692,7 +693,7 @@ public class MultipleValidityCache
         message = "Error reading input data from <" + cacheDataSourceName +
         "> in record <" + ValidityPeriodsLoaded + ">. Not enough fields.";
 
-        getFWLog().fatal(message);
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
@@ -726,11 +727,11 @@ public class MultipleValidityCache
         message = "Multiple Validity Data Loading: <" + ValidityPeriodsLoaded +
               "> configurations loaded for <" + getSymbolicName() + "> from <" +
               cacheDataSourceName + ">";
-        getFWLog().info(message);
+        OpenRate.getOpenRateFrameworkLog().info(message);
       }
     }
 
-    getFWLog().info(
+    OpenRate.getOpenRateFrameworkLog().info(
           "Multiple Validity Map Data Loading completed. " +
           ValidityPeriodsLoaded + " configuration lines loaded from <" +
           cacheDataSourceName + ">");
@@ -804,7 +805,7 @@ public class MultipleValidityCache
 
     if (ResultCode == 0)
     {
-      getFWLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
 
       return "OK";
     }

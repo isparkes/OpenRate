@@ -55,8 +55,7 @@
 
 package OpenRate.configurationmanager;
 
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
+import OpenRate.OpenRate;
 import java.io.*;
 import java.net.Socket;
 
@@ -68,7 +67,6 @@ import java.net.Socket;
  */
 public class SocketListener implements Runnable
 {
-  private ILogger log = LogUtil.getLogUtil().getLogger("Framework");
   private Socket socket = null;
   private SocketConnectionData socData = null;
 
@@ -144,12 +142,12 @@ public class SocketListener implements Runnable
     }
     catch(IOException e)
     {
-      log.error("OpenRate ECI Listener error: " + e.getClass() + ": " +
+      OpenRate.getOpenRateFrameworkLog().error("OpenRate ECI Listener error: " + e.getClass() + ": " +
         e.getMessage());
     }
     catch(Exception e)
     {
-      log.error("OpenRate ECI Listener error: " + e.getClass() + ": " +
+      OpenRate.getOpenRateFrameworkLog().error("OpenRate ECI Listener error: " + e.getClass() + ": " +
         e.getMessage());
     }
     finally
@@ -174,7 +172,7 @@ public class SocketListener implements Runnable
       }
       catch(IOException e)
       {
-        log.error("SocketListener.run() error closing objects: " + e.getClass()
+        OpenRate.getOpenRateFrameworkLog().error("SocketListener.run() error closing objects: " + e.getClass()
         + ": " + e.getMessage(),e);
       }
       //removes one connection count from the SockectConnectionData since

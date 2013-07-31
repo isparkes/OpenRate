@@ -63,17 +63,6 @@ package OpenRate.configurationmanager;
  */
 public class SocketConstants
 {
- /**
-  * This is the message printed when user or admin connects to the socket
-  * listener and is allowed.
-  */
-  public static final String WELCOMEMESSAGE =
-    "---------------------------------------------------\r\n" +
-    "OpenRate Admin Console, Release xxxxxxxx, 01-01-2012\r\n" +
-    "Copyright Tiger Shore Management Ltd, 2006-2012    \r\n" +
-    "---------------------------------------------------\r\n\r\n" +
-    "Type 'Help' for more information.\r\n\r\n";
-
   /**
    * This is the response displayed when user or admin issues the command 'help'
    */

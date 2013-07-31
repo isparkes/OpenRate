@@ -55,8 +55,8 @@
 
 package OpenRate.resource.notification;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.ILogger;
 import java.util.ArrayList;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
@@ -75,11 +75,6 @@ import javax.mail.internet.MimeMessage;
  */
 public class EmailerThread implements Runnable
 {
-  /**
-   * Access to the logger
-   */
-  protected ILogger FWLog = null;
-
   // True while we are running, set false to exit thread
   private boolean inLoop = true;
 
@@ -147,15 +142,15 @@ public class EmailerThread implements Runnable
             smtpTransport.connect();
           }
 
-          FWLog.debug("SMTP Connection opened.");
+          OpenRate.getOpenRateFrameworkLog().debug("SMTP Connection opened.");
         }
         catch (NoSuchProviderException ex)
         {
-          FWLog.error("No provider for smtp", ex);
+          OpenRate.getOpenRateFrameworkLog().error("No provider for smtp", ex);
         }
         catch (MessagingException ex)
         {
-          FWLog.error("Messaging exception", ex);
+          OpenRate.getOpenRateFrameworkLog().error("Messaging exception", ex);
         }
 
         // dequeue the message
@@ -167,12 +162,12 @@ public class EmailerThread implements Runnable
           // Send a mail
           message = "Sending email [" + tmpMessage.getSubject() + "] addresses [" + formatMailAddresses(tmpMessage) + "]";
 
-          FWLog.info(message);
+          OpenRate.getOpenRateFrameworkLog().info(message);
           smtpTransport.sendMessage(tmpMessage, tmpMessage.getAllRecipients());
         }
         catch (MessagingException ex)
         {
-          FWLog.error("Sending email failed. Message <" + ex.getMessage() + ">");
+          OpenRate.getOpenRateFrameworkLog().error("Sending email failed. Message <" + ex.getMessage() + ">");
         }
       }
     }
@@ -195,20 +190,20 @@ public class EmailerThread implements Runnable
       smtpTransport = mailSessionSync.getTransport("smtp");
       smtpTransport.connect();
 
-      FWLog.debug("Immediate SMTP Connection opened.");
+      OpenRate.getOpenRateFrameworkLog().debug("Immediate SMTP Connection opened.");
 
       // Send a mail
       message = "Sending email [" + tmpMessage.getSubject() + "] addresses [" + formatMailAddresses(tmpMessage) + "]";
 
       // Log the message
-      FWLog.info(message);
+      OpenRate.getOpenRateFrameworkLog().info(message);
 
       // Do the sending
       smtpTransport.sendMessage(tmpMessage, tmpMessage.getAllRecipients());
 
       // Close the connection down
       smtpTransport.close();
-      FWLog.debug("Immediate SMTP Connection opened.");
+      OpenRate.getOpenRateFrameworkLog().debug("Immediate SMTP Connection opened.");
     }
     catch (NoSuchProviderException ex)
     {
@@ -233,16 +228,6 @@ public class EmailerThread implements Runnable
   {
     // Break the loop for this socket
     inLoop = false;
-  }
-
- /**
-  * Set the log location for this thread
-  *
-  * @param newPipeLog
-  */
-  void setFWLog(ILogger newLog)
-  {
-    this.FWLog = newLog;
   }
 
   void queueMessage(MimeMessage msg)

@@ -55,9 +55,9 @@
 
 package OpenRate.configurationmanager;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
+import OpenRate.exception.ProcessingException;
 import OpenRate.utils.PropertyUtils;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -82,9 +82,6 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   // The maximum number of connections we will serve
   private int maxConnections;
 
-  // Access to the logger
-  private ILogger FWLog = LogUtil.getLogUtil().getLogger("Framework");
-
   // List of Services that this Client supports
   private final static String SERVICE_PORT = "Port";
   private final static String DEFAULT_PORT = "8081";
@@ -99,7 +96,15 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   private String SymbolicName = "OpenRateListener";
 
   // This is the socket for the ECI
+  private Socket socket;
+        
   private ServerSocket serverSocket;
+  
+  // Simple socket management interface
+  SocketConnectionData socData = new SocketConnectionData();
+      
+  // Thead group for managing lauched console threads
+  ThreadGroup consoleGroup;
   
   // used to simplify logging and exception handling
   private String message;
@@ -147,26 +152,32 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   {
     if(serverSocket!=null)
     {
-      SocketConnectionData socData = new SocketConnectionData();
-      Socket socket;
       System.out.println("Listener on port <" + this.port + "> is running...");
 
       started = true;
 
+      // Thread group for managing the console threads shutdown
+      consoleGroup = new ThreadGroup("consoleThreads");
+      
       //while connection is still accepted
       while(socData.isLoop())
       {
         socket = getSocket(serverSocket);
-        if(socData.getConnectionNumber() < maxConnections)
+
+        // Only open up a new socket if we are still running
+        if (socData.isLoop())
         {
-          //This block happens when connection is still allowed
-          SocketHelper.addAConnectionCount(socData);
+          if(socData.getConnectionNumber() < maxConnections)
+          {
+            //This block happens when connection is still allowed
+            SocketHelper.addAConnectionCount(socData);
 
-          SocketListener socLis = new SocketListener(socket,socData);
+            SocketListener socLis = new SocketListener(socket,socData);
 
-          //start thread
-          Thread t = new Thread(socLis, "Listener");
-          t.start();
+            //start thread
+            Thread t = new Thread(consoleGroup, socLis, "Listener");
+            t.start();
+          }
         }
         else
         {
@@ -175,10 +186,12 @@ public final class OpenRateSocket implements Runnable, IEventInterface
           blockConnection(socket);
         }
       }
+      
+      System.out.println("Stopped listener");
     }
     else
     {
-      FWLog.debug("OpenRateSocket.run() error: ServerSocket is null. Could not " +
+      OpenRate.getOpenRateFrameworkLog().debug("OpenRateSocket.run() error: ServerSocket is null. Could not " +
         "bind to port " + this.port);
     }
 
@@ -200,6 +213,25 @@ public final class OpenRateSocket implements Runnable, IEventInterface
     return serverSocket;
   }
 
+ /**
+  * Shuts down the listener
+  */
+  public void stop() {
+    // Stop any new threads opening
+    socData.setLoop(false);
+    
+    // Close the current listener
+    try {
+      serverSocket.close();
+    }
+    catch (IOException ex) {
+      System.out.println("Message " + ex.getMessage());
+    }
+    
+    // Interrupt any threads open
+    consoleGroup.interrupt();    
+  }
+    
   /**
    * This method returns a Socket object created when the ServerSocket <br/>
    * object accepts the connection.
@@ -209,15 +241,20 @@ public final class OpenRateSocket implements Runnable, IEventInterface
    */
   private Socket getSocket(ServerSocket serverSocket)
   {
-    Socket socket = null;
     try
     {
       socket = serverSocket.accept();
     }
     catch (IOException e)
     {
-      FWLog.error("OpenRateSocket.getSocket(): Accept failed.");
+      // if we are stopping, just ignore
+      if (socData.isLoop())
+      {
+        ProcessingException ex = new ProcessingException("Socket Accept Failed",getSymbolicName());
+        OpenRate.getFrameworkExceptionHandler().reportException(ex);
+      }
     }
+    
     return socket;
   }
 
@@ -255,16 +292,16 @@ public final class OpenRateSocket implements Runnable, IEventInterface
     PrintStream out = null;
     try
     {
-      out = new PrintStream(new BufferedOutputStream(socket
-        .getOutputStream(), 1024), false);
+      out = new PrintStream(new BufferedOutputStream(socket.getOutputStream(), 1024), false);
+      
       //displays the maximum connection message
       out.println(SocketConstants.CONNECTIONMAXMESSAGE);
       out.flush();
     }
     catch (IOException e)
     {
-      FWLog.error("OpenRateSocket.blockConnection() error");
-      FWLog.error(e.getClass() + ": " + e.getMessage(), e);
+      OpenRate.getOpenRateFrameworkLog().error("OpenRateSocket.blockConnection() error");
+      OpenRate.getOpenRateFrameworkLog().error(e.getClass() + ": " + e.getMessage(), e);
     }
     finally
     {
@@ -278,7 +315,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
       }
       catch(IOException e)
       {
-        FWLog.error("OpenRateSocket.blockConnection() finally clause error.",e);
+        OpenRate.getOpenRateFrameworkLog().error("OpenRateSocket.blockConnection() finally clause error.",e);
       }
     }
   }
@@ -332,7 +369,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
         }
         catch (NumberFormatException nfe)
         {
-          FWLog.error("Invalid number for port. Passed value = <" + Parameter + ">");
+          OpenRate.getOpenRateFrameworkLog().error("Invalid number for port. Passed value = <" + Parameter + ">");
         }
         ResultCode = 0;
       }
@@ -352,7 +389,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
         }
         catch (NumberFormatException nfe)
         {
-          FWLog.error("Invalid number for maximum connections. Passed value = <" + Parameter + ">");
+          OpenRate.getOpenRateFrameworkLog().error("Invalid number for maximum connections. Passed value = <" + Parameter + ">");
         }
         ResultCode = 0;
       }
@@ -362,7 +399,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
     if (ResultCode == 0)
     {
         logStr = "Command " + Command + " handled";
-        FWLog.debug(logStr);
+        OpenRate.getOpenRateFrameworkLog().debug(logStr);
         return SocketConstants.OKMESSAGE;
     }
     else
