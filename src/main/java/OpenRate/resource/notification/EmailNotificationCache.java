@@ -58,11 +58,8 @@ package OpenRate.resource.notification;
 import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
-import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.resource.IResource;
 import OpenRate.utils.PropertyUtils;
 import java.io.UnsupportedEncodingException;
@@ -300,11 +297,11 @@ public class EmailNotificationCache implements IResource, IEventInterface
         {
           if (carbonCopyName.equalsIgnoreCase("None"))
           {
-            CCAddresses[0] = new InternetAddress(tmpCCAddresses[idx]);
+            CCAddresses[idx] = new InternetAddress(tmpCCAddresses[idx]);
           }
           else
           {
-            CCAddresses[0] = new InternetAddress(tmpCCAddresses[idx], carbonCopyName);
+            CCAddresses[idx] = new InternetAddress(tmpCCAddresses[idx], carbonCopyName);
           }
         }
       }
