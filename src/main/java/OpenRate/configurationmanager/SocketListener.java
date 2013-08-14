@@ -56,6 +56,7 @@
 package OpenRate.configurationmanager;
 
 import OpenRate.OpenRate;
+import OpenRate.exception.ProcessingException;
 import java.io.*;
 import java.net.Socket;
 
@@ -94,12 +95,10 @@ public class SocketListener implements Runnable
     try
     {
       //instantiates the PrintStream object
-      out = new PrintStream(new BufferedOutputStream(socket
-        .getOutputStream(), 1024), false);
+      out = new PrintStream(new BufferedOutputStream(socket.getOutputStream(), 1024), false);
 
       //isntantiates the BufferedReader object
-      br = new BufferedReader(new InputStreamReader(
-        socket.getInputStream()));
+      br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
       String input;
       String output;
@@ -140,15 +139,15 @@ public class SocketListener implements Runnable
         }
       }
     }
-    catch(IOException e)
+    catch(IOException ex)
     {
-      OpenRate.getOpenRateFrameworkLog().error("OpenRate ECI Listener error: " + e.getClass() + ": " +
-        e.getMessage());
+      ProcessingException listenerEx = new ProcessingException("IO Exception in Listener",ex,"Listener");
+      OpenRate.getFrameworkExceptionHandler().reportException(listenerEx);
     }
-    catch(Exception e)
+    catch(Exception ex)
     {
-      OpenRate.getOpenRateFrameworkLog().error("OpenRate ECI Listener error: " + e.getClass() + ": " +
-        e.getMessage());
+      ProcessingException listenerEx = new ProcessingException("IO Exception in Listener",ex,"Listener");
+      OpenRate.getFrameworkExceptionHandler().reportException(listenerEx);
     }
     finally
     {

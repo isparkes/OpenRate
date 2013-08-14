@@ -292,11 +292,15 @@ public final class OpenRateSocket implements Runnable, IEventInterface
     PrintStream out = null;
     try
     {
-      out = new PrintStream(new BufferedOutputStream(socket.getOutputStream(), 1024), false);
-      
-      //displays the maximum connection message
-      out.println(SocketConstants.CONNECTIONMAXMESSAGE);
-      out.flush();
+      // On shut down we cannot be sure that the socket did not already close down
+      if (socket != null)
+      {
+        out = new PrintStream(new BufferedOutputStream(socket.getOutputStream(), 1024), false);
+
+        //displays the maximum connection message
+        out.println(SocketConstants.CONNECTIONMAXMESSAGE);
+        out.flush();
+      }
     }
     catch (IOException e)
     {

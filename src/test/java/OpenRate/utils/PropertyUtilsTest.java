@@ -131,6 +131,17 @@ public class PropertyUtilsTest
   }
 
   /**
+   * Test of getPropertyUtils method, of class PropertyUtils.
+   */
+  @Test
+  public void testGetPropertyUtilsGetSymbolicName() {
+    System.out.println("getPropertyUtils SymbolicName");
+    String expResult = "PropertyUtils";
+    String result = PropertyUtils.getPropertyUtils().getSymbolicName();
+    Assert.assertEquals(expResult, result);
+  }
+
+  /**
    * Test of getPipelinePropertyValue method, of class PropertyUtils.
    */
   @Test

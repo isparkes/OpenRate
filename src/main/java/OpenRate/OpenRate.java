@@ -803,7 +803,7 @@ public class OpenRate
       if (!pipelineIter.hasNext())
       {
         // Seems the user has not defined any pipelines. Abort
-                getFwLog().error("No Pipelines defined. Closing down...");
+        getFwLog().error("No Pipelines defined. Closing down...");
       }
       else
       {
@@ -1070,6 +1070,9 @@ public class OpenRate
 
     // Close resources
     closeResources();
+    
+    // Clear out the exception handler
+    frameworkExceptionHandler.clearExceptions();
   }
 
   /**

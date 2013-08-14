@@ -15,7 +15,15 @@
 			<Active>True</Active>
 		</DBRTTestPipe>
 	</PipelineList>
+  
 	<DBTestPipe>
+    <InputAdapter>
+      <NullInput>
+        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </NullInput>
+    </InputAdapter>
+        
 		<Process>
 			<AbstractRegexMatchTest>
 				<DataCache>RegexMatchTestCache</DataCache>
@@ -37,6 +45,13 @@
 				<BatchSize>5000</BatchSize>
 			</AbstractDuplicateCheckTest>
 		</Process>
+    
+    <OutputAdapter>
+      <NullOutput>
+        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </NullOutput>
+    </OutputAdapter>
 	</DBTestPipe>
 
 	<Resource>

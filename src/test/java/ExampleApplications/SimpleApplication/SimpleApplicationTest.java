@@ -53,97 +53,80 @@
  * ====================================================================
  */
 
-package OpenRate.resource;
+package ExampleApplications.SimpleApplication;
 
-import OpenRate.exception.InitializationException;
-import OpenRate.utils.ConversionUtils;
-import java.util.concurrent.ConcurrentHashMap;
+import OpenRate.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.junit.*;
 
 /**
- * The ConversionCache provides access to conversion objects, with the aim of
- * making record objects lighter by re-use of shared conversion objects. The
- * conversion object is particularly heavy during creation, and is used often.
- * This cache therefore gives a reasonable increase in performance.
+ * Tests OpenRate simple application processing.
+ *
+ * @author TGDSPIA1
  */
-public class ConversionCache implements IResource
-{
-  /**
-   * This is the key name we will use for referencing this object from the
-   * Resource context
-   */
-  public static final String RESOURCE_KEY = "ConversionCache";
+public class SimpleApplicationTest {
 
-  // This is the symbolic name of the resource
-  private String symbolicName;
-
-  // cache Categories
-  private static ConcurrentHashMap<String, ConversionUtils> ConversionManagers = new ConcurrentHashMap<>();
-
-  /**
-   * default constructor - protected
-   */
-  public ConversionCache()
-  {
-    super();
-  }
-
-  /**
-   * Perform whatever initialization is required of the resource.
-   * This method should only be called once per application instance.
-   *
-   * @param ResourceName The name of the resource in the properties
-   */
-  @Override
-  public void init(String ResourceName) throws InitializationException
-  {
-    if (ResourceName.equals(RESOURCE_KEY) == false)
-    {
-      throw new InitializationException("Conversion Cache must be called ConversionCache",getSymbolicName());
+    public SimpleApplicationTest() {
     }
-    else
-    {
-      symbolicName = ResourceName;
-    }
-  }
 
-  /**
-   * Perform any required cleanup.
-   */
-  @Override
-  public void close()
-  {
-    ConversionManagers.clear();
-  }
-
-  /**
-   * Utility to return the reference to the conversion resource
-   *
-   * @param type The type string of the conversion object to return
-   * @return The conversion object
-   * @throws ConfigurationException
-   */
-  public ConversionUtils getConversionObject(String type)
-  {
-    if (ConversionManagers.containsKey(type))
-    {
-      // just return it
-      return ConversionManagers.get(type);
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
-    else
-    {
-      // create it and return it
-      ConversionUtils tmpConv = new ConversionUtils();
-      ConversionManagers.put(type, tmpConv);
-      return tmpConv;
-    }
-  }
 
- /**
-  * Return the resource symbolic name
-  */
-  @Override
-  public String getSymbolicName()
-  {
-    return symbolicName;
-  }
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of application startup. This test builds a real (but very simple)
+     * processing pipeline using the standard framework startup procedure.
+     */
+    //@Test
+    public void testSimpleApplication() {
+      System.out.println("Simple Processing Application");
+
+        // Define the property file we are using
+        String[] args = new String[2];
+        args[0] = "-p";
+        args[1] = "Simple.properties.xml";
+        
+        // Start up the framework
+        OpenRate appl = OpenRate.getApplicationInstance();
+        int status = appl.createApplication(args);
+
+        // check the start up of the framework
+        Assert.assertEquals(0,status);
+        
+        Thread openRateThread = new Thread(appl);
+        openRateThread.start();
+        
+        // Do the processing
+        
+        
+        // And test the shutdown
+        appl.stopAllPipelines();
+        
+        // wait for it to stop
+        while (appl.isFrameworkActive())
+        {
+          try {
+            Thread.sleep(100);
+          }
+          catch (InterruptedException ex) {
+            Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        }
+
+        // Finish off
+        appl.finaliseApplication();
+    }
 }

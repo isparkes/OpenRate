@@ -150,6 +150,19 @@ public class ConversionUtilsTest
   }
 
   /**
+   * Test of getConversionCache method, of class ConversionUtils.
+   */
+  @Test
+  public void testGetConversionCacheSymbolicName()
+  {
+    System.out.println("getConversionCache");
+    String result = ConversionUtils.getConversionCache().getSymbolicName();
+
+    // Check that we get something back
+    Assert.assertEquals("ConversionCache", result);
+  }
+
+  /**
    * Test of convertInputDateToUTC method, of class ConversionUtils.
    */
   @Test

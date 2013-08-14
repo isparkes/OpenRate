@@ -14,12 +14,26 @@
   </PipelineList>
 
   <DBTestPipe>
+    <InputAdapter>
+      <NullInput>
+        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </NullInput>
+    </InputAdapter>
+        
     <Process>
       <AbstractRateCalcTest>
         <DataCache>RateTestCache</DataCache>
         <BatchSize>5000</BatchSize>
       </AbstractRateCalcTest>
     </Process>
+    
+    <OutputAdapter>
+      <NullOutput>
+        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </NullOutput>
+    </OutputAdapter>
   </DBTestPipe>
 
   <Resource>

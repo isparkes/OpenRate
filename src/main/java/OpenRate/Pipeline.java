@@ -1060,12 +1060,14 @@ public class Pipeline
     // Only notify once
     if (stopRequested == false)
     {
-      OpenRate.getOpenRateFrameworkLog().warning(
-            "Pipeline <" + symbolicName +
-            "> received Stop Command. Will exit after the current Transaction");
+      OpenRate.getOpenRateFrameworkLog().warning("Pipeline <" + symbolicName + "> received Stop Command. Will exit after the current Transaction");
 
-      // Stop new transactions being opened
-      TM.setNewTransactionAllowed(false);
+      // Only shut down the transaction manager if it is started
+      if (TM != null)
+      {
+        // Stop new transactions being opened
+        TM.setNewTransactionAllowed(false);
+      }
 
       // Ask the pipeline to shut down at the first reasonable opportunity
       stopRequested = true;

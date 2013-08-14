@@ -50,6 +50,7 @@
     <ECI>
       <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
       <Port>8086</Port>
+      <SemaphoreFile>Semaphore.txt</SemaphoreFile>
       <MaxConnection>2</MaxConnection>
     </ECI>
 

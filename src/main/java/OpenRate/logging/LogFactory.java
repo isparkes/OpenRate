@@ -153,34 +153,36 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
       {
         OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
       }
-      
-      // Is it a file?
-      if (new File(fqConfigFileName.getFile()).isFile() == false)
-      {
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
-      }
-
-      if (log4j_properties.endsWith(".xml"))
-      {
-        // ToDo: Add configure and watch
-        // use the XML model
-        DOMConfigurator.configure(fqConfigFileName);
-      }
       else
       {
-        // ToDo: Add configure and watch
-        // use the traditional properties file model: Deprecated
-        PropertyConfigurator.configure(fqConfigFileName);
+        // Is it a file?
+        if (new File(fqConfigFileName.getFile()).isFile() == false)
+        {
+          OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
+        }
+
+        if (log4j_properties.endsWith(".xml"))
+        {
+          // ToDo: Add configure and watch
+          // use the XML model
+          DOMConfigurator.configure(fqConfigFileName);
+        }
+        else
+        {
+          // ToDo: Add configure and watch
+          // use the traditional properties file model: Deprecated
+          PropertyConfigurator.configure(fqConfigFileName);
+        }
+
+        // log4j initialized.
+        loaded              = true;
+
+        System.out.println("Logger initialised using configuration <" + fqConfigFileName.getFile() + ">");
+
+        // If there is a default logger configured in the properties file then
+        // use that.  Otherwise use AstractLogger.DEFAULT_CATEGORY
+        defaultLoggerName   = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"DefaultCategory","Default");
       }
-
-      // log4j initialized.
-      loaded              = true;
-
-      System.out.println("Logger initialised using configuration <" + fqConfigFileName.getFile() + ">");
-
-      // If there is a default logger configured in the properties file then
-      // use that.  Otherwise use AstractLogger.DEFAULT_CATEGORY
-      defaultLoggerName   = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"DefaultCategory","Default");
     }
   }
 
