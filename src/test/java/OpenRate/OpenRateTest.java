@@ -76,7 +76,7 @@ import org.junit.*;
 public class OpenRateTest {
 
     // The revision number has to be changed to match the current revision
-    int    revisionNumber = 17;
+    int    revisionNumber = 20;
     String revisionDate   = "20130814";
         
     public OpenRateTest() {
