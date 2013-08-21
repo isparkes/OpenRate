@@ -58,33 +58,25 @@ package OpenRate.process;
 import OpenRate.OpenRate;
 import OpenRate.buffer.IConsumer;
 import OpenRate.buffer.ISupplier;
-import OpenRate.db.DBUtil;
 import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.lang.BalanceGroup;
 import OpenRate.lang.Counter;
 import OpenRate.lang.DiscountInformation;
-import OpenRate.logging.AbstractLogFactory;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.BalanceImpact;
 import OpenRate.record.IRecord;
-import OpenRate.resource.CacheFactory;
-import OpenRate.resource.DataSourceFactory;
-import OpenRate.resource.IResource;
-import OpenRate.resource.ResourceContext;
 import OpenRate.transaction.ITransactionManager;
 import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.ConversionUtils;
-import OpenRate.utils.PropertyUtils;
 import TestUtils.TestRatingRecord;
 import TestUtils.TransactionUtils;
 import java.net.URL;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import org.junit.*;
+import TestUtils.FrameworkUtils;
 
 /**
  * Unit Test for the balance handler processing plug in. This test builds the
@@ -98,146 +90,84 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
 {
   private static URL FQConfigFileName;
 
-  private static String cacheDataSourceName;
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractBalanceHandlerPlugIn instance;
   private static ITransactionManager TM;
   
   // Used for logging and exception handling
   private static String message; 
 
-    public AbstractBalanceHandlerPlugInTest() {
-    }
+  public AbstractBalanceHandlerPlugInTest() {
+  }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception
-    {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-    
+  @BeforeClass
+  public static void setUpClass() throws Exception
+  {
     FQConfigFileName = new URL("File:src/test/resources/TestBalanceHandler.properties.xml");
+
+    // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
+
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
+
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
+
+    // Get the transaction manager
+    FrameworkUtils.startupTransactionManager();
     
-      // Get a properties object
-      try
-      {
-        PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
-      }
-      catch (InitializationException ex)
-      {
-        message = "Error reading the configuration file <" + FQConfigFileName + ">" + System.getProperty("user.dir");
-        Assert.fail(message);
-      }
+    // Get Data Sources
+    FrameworkUtils.startupDataSources();
+    
+    // Get a connection
+    Connection JDBCChcon = FrameworkUtils.getDBConnection("BalCache");
 
-      // Set up the OpenRate internal logger - this is normally done by app startup
-      OpenRate.getApplicationInstance();
-      
-      // Get the data source name
-      cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
-                                                                                          "BalCache",
-                                                                                          "DataSource",
-                                                                                          "None");
-
-      // Get a logger
-      System.out.println("  Initialising Logger Resource...");
-      resourceName         = "LogFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // set the log - this is normally done by application startup
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-
-      // Get a data Source factory
-      System.out.println("  Initialising Data Source Resource...");
-      resourceName         = "DataSourceFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // The datasource property was added to allow database to database
-      // JDBC adapters to work properly using 1 configuration file.
-      if(DBUtil.initDataSource(cacheDataSourceName) == null)
-      {
-        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractBestMatchTest>.";
-        Assert.fail(message);
-      }
-
-      // Get a connection
-      Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
-
-      try
-      {
-        JDBCChcon.prepareStatement("DROP TABLE TEST_COUNTER_BALS;").execute();
-      }
-      catch (Exception ex)
-      {
-        if (ex.getMessage().startsWith("Unknown table"))
-        {
-          // It's OK
-        }
-        else
-        {
-          // Not OK, fail the case
-          message = "Error dropping table TEST_COUNTER_BALS in test <AbstractBalanceHandlerPlugInTest>.";
-          Assert.fail(message);
-        }
-      }
-
-      // Create the test table
-      JDBCChcon.prepareStatement("CREATE TABLE TEST_COUNTER_BALS (BALANCE_GROUP int NOT NULL, COUNTER_ID int NOT NULL, RECORD_ID int NOT NULL, VALID_FROM int NOT NULL, VALID_TO int NOT NULL, CURRENT_BAL double);").execute();
-
-      // Get a cache factory
-      System.out.println("  Initialising Cache Factory Resource...");
-      resourceName         = "CacheFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-
-      // Get a transaction manager
-      System.out.println("  Initialising Transaction Manager Resource...");
-      resourceName         = "TransactionManagerFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(TransactionManagerFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // Link the logger
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-      
-      // Get the list of pipelines we are going to make
-      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
-      
-      // Create the pipeline skeleton instance (assume only one for tests)
-      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
-      
-      // Check that we now have the row in the table - we might have to wait
-      // a moment because the transaction closing is asynchronous
-      TM = TransactionUtils.getTM();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception
+    try
     {
-      TM.resetClients();
+      JDBCChcon.prepareStatement("DROP TABLE TEST_COUNTER_BALS;").execute();
+    }
+    catch (Exception ex)
+    {
+      if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
+          (ex.getMessage().startsWith("user lacks")))      // HSQL
+      {
+        // It's OK
+      }
+      else
+      {
+        // Not OK, fail the case
+        message = "Error dropping table TEST_COUNTER_BALS in test <AbstractBalanceHandlerPlugInTest>.";
+        Assert.fail(message);
+      }
     }
 
-    @Before
-    public void setUp() {
-    }
+    // Create the test table
+    JDBCChcon.prepareStatement("CREATE TABLE TEST_COUNTER_BALS (BALANCE_GROUP int NOT NULL, COUNTER_ID int NOT NULL, RECORD_ID int NOT NULL, VALID_FROM int NOT NULL, VALID_TO int NOT NULL, CURRENT_BAL double);").execute();
 
-    @After
-    public void tearDown() {
-    }
+    // Get the caches that we are using
+    FrameworkUtils.startupCaches();
+    
+    // Check that we now have the row in the table - we might have to wait
+    // a moment because the transaction closing is asynchronous
+    TM = TransactionUtils.getTM();
+  }
+
+  @AfterClass
+  public static void tearDownClass() throws Exception
+  {
+    TM.resetClients();
+    
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
+  }
+
+  @Before
+  public void setUp() {
+  }
+
+  @After
+  public void tearDown() {
+  }
 
   /**
    * Test of init method, of class AbstractBestMatch.

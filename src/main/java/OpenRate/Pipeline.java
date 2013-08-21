@@ -246,7 +246,7 @@ public class Pipeline
     }
 
     // Set the max transactions
-      TM.setMaxTransactions(maxTransTM);
+    TM.setMaxTransactions(maxTransTM);
 
     // set up the logger
     setPipeLog(LogUtil.getLogUtil().getLogger(Name));
@@ -1443,11 +1443,12 @@ public class Pipeline
   }
 
   /**
-  * set the symbolic name
+   * set the symbolic name. Normally set internally, this method is used for
+   * Unit tests.
    *
    * @param name The new symbolic name to use
    */
-  protected void setSymbolicName(String name)
+  public void setSymbolicName(String name)
   {
     symbolicName = name;
   }

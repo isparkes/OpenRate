@@ -549,6 +549,10 @@ public class OpenRate
   {
     try
     {
+      // Get a default logger just in case - we will overwrite this later
+      setFwLog(LogUtil.getLogUtil().getDefaultLogger());
+      getFwLog().info("Set default logger");
+      
       // Get the (completely useless but informative) application Name, and
       // well, inform the user
       //ApplicationName = PropertyUtils.getPropertyValueDef(resources,
@@ -1073,6 +1077,9 @@ public class OpenRate
     
     // Clear out the exception handler
     frameworkExceptionHandler.clearExceptions();
+    
+    // Deallocate the properties object
+    PropertyUtils.closePropertyUtils();
   }
 
   /**
@@ -1531,6 +1538,19 @@ public class OpenRate
     public static IPipeline getPipeline(String pipename)
     {
       return pipelineMap.get(pipename);
+    }
+
+   /**
+    * Insert a pipeline into the map. Used to unit tests, where we want to
+    * concentrate on the module we are testing. Normally the pipeline map is
+    * populated by the framework startup.
+    * 
+    * @param pipename The pipeline to get
+    * @return The pipeline reference
+    */
+    public static void setPipeline(String pipename, IPipeline pipeline)
+    {
+      pipelineMap.put(pipename,pipeline);
     }
 
     /**

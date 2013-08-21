@@ -58,24 +58,20 @@ import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.AbstractLogFactory;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
-import OpenRate.resource.CacheFactory;
-import OpenRate.resource.DataSourceFactory;
-import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
 import OpenRate.transaction.ITransactionManager;
 import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.ConversionUtils;
-import OpenRate.utils.PropertyUtils;
+import TestUtils.FrameworkUtils;
 import TestUtils.TransactionUtils;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.*;
 
 /**
@@ -110,63 +106,25 @@ public class AbstractDuplicateCheckTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-
-    FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
+    FQConfigFileName = new URL("File:src/test/resources/TestDuplicate.properties.xml");
     
-    // Get a properties object
-    try
-    {
-        PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
-    }
-    catch (InitializationException ex)
-    {
-        message = "Error reading the configuration file <" + FQConfigFileName + ">";
-        Assert.fail(message);
-    }
+    // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
 
-      // Set up the OpenRate internal logger - this is normally done by app startup
-      OpenRate.getApplicationInstance();
-      
-    // Get the data source name
-    cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
-                                                                                        "DuplicateCheckTestCache",
-                                                                                        "DataSource",
-                                                                                        "None");
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
 
-    // Get a logger
-    System.out.println("  Initialising Logger Resource...");
-    resourceName         = "LogFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-    System.out.println("  Initialised Logger Resource");
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
 
-    // Get a data Source factory
-    System.out.println("  Initialising Data Source Factory Resource...");
-    resourceName         = "DataSourceFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-    System.out.println("  Initialised Data Source Factory Resource");
-
-    // The datasource property was added to allow database to database
-    // JDBC adapters to work properly using 1 configuration file.
-    System.out.println("  Initialising Data Source...");
-    if(DBUtil.initDataSource(cacheDataSourceName) == null)
-    {
-        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractDuplicateCheckTest>.";
-        Assert.fail(message);
-    }
-    System.out.println("  Initialised Data Source");
-
+    // Get the transaction manager
+    FrameworkUtils.startupTransactionManager();
+    
+    // Get Data Sources
+    FrameworkUtils.startupDataSources();
+    
     // Get a connection
-    Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
+    Connection JDBCChcon = FrameworkUtils.getDBConnection("DuplicateCheckTestCache");
 
     try
     {
@@ -174,7 +132,8 @@ public class AbstractDuplicateCheckTest
     }
     catch (Exception ex)
     {
-        if (ex.getMessage().startsWith("Unknown table"))
+      if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
+          (ex.getMessage().startsWith("user lacks")))      // HSQL
         {
         // It's OK
         }
@@ -187,40 +146,16 @@ public class AbstractDuplicateCheckTest
     }
 
     // Create the test table
-    JDBCChcon.prepareStatement("CREATE TABLE TEST_DUPLICATE_CHECK (CDR_KEY varchar(64),CDR_DATE timestamp);").execute();
+    JDBCChcon.prepareStatement("CREATE TABLE TEST_DUPLICATE_CHECK (CDR_KEY varchar(64),CDR_DATE timestamp)").execute();
 
     // Create the test table unique index
-    JDBCChcon.prepareStatement("ALTER TABLE TEST_DUPLICATE_CHECK ADD UNIQUE INDEX idx_cdr_key (CDR_KEY);").execute();
+    //JDBCChcon.prepareStatement("ALTER TABLE TEST_DUPLICATE_CHECK ADD UNIQUE INDEX idx_cdr_key (CDR_KEY)").execute();
+    JDBCChcon.prepareStatement("ALTER TABLE TEST_DUPLICATE_CHECK ADD CONSTRAINT idx_cdr_key UNIQUE (CDR_KEY)").execute();
     System.out.println("    Created Test Table and Index...");
 
-    // Get a cache factory
-    System.out.println("  Initialising Cache Factory Resource...");
-    resourceName         = "CacheFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-
-    // Get a transaction manager
-    System.out.println("  Initialising Transaction Manager Resource...");
-    resourceName         = "TransactionManagerFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(TransactionManagerFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-
-      // Link the logger
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-      
-      // Get the list of pipelines we are going to make
-      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
-      
-      // Create the pipeline skeleton instance (assume only one for tests)
-      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
-      
+    // Get the caches that we are using
+    FrameworkUtils.startupCaches();
+          
     System.out.println("  Sleeping for 1S to allow things to settle...");
     try {
         Thread.sleep(1000);
@@ -536,12 +471,12 @@ public class AbstractDuplicateCheckTest
     try
     {
       // Get a connection
-      Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
-      result = JDBCChcon.prepareStatement("SELECT COUNT(*) FROM TEST_DUPLICATE_CHECK;").executeQuery();
-      result.first();
+      Connection JDBCChcon = FrameworkUtils.getDBConnection("DuplicateCheckTestCache");
+      result = JDBCChcon.prepareStatement("SELECT COUNT(*) FROM TEST_DUPLICATE_CHECK",ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY).executeQuery();
+      result.next();
       rowCount = result.getInt(1);
       DBUtil.close(JDBCChcon);
-    } catch (InitializationException | SQLException ex) {
+    } catch (InitializationException | SQLException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
       // Not OK, Assert.fail the case
       message = "Error counting rows in test <AbstractDuplicateCheckTest>, message <"+ex.getMessage()+">";
       Assert.fail(message);

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>OpenRate</artifactId>
-	<version>1.5.2.0</version>
+	<version>1.5.2.21</version>
 	<packaging>jar</packaging>
 	<groupId>OpenRate</groupId>
 	<description>OpenRate project: Open Source Telecommunications rating engine</description>
@@ -136,6 +136,7 @@
 		<version.bonecp>0.7.1.RELEASE</version.bonecp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.mysql.connector>5.1.13</version.mysql.connector>
+    <version.hsql.connector>2.2.4</version.hsql.connector>
 		<version.log4j>1.2.13</version.log4j>
 		<version.oro>2.0.8</version.oro>
 		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
@@ -178,13 +179,14 @@
 			<version>${version.commons.pool}</version>
 		</dependency>
 
-		<!-- connection pools -->
+		<!-- C3P0 connection pool -->
 		<dependency>
 			<groupId>c3p0</groupId>
 			<artifactId>c3p0</artifactId>
 			<version>${version.c3p0}</version>
 		</dependency>
 		
+		<!-- Bone connection pool -->
 		<dependency>
 			<groupId>com.jolbox</groupId>
 			<artifactId>bonecp-spring</artifactId>
@@ -196,19 +198,29 @@
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
 		</dependency-->
-		
+
+    <!-- MySQL for database access -->		
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${version.mysql.connector}</version>
 		</dependency>
-		
+    
+    <!-- HSQL for database access (mostly unit tests) -->		
+		<dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>${version.hsql.connector}</version>
+    </dependency>
+
+    <!-- Fantastic log4j for logging -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>${version.log4j}</version>
 		</dependency>
 		
+    <!-- Oro for file filtering -->
 		<dependency>
 			<groupId>oro</groupId>
 			<artifactId>oro</artifactId>
@@ -246,7 +258,7 @@
 			<version>${org.springframework.version}</version>
 		</dependency>
     
-    <!-- Apache ActiveMQ -->
+    <!-- Apache ActiveMQ for JMS Queue adapters -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-core</artifactId>
@@ -291,6 +303,7 @@
         </dependency>
 -->
 		
+    <!-- Mail for emailer module -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>

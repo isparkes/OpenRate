@@ -13,10 +13,6 @@ You can copy and paste the single properties, into the pom.xml file and the IDE 
 That way multiple projects can share the same settings (useful for formatting rules for example).
 Any value defined here will override the pom.xml file value but is only applicable to the current project.
 -->
-        <netbeans.checkstyle.format>true</netbeans.checkstyle.format>
-        <netbeans.compile.on.save>app</netbeans.compile.on.save>
-        <org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>2</org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>
-        <org-netbeans-modules-editor-indent.CodeStyle.project.tab-size>2</org-netbeans-modules-editor-indent.CodeStyle.project.tab-size>
-        <org-netbeans-modules-editor-indent.CodeStyle.project.indent-shift-width>2</org-netbeans-modules-editor-indent.CodeStyle.project.indent-shift-width>
+        <netbeans.compile.on.save>all</netbeans.compile.on.save>
     </properties>
 </project-shared-configuration>

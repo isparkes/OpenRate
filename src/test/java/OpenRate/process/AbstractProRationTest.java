@@ -58,11 +58,8 @@ import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.lang.ProRatingResult;
-import OpenRate.logging.AbstractLogFactory;
 import OpenRate.record.IRecord;
-import OpenRate.resource.IResource;
-import OpenRate.resource.ResourceContext;
-import OpenRate.utils.PropertyUtils;
+import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -77,14 +74,7 @@ import org.junit.*;
 public class AbstractProRationTest
 {
   private static URL FQConfigFileName;
-
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractProRation instance;
-
-  // Used for logging and exception handling
-  private static String message; 
 
  /**
   * Default constructor
@@ -95,34 +85,17 @@ public class AbstractProRationTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-
     FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
     
-      // Get a properties object
-      try
-      {
-        PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
-      }
-      catch (InitializationException ex)
-      {
-        message = "Error reading the configuration file <" + FQConfigFileName + ">";
-        Assert.fail(message);
-      }
+   // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
 
-      // Set up the OpenRate internal logger - this is normally done by app startup
-      OpenRate.getApplicationInstance();
-      
-      // Get a logger
-      System.out.println("  Initialising Logger Resource...");
-      resourceName         = "LogFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-  }
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
+
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
+   }
 
   @AfterClass
   public static void tearDownClass() {

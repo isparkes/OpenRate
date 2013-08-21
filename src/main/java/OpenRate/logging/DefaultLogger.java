@@ -84,7 +84,7 @@ public class DefaultLogger extends OpenRate.logging.AstractLogger
   {
     // Set up the default values
     DebugEnabled = false;
-    InfoEnabled = false;
+    InfoEnabled = true;
     WarningEnabled = true;
 
     // Set the symbolic name

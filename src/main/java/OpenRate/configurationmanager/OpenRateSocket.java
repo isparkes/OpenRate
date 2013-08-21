@@ -191,8 +191,11 @@ public final class OpenRateSocket implements Runnable, IEventInterface
     }
     else
     {
-      OpenRate.getOpenRateFrameworkLog().debug("OpenRateSocket.run() error: ServerSocket is null. Could not " +
-        "bind to port " + this.port);
+      // only print a message if we are active
+      if (socData.isLoop())
+      {
+        OpenRate.getOpenRateFrameworkLog().debug("OpenRateSocket.run() error: ServerSocket is null. Could not bind to port " + this.port);
+      }
     }
 
     // show that we have done with the init

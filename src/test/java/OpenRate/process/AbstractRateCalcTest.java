@@ -55,21 +55,13 @@
 package OpenRate.process;
 
 import OpenRate.OpenRate;
-import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.AbstractLogFactory;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
-import OpenRate.resource.CacheFactory;
-import OpenRate.resource.DataSourceFactory;
-import OpenRate.resource.IResource;
-import OpenRate.resource.ResourceContext;
 import OpenRate.utils.ConversionUtils;
-import OpenRate.utils.PropertyUtils;
+import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.sql.Connection;
-import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
@@ -80,11 +72,6 @@ import org.junit.*;
 public class AbstractRateCalcTest
 {
   private static URL FQConfigFileName;
-
-  private static String cacheDataSourceName;
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractRateCalc instance;
 
   // Used for logging and exception handling
@@ -96,110 +83,62 @@ public class AbstractRateCalcTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-
     FQConfigFileName = new URL("File:src/test/resources/TestRating.properties.xml");
     
-      // Get a properties object
-      try
+   // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
+
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
+
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
+
+    // Get the transaction manager
+    FrameworkUtils.startupTransactionManager();
+    
+    // Get Data Sources
+    FrameworkUtils.startupDataSources();
+    
+    // Get a connection
+    Connection JDBCChcon = FrameworkUtils.getDBConnection("RateTestCache");
+
+    // Set up test data
+    try
+    {
+      JDBCChcon.prepareStatement("DROP TABLE TEST_PRICE_MODEL;").execute();
+    }
+    catch (Exception ex)
+    {
+      if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
+          (ex.getMessage().startsWith("user lacks")))      // HSQL
       {
-        PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
+        // It's OK
       }
-      catch (InitializationException ex)
+      else
       {
-        message = "Error reading the configuration file <" + FQConfigFileName + ">" + System.getProperty("user.dir");
+        // Not OK, fail the case
+        message = "Error dropping table TEST_PRICE_MODEL in test <AbstractRateCalcTest>.";
         Assert.fail(message);
       }
+    }
 
-      // Set up the OpenRate internal logger - this is normally done by app startup
-      OpenRate.getApplicationInstance();
-      
-      // Get the data source name
-      cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
-                                                                                          "RateTestCache",
-                                                                                          "DataSource",
-                                                                                          "None");
+    // Create the test table
+    JDBCChcon.prepareStatement("CREATE TABLE TEST_PRICE_MODEL (ID int,PRICE_MODEL varchar(64) NOT NULL,STEP int DEFAULT 0 NOT NULL,TIER_FROM int,TIER_TO int,BEAT int,FACTOR double,CHARGE_BASE int,VALID_FROM DATE, VALID_TO DATE);").execute();
 
-      // Get a logger
-      System.out.println("  Initialising Logger Resource...");
-      resourceName         = "LogFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
+    // Simplest price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating"
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (1,'TestModel1',1,0,999999,60,1,60,'2000-01-01','2020-12-31');").execute();
 
-      // Get a data Source factory
-      System.out.println("  Initialising Data Source Resource...");
-      resourceName         = "DataSourceFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
+    // Simplest tiered price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" for the first min, therefore 0.1 per min per second
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (2,'TestModel2',1,0,60,60,1,60,'2000-01-01','2020-12-31');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (3,'TestModel2',2,60,999999,60,0.1,60,'2000-01-01','2020-12-31');").execute();
 
-      // The datasource property was added to allow database to database
-      // JDBC adapters to work properly using 1 configuration file.
-      if(DBUtil.initDataSource(cacheDataSourceName) == null)
-      {
-        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractRateCalcTest>.";
-        Assert.fail(message);
-      }
+    // Time Bound tiered price model - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" up until Jan 1 2013, thereafter 0.5
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (4,'TestModel3',1,0,999999,60,1,60,'2000-01-01','2012-12-31');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (5,'TestModel3',1,0,999999,60,0.5,60,'2013-01-01','2020-12-31');").execute();
 
-      // Get a connection
-      Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
-
-      try
-      {
-        JDBCChcon.prepareStatement("DROP TABLE TEST_PRICE_MODEL;").execute();
-      }
-      catch (Exception ex)
-      {
-        if (ex.getMessage().startsWith("Unknown table"))
-        {
-          // It's OK
-        }
-        else
-        {
-          // Not OK, fail the case
-          message = "Error dropping table TEST_PRICE_MODEL in test <AbstractRateCalcTest>.";
-          Assert.fail(message);
-        }
-      }
-
-      // Create the test table
-      JDBCChcon.prepareStatement("CREATE TABLE TEST_PRICE_MODEL (ID SERIAL,PRICE_MODEL varchar(64) NOT NULL,STEP int DEFAULT 0 NOT NULL,TIER_FROM int,TIER_TO int,BEAT int,FACTOR double,CHARGE_BASE int,VALID_FROM DATE, VALID_TO DATE);").execute();
-
-      // Simplest price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating"
-      JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values ('TestModel1',1,0,999999,60,1,60,'2000-01-01','2020-12-31');").execute();
-
-      // Simplest tiered price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" for the first min, therefore 0.1 per min per second
-      JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values ('TestModel2',1,0,60,60,1,60,'2000-01-01','2020-12-31');").execute();
-      JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values ('TestModel2',2,60,999999,60,0.1,60,'2000-01-01','2020-12-31');").execute();
-
-      // Time Bound tiered price model - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" up until Jan 1 2013, thereafter 0.5
-      JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values ('TestModel3',1,0,999999,60,1,60,'2000-01-01','2012-12-31');").execute();
-      JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values ('TestModel3',1,0,999999,60,0.5,60,'2013-01-01','2020-12-31');").execute();
-
-      // Get a cache factory
-      System.out.println("  Initialising Cache Factory Resource...");
-      resourceName         = "CacheFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // Link the logger
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-      
-      // Get the list of pipelines we are going to make
-      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
-      
-      // Create the pipeline skeleton instance (assume only one for tests)
-      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
+    // Get the caches that we are using
+    FrameworkUtils.startupCaches();
   }
 
     @AfterClass

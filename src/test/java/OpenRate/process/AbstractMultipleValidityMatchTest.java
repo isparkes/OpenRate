@@ -55,17 +55,11 @@
 package OpenRate.process;
 
 import OpenRate.OpenRate;
-import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.AbstractLogFactory;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
-import OpenRate.resource.CacheFactory;
-import OpenRate.resource.DataSourceFactory;
-import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
-import OpenRate.utils.PropertyUtils;
+import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
@@ -100,59 +94,25 @@ public class AbstractMultipleValidityMatchTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    Class<?>          ResourceClass;
-    IResource         Resource;
+    FQConfigFileName = new URL("File:src/test/resources/TestMultipleValidityDB.properties.xml");
 
-    FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
+    // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
 
-    // Get a properties object
-    try
-    {
-    PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
-    }
-    catch (InitializationException ex)
-    {
-    message = "Error reading the configuration file <" + FQConfigFileName + ">";
-    Assert.fail(message);
-    }
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
 
-      // Set up the OpenRate internal logger - this is normally done by app startup
-      OpenRate.getApplicationInstance();
-      
-    // Get the data source name
-    cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
-                                                                                        "BestMatchTestCache",
-                                                                                        "DataSource",
-                                                                                        "None");
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
 
-    // Get a logger
-    System.out.println("  Initialising Logger Resource...");
-    resourceName         = "LogFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-
-    // Get a data Source factory
-    System.out.println("  Initialising Data Source Resource...");
-    resourceName         = "DataSourceFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-
-    // The datasource property was added to allow database to database
-    // JDBC adapters to work properly using 1 configuration file.
-    if(DBUtil.initDataSource(cacheDataSourceName) == null)
-    {
-    message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractMultipleValidityMatchTest>.";
-    Assert.fail(message);
-    }
-
+    // Get the transaction manager
+    FrameworkUtils.startupTransactionManager();
+    
+    // Get Data Sources
+    FrameworkUtils.startupDataSources();
+    
     // Get a connection
-    Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
+    Connection JDBCChcon = FrameworkUtils.getDBConnection("MultipleValidityMatchTestCache");
 
     try
     {
@@ -160,16 +120,17 @@ public class AbstractMultipleValidityMatchTest
     }
     catch (Exception ex)
     {
-    if (ex.getMessage().startsWith("Unknown table"))
-    {
-        // It's OK
-    }
-    else
-    {
-        // Not OK, fail the case
-        message = "Error dropping table TEST_MULT_VALIDITY_MATCH in test <AbstractMultipleValidityMatchTest>.";
-        Assert.fail(message);
-    }
+      if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
+          (ex.getMessage().startsWith("user lacks")))      // HSQL
+      {
+          // It's OK
+      }
+      else
+      {
+          // Not OK, fail the case
+          message = "Error dropping table TEST_MULT_VALIDITY_MATCH in test <AbstractMultipleValidityMatchTest>.";
+          Assert.fail(message);
+      }
     }
 
     // Create the test table
@@ -185,24 +146,8 @@ public class AbstractMultipleValidityMatchTest
     JDBCChcon.prepareStatement("INSERT INTO TEST_MULT_VALIDITY_MATCH (MAP_GROUP,INPUT_VAL,START_DATE,END_DATE,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','Port2','20120301000000','20121130235959','RESb3_1','RESb3_2');").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_MULT_VALIDITY_MATCH (MAP_GROUP,INPUT_VAL,START_DATE,END_DATE,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','Port2','20120401000000','20121230235959','RESb4_1','RESb4_2');").execute();
 
-    // Get a cache factory
-    System.out.println("  Initialising Cache Factory Resource...");
-    resourceName         = "CacheFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
-    
-      // Link the logger
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-      
-      // Get the list of pipelines we are going to make
-      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
-      
-      // Create the pipeline skeleton instance (assume only one for tests)
-      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));            
+    // Get the caches that we are using
+    FrameworkUtils.startupCaches();
   }
 
   @AfterClass

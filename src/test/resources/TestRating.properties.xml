@@ -59,15 +59,27 @@
         <ClassName>OpenRate.db.C3P0DataSource</ClassName>
       </DataSourceBuilder>
       <DataSource>
-        <TestDB>
-          <db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
-          <driver>com.mysql.jdbc.Driver</driver>
-          <username>root</username>
-          <password>cpr</password>
-          <ValidationQuery>select 1 from dual</ValidationQuery>
-          <InitQuery>select 1 from dual</InitQuery>
-          <TestConnectionPeriod>60</TestConnectionPeriod>
-        </TestDB>
+        <!-- MySQL/MariaDB -->
+				<!--TestDB>
+					<db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
+					<driver>com.mysql.jdbc.Driver</driver>
+					<username>root</username>
+					<password>cpr</password>
+					<ValidationQuery>select 1 from dual</ValidationQuery>
+					<InitQuery>select 1 from dual</InitQuery>
+					<TestConnectionPeriod>60</TestConnectionPeriod>
+				</TestDB-->
+        
+        <!-- HSQL -->
+				<TestDB>
+					<db_url>jdbc:hsqldb:mem://localhost/testdb</db_url>
+					<driver>org.hsqldb.jdbc.JDBCDriver</driver>
+					<username>SA</username>
+					<password></password>
+					<ValidationQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</ValidationQuery>
+					<InitQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</InitQuery>
+					<TestConnectionPeriod>60</TestConnectionPeriod>
+				</TestDB>
       </DataSource>
     </DataSourceFactory>
 

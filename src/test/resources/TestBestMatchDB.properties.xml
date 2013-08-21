@@ -25,29 +25,15 @@
     </InputAdapter>
         
 		<Process>
-			<AbstractRegexMatchTest>
-				<DataCache>RegexMatchTestCache</DataCache>
-				<BatchSize>5000</BatchSize>
-			</AbstractRegexMatchTest>
-
 			<AbstractBestMatchTest>
 				<DataCache>BestMatchTestCache</DataCache>
 				<BatchSize>5000</BatchSize>
 			</AbstractBestMatchTest>
-
-			<AbstractMultipleValidityMatchTest>
-				<DataCache>MultipleValidityMatchTestCache</DataCache>
-				<BatchSize>5000</BatchSize>
-			</AbstractMultipleValidityMatchTest>
-
-			<AbstractDuplicateCheckTest>
-				<DataCache>DuplicateCheckTestCache</DataCache>
-				<BatchSize>5000</BatchSize>
-			</AbstractDuplicateCheckTest>
 		</Process>
     
     <OutputAdapter>
       <NullOutput>
+        <OutputName>null</OutputName>
         <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
         <BatchSize>5000</BatchSize>
       </NullOutput>
@@ -104,37 +90,12 @@
 		<CacheFactory>
 			<ClassName>OpenRate.resource.CacheFactory</ClassName>
 			<CacheableClass>
-				<RegexMatchTestCache>
-					<ClassName>OpenRate.cache.RegexMatchCache</ClassName>
-					<DataSourceType>DB</DataSourceType>
-					<DataSource>TestDB</DataSource>
-					<SelectStatement>select MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_REGEX order by RANK</SelectStatement>
-					<KeyFields>2</KeyFields>
-				</RegexMatchTestCache>
-
 				<BestMatchTestCache>
 					<ClassName>OpenRate.cache.BestMatchCache</ClassName>
 					<DataSourceType>DB</DataSourceType>
 					<DataSource>TestDB</DataSource>
 					<SelectStatement>select MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_BEST_MATCH</SelectStatement>
 				</BestMatchTestCache>
-
-				<MultipleValidityMatchTestCache>
-					<ClassName>OpenRate.cache.MultipleValidityCache</ClassName>
-					<DataSourceType>DB</DataSourceType>
-					<DataSource>TestDB</DataSource>
-					<SelectStatement>select MAP_GROUP,INPUT_VAL,START_DATE,END_DATE,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_MULT_VALIDITY_MATCH</SelectStatement>
-					<DateFormat>yyyyMMddhhmmss</DateFormat>
-				</MultipleValidityMatchTestCache>
-
-				<DuplicateCheckTestCache>
-					<ClassName>OpenRate.cache.DuplicateCheckCache</ClassName>
-					<DataSourceType>DB</DataSourceType>
-					<DataSource>TestDB</DataSource>
-					<SelectStatement>select CDR_KEY,CDR_DATE from TEST_DUPLICATE_CHECK</SelectStatement>
-					<InsertStatement>insert into TEST_DUPLICATE_CHECK (CDR_KEY,CDR_DATE) values (?,?)</InsertStatement>
-					<PurgeStatement>delete from TEST_DUPLICATE_CHECK where CDR_DATE &lt; ?</PurgeStatement>
-				</DuplicateCheckTestCache>
 			</CacheableClass>
 		</CacheFactory>
 	</Resource>

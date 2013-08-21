@@ -60,7 +60,6 @@ import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.IDBDataSource;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
@@ -195,7 +194,7 @@ public class DataSourceFactory implements IResource, IEventInterface
     }
     catch (NoClassDefFoundError ex)
     {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source class for data source<" +
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source class for data source <" +
               tmpDataSourceName + ">",getSymbolicName(),false,true,ex));
     }
     catch (InitializationException ex)

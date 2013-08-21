@@ -55,20 +55,12 @@
 package OpenRate.process;
 
 import OpenRate.OpenRate;
-import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
-import OpenRate.logging.AbstractLogFactory;
-import OpenRate.logging.LogUtil;
 import OpenRate.record.IRecord;
-import OpenRate.resource.CacheFactory;
-import OpenRate.resource.DataSourceFactory;
-import OpenRate.resource.IResource;
-import OpenRate.resource.ResourceContext;
-import OpenRate.utils.PropertyUtils;
+import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.sql.Connection;
-import java.util.ArrayList;
 import org.junit.*;
 
 /**
@@ -80,10 +72,6 @@ public class AbstractBestMatchTest
 {
   private static URL FQConfigFileName;
 
-  private static String cacheDataSourceName;
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractBestMatch instance;
 
   // Used for logging and exception handling
@@ -97,112 +85,73 @@ public class AbstractBestMatchTest
     // Not used
   }
 
+ /**
+  * This sets up a run time environment for testing modules. It is fairly
+  * elaborate, because of the amount of support that a module needs in order
+  * to function properly. It reports exceptions to the framework or pipeline
+  * exception handler, logs to one of four logs, all of which are normally
+  * found at runtime. For unit testing, we have to set these up manually.
+  * 
+  * @throws Exception 
+  */
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-
-    FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
+    FQConfigFileName = new URL("File:src/test/resources/TestBestMatchDB.properties.xml");
     
-      // Get a properties object
-      try
+    // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
+
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
+
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
+
+    // Get the transaction manager
+    FrameworkUtils.startupTransactionManager();
+    
+    // Get Data Sources
+    FrameworkUtils.startupDataSources();
+    
+    // Get a connection
+    Connection JDBCChcon = FrameworkUtils.getDBConnection("BestMatchTestCache");
+
+    try
+    {
+      JDBCChcon.prepareStatement("DROP TABLE TEST_BEST_MATCH;").execute();
+    }
+    catch (Exception ex)
+    {
+      if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
+          (ex.getMessage().startsWith("user lacks")))      // HSQL
       {
-        PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
+        // It's OK
       }
-      catch (InitializationException ex)
+      else
       {
-        message = "Error reading the configuration file <" + FQConfigFileName + ">" + System.getProperty("user.dir");
+        // Not OK, fail the case
+        message = "Error dropping table TEST_BEST_MATCH in test <AbstractBestMatchTest>.";
         Assert.fail(message);
       }
+    }
 
-      // Set up the OpenRate internal logger - this is normally done by app startup
-      OpenRate.getApplicationInstance();
-      
-      // Get the data source name
-      cacheDataSourceName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",
-                                                                                          "BestMatchTestCache",
-                                                                                          "DataSource",
-                                                                                          "None");
+    // Create the test table
+    JDBCChcon.prepareStatement("CREATE TABLE TEST_BEST_MATCH (MAP_GROUP varchar(24),INPUT_VAL varchar(64), OUTPUT_VAL1 varchar(64), OUTPUT_VAL2 varchar(64));").execute();
 
-      // Get a logger
-      System.out.println("  Initialising Logger Resource...");
-      resourceName         = "LogFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-
-      // Get a data Source factory
-      System.out.println("  Initialising Data Source Resource...");
-      resourceName         = "DataSourceFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-
-      // The datasource property was added to allow database to database
-      // JDBC adapters to work properly using 1 configuration file.
-      if(DBUtil.initDataSource(cacheDataSourceName) == null)
-      {
-        message = "Could not initialise DB connection <" + cacheDataSourceName + "> in test <AbstractBestMatchTest>.";
-        Assert.fail(message);
-      }
-
-      // Get a connection
-      Connection JDBCChcon = DBUtil.getConnection(cacheDataSourceName);
-
-      try
-      {
-        JDBCChcon.prepareStatement("DROP TABLE TEST_BEST_MATCH;").execute();
-      }
-      catch (Exception ex)
-      {
-        if (ex.getMessage().startsWith("Unknown table"))
-        {
-          // It's OK
-        }
-        else
-        {
-          // Not OK, fail the case
-          message = "Error dropping table TEST_BEST_MATCH in test <AbstractBestMatchTest>.";
-          Assert.fail(message);
-        }
-      }
-
-      // Create the test table
-      JDBCChcon.prepareStatement("CREATE TABLE TEST_BEST_MATCH (MAP_GROUP varchar(24),INPUT_VAL varchar(64), OUTPUT_VAL1 varchar(64), OUTPUT_VAL2 varchar(64));").execute();
-
-      // Create some records in the table
-      JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','0044','UK','UK Any');").execute();
-      JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','00','INTL','Rest of the world');").execute();
-
-      // Get a cache factory
-      System.out.println("  Initialising Cache Factory Resource...");
-      resourceName         = "CacheFactory";
-      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-      ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
-      Resource.init(resourceName);
-      ctx.register(resourceName, Resource);
-      
-      // Link the logger
-      OpenRate.getApplicationInstance().setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
-      OpenRate.getApplicationInstance().setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-      
-      // Get the list of pipelines we are going to make
-      ArrayList<String> pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
-      
-      // Create the pipeline skeleton instance (assume only one for tests)
-      OpenRate.getApplicationInstance().createPipeline(pipelineList.get(0));      
-      
+    // Create some records in the table
+    JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','0044','UK','UK Any');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','00','INTL','Rest of the world');").execute();
+    
+    // Get the caches that we are using
+    FrameworkUtils.startupCaches();    
   }
 
   @AfterClass
   public static void tearDownClass()
   {
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
   }
 
   @Before
@@ -352,7 +301,7 @@ public class AbstractBestMatchTest
     {
       // Get an initialise the cache
       instance = new AbstractBestMatchTest.AbstractBestMatchImpl();
-
+      
       // Get the instance
       instance.init("DBTestPipe", "AbstractBestMatchTest");
     }

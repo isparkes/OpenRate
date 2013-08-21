@@ -74,7 +74,8 @@ public class PropertyUtils extends PropertyReader
   }
 
  /**
-  * This utility function returns the singleton instance of PropertyUtils
+  * This utility function returns the singleton instance of PropertyUtils, and
+  * initialises it if necessary.
   *
   * @return    the instance of PropertyUtils
   */
@@ -86,6 +87,14 @@ public class PropertyUtils extends PropertyReader
     }
 
     return propUtilsObj;
+  }
+
+ /**
+  * This utility function deallocates the singleton instance of PropertyUtils
+  */
+  public static void closePropertyUtils()
+  {
+    propUtilsObj = null;
   }
 
  /**
