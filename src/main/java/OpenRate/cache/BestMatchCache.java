@@ -105,7 +105,7 @@ public class BestMatchCache
   * The cost of a search is linear with the number of digits
   * stored in the search tree
   */
-  protected HashMap<String, DigitTree> GroupCache;
+  protected HashMap<String, DigitTree> groupCache;
   private DigitTree prefixCache;
 
   // List of Services that this Client supports
@@ -114,7 +114,7 @@ public class BestMatchCache
   private final static String SERVICE_DUMP_MAP = "DumpMap";
 
   // This is the null result
-  private ArrayList<String>     NoResult = new ArrayList<>();
+  private ArrayList<String>     noResult = new ArrayList<>();
 
  /** Constructor
   * Creates a new instance of the Group Cache. The group Cache
@@ -127,10 +127,10 @@ public class BestMatchCache
     super();
 
     // Initialise the group cache
-    GroupCache = new HashMap<>(50);
+    groupCache = new HashMap<>(50);
 
     // create the null result
-    NoResult.add(DigitTree.NO_DIGIT_TREE_MATCH);
+    noResult.add(DigitTree.NO_DIGIT_TREE_MATCH);
   }
 
 // -----------------------------------------------------------------------------
@@ -379,8 +379,7 @@ public class BestMatchCache
   * @throws InitializationException
   */
   @Override
-  public void loadDataFromMethod()
-                      throws InitializationException
+  public void loadDataFromMethod() throws InitializationException
   {
     int               ZonesLoaded = 0;
     String            Group;
@@ -462,43 +461,43 @@ public class BestMatchCache
   * value that should be returned in the case of a (best) match.
   * The Digit Trees are divided by service
   *
-  * @param Group The group for the zone
-  * @param key The prefix
-  * @param Results The result array
+  * @param mapGroup The group for the zone
+  * @param prefix The prefix
+  * @param resultList The result array
   * @throws InitializationException
   */
-  public void addEntry(String Group, String key, ArrayList<String> Results)
+  public void addEntry(String mapGroup, String prefix, ArrayList<String> resultList)
     throws InitializationException
   {
     // See if we already have the digit tree for this service
-    if (!GroupCache.containsKey(Group))
+    if (!groupCache.containsKey(mapGroup))
     {
       // Create the new Digit Tree
       prefixCache = new DigitTree();
 
-      GroupCache.put(Group, prefixCache);
+      groupCache.put(mapGroup, prefixCache);
 
       try
       {
-        prefixCache.addPrefix(key, Results);
+        prefixCache.addPrefix(prefix, resultList);
       }
       catch (ArrayIndexOutOfBoundsException aiex)
       {
-        message = "Error Adding Prefix <" + key + "> to group <" + Group + "> in module <" + getSymbolicName() + ">";
+        message = "Error Adding Prefix <" + prefix + "> to group <" + mapGroup + "> in module <" + getSymbolicName() + ">";
         throw new InitializationException(message,getSymbolicName());
       }
     }
     else
     {
       // Otherwise just add it to the existing Digit Tree
-      prefixCache = GroupCache.get(Group);
+      prefixCache = groupCache.get(mapGroup);
       try
       {
-        prefixCache.addPrefix(key, Results);
+        prefixCache.addPrefix(prefix, resultList);
       }
       catch (ArrayIndexOutOfBoundsException aiex)
       {
-        message = "Error Adding Prefix <" + key + "> to model <" + Group + "> in module <" + getSymbolicName() + ">";
+        message = "Error Adding Prefix <" + prefix + "> to model <" + mapGroup + "> in module <" + getSymbolicName() + ">";
         OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
@@ -510,20 +509,20 @@ public class BestMatchCache
   * If we do not know the service, the result is automatically "no match".
   * The Digit Trees are divided by group
   *
-  * @param Service The group
-  * @param key The prefix
+  * @param mapGroup The group
+  * @param prefix The prefix
   * @return The result
   */
-  public String getMatch(String Service, String key)
+  public String getMatch(String mapGroup, String prefix)
   {
     String Value;
 
     // Get the service if we know it
-    prefixCache = GroupCache.get(Service);
+    prefixCache = groupCache.get(mapGroup);
 
     if (prefixCache != null)
     {
-      Value = prefixCache.match(key);
+      Value = prefixCache.match(prefix);
     }
     else
     {
@@ -539,23 +538,23 @@ public class BestMatchCache
   * If we do not know the service, the result is automatically "no match".
   * The Digit Trees are divided by group
   *
-  * @param Service The group
-  * @param key The prefix
+  * @param mapGroup The group
+  * @param prefix The prefix
   * @return The result
   */
-  public ArrayList<String> getMatchWithChildData(String Service, String key)
+  public ArrayList<String> getMatchWithChildData(String mapGroup, String prefix)
   {
     // Get the service if we know it
-    prefixCache = GroupCache.get(Service);
+    prefixCache = groupCache.get(mapGroup);
 
     if (prefixCache != null)
     {
-      return prefixCache.matchWithChildData(key);
+      return prefixCache.matchWithChildData(prefix);
     }
     else
     {
       // We don't know the service, so we cannot know the prefix
-      return NoResult;
+      return noResult;
     }
   }
 
@@ -565,7 +564,7 @@ public class BestMatchCache
   @Override
   public void clearCacheObjects()
   {
-    GroupCache.clear();
+    groupCache.clear();
   }
 
  /**
@@ -580,7 +579,7 @@ public class BestMatchCache
     OpenRate.getOpenRateFrameworkLog().info("Groups:");
 
     // Iterate thorough the entries in the group
-    GroupIter = GroupCache.keySet().iterator();
+    GroupIter = groupCache.keySet().iterator();
     while (GroupIter.hasNext())
     {
       Helper = GroupIter.next();
@@ -588,7 +587,7 @@ public class BestMatchCache
     }
 
     // Now dump the data
-    GroupIter = GroupCache.keySet().iterator();
+    GroupIter = groupCache.keySet().iterator();
     while (GroupIter.hasNext())
     {
       Helper = GroupIter.next();
@@ -647,18 +646,18 @@ public class BestMatchCache
     // Return the number of objects in the cache
     if (Command.equalsIgnoreCase(SERVICE_GROUP_COUNT))
     {
-      return Integer.toString(GroupCache.size());
+      return Integer.toString(groupCache.size());
     }
 
     if (Command.equalsIgnoreCase(SERVICE_OBJECT_COUNT))
     {
-      tmpGroups = GroupCache.keySet();
+      tmpGroups = groupCache.keySet();
       GroupIter = tmpGroups.iterator();
 
       while (GroupIter.hasNext())
       {
         tmpGroupName = GroupIter.next();
-        tmpPrefixCache = GroupCache.get(tmpGroupName);
+        tmpPrefixCache = groupCache.get(tmpGroupName);
         Objects += tmpPrefixCache.size();
       }
 

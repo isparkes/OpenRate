@@ -58,7 +58,6 @@ import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.record.IRecord;
-import OpenRate.resource.ResourceContext;
 import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.sql.Connection;
@@ -74,22 +73,10 @@ public class AbstractMultipleValidityMatchTest
 {
   private static URL FQConfigFileName;
 
-  private static String cacheDataSourceName;
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractMultipleValidityMatch instance;
 
   // Used for logging and exception handling
   private static String message; 
-
- /**
-  * Default constructor
-  */
-  public AbstractMultipleValidityMatchTest()
-  {
-    // Not used
-  }
 
   @BeforeClass
   public static void setUpClass() throws Exception
@@ -153,27 +140,18 @@ public class AbstractMultipleValidityMatchTest
   @AfterClass
   public static void tearDownClass()
   {
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
   }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-  /**
-   * Test of init method, of class AbstractMultipleValidityMatch.
-   * @throws Exception
-   */
-  @Test
-  public void testInit() throws Exception
-  {
-    System.out.println("init");
-
-    // get the instance
+  @Before
+  public void setUp() {
     getInstance();
+  }
+
+  @After
+  public void tearDown() {
+    releaseInstance();
   }
 
   /**
@@ -210,17 +188,6 @@ public class AbstractMultipleValidityMatchTest
     SimpleDateFormat sdfEvt = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("getFirstValidityMatch");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractMultipleValidityMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -294,17 +261,6 @@ public class AbstractMultipleValidityMatchTest
     SimpleDateFormat sdfEvt = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("getFirstValidityMatchWithChildData");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractMultipleValidityMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -384,17 +340,6 @@ public class AbstractMultipleValidityMatchTest
     SimpleDateFormat sdfEvt = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("getAllValidityMatches");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractMultipleValidityMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -520,17 +465,6 @@ public class AbstractMultipleValidityMatchTest
     SimpleDateFormat sdfEvt = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("getAllValidityMatchesWithChildData");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractMultipleValidityMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -693,24 +627,12 @@ public class AbstractMultipleValidityMatchTest
     boolean boolExpResult;
     boolean boolResult;
     ArrayList<ArrayList<String>> result;
-    ArrayList<ArrayList<String>> expResult = new ArrayList<>();
     String Group;
     String Resource;
     long   eventDate = 0;
     SimpleDateFormat sdfEvt = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("isValidMultipleValidityMatchResult");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractMultipleValidityMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -758,24 +680,12 @@ public class AbstractMultipleValidityMatchTest
     String result;
     boolean boolExpResult;
     boolean boolResult;
-    String expResult;
     String Group;
     String Resource;
     long   eventDate = 0;
     SimpleDateFormat sdfEvt = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("isValidMultipleValidityMatchResult");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractMultipleValidityMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -847,15 +757,35 @@ public class AbstractMultipleValidityMatchTest
   *
   * @throws InitializationException
   */
-  private void getInstance() throws InitializationException
+  private void getInstance()
   {
     if (instance == null)
     {
       // Get an initialise the cache
       instance = new AbstractMultipleValidityMatchTest.AbstractMultipleValidityMatchImpl();
+      
+      try
+      {
+        // Get the instance
+        instance.init("DBTestPipe", "AbstractMultipleValidityMatchTest");
+      }
+      catch (InitializationException ex)
+      {
+        Assert.fail();
+      }
 
-      // Get the instance
-      instance.init("DBTestPipe", "AbstractMultipleValidityMatchTest");
     }
+    else
+    {
+      Assert.fail("Instance already allocated");
+    }
+  }
+  
+ /**
+  * Method to release an instance of the implementation.
+  */
+  private void releaseInstance()
+  {
+    instance = null;
   }
 }

@@ -135,14 +135,10 @@ public class OpenRate
   */
   private ILogger fwLog = null;
 
- /**
-  * Access to the Error AstractLogger. All exception stack traces should go here.
-  */
+  // Access to the Error AstractLogger. All exception stack traces should go here.
   private ILogger errorLog = null;
 
- /**
-  * Access to the Statistics AstractLogger. All statistics info should go here.
-  */
+  //Access to the Statistics AstractLogger. All statistics info should go here.
   private ILogger statsLog = null;
 
   /**
@@ -205,6 +201,7 @@ public class OpenRate
   private IPipeline          tmpPipeline;
   private Collection<String> pipelineSet = null;
   private Iterator<String>   pipelineIter = null;
+  private ThreadGroup        pipelineThreadGroup;
 
   // Context for managing the framework resources
   private ResourceContext    resourceContext = new ResourceContext();
@@ -236,6 +233,7 @@ public class OpenRate
   private String symbolicName = "Framework";
 
   // The application object - split out like this so we can embed OpenRate if we need to
+  // and perform unit tests
   private static OpenRate appl;
 
   // Used to help people with fat fingers not shut the process down by accident
@@ -247,8 +245,9 @@ public class OpenRate
   // used to simplify logging and error handling
   private String message;
   
-  // value to show if the framework is active or not
-  private boolean frameworkActive = false;
+  // value to show if the framework has active processing pipelines or not.
+  // This is true all the time that there are some pipes active
+  private boolean pipelinesActive = false;
   
   /**
    * default constructor
@@ -277,11 +276,17 @@ public class OpenRate
   {
     int            status;
 
-    // Create the openrate application object
-    //appl = new OpenRate();
-
     // Create the application - this initialises the entire system
-    status = OpenRate.getApplicationInstance().createApplication(args);
+    appl = OpenRate.getApplicationInstance();
+    
+    if (appl == null)
+    {
+      System.err.println("Could not get OpenRate instance");
+      System.exit(-6);
+    }
+    
+    // Create the application
+    status = appl.createApplication(args);
 
     // run it if we created the app correctly
     if (status == SUCCESS)
@@ -522,11 +527,16 @@ public class OpenRate
   {
     // Close down any resources or modules gracefully
     System.out.println("Shutting down...");
-    cleanup();
-    System.out.println("Finished");
+
+    // put a message into the log
     if( getFwLog() != null){
       getFwLog().info(":::: OpenRate Stopped ::::");
     }
+    
+    // clean up resources and logs
+    cleanup();
+    
+    System.out.println("Finished");
     System.out.println("---------------------------------------------------");
     
     // clean up the instance
@@ -738,6 +748,9 @@ public class OpenRate
 
     tmpPipeline = new Pipeline();
     pipelineMap.put(pipelineName, tmpPipeline);
+    
+    // Add the pipeline to the threadgroup
+    
     try
     {
       tmpPipeline.init(pipelineName);
@@ -779,7 +792,6 @@ public class OpenRate
     String       tmpResourceName;
     int          Index;
     Thread       tmpPipeThread;
-    Thread[]     tmpPipeThreadList;
     ISyncPoint[] tmpPipeList;
     ISyncPoint   tmpResource;
     ISyncPoint[] tmpResourceList;
@@ -791,7 +803,7 @@ public class OpenRate
       pipelineSet = pipelineMap.keySet();
       pipelineIter = pipelineSet.iterator();
       tmpPipeList = new IPipeline[pipelineSet.size()];
-      tmpPipeThreadList = new Thread[pipelineSet.size()];
+      pipelineThreadGroup = new ThreadGroup("Pipelines");
 
       // initialise the variables for managing the sync point status for recources
       resourceSet = syncPointResourceMap.keySet();
@@ -820,8 +832,7 @@ public class OpenRate
           tmpPipeList[Index] = tmpPipeline;
 
           // Keep track of the pipeline threads we have
-          tmpPipeThread = new Thread(tmpPipeline, "Pipeline-" + tmpPipeName);
-          tmpPipeThreadList[Index] = tmpPipeThread;
+          tmpPipeThread = new Thread(pipelineThreadGroup, tmpPipeline, "Pipeline-" + tmpPipeName);
 
           // Start the thread - the pipeline threads are free running
           tmpPipeThread.start();
@@ -833,7 +844,7 @@ public class OpenRate
         while (resourceIter.hasNext())
         {
           tmpResourceName = resourceIter.next();
-          if ( syncPointResourceMap.get(tmpResourceName) instanceof ISyncPoint)
+          if (syncPointResourceMap.get(tmpResourceName) instanceof ISyncPoint)
           {
             tmpResourceList[resourcesManaged] = (ISyncPoint)syncPointResourceMap.get(tmpResourceName);
             Index++;
@@ -851,8 +862,6 @@ public class OpenRate
         // ********************** main processing loop **************************
         while (pipesActive > 0)
         {
-          pipesActive = 0;
-
           syncReached = true;
           syncFinished = true;
 
@@ -878,7 +887,7 @@ public class OpenRate
             {
               // Mark that we are requesting a synch
               syncRequested = true;
-                            getFwLog().info("Sync point requested by pipeline <" + tmpPipeline.getSymbolicName() + ">");
+              getFwLog().info("Sync point requested by pipeline <" + tmpPipeline.getSymbolicName() + ">");
 
               // Confirm that we have got the message
               tmpPipeline.setSyncStatus(ISyncPoint.SYNC_STATUS_SYNC_REQUESTED);
@@ -902,17 +911,14 @@ public class OpenRate
               // bring the rest of the framework down
               stopAllPipelines();
             }
-
-            // Count the number of pipes active right now
-            tmpPipeThread = tmpPipeThreadList[Index];
-            if (tmpPipeThread.isAlive())
-            {
-              pipesActive++;
-            }
           }
           
+          // Count the number of pipes active right now
+          pipesActive = pipelineThreadGroup.activeCount();
+          //pipelineThreadGroup.list();
+
           // Update the framework active flag
-          frameworkActive = (pipesActive > 0);
+          pipelinesActive = (pipesActive > 0);
 
           // Check if we have reached the synch point
           if (syncReached)
@@ -942,6 +948,7 @@ public class OpenRate
             // clear down the request
             syncRequested = false;
             syncStatus = ISyncPoint.SYNC_STATUS_NORMAL_RUN;
+            getFwLog().debug("Running...");
             System.out.println("Running...");
           }
 
@@ -1021,15 +1028,25 @@ public class OpenRate
 
           // Go into a low processor cost loop to monitor the pipes. When the last
           // stops, close down
-          try
+          if (pipelinesActive)
           {
-            Thread.sleep(1000);
-          }
-          catch (InterruptedException ex)
-          {
-            // This can't happen, so NOP
+            try
+            {
+              Thread.sleep(1000);
+            }
+            catch (InterruptedException ex)
+            {
+              // This can't happen, so NOP
+            }
           }
         }
+        
+        // Destroy the threadgroup that held the pipes
+        pipelineThreadGroup.destroy();
+        pipelineThreadGroup = null;
+
+        // Log that we have finished with the pipes
+        getFwLog().debug("Stopped all pipes");
       }
     }
     catch (Exception ex)
@@ -1050,28 +1067,23 @@ public class OpenRate
       while (pipelineIter.hasNext())
       {
         tmpPipeline = pipelineMap.get(pipelineIter.next());
-        System.out.println(
-            "Closing pipeline <" + tmpPipeline.getSymbolicName() + ">");
-        tmpPipeline.Shutdown();
-        System.out.println(
-            "Destroying pipeline <" + tmpPipeline.getSymbolicName() + ">");
-        tmpPipeline.cleanup();
+        System.out.println("Closing pipeline <" + tmpPipeline.getSymbolicName() + ">");
+        tmpPipeline.shutdownPipeline();
+        System.out.println("Destroying pipeline <" + tmpPipeline.getSymbolicName() + ">");
+        tmpPipeline.cleanupPipeline();
       }
     }
   }
 
   /**
    * Perform any cleanup required by the application once the processing has
-   * been terminated.
+   * been terminated and the pipelines have been closed.
    *
    * This method will also call the doCleanup() abstract method to allow
    * concrete application classes to shutdown gracefully.
    */
   public final void cleanup()
   {
-    // Close pipelines
-    closePipelines();
-
     // Close resources
     closeResources();
     
@@ -1080,24 +1092,32 @@ public class OpenRate
     
     // Deallocate the properties object
     PropertyUtils.closePropertyUtils();
+    
+    
   }
 
   /**
-   * Stop all pipelines in the framework
+   * Stop all pipelines in the framework. This method gives the command to stop
+   * the pipelines, but the completion of the stop will happen some time later
+   * (pipelines might be in the middle of processing a transaction, and they
+   * will finish this before stopping).
    */
   public final void stopAllPipelines()
   {
     // Set the shutdown flag
-    getFwLog().info(
-    "Shutdown command received. Shutting down pipelines as soon as possible.");
+    getFwLog().info("Shutdown command received. Shutting down pipelines as soon as possible.");
     pipelineSet = pipelineMap.keySet();
     pipelineIter = pipelineSet.iterator();
 
+    // Iterate through all the pipelines we have and tell them to stop
     while (pipelineIter.hasNext())
     {
       tmpPipeline = pipelineMap.get(pipelineIter.next());
 
-      tmpPipeline.stop();
+      // markForShutdown tells the pipe to stop accepting new transactions
+      // and mark that a stop is pending. The pipeline will stop when all
+      // transactions are finished.
+      tmpPipeline.markForShutdown();
     }
   }
 
@@ -1184,6 +1204,7 @@ public class OpenRate
       // Iterate through the resources and create them
       resourceIter = tmpResourceNameList.iterator();
 
+      // The thread group for holding the resources if we use multi-threaded loading
       tmpGrpResource = new ThreadGroup("Resources");
 
       while (resourceIter.hasNext() && (getHandler().hasError() == false))
@@ -1242,7 +1263,7 @@ public class OpenRate
         }
       }
 
-      // Close down the thread group if we used it
+      // Close down the thread group if we have finished using it (all threads finished)
       while ( tmpGrpResource.activeCount() > 0)
       {
         Thread.sleep(1000);
@@ -1315,6 +1336,17 @@ public class OpenRate
     System.out.println("Closing resources...");
 
     resourceContext.cleanup();
+    
+    // Sometimes we will have to wait for some resources to finish
+    while(resourceContext.isActive())
+    {
+      getFwLog().debug("Waiting 100mS for the resource context to stop");
+      try {
+        Thread.sleep(100);
+      }
+      catch (InterruptedException ex) {
+      }
+    }
   }
 
   // -----------------------------------------------------------------------------
@@ -1554,9 +1586,10 @@ public class OpenRate
     }
 
     /**
+     * Returns the state of the processing 
      * @return the frameworkActive
      */
     public boolean isFrameworkActive() {
-        return frameworkActive;
+        return pipelinesActive;
     }
 }

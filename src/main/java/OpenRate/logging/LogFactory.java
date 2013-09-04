@@ -184,6 +184,10 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
         defaultLoggerName   = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"DefaultCategory","Default");
       }
     }
+    else
+    {
+      System.err.println("Logger already loaded");
+    }
   }
 
   /**

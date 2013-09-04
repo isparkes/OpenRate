@@ -11,6 +11,7 @@ import OpenRate.exception.InitializationException;
 import OpenRate.logging.AbstractLogFactory;
 import OpenRate.logging.LogUtil;
 import OpenRate.resource.CacheFactory;
+import OpenRate.resource.ConversionCache;
 import OpenRate.resource.DataSourceFactory;
 import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
@@ -163,9 +164,27 @@ public class FrameworkUtils {
     if (OpenRate.getFrameworkExceptionHandler().hasError())
     {
       Assert.fail("Exception: " + OpenRate.getFrameworkExceptionHandler().getExceptionList().get(0).getLocalizedMessage());
-    }
+    }    
   }
   
+  public static void startupConversionCache() throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  {
+    String resourceName;
+    String tmpResourceClassName;
+    ResourceContext ctx = new ResourceContext();
+    Class<?>          ResourceClass;
+    IResource         Resource;
+    
+    // Get a conversion cache
+    System.out.println("  Initialising Conversion Cache Resource...");
+    resourceName         = "ConversionCache";
+    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(ConversionCache.RESOURCE_KEY,"ClassName");
+    ResourceClass        = Class.forName(tmpResourceClassName);
+    Resource             = (IResource)ResourceClass.newInstance();
+    Resource.init(resourceName);
+    ctx.register(resourceName, Resource);
+  }
+    
  /**
   * Gets the DB connection for a given cache.
   * 

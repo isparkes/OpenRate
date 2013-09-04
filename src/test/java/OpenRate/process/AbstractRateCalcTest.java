@@ -66,7 +66,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
 /**
- *
+ * This test runs in a cut down processing environment. Jut enough framework is
+ * made to allow the processing module to run, and to set up the test data.
+ * 
  * @author TGDSPIA1
  */
 public class AbstractRateCalcTest
@@ -76,9 +78,6 @@ public class AbstractRateCalcTest
 
   // Used for logging and exception handling
   private static String message; 
-
-    public AbstractRateCalcTest() {
-    }
 
   @BeforeClass
   public static void setUpClass() throws Exception
@@ -141,17 +140,21 @@ public class AbstractRateCalcTest
     FrameworkUtils.startupCaches();
   }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+  @AfterClass
+  public static void tearDownClass() throws Exception {
+    // Deallocate the resources
+    OpenRate.getApplicationInstance().cleanup();
+  }
 
-    @Before
-    public void setUp() {
-    }
+  @Before
+  public void setUp() {
+    getInstance();
+  }
 
-    @After
-    public void tearDown() {
-    }
+  @After
+  public void tearDown() {
+    releaseInstance();
+  }
 
     /**
      * Test of rateCalculateTiered method, of class AbstractRateCalc. This test
@@ -159,71 +162,60 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testRateCalculateTieredNonTimeBoundNonTiered() throws Exception {
-        System.out.println("rateCalculateTieredNonTimeBoundNonTiered");
+      System.out.println("rateCalculateTieredNonTimeBoundNonTiered");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Simple test using non-time bound non-tiered model
+      String priceModel = "TestModel1";
+      double valueToRate = 0.0;
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Simple test using non-time bound non-tiered model
-        String priceModel = "TestModel1";
-        double valueToRate = 0.0;
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // zero value to rate
+      double expResult = 0.0;
+      double result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // zero value to rate
-        double expResult = 0.0;
-        double result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
-
-        // intra-beat 1st beat - try all integer values
-        for (int seconds = 1 ; seconds < 60 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 1.0;
-          result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
-
-        // intra-beat 2, non integer value
-        valueToRate = 2.654;
+      // intra-beat 1st beat - try all integer values
+      for (int seconds = 1 ; seconds < 60 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 1.0;
         result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // intra-beat 2 beats - try all integer values
-        for (int seconds = 61 ; seconds < 120 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 2.0;
-          result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
+      // intra-beat 2, non integer value
+      valueToRate = 2.654;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run some large values through
-        valueToRate = 999999;
-        expResult = 16667.0;
+      // intra-beat 2 beats - try all integer values
+      for (int seconds = 61 ; seconds < 120 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 2.0;
         result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // run off the end of the rating
-        valueToRate = 1000000;
-        expResult = 16667.0;
-        result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run some large values through
+      valueToRate = 999999;
+      expResult = 16667.0;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run off the end of the rating some more
-        valueToRate = 1500000;
-        expResult = 16667.0;
-        result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run off the end of the rating
+      valueToRate = 1000000;
+      expResult = 16667.0;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+
+      // run off the end of the rating some more
+      valueToRate = 1500000;
+      expResult = 16667.0;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
     }
 
     /**
@@ -232,71 +224,60 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testRateCalculateTieredNonTimeBoundTiered() throws Exception {
-        System.out.println("rateCalculateTieredNonTimeBoundTiered");
+      System.out.println("rateCalculateTieredNonTimeBoundTiered");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Simple test using non-time bound non-tiered model
+      String priceModel = "TestModel2";
+      double valueToRate = 0.0;
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Simple test using non-time bound non-tiered model
-        String priceModel = "TestModel2";
-        double valueToRate = 0.0;
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // zero value to rate
+      double expResult = 0.0;
+      double result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // zero value to rate
-        double expResult = 0.0;
-        double result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
-
-        // intra-beat 1st beat - try all integer values
-        for (int seconds = 1 ; seconds < 60 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 1.0;
-          result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
-
-        // intra-beat 2, non integer value
-        valueToRate = 2.654;
+      // intra-beat 1st beat - try all integer values
+      for (int seconds = 1 ; seconds < 60 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 1.0;
         result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // intra-beat 2 beats - try all integer values
-        for (int seconds = 61 ; seconds < 120 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 1.1;
-          result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
+      // intra-beat 2, non integer value
+      valueToRate = 2.654;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run some large values through
-        valueToRate = 999999;
-        expResult = 1667.60;
+      // intra-beat 2 beats - try all integer values
+      for (int seconds = 61 ; seconds < 120 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 1.1;
         result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // run off the end of the rating
-        valueToRate = 1000000;
-        expResult = 1667.60;
-        result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run some large values through
+      valueToRate = 999999;
+      expResult = 1667.60;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run off the end of the rating some more
-        valueToRate = 1500000;
-        expResult = 1667.60;
-        result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run off the end of the rating
+      valueToRate = 1000000;
+      expResult = 1667.60;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+
+      // run off the end of the rating some more
+      valueToRate = 1500000;
+      expResult = 1667.60;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
     }
 
     /**
@@ -314,71 +295,60 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testRateCalculateThresholdNonTiered() throws Exception {
-        System.out.println("rateCalculateThresholdNonTiered");
+      System.out.println("rateCalculateThresholdNonTiered");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Simple test using non-time bound non-tiered model
+      String priceModel = "TestModel1";
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Simple test using non-time bound non-tiered model
-        String priceModel = "TestModel1";
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // zero value to rate
+      double valueToRate = 0.0;
+      double expResult = 0.0;
+      double result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // zero value to rate
-        double valueToRate = 0.0;
-        double expResult = 0.0;
-        double result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
-
-        // intra-beat 1st beat - try all integer values
-        for (int seconds = 1 ; seconds < 60 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 1.0;
-          result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
-
-        // intra-beat 2, non integer value
-        valueToRate = 2.654;
+      // intra-beat 1st beat - try all integer values
+      for (int seconds = 1 ; seconds < 60 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 1.0;
         result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // intra-beat 2 beats - try all integer values
-        for (int seconds = 61 ; seconds < 120 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 2.0;
-          result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
+      // intra-beat 2, non integer value
+      valueToRate = 2.654;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run some large values through
-        valueToRate = 999998;
-        expResult = 16667.0;
+      // intra-beat 2 beats - try all integer values
+      for (int seconds = 61 ; seconds < 120 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 2.0;
         result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // run off the end of the rating
-        valueToRate = 999999;
-        expResult = 0.0;
-        result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run some large values through
+      valueToRate = 999998;
+      expResult = 16667.0;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run off the end of the rating some more
-        valueToRate = 1500000;
-        expResult = 0.0;
-        result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run off the end of the rating
+      valueToRate = 999999;
+      expResult = 0.0;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+
+      // run off the end of the rating some more
+      valueToRate = 1500000;
+      expResult = 0.0;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
     }
 
     /**
@@ -387,71 +357,60 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testRateCalculateThresholdTiered() throws Exception {
-        System.out.println("rateCalculateThresholdNonTiered");
+      System.out.println("rateCalculateThresholdNonTiered");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Simple test using non-time bound non-tiered model
+      String priceModel = "TestModel2";
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Simple test using non-time bound non-tiered model
-        String priceModel = "TestModel2";
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // zero value to rate
+      double valueToRate = 0.0;
+      double expResult = 0.0;
+      double result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // zero value to rate
-        double valueToRate = 0.0;
-        double expResult = 0.0;
-        double result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
-
-        // intra-beat 1st tier - try all integer values
-        for (int seconds = 1 ; seconds < 60 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 1.0;
-          result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
-
-        // intra-beat 2, non integer value
-        valueToRate = 2.654;
+      // intra-beat 1st tier - try all integer values
+      for (int seconds = 1 ; seconds < 60 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 1.0;
         result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // intra-beat 2nd tier - try all integer values
-        for (int seconds = 61 ; seconds < 120 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = 0.2;
-          result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
+      // intra-beat 2, non integer value
+      valueToRate = 2.654;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run some large values through
-        valueToRate = 999998;
-        expResult = 1666.7;
+      // intra-beat 2nd tier - try all integer values
+      for (int seconds = 61 ; seconds < 120 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = 0.2;
         result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
 
-        // run off the end of the rating - no tier covers this
-        valueToRate = 999999;
-        expResult = 0.0;
-        result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run some large values through
+      valueToRate = 999998;
+      expResult = 1666.7;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // run off the end of the rating some more - no tier covers this
-        valueToRate = 1500000;
-        expResult = 0.0;
-        result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
+      // run off the end of the rating - no tier covers this
+      valueToRate = 999999;
+      expResult = 0.0;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+
+      // run off the end of the rating some more - no tier covers this
+      valueToRate = 1500000;
+      expResult = 0.0;
+      result = instance.rateCalculateThreshold(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
     }
 
     /**
@@ -460,45 +419,34 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testRateCalculateFlat() throws Exception {
-        System.out.println("rateCalculateFlat");
+      System.out.println("rateCalculateFlat");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Simple test using non-time bound non-tiered model
+      String priceModel = "TestModel1";
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Simple test using non-time bound non-tiered model
-        String priceModel = "TestModel1";
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // zero value to rate
+      double valueToRate = 0.0;
+      double expResult = 0.0;
+      double result = instance.rateCalculateFlat(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
 
-        // zero value to rate
-        double valueToRate = 0.0;
-        double expResult = 0.0;
-        double result = instance.rateCalculateFlat(priceModel, valueToRate, CDRDate);
-        assertEquals(expResult, result, 0.00001);
-
-        // intra-beat 1st tier - try all integer values
-        for (int seconds = 1 ; seconds < 600 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = seconds/60.0;
-          result = instance.rateCalculateFlat(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
-
-        // run off the end of the rating some more - no tier covers this
-        valueToRate = 1500000;
-        expResult = 25000.0;
+      // intra-beat 1st tier - try all integer values
+      for (int seconds = 1 ; seconds < 600 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = seconds/60.0;
         result = instance.rateCalculateFlat(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
+
+      // run off the end of the rating some more - no tier covers this
+      valueToRate = 1500000;
+      expResult = 25000.0;
+      result = instance.rateCalculateFlat(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
     }
 
     /**
@@ -507,44 +455,33 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testRateCalculateEvent() throws Exception {
-        System.out.println("rateCalculateEvent");
+      System.out.println("rateCalculateEvent");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Simple test using non-time bound non-tiered model
+      String priceModel = "TestModel1";
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Simple test using non-time bound non-tiered model
-        String priceModel = "TestModel1";
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // zero value to rate
+      long valueToRate;
+      double expResult;
+      double result;
 
-        // zero value to rate
-        long valueToRate;
-        double expResult;
-        double result;
-
-        // intra-beat 1st tier - try all integer values
-        for (int seconds = 0 ; seconds < 600 ; seconds++ )
-        {
-          valueToRate = seconds;
-          expResult = seconds;
-          result = instance.rateCalculateEvent(priceModel, valueToRate, CDRDate);
-          assertEquals(expResult, result, 0.00001);
-        }
-
-        // run off the end of the rating - rate what we can
-        valueToRate = 1500000;
-        expResult = 999999.0;
+      // intra-beat 1st tier - try all integer values
+      for (int seconds = 0 ; seconds < 600 ; seconds++ )
+      {
+        valueToRate = seconds;
+        expResult = seconds;
         result = instance.rateCalculateEvent(priceModel, valueToRate, CDRDate);
         assertEquals(expResult, result, 0.00001);
+      }
+
+      // run off the end of the rating - rate what we can
+      valueToRate = 1500000;
+      expResult = 999999.0;
+      result = instance.rateCalculateEvent(priceModel, valueToRate, CDRDate);
+      assertEquals(expResult, result, 0.00001);
     }
 
     /**
@@ -553,50 +490,39 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testAuthCalculateTiered() throws Exception {
-        System.out.println("authCalculateTiered");
+      System.out.println("authCalculateTiered");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Non-Tiered
+      String priceModel = "TestModel1";
+      double availableBalance = 10.0;
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Non-Tiered
-        String priceModel = "TestModel1";
-        double availableBalance = 10.0;
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
+      double expResult = 600.0;
+      double result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
-        double expResult = 600.0;
-        double result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Tiered
+      priceModel = "TestModel2";
 
-        // Tiered
-        priceModel = "TestModel2";
+      // We expect to get 5460 seconds of credit for a balance of 1 @ 1/min + 90@0.1/MIN
+      expResult = 5460.0;
+      result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 5460 seconds of credit for a balance of 1 @ 1/min + 90@0.1/MIN
-        expResult = 5460.0;
-        result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Very large credit - just report the maximum we know about
+      availableBalance = 100000.0;
+      expResult = 999999.0;
+      result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // Very large credit - just report the maximum we know about
-        availableBalance = 100000.0;
-        expResult = 999999.0;
-        result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
-
-        // Negative available balance - report 0
-        availableBalance = -10.0;
-        expResult = 0.0;
-        result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Negative available balance - report 0
+      availableBalance = -10.0;
+      expResult = 0.0;
+      result = instance.authCalculateTiered(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -604,52 +530,41 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testAuthCalculateThreshold() throws Exception {
-        System.out.println("authCalculateThreshold");
+      System.out.println("authCalculateThreshold");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Non-Tiered
+      String priceModel = "TestModel1";
+      double availableBalance = 10.0;
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Non-Tiered
-        String priceModel = "TestModel1";
-        double availableBalance = 10.0;
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
+      double expResult = 600.0;
+      double result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
-        double expResult = 600.0;
-        double result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Tiered
+      priceModel = "TestModel2";
 
-        // Tiered
-        priceModel = "TestModel2";
+      // We expect to get 600 seconds, this being the smallest number of
+      // seconds that we can predictably manage. 601 seconds would fall into
+      // the next tier, and then we would have a diffent result.
+      expResult = 600.0;
+      result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds, this being the smallest number of
-        // seconds that we can predictably manage. 601 seconds would fall into
-        // the next tier, and then we would have a diffent result.
-        expResult = 600.0;
-        result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Very large credit - just report the maximum we know about
+      availableBalance = 10000.0;
+      expResult = 600000.0;
+      result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // Very large credit - just report the maximum we know about
-        availableBalance = 10000.0;
-        expResult = 600000.0;
-        result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
-
-        // Negative available balance - report 0
-        availableBalance = -10.0;
-        expResult = 0.0;
-        result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Negative available balance - report 0
+      availableBalance = -10.0;
+      expResult = 0.0;
+      result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -657,52 +572,41 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testAuthCalculateFlat() throws Exception {
-        System.out.println("authCalculateFlat");
+      System.out.println("authCalculateFlat");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Non-Tiered
+      String priceModel = "TestModel1";
+      double availableBalance = 10.0;
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Non-Tiered
-        String priceModel = "TestModel1";
-        double availableBalance = 10.0;
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
+      double expResult = 600.0;
+      double result = instance.authCalculateFlat(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
-        double expResult = 600.0;
-        double result = instance.authCalculateFlat(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Tiered
+      priceModel = "TestModel2";
 
-        // Tiered
-        priceModel = "TestModel2";
+      // We expect to get 600 seconds, this being the smallest number of
+      // seconds that we can predictably manage. 601 seconds would fall into
+      // the next tier, and then we would have a diffent result.
+      expResult = 600.0;
+      result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds, this being the smallest number of
-        // seconds that we can predictably manage. 601 seconds would fall into
-        // the next tier, and then we would have a diffent result.
-        expResult = 600.0;
-        result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Very large credit - just report the maximum we know about
+      availableBalance = 10000.0;
+      expResult = 600000.0;
+      result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // Very large credit - just report the maximum we know about
-        availableBalance = 10000.0;
-        expResult = 600000.0;
-        result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
-
-        // Negative available balance - report 0
-        availableBalance = -10.0;
-        expResult = 0.0;
-        result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Negative available balance - report 0
+      availableBalance = -10.0;
+      expResult = 0.0;
+      result = instance.authCalculateThreshold(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
     }
 
     /**
@@ -710,52 +614,41 @@ public class AbstractRateCalcTest
      */
     @Test
     public void testAuthCalculateEvent() throws Exception {
-        System.out.println("authCalculateEvent");
+      System.out.println("authCalculateEvent");
 
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractRateCalcTest>";
-          Assert.fail(message);
-        }
+      // Non-Tiered
+      String priceModel = "TestModel1";
+      double availableBalance = 10.0;
+      ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+      conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+      long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-        // Non-Tiered
-        String priceModel = "TestModel1";
-        double availableBalance = 10.0;
-        ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
-        conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-        long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+      // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
+      double expResult = 10.0;
+      double result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds of credit for a balance of 10 @ 1/min
-        double expResult = 10.0;
-        double result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Tiered
+      priceModel = "TestModel2";
 
-        // Tiered
-        priceModel = "TestModel2";
+      // We expect to get 600 seconds, this being the smallest number of
+      // seconds that we can predictably manage. 601 seconds would fall into
+      // the next tier, and then we would have a diffent result.
+      expResult = 10.0;
+      result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // We expect to get 600 seconds, this being the smallest number of
-        // seconds that we can predictably manage. 601 seconds would fall into
-        // the next tier, and then we would have a diffent result.
-        expResult = 10.0;
-        result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Very large credit - just report the maximum we know about
+      availableBalance = 10000.0;
+      expResult = 10000.0;
+      result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
 
-        // Very large credit - just report the maximum we know about
-        availableBalance = 10000.0;
-        expResult = 10000.0;
-        result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
-
-        // Negative available balance - report 0
-        availableBalance = -10.0;
-        expResult = 0.0;
-        result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
-        assertEquals(expResult, result, 0.0);
+      // Negative available balance - report 0
+      availableBalance = -10.0;
+      expResult = 0.0;
+      result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
+      assertEquals(expResult, result, 0.0);
     }
 
     public class AbstractRateCalcImpl extends AbstractRateCalc {
@@ -792,15 +685,35 @@ public class AbstractRateCalcTest
   *
   * @throws InitializationException
   */
-  private void getInstance() throws InitializationException
+  private void getInstance()
   {
     if (instance == null)
     {
       // Get an initialise the cache
       instance = new AbstractRateCalcTest.AbstractRateCalcImpl();
+      
+      try
+      {
+        // Get the instance
+        instance.init("DBTestPipe", "AbstractRateCalcTest");
+      }
+      catch (InitializationException ex)
+      {
+        org.junit.Assert.fail();
+      }
 
-      // Get the instance
-      instance.init("DBTestPipe", "AbstractRateCalcTest");
     }
+    else
+    {
+      org.junit.Assert.fail("Instance already allocated");
+    }
+  }
+  
+ /**
+  * Method to release an instance of the implementation.
+  */
+  private void releaseInstance()
+  {
+    instance = null;
   }
 }

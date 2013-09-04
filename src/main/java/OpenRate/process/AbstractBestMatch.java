@@ -168,25 +168,25 @@ public abstract class AbstractBestMatch
  /**
   * Return the time zone for a date passed as a string.
   *
-  * @param Service The ID of the service for this match
-  * @param Destination The destination for this match
+  * @param mapGroup The ID of the service for this match
+  * @param prefix The destination for this match
   * @return The best match zone result
   */
-  public String getBestMatch(String Service, String Destination)
+  public String getBestMatch(String mapGroup, String prefix)
   {
-    return BM.getMatch(Service, Destination);
+    return BM.getMatch(mapGroup, prefix);
   }
 
  /**
   * Return the time zone for a date passed as a string.
   *
-  * @param Service The ID of the service for this match
-  * @param Destination The destination for this match
+  * @param mapGroup The ID of the service for this match
+  * @param prefix The destination for this match
   * @return The best match zone result as an ArrayList
   */
-  public ArrayList<String> getBestMatchWithChildData(String Service, String Destination)
+  public ArrayList<String> getBestMatchWithChildData(String mapGroup, String prefix)
   {
-    return  BM.getMatchWithChildData(Service, Destination);
+    return  BM.getMatchWithChildData(mapGroup, prefix);
   }
 
  /**

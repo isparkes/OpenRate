@@ -140,7 +140,7 @@ public interface IPlugIn extends Runnable
   * plug in may be marked for exit, but not actually shutdown until it detects
   * a certain number of empty cycles.
   */
-  public void markForClosedown();
+  public void markForShutdown();
 
  /**
   * reset the plug in to ensure that it's ready to process records again after

@@ -151,53 +151,53 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
  /**
   * This returns the validity segment match
   *
-  * @param Group The regular expression group to search
-  * @param ResourceID The resource id to get the match for
-  * @param EventTime the UTC event date to match for
+  * @param group The regular expression group to search
+  * @param resourceID The resource id to get the match for
+  * @param eventTime the UTC event date to match for
   * @return The returned value, or NOMATCH if none was found
   */
-  public String getFirstValidityMatch(String Group, String ResourceID, long EventTime)
+  public String getFirstValidityMatch(String group, String resourceID, long eventTime)
   {
-    return MV.getFirstValidityMatch(Group, ResourceID, EventTime);
+    return MV.getFirstValidityMatch(group, resourceID, eventTime);
   }
 
  /**
   * This returns the regular expression match
   *
-  * @param Group The regular expression group to search
-  * @param ResourceID The resource ID to search for
+  * @param group The regular expression group to search
+  * @param resourceID The resource ID to search for
   * @param EventTime The UTC event time to search at
   * @return The returned value, or NOMATCH if none was found
   */
-  public ArrayList<String> getFirstValidityMatchWithChildData(String Group, String ResourceID, long EventTime)
+  public ArrayList<String> getFirstValidityMatchWithChildData(String group, String resourceID, long eventTime)
   {
-    return MV.getFirstValidityMatchWithChildData(Group, ResourceID, EventTime);
+    return MV.getFirstValidityMatchWithChildData(group, resourceID, eventTime);
   }
 
  /**
   * This returns the validity segment match
   *
-  * @param Group The regular expression group to search
-  * @param ResourceID The resource id to get the match for
-  * @param EventTime the UTC event date to match for
+  * @param group The regular expression group to search
+  * @param resourceID The resource id to get the match for
+  * @param eventTime the UTC event date to match for
   * @return The returned value, or NOMATCH if none was found
   */
-  public ArrayList<String> getAllValidityMatches(String Group, String ResourceID, long EventTime)
+  public ArrayList<String> getAllValidityMatches(String group, String resourceID, long eventTime)
   {
-    return MV.getAllValidityMatches(Group, ResourceID, EventTime);
+    return MV.getAllValidityMatches(group, resourceID, eventTime);
   }
 
  /**
   * This returns the regular expression match
   *
-  * @param Group The regular expression group to search
-  * @param ResourceID The resource ID to search for
-  * @param EventTime The UTC event time to search at
+  * @param group The regular expression group to search
+  * @param resourceID The resource ID to search for
+  * @param eventTime The UTC event time to search at
   * @return The returned value, or NOMATCH if none was found
   */
-  public ArrayList<ArrayList<String>> getAllValidityMatchesWithChildData(String Group, String ResourceID, long EventTime)
+  public ArrayList<ArrayList<String>> getAllValidityMatchesWithChildData(String group, String resourceID, long eventTime)
   {
-    return MV.getAllValidityMatchesWithChildData(Group, ResourceID, EventTime);
+    return MV.getAllValidityMatchesWithChildData(group, resourceID, eventTime);
   }
 
  /**
@@ -232,7 +232,7 @@ public abstract class AbstractMultipleValidityMatch extends AbstractPlugIn
     else
     {
       // No inner container - just check the value we have
-      if ( resultToCheck == null || resultToCheck.isEmpty())
+      if ( resultToCheck.isEmpty())
       {
         return false;
       }

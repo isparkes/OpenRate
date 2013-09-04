@@ -54,11 +54,9 @@
  */
 package OpenRate.utils;
 
-import OpenRate.exception.InitializationException;
-import OpenRate.logging.AbstractLogFactory;
+import OpenRate.OpenRate;
 import OpenRate.resource.ConversionCache;
-import OpenRate.resource.IResource;
-import OpenRate.resource.ResourceContext;
+import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -75,13 +73,7 @@ import org.junit.*;
 public class ConversionUtilsTest
 {
   private static URL FQConfigFileName;
-
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
-
-  // Used for logging and exception handling
-  private static String message; 
+  private static ConversionUtils instance;
 
   public ConversionUtilsTest() {
   }
@@ -89,52 +81,36 @@ public class ConversionUtilsTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    Class<?>          ResourceClass;
-    IResource         Resource;
-
     FQConfigFileName = new URL("File:src/test/resources/TestUtils.properties.xml");
     
-    // Get a properties object
-    try
-    {
-      PropertyUtils.getPropertyUtils().loadPropertiesXML(FQConfigFileName,"FWProps");
-    }
-    catch (InitializationException ex)
-    {
-      message = "Error reading the configuration file <" + FQConfigFileName + ">";
-      Assert.fail(message);
-    }
+   // Set up the OpenRate internal logger - this is normally done by app startup
+    OpenRate.getApplicationInstance();
 
-    // Get a logger
-    System.out.println("  Initialising Logger Resource...");
-    resourceName         = "LogFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
+    // Load the properties into the OpenRate object
+    FrameworkUtils.loadProperties(FQConfigFileName);
 
-    // Get a conversion cache
-    System.out.println("  Initialising Conversion Cache Resource...");
-    resourceName         = "ConversionCache";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(ConversionCache.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
+    // Get the loggers
+    FrameworkUtils.startupLoggers();
+    
+    // Get the conversion cache resource
+    FrameworkUtils.startupConversionCache();
   }
 
   @AfterClass
   public static void tearDownClass() {
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
   }
 
-    @Before
-    public void setUp() {
-    }
+  @Before
+  public void setUp() {
+    getInstance();
+  }
 
-    @After
-    public void tearDown() {
-    }
+  @After
+  public void tearDown() {
+    releaseInstance();
+  }
 
   /**
    * Test of getConversionCache method, of class ConversionUtils.
@@ -173,9 +149,6 @@ public class ConversionUtilsTest
     String amorphicDate;
 
     System.out.println("convertInputDateToUTC");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // Test the standard date formats
     amorphicDate = "20120101000000";
@@ -218,9 +191,6 @@ public class ConversionUtilsTest
     String amorphicDate;
 
     System.out.println("getDayOfWeek");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // Test the standard date formats
     amorphicDate = "20120101000000";
@@ -265,9 +235,6 @@ public class ConversionUtilsTest
     String amorphicDate;
 
     System.out.println("getMinuteOfDay");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
@@ -319,9 +286,6 @@ public class ConversionUtilsTest
 
     System.out.println("setInputDateFormat");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
 
@@ -345,9 +309,6 @@ public class ConversionUtilsTest
     String result;
 
     System.out.println("getInputDateFormat");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // default format
     expResult = "yyyy-MM-dd hh:mm:ss";
@@ -387,9 +348,6 @@ public class ConversionUtilsTest
   {
     System.out.println("setOutputDateFormat");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     try
     {
       instance.setOutputDateFormat("yyyyMMddhhmmss");
@@ -410,9 +368,6 @@ public class ConversionUtilsTest
     String result;
 
     System.out.println("getOutputDateFormat");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // default format
     expResult = "yyyy-MM-dd hh:mm:ss";
@@ -461,9 +416,6 @@ public class ConversionUtilsTest
 
     System.out.println("formatLongDate");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     // simple case
     dateToFormat = 1325372400;
     instance.setOutputDateFormat("yyyyMMddHHmmss");
@@ -491,9 +443,6 @@ public class ConversionUtilsTest
 
     System.out.println("formatLongDate");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     // simple case
     dateInput = 1325372400;
     dateToFormat = instance.getDateFromUTC(dateInput);
@@ -513,9 +462,6 @@ public class ConversionUtilsTest
     Date expResult;
 
     System.out.println("getDatefromLongFormat");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // simple case
     expResult = instance.getDateFromUTC(1325372400);
@@ -541,7 +487,6 @@ public class ConversionUtilsTest
     System.out.println("getGmtDate");
 
     // No DST
-    ConversionUtils instance = new ConversionUtils();
     DateToFormat = "20120101000000";
     instance.setInputDateFormat("yyyyMMddHHmmss");
     dateFormatted = instance.getDatefromLongFormat(DateToFormat);
@@ -576,7 +521,6 @@ public class ConversionUtilsTest
     Date date = new Date();
     TimeZone tz = TimeZone.getDefault();
     int offSet = tz.getOffset( new Date().getTime() );
-    ConversionUtils instance = new ConversionUtils();
     int offSetDST = tz.getDSTSavings();
     boolean expResult = ( offSet != offSetDST );
     boolean result = instance.getDateInDST(date);
@@ -590,9 +534,6 @@ public class ConversionUtilsTest
   public void testGetUTCMonthStart()
   {
     System.out.println("getUTCMonthStart");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     int dateInput = 1325372400;
     long expResult = dateInput;
@@ -612,9 +553,6 @@ public class ConversionUtilsTest
   {
     System.out.println("getUTCMonthEnd");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     int dateInput = 1325372400;
     long expResult = dateInput - 1;
 
@@ -632,9 +570,6 @@ public class ConversionUtilsTest
   public void testGetUTCDayStart()
   {
     System.out.println("getUTCDayStart");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     int dateInput = 1325372400;
     long expResult = dateInput;
@@ -654,9 +589,6 @@ public class ConversionUtilsTest
   {
     System.out.println("getUTCDate");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     int dateInput = 1325372400;
     Date EventStartDate = instance.getDateFromUTC(dateInput);
     long expResult = dateInput;
@@ -671,9 +603,6 @@ public class ConversionUtilsTest
   public void testGetDateFromUTC() throws ParseException
   {
     System.out.println("getDateFromUTC");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     long EventStartDate = 1325372400;
     DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -690,9 +619,6 @@ public class ConversionUtilsTest
   public void testGetUTCDayEnd_Date()
   {
     System.out.println("getUTCDayEnd");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     int dateInput = 1325372399;
     long expResult = dateInput;
@@ -711,8 +637,6 @@ public class ConversionUtilsTest
   public void testGetUTCDayEnd_Date_int()
   {
     System.out.println("getUTCDayEnd");
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     int dateInput = 1325372399;
     long expResult = dateInput;
@@ -738,9 +662,6 @@ public class ConversionUtilsTest
     double result;
 
     System.out.println("getRoundedValue");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // already rounded - round it up
     valueToRound = 1.26;
@@ -773,9 +694,6 @@ public class ConversionUtilsTest
     double result;
 
     System.out.println("getRoundedValueRoundUp");
-
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
 
     // already rounded - round it up
     valueToRound = 1.26;
@@ -815,9 +733,6 @@ public class ConversionUtilsTest
 
     System.out.println("getRoundedValueRoundDown");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     // simple case of truncation
     valueToRound = 1.254;
     expResult = 1.25;
@@ -856,9 +771,6 @@ public class ConversionUtilsTest
 
     System.out.println("getRoundedValueRoundHalfEven");
 
-    // Get the utils instance
-    ConversionUtils instance = new ConversionUtils();
-
     // simple case of truncation
     valueToRound = 1.254;
     expResult = 1.25;
@@ -882,5 +794,31 @@ public class ConversionUtilsTest
     expResult = 1.56;
     result = instance.getRoundedValueRoundHalfEven(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
+  }
+ /**
+  * Method to get an instance of the implementation. Done this way to allow
+  * tests to be executed individually.
+  *
+  * @throws InitializationException
+  */
+  private void getInstance()
+  {
+    if (instance == null)
+    {
+      // Get an initialise the cache
+      instance = new ConversionUtils();      
+    }
+    else
+    {
+      org.junit.Assert.fail("Instance already allocated");
+    }
+  }
+  
+ /**
+  * Method to release an instance of the implementation.
+  */
+  private void releaseInstance()
+  {
+    instance = null;
   }
 }

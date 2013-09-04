@@ -64,9 +64,20 @@ import OpenRate.transaction.ISyncPoint;
  * The IPipeline Abstraction is the container or implementor of the pipeline
  * application logic. It's principle reason for being is to allow multiple
  * pipelines to run within the same framework.
+ * 
+ * Pipeline life cycle:
+ * 
+ * init()
+ *    ready for run
+ * run()
+ *    running
+ *    told to stop
+ * markForShutdown()
+ * shutdownPipeline()
+ * cleanupPipeline()
  */
 public interface IPipeline
-  extends Runnable, ISyncPoint
+  extends Runnable,ISyncPoint
 {
   /**
    * Init method will be called prior to run so that we set up the pipeline
@@ -79,23 +90,15 @@ public interface IPipeline
             throws InitializationException;
 
   /**
-   * The run method provides the strategy implementation
-   * It should run the pipeline using whatever strategy
-   * it provides.
-   */
-  @Override
-  public void run();
-
-  /**
   * Perform pipeline plugin level close down processing.
   */
-  public void Shutdown();
+  public void shutdownPipeline();
 
   /**
     * Perform any process level cleanup required. This should take care of
     * de-referencing and closing process level things
     */
-  public void cleanup();
+  public void cleanupPipeline();
 
   /**
    * stop the process. This can be called to safely shutdown a process that
@@ -106,7 +109,7 @@ public interface IPipeline
    * process should make an effort to shutdown as quickly as is reasonable
    * without leaving the application in an invalid state.
    */
-  public void stop();
+  public void markForShutdown();
 
  /**
   * Return the symbolic name of the pipe

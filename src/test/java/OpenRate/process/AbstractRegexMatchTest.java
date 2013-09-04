@@ -77,14 +77,6 @@ public class AbstractRegexMatchTest
   // Used for logging and exception handling
   private static String message; 
 
- /**
-  * Default constructor
-  */
-  public AbstractRegexMatchTest()
-  {
-    // Not used
-  }
-
   @BeforeClass
   public static void setUpClass() throws Exception
   {
@@ -134,50 +126,29 @@ public class AbstractRegexMatchTest
     JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('DefaultMap','01.*','.*','OK1','OUT2',1);").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('DefaultMap','0.*','.*','OK2','OUT2',2);").execute();
 
+    // Create some records in the table for numerical matching
+    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('NumericalMap','>1','<=7','OK1','OUT2',1);").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('NumericalMap','<1','=2','OK2','OUT2',2);").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('NumericalMap','=9.2','=9.2','OK3','OUT3',2);").execute();
+
     // Get the caches that we are using
     FrameworkUtils.startupCaches();
   }
 
   @AfterClass
   public static void tearDownClass() {
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
   }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-  /**
-   * Test of init method, of class AbstractRegexMatch.
-   */
-  @Test
-  public void testInit() throws Exception
-  {
-    System.out.println("init");
-
-    // get the instance
+  @Before
+  public void setUp() {
     getInstance();
   }
 
-  /**
-   * Test of procHeader method, of class AbstractRegexMatch.
-   */
-  @Test
-  public void testProcHeader()
-  {
-    System.out.println("procHeader");
-  }
-
-  /**
-   * Test of procTrailer method, of class AbstractRegexMatch.
-   */
-  @Test
-  public void testProcTrailer()
-  {
-    System.out.println("procTrailer");
+  @After
+  public void tearDown() {
+    releaseInstance();
   }
 
   /**
@@ -191,17 +162,6 @@ public class AbstractRegexMatchTest
     String Group;
 
     System.out.println("getRegexMatch");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(message);
-    }
 
     String[] searchParameters = new String[1];
 
@@ -235,6 +195,58 @@ public class AbstractRegexMatchTest
   }
 
   /**
+   * Test of getRegexMatch method, of class AbstractRegexMatch.
+   */
+  @Test
+  public void testGetRegexMatchNumericalComparison()
+  {
+    String result;
+    String expResult;
+    String Group;
+
+    System.out.println("getRegexMatch (Numerical Comparison)");
+
+    String[] searchParameters = new String[2];
+
+    // Simple good case
+    Group = "NumericalMap";
+    searchParameters[0] = "2";
+    searchParameters[1] = "2";
+    result = instance.getRegexMatch(Group, searchParameters);
+    expResult = "OK1";
+    Assert.assertEquals(expResult, result);
+    
+    // Simple good case with a double value
+    searchParameters[0] = "1.00001";
+    searchParameters[1] = "2";
+    result = instance.getRegexMatch(Group, searchParameters);
+    expResult = "OK1";
+    Assert.assertEquals(expResult, result);
+    
+    // Simple good case with a double value
+    searchParameters[0] = "0.8";
+    searchParameters[1] = "2";
+    result = instance.getRegexMatch(Group, searchParameters);
+    expResult = "OK2";
+    Assert.assertEquals(expResult, result);
+    
+    // Simple bad case with a double value
+    searchParameters[0] = "0.8";
+    searchParameters[1] = "3";
+    result = instance.getRegexMatch(Group, searchParameters);
+    expResult = "NOMATCH";
+    Assert.assertEquals(expResult, result);
+    
+    // Simple good case with a double value - this is there to check if we are rounding anywhere
+    searchParameters[0] = "9.2";
+    searchParameters[1] = "9.2";
+    result = instance.getRegexMatch(Group, searchParameters);
+    expResult = "OK3";
+    Assert.assertEquals(expResult, result);
+    
+  }
+
+  /**
    * Test of getRegexMatchWithChildData method, of class AbstractRegexMatch.
    */
   @Test
@@ -245,17 +257,6 @@ public class AbstractRegexMatchTest
     String Group;
 
     System.out.println("getRegexMatchWithChildData");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(message);
-    }
 
     String[] searchParameters = new String[1];
 
@@ -309,17 +310,6 @@ public class AbstractRegexMatchTest
 
     System.out.println("getRegexMatch");
 
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(message);
-    }
-
     String[] searchParameters = new String[1];
 
     // Simple good case
@@ -356,17 +346,6 @@ public class AbstractRegexMatchTest
     boolean result;
 
     System.out.println("isValidRegexMatchResult");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(message);
-    }
 
     String[] searchParameters = new String[1];
 
@@ -408,17 +387,6 @@ public class AbstractRegexMatchTest
     boolean result;
 
     System.out.println("isValidRegexMatchResult");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractRegexMatchTest>";
-      Assert.fail(message);
-    }
 
     String[] searchParameters = new String[1];
 
@@ -482,15 +450,35 @@ public class AbstractRegexMatchTest
   *
   * @throws InitializationException
   */
-  private void getInstance() throws InitializationException
+  private void getInstance()
   {
     if (instance == null)
     {
       // Get an initialise the cache
       instance = new AbstractRegexMatchTest.AbstractRegexMatchImpl();
+      
+      try
+      {
+        // Get the instance
+        instance.init("DBTestPipe", "AbstractRegexMatchTest");
+      }
+      catch (InitializationException ex)
+      {
+        org.junit.Assert.fail();
+      }
 
-      // Get the instance
-      instance.init("DBTestPipe", "AbstractRegexMatchTest");
     }
+    else
+    {
+      org.junit.Assert.fail("Instance already allocated");
+    }
+  }
+  
+ /**
+  * Method to release an instance of the implementation.
+  */
+  private void releaseInstance()
+  {
+    instance = null;
   }
 }

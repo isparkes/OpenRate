@@ -92,6 +92,7 @@ import java.util.ListIterator;
  * outputs should be written to.
  */
 public class Pipeline
+  extends    Thread
   implements IPipeline,
              IEventInterface,
              ISyncPoint
@@ -252,6 +253,10 @@ public class Pipeline
     setPipeLog(LogUtil.getLogUtil().getLogger(Name));
   }
 
+// -----------------------------------------------------------------------------
+// --------------------- Pipeline Building functions ---------------------------
+// -----------------------------------------------------------------------------
+  
   /**
    * Creates the actual pipeline implementation from the configuration. This
    * creates and instantiates the InputAdapter, the pipeline modules and the
@@ -862,6 +867,10 @@ public class Pipeline
     }
   }
 
+// -----------------------------------------------------------------------------
+// ---------------------- Pipeline Running functions ---------------------------
+// -----------------------------------------------------------------------------
+  
   /**
    * Run the Pipeline. This section performs the scheduling function of the
    * pipeline. In the case that there are records in processing, the sleep time
@@ -1025,8 +1034,10 @@ public class Pipeline
         } // if Runcount
       } // while !Stop
 
-      // shutdown the pipeline
-      stopPipeline();
+      // start the shutdown of the pipeline modules
+      stopPipelineModules();
+      
+      System.out.println("Pipeline <"+getSymbolicName()+"> stopped");
     }
     catch (ProcessingException pe)
     {
@@ -1040,7 +1051,7 @@ public class Pipeline
   * execute run() repeatedly.
   */
   @Override
-  public void cleanup()
+  public void cleanupPipeline()
   {
     // nop
   }
@@ -1055,7 +1066,7 @@ public class Pipeline
    * without leaving the application in an invalid state.
    */
   @Override
-  public void stop()
+  public void markForShutdown()
   {
     // Only notify once
     if (stopRequested == false)
@@ -1219,11 +1230,14 @@ public class Pipeline
 
  /**
   * Stop the processing in the pipeline as soon as all the records have
-  * purged out of it
+  * purged out of it. This is part of the shutdown processing: Normally a
+  * pipeline will not stop until all of the processes in it have stopped. This
+  * method performs the work of shutting down the threads working in the 
+  * pipeline, once the processing has been finished.
   *
   * @throws ProcessingException
   */
-  protected void stopPipeline() throws ProcessingException
+  protected void stopPipelineModules() throws ProcessingException
   {
     // Shut down processing plug in threads
     stopPlugIns();
@@ -1389,7 +1403,7 @@ public class Pipeline
     while (pluginIterator.hasNext() && threadGroupIterator.hasNext())
     {
       tmpPlugIn = pluginIterator.next();
-      tmpPlugIn.markForClosedown();
+      tmpPlugIn.markForShutdown();
       tmpGrpPlugIn = threadGroupIterator.next();
 
       // wait for all Threads in this group to shutdown.
@@ -1458,9 +1472,19 @@ public class Pipeline
   * any data or resources that should be closed before the pipe is destroyed
   */
   @Override
-  public void Shutdown()
+  public void shutdownPipeline()
   {
-    // Nothing at present
+    // Destroy buffers
+    Iterator<IBuffer> bufferIter = bufferList.iterator();
+    while (bufferIter.hasNext())
+    {
+      IBuffer tmpBuffer = bufferIter.next();
+      tmpBuffer = null;
+    }
+    bufferList.clear();
+    
+    // Destroy Output Adapters
+    
   }
 
  /**

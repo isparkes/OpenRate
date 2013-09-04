@@ -152,6 +152,7 @@ public final class OpenRateSocket implements Runnable, IEventInterface
   {
     if(serverSocket!=null)
     {
+      OpenRate.getOpenRateFrameworkLog().info("Listener on port <" + this.port + "> is running...");
       System.out.println("Listener on port <" + this.port + "> is running...");
 
       started = true;
@@ -187,7 +188,11 @@ public final class OpenRateSocket implements Runnable, IEventInterface
         }
       }
       
+      OpenRate.getOpenRateFrameworkLog().info("Stopped listener");
       System.out.println("Stopped listener");
+      
+      // Mark that we are down
+      started = false;
     }
     else
     {
@@ -228,7 +233,6 @@ public final class OpenRateSocket implements Runnable, IEventInterface
       serverSocket.close();
     }
     catch (IOException ex) {
-      System.out.println("Message " + ex.getMessage());
     }
     
     // Interrupt any threads open

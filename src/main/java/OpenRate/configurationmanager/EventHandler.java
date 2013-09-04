@@ -56,8 +56,6 @@ package OpenRate.configurationmanager;
 
 import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.resource.IResource;
 import OpenRate.utils.PropertyUtils;
 import java.io.*;
@@ -92,7 +90,7 @@ public class EventHandler implements IResource
   // The socket used for communication
   private OpenRateSocket openRateSoc;
   
-  // 
+  // The thread the connection listener runs in
   Thread socketThread;
 
   // The full path of the semaphore file
@@ -134,6 +132,7 @@ public class EventHandler implements IResource
       semaphoreFile = new File(ConfigHelper);
       semaphoreFileLocation = ConfigHelper;
 
+      OpenRate.getOpenRateFrameworkLog().info("Using Semaphore File <" + semaphoreFile.getAbsolutePath() + ">");
       System.out.println("    Using Semaphore File <" + semaphoreFile.getAbsolutePath() + ">");
 
       // Check that the file is writeable
@@ -196,6 +195,16 @@ public class EventHandler implements IResource
   {
     //close the socket and release
     openRateSoc.stop();
+    
+    // wait for listeners to stop
+    while (getSocketStarted() == true)
+    {
+      try {
+        OpenRate.getOpenRateFrameworkLog().debug("Sleeping 100mS for listener to stop");
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
   }
 
  /**

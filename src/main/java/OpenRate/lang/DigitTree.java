@@ -75,15 +75,23 @@ public class DigitTree
   */
   public DigitTree()
   {
+    // Set up the root node so that it returns NOMATCH by default
+    Node nullNode = new Node();
+    ArrayList<String> nullResult = new ArrayList();
+    nullResult.add(NO_DIGIT_TREE_MATCH);
+    nullNode.Results = nullResult;
+
+    for (int idx = 0 ; idx < 10 ; idx++)
+    root.children[idx] = nullNode;
   }
 
  /**
   * Add a prefix to the digit tree.
   *
   * @param prefix The prefix to add to the digit tree
-  * @param Results The results to return for this tag
+  * @param resultList The results to return for this tag
   */
-  public void addPrefix(String prefix, ArrayList<String> Results)
+  public void addPrefix(String prefix, ArrayList<String> resultList)
   {
     char[] numberChars = prefix.toCharArray();
 
@@ -102,19 +110,19 @@ public class DigitTree
       node = node.children[number];
     }
 
-    node.Results = Results;
+    node.Results = resultList;
   }
 
  /**
   * Work down the digit tree to find the best match. We remember the previous
   * best result as we go.
   *
-  * @param phonenumber The prefix to match
+  * @param prefix The prefix to match
   * @return The short result to return in the case of a match
   */
-  public String match(String phonenumber)
+  public String match(String prefix)
   {
-    char[] numberChars = phonenumber.toCharArray();
+    char[] numberChars = prefix.toCharArray();
 
     Node   node      = root;
     Node   bestNode  = root;
@@ -143,12 +151,12 @@ public class DigitTree
   * Work down the digit tree to find the best match. We remember the previous
   * best result as we go.
   *
-  * @param phonenumber The prefix to match
+  * @param prefix The prefix to match
   * @return The results list to return in the case of a match
   */
-  public ArrayList<String> matchWithChildData(String phonenumber)
+  public ArrayList<String> matchWithChildData(String prefix)
   {
-    char[] numberChars = phonenumber.toCharArray();
+    char[] numberChars = prefix.toCharArray();
 
     Node   node        = root;
     Node   bestNode    = root;

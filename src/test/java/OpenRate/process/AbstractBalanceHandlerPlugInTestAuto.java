@@ -820,7 +820,7 @@ public class AbstractBalanceHandlerPlugInTestAuto implements IPlugIn
     }
 
     @Override
-    public void markForClosedown() {
+    public void markForShutdown() {
     }
 
     @Override

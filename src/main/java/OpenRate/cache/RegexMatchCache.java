@@ -100,9 +100,11 @@ public class RegexMatchCache
   private final static String SERVICE_GROUP_COUNT = "GroupCount";
   private final static String SERVICE_DUMP_MAP = "DumpMap";
 
- /* The SearchMap is the regular expression map that we will have to
-  * search through. This is a single entry that is grouped into a search
-  * group.
+ /* The SearchMap is the regular map that we will have to search through. This 
+  * is a single entry that is grouped into a search group. The match value is
+  * one of [RegularExpression|Numerical|RegexExclude], driven by the match type.
+  * 
+  * The 
   */
   private class SearchMap
   {
@@ -114,13 +116,15 @@ public class RegexMatchCache
     // 4 = ">="
     // 5 = "<="
     // 6 = regex EXCLUDE
-    int[]     Type;
+    int[]     matchType;
 
     // We can match this if the type > 0
-    long[]    Value;
+    double[]  matchValue;
 
     // Or this if we are dealing with a real regex
-    Pattern[] FieldPattern;
+    Pattern[] matchPattern;
+    
+    // The results list
     ArrayList<String> Results = null;
   }
 
@@ -250,7 +254,7 @@ public class RegexMatchCache
     String      Helper;
     String      FirstChar;
     String      SecondChar;
-    String      ValueToParse;
+    String      valueToParse;
     String[]    checkedFields;
     ArrayList<String> checkedResultList;
 
@@ -278,9 +282,9 @@ public class RegexMatchCache
     tmpSearchMap = new SearchMap();
 
     // Compile and add the search map
-    tmpSearchMap.FieldPattern = new Pattern[checkedFields.length];
-    tmpSearchMap.Type = new int[checkedFields.length];
-    tmpSearchMap.Value = new long[checkedFields.length];
+    tmpSearchMap.matchPattern = new Pattern[checkedFields.length];
+    tmpSearchMap.matchType = new int[checkedFields.length];
+    tmpSearchMap.matchValue = new double[checkedFields.length];
 
     for (i = 0; i < fields.length; i++)
     {
@@ -297,9 +301,18 @@ public class RegexMatchCache
         // try to parse for simple numerical comparison
         if (FirstChar.equals("="))
         {
-          tmpSearchMap.Type[i] = 1;
-          ValueToParse = Helper.substring(1).trim();
-          tmpSearchMap.Value[i] = Long.parseLong(ValueToParse);
+          tmpSearchMap.matchType[i] = 1;
+          valueToParse = Helper.substring(1).trim();
+          
+          try
+          {
+            tmpSearchMap.matchValue[i] = Double.parseDouble(valueToParse);
+          }
+          catch (NumberFormatException ex)
+          {
+            throw new InitializationException("Could not parse value <" + valueToParse + "> as a double value",getSymbolicName());
+          }
+          
           continue;
         }
 
@@ -307,17 +320,34 @@ public class RegexMatchCache
         {
           if (SecondChar.equals("="))
           {
-            tmpSearchMap.Type[i] = 4;
-            ValueToParse = Helper.substring(2).trim();
-            tmpSearchMap.Value[i] = Long.parseLong(ValueToParse);
+            tmpSearchMap.matchType[i] = 4;
+            valueToParse = Helper.substring(2).trim();
+            try
+            {
+              tmpSearchMap.matchValue[i] = Double.parseDouble(valueToParse);
+            }
+            catch (NumberFormatException ex)
+            {
+              throw new InitializationException("Could not parse value <" + valueToParse + "> as a double value",getSymbolicName());
+            }
+            
             continue;
           }
           else
           {
             // we got this far, must be just ">"
-            tmpSearchMap.Type[i] = 2;
-            ValueToParse = Helper.substring(1).trim();
-            tmpSearchMap.Value[i] = Long.parseLong(ValueToParse);
+            tmpSearchMap.matchType[i] = 2;
+            valueToParse = Helper.substring(1).trim();
+            
+            try
+            {
+              tmpSearchMap.matchValue[i] = Double.parseDouble(valueToParse);
+            }
+            catch (NumberFormatException ex)
+            {
+              throw new InitializationException("Could not parse value <" + valueToParse + "> as a double value",getSymbolicName());
+            }
+            
             continue;
           }
         }
@@ -326,17 +356,35 @@ public class RegexMatchCache
         {
           if (SecondChar.equals("="))
           {
-            tmpSearchMap.Type[i] = 5;
-            ValueToParse = Helper.substring(2).trim();
-            tmpSearchMap.Value[i] = Long.parseLong(ValueToParse);
+            tmpSearchMap.matchType[i] = 5;
+            valueToParse = Helper.substring(2).trim();
+            
+            try
+            {
+              tmpSearchMap.matchValue[i] = Double.parseDouble(valueToParse);
+            }
+            catch (NumberFormatException ex)
+            {
+              throw new InitializationException("Could not parse value <" + valueToParse + "> as a double value",getSymbolicName());
+            }
+            
             continue;
           }
           else
           {
             // we got this far, must be just "<"
-            tmpSearchMap.Type[i] = 3;
-            ValueToParse = Helper.substring(1).trim();
-            tmpSearchMap.Value[i] = Long.parseLong(ValueToParse);
+            tmpSearchMap.matchType[i] = 3;
+            valueToParse = Helper.substring(1).trim();
+            
+            try
+            {
+              tmpSearchMap.matchValue[i] = Double.parseDouble(valueToParse);
+            }
+            catch (NumberFormatException ex)
+            {
+              throw new InitializationException("Could not parse value <" + valueToParse + "> as a double value",getSymbolicName());
+            }
+
             continue;
           }
         }
@@ -347,15 +395,15 @@ public class RegexMatchCache
         {
           // This is a regex negation, remove the ! and set the flag and regex
           // for the rest
-          tmpSearchMap.FieldPattern[i] = Pattern.compile(fields[i].substring(1));
-          tmpSearchMap.Type[i] = 6;
+          tmpSearchMap.matchPattern[i] = Pattern.compile(fields[i].substring(1));
+          tmpSearchMap.matchType[i] = 6;
         }
         else
         {
           // if we got this far it is Real Regex inclusion
           try
           {
-            tmpSearchMap.FieldPattern[i] = Pattern.compile(fields[i]);
+            tmpSearchMap.matchPattern[i] = Pattern.compile(fields[i]);
           }
           catch (PatternSyntaxException pse)
           {
@@ -365,7 +413,7 @@ public class RegexMatchCache
             throw new InitializationException(message,getSymbolicName());
           }
 
-          tmpSearchMap.Type[i] = 0;
+          tmpSearchMap.matchType[i] = 0;
         }
       }
     }
@@ -478,12 +526,12 @@ public class RegexMatchCache
         // Now check the elements of the map
         while ((i < Parameters.length) & Found)
         {
-          switch(tmpSearchMap.Type[i])
+          switch(tmpSearchMap.matchType[i])
           {
             // Regex inclusion case
             case 0:
             {
-              tmpPattern = tmpSearchMap.FieldPattern[i];
+              tmpPattern = tmpSearchMap.matchPattern[i];
 
               if (Parameters[i] == null)
               {
@@ -503,7 +551,7 @@ public class RegexMatchCache
             // Regex exclusion case
             case 6:
             {
-              tmpPattern = tmpSearchMap.FieldPattern[i];
+              tmpPattern = tmpSearchMap.matchPattern[i];
 
               if (tmpPattern.matcher(Parameters[i]).matches())
               {
@@ -517,7 +565,7 @@ public class RegexMatchCache
             case 1:
             {
               tmpParamValue = Double.parseDouble(Parameters[i]);
-              if (tmpSearchMap.Value[i] != tmpParamValue)
+              if (tmpSearchMap.matchValue[i] != tmpParamValue)
               {
                 // We did not get a match, move on
                 Found = false;
@@ -529,7 +577,7 @@ public class RegexMatchCache
             case 2:
             {
               tmpParamValue = Double.parseDouble(Parameters[i]);
-              if (tmpParamValue <= tmpSearchMap.Value[i])
+              if (tmpParamValue <= tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
                 Found = false;
@@ -541,7 +589,7 @@ public class RegexMatchCache
             case 3:
             {
               tmpParamValue = Double.parseDouble(Parameters[i]);
-              if (tmpParamValue >= tmpSearchMap.Value[i])
+              if (tmpParamValue >= tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
                 Found = false;
@@ -553,7 +601,7 @@ public class RegexMatchCache
             case 4:
             {
               tmpParamValue = Double.parseDouble(Parameters[i]);
-              if (tmpParamValue < tmpSearchMap.Value[i])
+              if (tmpParamValue < tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
                 Found = false;
@@ -565,7 +613,7 @@ public class RegexMatchCache
             case 5:
             {
               tmpParamValue = Double.parseDouble(Parameters[i]);
-              if (tmpParamValue > tmpSearchMap.Value[i])
+              if (tmpParamValue > tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
                 Found = false;
@@ -607,11 +655,11 @@ public class RegexMatchCache
     SearchGroup tmpSearchGroup;
     SearchMap   tmpSearchMap;
     Pattern     tmpPattern;
-    boolean     Found;
-    int         tmpParamValue;
-    ArrayList<String>      Matches;
+    boolean     found;
+    double      tmpParamValue;
+    ArrayList<String> matches;
 
-    Matches = new ArrayList<>();
+    matches = new ArrayList<>();
 
     // recover the object
     tmpSearchGroup = GroupCache.get(Group);
@@ -619,7 +667,7 @@ public class RegexMatchCache
     if (tmpSearchGroup == null)
     {
       // Return a default value, we did not find the group
-      return Matches;
+      return matches;
     }
     else
     {
@@ -631,23 +679,23 @@ public class RegexMatchCache
         tmpSearchMap = GroupIter.next();
 
         // Initialise the found flag and the counter
-        Found = true;
+        found = true;
         i = 0;
 
         // Now check the elements of the map
-        while ((i < Parameters.length) & Found)
+        while ((i < Parameters.length) & found)
         {
-          switch(tmpSearchMap.Type[i])
+          switch(tmpSearchMap.matchType[i])
           {
             // Regex inclusion case
             case 0:
             {
-              tmpPattern = tmpSearchMap.FieldPattern[i];
+              tmpPattern = tmpSearchMap.matchPattern[i];
 
               if (!tmpPattern.matcher(Parameters[i]).matches())
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -655,12 +703,12 @@ public class RegexMatchCache
             // Regex exclusion case
             case 6:
             {
-              tmpPattern = tmpSearchMap.FieldPattern[i];
+              tmpPattern = tmpSearchMap.matchPattern[i];
 
               if (tmpPattern.matcher(Parameters[i]).matches())
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -668,11 +716,11 @@ public class RegexMatchCache
             // "=" case
             case 1:
             {
-              tmpParamValue = Integer.parseInt(Parameters[i]);
-              if (tmpSearchMap.Value[i] != tmpParamValue)
+              tmpParamValue = Double.parseDouble(Parameters[i]);
+              if (tmpSearchMap.matchValue[i] != tmpParamValue)
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -680,11 +728,11 @@ public class RegexMatchCache
             // ">" case
             case 2:
             {
-              tmpParamValue = Integer.parseInt(Parameters[i]);
-              if (tmpParamValue <= tmpSearchMap.Value[i])
+              tmpParamValue = Double.parseDouble(Parameters[i]);
+              if (tmpParamValue <= tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -692,11 +740,11 @@ public class RegexMatchCache
             // "<" case
             case 3:
             {
-              tmpParamValue = Integer.parseInt(Parameters[i]);
-              if (tmpParamValue >= tmpSearchMap.Value[i])
+              tmpParamValue = Double.parseDouble(Parameters[i]);
+              if (tmpParamValue >= tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -704,11 +752,11 @@ public class RegexMatchCache
             // ">=" case
             case 4:
             {
-              tmpParamValue = Integer.parseInt(Parameters[i]);
-              if (tmpParamValue < tmpSearchMap.Value[i])
+              tmpParamValue = Double.parseDouble(Parameters[i]);
+              if (tmpParamValue < tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -716,11 +764,11 @@ public class RegexMatchCache
             // "<=" case
             case 5:
             {
-              tmpParamValue = Integer.parseInt(Parameters[i]);
-              if (tmpParamValue > tmpSearchMap.Value[i])
+              tmpParamValue = Double.parseDouble(Parameters[i]);
+              if (tmpParamValue > tmpSearchMap.matchValue[i])
               {
                 // We did not get a match, move on
-                Found = false;
+                found = false;
               }
               break;
             }
@@ -730,13 +778,13 @@ public class RegexMatchCache
           i++;
         }
 
-        if (Found)
+        if (found)
         {
-          Matches.add(tmpSearchMap.Results.get(0));
+          matches.add(tmpSearchMap.Results.get(0));
         }
       }
 
-      return Matches;
+      return matches;
     }
   }
 
@@ -1255,12 +1303,12 @@ public class RegexMatchCache
         PrintHelper = "  (";
 
         tmpSearchMap = PatternIterator.next();
-        for (int i = 0 ; i < tmpSearchMap.FieldPattern.length ; i++)
+        for (int i = 0 ; i < tmpSearchMap.matchPattern.length ; i++)
         {
           PrintHelper = PrintHelper + "[" +
-                     tmpSearchMap.Type[i] + ":" +
-                     tmpSearchMap.FieldPattern[i] + ":" +
-                     tmpSearchMap.Value[i] + "] ";
+                     tmpSearchMap.matchType[i] + ":" +
+                     tmpSearchMap.matchPattern[i] + ":" +
+                     tmpSearchMap.matchValue[i] + "] ";
         }
 
         // dump the result array

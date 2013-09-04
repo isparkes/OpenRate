@@ -59,7 +59,6 @@ import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.record.IRecord;
-import OpenRate.resource.ResourceContext;
 import OpenRate.transaction.ITransactionManager;
 import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.ConversionUtils;
@@ -70,8 +69,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.*;
 
 /**
@@ -83,11 +80,6 @@ public class AbstractDuplicateCheckTest
 {
   private static URL FQConfigFileName;
 
-  private static String cacheDataSourceName;
-
-  private static String resourceName;
-  private static String tmpResourceClassName;
-  private static ResourceContext ctx = new ResourceContext();
   private static AbstractDuplicateCheck instance;
   private static ITransactionManager TM;
   private static int transNumber;
@@ -169,30 +161,42 @@ public class AbstractDuplicateCheckTest
 
   @AfterClass
   public static void tearDownClass(){
-    TM.resetClients();
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
+    
+    // Shut down
+    OpenRate.getApplicationInstance().finaliseApplication();
   }
 
     @Before
     public void setUp() {
+    // get the instance
+    try
+    {
+      getInstance();
+    }
+    catch (InitializationException ie)
+    {
+      // Not OK, Assert.fail the case
+      message = "Error getting cache instance in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
+    }
     }
 
     @After
     public void tearDown() {
+    // release the instance
+    try
+    {
+      releaseInstance();
     }
-
-  /**
-   * Test of init method, of class AbstractBestMatch.
-   *
-   * @throws Exception
-   */
-  @Test
-  public void testInit() throws Exception
-  {
-    System.out.println("init");
-
-    // get the instance
-    getInstance();
-  }
+    catch (InitializationException ie)
+    {
+      // Not OK, Assert.fail the case
+      message = "Error releasing cache instance in test <AbstractDuplicateCheckTest>";
+      Assert.fail(message);
+    }
+    }
 
   /**
    * Test of getBestMatch method, of class AbstractBestMatch.
@@ -207,17 +211,6 @@ public class AbstractDuplicateCheckTest
     int     oldTransNum;
 
     System.out.println("testCheckDuplicate");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, Assert.fail the case
-      message = "Error getting cache instance in test <AbstractDuplicateCheckTest>";
-      Assert.fail(message);
-    }
 
     // *************************** In Transaction ******************************
     System.out.println("testCheckDuplicate: In-Transaction Tests");
@@ -415,33 +408,6 @@ public class AbstractDuplicateCheckTest
   }
 
  /**
-  * Method to get an instance of the implementation. Done this way to allow
-  * tests to be executed individually.
-  *
-  * @throws InitializationException
-  */
-  private void getInstance() throws InitializationException
-  {
-    if (instance == null)
-    {
-      // Get an initialise the cache
-      instance = new AbstractDuplicateCheckTest.AbstractDuplicateCheckImpl();
-
-      // Get the instance
-      instance.init("DBTestPipe", "AbstractDuplicateCheckTest");
-
-      while (TransactionManagerFactory.getTransactionManager("DBTestPipe") == null)
-      {
-        System.out.println("  Sleeping for 100mS to allow transaction manager to settle...");
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException ex) {
-        }
-      }
-    }
-  }
-
- /**
   * Get the row count from the table. Waits for transaction to end if needed.
   * If we indicate that we are in a transaction, we just get the value.
   *
@@ -483,5 +449,49 @@ public class AbstractDuplicateCheckTest
     }
 
     return rowCount;
+  }
+
+ /**
+  * Method to get an instance of the implementation. Done this way to allow
+  * tests to be executed individually.
+  *
+  * @throws InitializationException
+  */
+  private void getInstance() throws InitializationException
+  {
+    if (instance == null)
+    {
+      // Get an initialise the cache
+      instance = new AbstractDuplicateCheckTest.AbstractDuplicateCheckImpl();
+
+      // Get the instance
+      instance.init("DBTestPipe", "AbstractDuplicateCheckTest");
+
+      while (TransactionManagerFactory.getTransactionManager("DBTestPipe") == null)
+      {
+        System.out.println("  Sleeping for 100mS to allow transaction manager to settle...");
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ex) {
+        }
+      }
+    }
+    else
+    {
+      Assert.fail("Instance already allocated");
+    }
+  }
+
+ /**
+  * Method to get an instance of the implementation. Done this way to allow
+  * tests to be executed individually.
+  *
+  * @throws InitializationException
+  */
+  private void releaseInstance() throws InitializationException
+  {
+    TransactionManagerFactory.getTransactionManager("DBTestPipe").close();
+    
+    instance = null;
   }
 }

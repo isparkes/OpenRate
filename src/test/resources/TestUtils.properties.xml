@@ -27,64 +27,23 @@
 
     <InputAdapter>
       <TestInpAdapter>
-        <ClassName>RatingTest.RateInputAdapter</ClassName>
+        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
         <BatchSize>5000</BatchSize>
-        <InputFilePath>Data/RatingTest</InputFilePath>
-        <InputFilePrefix>testpipeline</InputFilePrefix>
-        <InputFileSuffix>.edr</InputFileSuffix>
-        <DoneFilePath>Data/RatingTest</DoneFilePath>
-        <DoneFilePrefix>testpipeline</DoneFilePrefix>
-        <DoneFileSuffix>.done</DoneFileSuffix>
-        <ErrFilePath>Data/RatingTest</ErrFilePath>
-        <ErrFilePrefix>testpipeline</ErrFilePrefix>
-        <ErrFileSuffix>.err</ErrFileSuffix>
       </TestInpAdapter>
     </InputAdapter>
 
     <Process>
-      <DestLookup>
-        <ClassName>RTSimple.DestLookup</ClassName>
-        <DataCache>PrefixCache</DataCache>
-        <BatchSize>5000</BatchSize>
-         <Active>true</Active>
-      </DestLookup>
     </Process>
     
     <OutputAdapter>
       <SOutAdapter>
-        <ClassName>Simple.SimpleSTOutputAdapter</ClassName>
+        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
         <OutputName>default</OutputName>
         <BatchSize>5000</BatchSize>
-        <MaxSleep>50</MaxSleep>
-        <OutputFilePath>Data/Simple</OutputFilePath>
-        <OutputFilePrefix>testpipeline</OutputFilePrefix>
-        <OutputFileSuffix>.out</OutputFileSuffix>
-        <ErrFilePath>Data/Simple</ErrFilePath>
-        <ErrFilePrefix>testpipeline</ErrFilePrefix>
-        <ErrFileSuffix>.err</ErrFileSuffix>
       </SOutAdapter>
     </OutputAdapter>
   </DBTestPipe>
 
-  <DBRTTestPipe>
-    <RTAdapter>
-      <RTInpAdapter>
-          <ClassName>RTSimple.RTAdapter</ClassName>
-          <BatchSize>5000</BatchSize>
-          <ListenerPort>8204</ListenerPort>
-      </RTInpAdapter>
-    </RTAdapter>
-
-    <Process>
-      <DestLookup>
-        <ClassName>RTSimple.DestLookup</ClassName>
-        <DataCache>PrefixCache</DataCache>
-        <BatchSize>5000</BatchSize>
-         <Active>true</Active>
-      </DestLookup>
-    </Process>
-  </DBRTTestPipe>
-  
   <Resource>
     <LogFactory>
       <ClassName>OpenRate.logging.LogFactory</ClassName>
@@ -105,35 +64,5 @@
     <ConversionCache>
       <ClassName>OpenRate.resource.ConversionCache</ClassName>
     </ConversionCache>
-
-    <DataSourceFactory>
-      <ClassName>OpenRate.resource.DataSourceFactory</ClassName>
-      <DataSourceBuilder>
-        <ClassName>OpenRate.db.C3P0DataSource</ClassName>
-      </DataSourceBuilder>
-      <DataSource>
-        <TestDB>
-          <db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
-          <driver>com.mysql.jdbc.Driver</driver>
-          <username>root</username>
-          <password>cpr</password>
-          <ValidationQuery>select 1 from dual</ValidationQuery>
-          <InitQuery>select 1 from dual</InitQuery>
-          <TestConnectionPeriod>60</TestConnectionPeriod>
-        </TestDB>
-      </DataSource>
-    </DataSourceFactory>
-
-    <CacheFactory>
-      <ClassName>OpenRate.resource.CacheFactory</ClassName>
-      <CacheableClass>
-        <RegexMatchTestCache>
-          <ClassName>OpenRate.cache.RegexMatchCache</ClassName>
-          <DataSourceType>File</DataSourceType>
-          <DataFile>src/test/resources/testRegex.dat</DataFile>
-          <KeyFields>2</KeyFields>
-        </RegexMatchTestCache>
-      </CacheableClass>
-    </CacheFactory>
   </Resource>
 </config>

@@ -95,6 +95,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
   
   // Used for logging and exception handling
   private static String message; 
+  private static OpenRate appl;
 
   public AbstractBalanceHandlerPlugInTest() {
   }
@@ -105,7 +106,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     FQConfigFileName = new URL("File:src/test/resources/TestBalanceHandler.properties.xml");
 
     // Set up the OpenRate internal logger - this is normally done by app startup
-    OpenRate.getApplicationInstance();
+    appl = OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
     FrameworkUtils.loadProperties(FQConfigFileName);
@@ -155,32 +156,38 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
   @AfterClass
   public static void tearDownClass() throws Exception
   {
-    TM.resetClients();
-    
-    // Deallocate
-    OpenRate.getApplicationInstance().cleanup();
+    // Shut down
+    OpenRate.getApplicationInstance().finaliseApplication();
   }
 
   @Before
   public void setUp() {
+    // get the instance
+    try
+    {
+      getInstance();
+    }
+    catch (InitializationException ie)
+    {
+      // Not OK, Assert.fail the case
+      message = "Error getting cache instance in test <AbstractBalanceHandlerPlugInTest>";
+      Assert.fail(message);
+    }
   }
 
   @After
   public void tearDown() {
-  }
-
-  /**
-   * Test of init method, of class AbstractBestMatch.
-   *
-   * @throws Exception
-   */
-  @Test
-  public void testInit() throws Exception
-  {
-    System.out.println("init");
-
-    // get the instance
-    getInstance();
+    // release the instance
+    try
+    {
+      releaseInstance();
+    }
+    catch (InitializationException ie)
+    {
+      // Not OK, Assert.fail the case
+      message = "Error releasing cache instance in test <AbstractBalanceHandlerPlugInTest>";
+      Assert.fail(message);
+    }
   }
 
     /**
@@ -191,17 +198,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     public void testBalanceGroup()
     {
         System.out.println("getBalanceGroup");
-
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractBalanceHandlerPlugInTest>";
-          Assert.fail(message);
-        }
 
         long BalanceGroupId = 12345L;
 
@@ -229,17 +225,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     public void testCheckBasicCounterManagement()
     {
         System.out.println("checkBasicCounterManagement");
-
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-        // Not OK, Assert.fail the case
-        message = "Error getting cache instance in test <AbstractBalanceHandlerPlugInTest>";
-        Assert.fail(message);
-        }
 
         long BalanceGroupId = 23456L;
         int CounterId = 1000;
@@ -321,18 +306,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     public void testDiscountConsumeRUM()
     {
         System.out.println("discountConsumeRUM");
-
-        // get the instance
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractBalanceHandlerPlugInTest>";
-          Assert.fail(message);
-        }
 
         // Set up the record
         TestRatingRecord CurrentRecord1 = new TestRatingRecord();
@@ -446,18 +419,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     public void testRefundConsumeRUM()
     {
         System.out.println("refundConsumeRUM");
-
-        // get the instance
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractBalanceHandlerPlugInTest>";
-          Assert.fail(message);
-        }
 
         // Set up the records for impacting
         TestRatingRecord CurrentRecord1 = new TestRatingRecord();
@@ -650,18 +611,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     public void testDiscountAggregateRUM() {
         System.out.println("discountAggregateRUM");
 
-        // get the instance
-        try
-        {
-          getInstance();
-        }
-        catch (InitializationException ie)
-        {
-          // Not OK, Assert.fail the case
-          message = "Error getting cache instance in test <AbstractBalanceHandlerPlugInTest>";
-          Assert.fail(message);
-        }
-
         // Set up the records for impacting
         TestRatingRecord CurrentRecord1 = new TestRatingRecord();
         TestRatingRecord CurrentRecord2 = new TestRatingRecord();
@@ -818,7 +767,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     }
 
     @Override
-    public void markForClosedown() {
+    public void markForShutdown() {
     }
 
     @Override
@@ -911,5 +860,22 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         }
       }
     }
+    else
+    {
+      Assert.fail("Instance already allocated");
+    }
+  }
+  
+ /**
+  * Method to release an instance of the implementation. Done this way to allow
+  * tests to be executed individually.
+  *
+  * @throws InitializationException
+  */
+  private void releaseInstance() throws InitializationException
+  {
+    TransactionManagerFactory.getTransactionManager("DBTestPipe").close();
+    
+    instance = null;
   }
 }

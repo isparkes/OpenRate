@@ -61,6 +61,7 @@ import OpenRate.record.IRecord;
 import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.sql.Connection;
+import java.util.ArrayList;
 import org.junit.*;
 
 /**
@@ -76,14 +77,6 @@ public class AbstractBestMatchTest
 
   // Used for logging and exception handling
   private static String message; 
-
- /**
-  * Default constructor
-  */
-  public AbstractBestMatchTest()
-  {
-    // Not used
-  }
 
  /**
   * This sets up a run time environment for testing modules. It is fairly
@@ -144,7 +137,7 @@ public class AbstractBestMatchTest
     JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','00','INTL','Rest of the world');").execute();
     
     // Get the caches that we are using
-    FrameworkUtils.startupCaches();    
+    FrameworkUtils.startupCaches();
   }
 
   @AfterClass
@@ -156,42 +149,12 @@ public class AbstractBestMatchTest
 
   @Before
   public void setUp() {
+    getInstance();
   }
 
   @After
   public void tearDown() {
-  }
-
-  /**
-   * Test of init method, of class AbstractBestMatch.
-   *
-   * @throws Exception
-   */
-  @Test
-  public void testInit() throws Exception
-  {
-    System.out.println("init");
-
-    // get the instance
-    getInstance();
-  }
-
-  /**
-   * Test of procHeader method, of class AbstractBestMatch.
-   */
-  @Test
-  public void testProcHeader()
-  {
-    System.out.println("procHeader");
-  }
-
-  /**
-   * Test of procTrailer method, of class AbstractBestMatch.
-   */
-  @Test
-  public void testProcTrailer()
-  {
-    System.out.println("procTrailer");
+    releaseInstance();
   }
 
   /**
@@ -206,17 +169,6 @@ public class AbstractBestMatchTest
     String Group;
 
     System.out.println("getBestMatch");
-
-    try
-    {
-      getInstance();
-    }
-    catch (InitializationException ie)
-    {
-      // Not OK, fail the case
-      message = "Error getting cache instance in test <AbstractBestMatchTest>";
-      Assert.fail(message);
-    }
 
     // Simple good case
     Group = "DefaultMap";
@@ -239,7 +191,30 @@ public class AbstractBestMatchTest
   @Test
   public void testGetBestMatchWithChildData()
   {
+    String BNumber;
+    ArrayList<String> result;
+    ArrayList<String> expResult;
+    String Group;
+    
     System.out.println("getBestMatchWithChildData");
+    
+    // Simple good case
+    Group = "DefaultMap";
+    BNumber = "0044123";
+    result = instance.getBestMatchWithChildData(Group, BNumber);
+    expResult = new ArrayList();
+    expResult.add("UK");
+    expResult.add("UK Any");
+    Assert.assertEquals(expResult, result);
+
+    // Simple good case
+    Group = "DefaultMap";
+    BNumber = "004923434";
+    result = instance.getBestMatchWithChildData(Group, BNumber);
+    expResult = new ArrayList();
+    expResult.add("INTL");
+    expResult.add("Rest of the world");
+    Assert.assertEquals(expResult, result);
   }
 
   /**
@@ -248,7 +223,26 @@ public class AbstractBestMatchTest
   @Test
   public void testIsValidBestMatchResult_ArrayList()
   {
+    String BNumber;
+    boolean result;
+    boolean expResult;
+    String Group;
+
     System.out.println("isValidBestMatchResult");
+    
+    // Simple good case
+    Group = "DefaultMap";
+    BNumber = "0044123";
+    result = instance.isValidBestMatchResult(instance.getBestMatchWithChildData(Group, BNumber));
+    expResult = true;
+    Assert.assertEquals(expResult, result);
+
+    // Simple bad case
+    Group = "DefaultMap";
+    BNumber = "99999";
+    result = instance.isValidBestMatchResult(instance.getBestMatchWithChildData(Group, BNumber));
+    expResult = false;
+    Assert.assertEquals(expResult, result);
   }
 
   /**
@@ -258,6 +252,27 @@ public class AbstractBestMatchTest
   public void testIsValidBestMatchResult_String()
   {
     System.out.println("isValidBestMatchResult");
+    
+    String BNumber;
+    boolean result;
+    boolean expResult;
+    String Group;
+
+    System.out.println("isValidBestMatchResult");
+    
+    // Simple good case
+    Group = "DefaultMap";
+    BNumber = "0044123";
+    result = instance.isValidBestMatchResult(instance.getBestMatch(Group, BNumber));
+    expResult = true;
+    Assert.assertEquals(expResult, result);
+
+    // Simple bad case
+    Group = "DefaultMap";
+    BNumber = "99999";
+    result = instance.isValidBestMatchResult(instance.getBestMatch(Group, BNumber));
+    expResult = false;
+    Assert.assertEquals(expResult, result);
   }
 
   public class AbstractBestMatchImpl extends AbstractBestMatch
@@ -292,10 +307,8 @@ public class AbstractBestMatchTest
  /**
   * Method to get an instance of the implementation. Done this way to allow
   * tests to be executed individually.
-  *
-  * @throws InitializationException
   */
-  private void getInstance() throws InitializationException
+  private AbstractBestMatch getInstance()
   {
     if (instance == null)
     {
@@ -303,7 +316,28 @@ public class AbstractBestMatchTest
       instance = new AbstractBestMatchTest.AbstractBestMatchImpl();
       
       // Get the instance
-      instance.init("DBTestPipe", "AbstractBestMatchTest");
+      try
+      {
+        instance.init("DBTestPipe", "AbstractBestMatchTest");
+      }
+      catch (InitializationException ex)
+      {
+        Assert.fail();
+      }
     }
+    else
+    {
+      Assert.fail("Instance already allocated");
+    }
+    
+    return instance;
+  }
+  
+ /**
+  * Method to release an instance of the implementation.
+  */
+  private void releaseInstance()
+  {
+    instance = null;
   }
 }

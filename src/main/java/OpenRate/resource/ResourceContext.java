@@ -55,6 +55,7 @@
 
 package OpenRate.resource;
 
+import OpenRate.exception.InitializationException;
 import OpenRate.logging.LogFactory;
 import java.util.Collection;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ import java.util.Iterator;
 public class ResourceContext
 {
   private static HashMap<String, IResource> resourceMap = new HashMap<>();
+  private boolean active;
 
  /**
   * Default Constructor
@@ -97,9 +99,22 @@ public class ResourceContext
   * @param name The resource name
   * @param resource The resource object reference
   */
-  public void register(String name, IResource resource)
+  public void register(String name, IResource resource) throws InitializationException
   {
+    if (name == null || name.isEmpty())
+    {
+      throw new InitializationException("Resource name is empty for resource <" + resource.toString() + ">", "resourceContext");
+    }
+    
+    if (resource == null)
+    {
+      throw new InitializationException("Resource is null for resource <" + name + ">", "resourceContext");
+    }
+    
     resourceMap.put(name, resource);
+    
+    // set that we are active
+    active = true;
   }
 
  /**
@@ -117,6 +132,9 @@ public class ResourceContext
  /**
   * Perform whatever cleanup is required of the underlying object. We take two
   * goes at this, shutting down all non-log resources first, then the log last.
+  * 
+  * The reason for this this that we might need the log right up until the very
+  * last minute.
   */
   public void cleanup()
   {
@@ -128,6 +146,13 @@ public class ResourceContext
     while (iter.hasNext())
     {
       IResource resource = iter.next();
+      
+      if (resource.getSymbolicName() == null)
+      {
+        System.err.println("Resource name is null for resource <" + resource.toString() + ">");
+      }
+      
+      System.out.println("Closing <" + resource.getSymbolicName() + ">");
       
       if (resource.getSymbolicName().equals(LogFactory.RESOURCE_KEY))
       {
@@ -143,6 +168,24 @@ public class ResourceContext
     if (logResource != null)
       logResource.close();
 
+    // Clear down the map
     resourceMap.clear();
+
+    // set that we are no longer active
+    active = false;
+  }
+
+  /**
+   * @return the active
+   */
+  public boolean isActive() {
+    return active;
+  }
+
+  /**
+   * @param active the active to set
+   */
+  public void setActive(boolean active) {
+    this.active = active;
   }
 }

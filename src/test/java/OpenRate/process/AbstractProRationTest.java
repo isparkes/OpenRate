@@ -99,14 +99,18 @@ public class AbstractProRationTest
 
   @AfterClass
   public static void tearDownClass() {
+    // Deallocate
+    OpenRate.getApplicationInstance().cleanup();
   }
 
     @Before
     public void setUp() {
+      getInstance();
     }
 
     @After
     public void tearDown() {
+      releaseInstance();
     }
 
   /**
@@ -127,9 +131,6 @@ public class AbstractProRationTest
     SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("calculateProRatedMonth");
-
-    // Get the instance
-    getInstance();
 
     // Simple good case, with 30 day months
     StartDate = sdfIn.parse("20120103000000");
@@ -180,9 +181,6 @@ public class AbstractProRationTest
     SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMddhhmmss");
 
     System.out.println("calculateProRationFactor");
-
-    // Get the instance
-    getInstance();
 
     // We are using the number of days in the month
     useCalendarDays = true;
@@ -330,9 +328,6 @@ public class AbstractProRationTest
 
     SimpleDateFormat sdfIn = new SimpleDateFormat("yyyyMMddhhmmss");
 
-    // Get the instance
-    getInstance();
-
     // Simple good case
     Date StartDate = sdfIn.parse("20120103000000");
     Date EndDate = sdfIn.parse("20120303000000");
@@ -378,15 +373,35 @@ public class AbstractProRationTest
   *
   * @throws InitializationException
   */
-  private void getInstance() throws InitializationException
+  private void getInstance()
   {
     if (instance == null)
     {
       // Get an initialise the cache
       instance = new AbstractProRationTest.AbstractProRationImpl();
+      
+      try
+      {
+        // Get the instance
+        instance.init("DBTestPipe", "AbstractMultipleValidityMatchTest");
+      }
+      catch (InitializationException ex)
+      {
+        org.junit.Assert.fail();
+      }
 
-      // Get the instance
-      instance.init("DBTestPipe", "AbstractMultipleValidityMatchTest");
     }
+    else
+    {
+      org.junit.Assert.fail("Instance already allocated");
+    }
+  }
+  
+ /**
+  * Method to release an instance of the implementation.
+  */
+  private void releaseInstance()
+  {
+    instance = null;
   }
 }

@@ -724,7 +724,8 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   */
   public void close()
   {
-    // No close down required
+    // clean up the clients
+    resetClients();
   }
 
 

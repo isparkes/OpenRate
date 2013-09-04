@@ -499,7 +499,7 @@ public abstract class AbstractPlugIn
    * no more records are found for the whole of a cycle.
    */
   @Override
-  public void markForClosedown()
+  public void markForShutdown()
   {
     //log.debug("PlugIn <" + getSymbolicName() + "> marked for exit....");
     this.shutdownFlag = true;

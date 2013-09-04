@@ -230,6 +230,7 @@ public class DataSourceFactory implements IResource, IEventInterface
   @Override
   public void close()
   {
+    sources.clear();
     OpenRate.getOpenRateFrameworkLog().debug("Shutdown Data Source Factory");
   }
 
