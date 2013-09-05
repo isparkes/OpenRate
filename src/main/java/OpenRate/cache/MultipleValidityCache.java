@@ -131,9 +131,9 @@ public class MultipleValidityCache
   */
   private class ValidityNode
   {
-    long              TimeFrom;
-    long              TimeTo;
-    ArrayList<String> Results = null;
+    long              timeFrom;
+    long              timeTo;
+    ArrayList<String> results = null;
     ValidityNode      child = null;
   }
 
@@ -149,7 +149,7 @@ public class MultipleValidityCache
  /**
   * Creates a new instance of the group Cache. The group Cache contains all
   * of the Groups that are later cached. The lookup is therefore performed within
-  * the group, retrieveing the validity segment for that group, resource_id and
+  * the group, retrieving the validity segment for that group, resource_id and
   * time.
   */
   public MultipleValidityCache()
@@ -165,52 +165,52 @@ public class MultipleValidityCache
   * The entries are ordered during the loading in a linked list sorted by
   * validity date. This makes the search at run time easier.
   *
-  * @param Group The data group to add the entry to
-  * @param ResourceID The resourceID of the entry to add
-  * @param StartTime The start time of the validity
-  * @param EndTime The end time of the validity
-  * @param Results The list of result values
+  * @param group The data group to add the entry to
+  * @param resourceID The resourceID of the entry to add
+  * @param startTime The start time of the validity
+  * @param endTime The end time of the validity
+  * @param results The list of result values
   */
-  public void addEntry(String Group, String ResourceID, long StartTime,
-                       long EndTime, ArrayList<String> Results)
+  public void addEntry(String group, String resourceID, long startTime,
+                       long endTime, ArrayList<String> results)
   {
     HashMap<String, ValidityNode>      tmpResourceCache;
     ValidityNode tmpValidityNode;
     ValidityNode newNode;
 
     // See if we already have the group cache for this Group
-    if (!GroupCache.containsKey(Group))
+    if (!GroupCache.containsKey(group))
     {
       // Create the new resource cache
       tmpResourceCache = new HashMap<>(100);
 
       // Add it to the group cache
-      GroupCache.put(Group, tmpResourceCache);
+      GroupCache.put(group, tmpResourceCache);
     }
     else
     {
       // Otherwise just get the existing object
-      tmpResourceCache = GroupCache.get(Group);
+      tmpResourceCache = GroupCache.get(group);
     }
 
     // Now add the validity segment into the list, checking only the start
     // time (thuis avoiding the overlap detection
-    if (!tmpResourceCache.containsKey(ResourceID))
+    if (!tmpResourceCache.containsKey(resourceID))
     {
       // Create the new list
       tmpValidityNode = new ValidityNode();
-      tmpValidityNode.TimeFrom = StartTime;
-      tmpValidityNode.TimeTo = EndTime;
-      tmpValidityNode.Results = Results;
+      tmpValidityNode.timeFrom = startTime;
+      tmpValidityNode.timeTo = endTime;
+      tmpValidityNode.results = results;
       tmpValidityNode.child = null;
 
       // Add in the new node
-      tmpResourceCache.put(ResourceID, tmpValidityNode);
+      tmpResourceCache.put(resourceID, tmpValidityNode);
     }
     else
     {
       // Recover the validity map that there is
-      tmpValidityNode = tmpResourceCache.get(ResourceID);
+      tmpValidityNode = tmpResourceCache.get(resourceID);
 
       // now run down the validity entries until we get to the end
       while (tmpValidityNode.child != null)
@@ -222,9 +222,9 @@ public class MultipleValidityCache
       newNode = new ValidityNode();
 
       // move the information over
-      newNode.TimeFrom = StartTime;
-      newNode.TimeTo = EndTime;
-      newNode.Results = Results;
+      newNode.timeFrom = startTime;
+      newNode.timeTo = endTime;
+      newNode.results = results;
       newNode.child = null;
 
       // add the new information to the tail of the list
@@ -236,30 +236,30 @@ public class MultipleValidityCache
   * Returns the first entry matching the resourceID in the given
   * group at the given time
   *
-  * @param Group The resource group to search in
-  * @param ResourceID The resource identifier to search for
-  * @param Time The time to search for
+  * @param group The resource group to search in
+  * @param resourceID The resource identifier to search for
+  * @param time The time to search for
   * @return The retrieved value, or "NOMATCH" if none found
   */
-  public String getFirstValidityMatch(String Group, String ResourceID, long Time)
+  public String getFirstValidityMatch(String group, String resourceID, long time)
   {
     HashMap<String,ValidityNode> tmpResourceCache;
     ValidityNode                 tmpValidityNode;
 
     // Get the service if we know it
-    tmpResourceCache = GroupCache.get(Group);
+    tmpResourceCache = GroupCache.get(group);
 
     if (tmpResourceCache != null)
     {
-      tmpValidityNode = tmpResourceCache.get(ResourceID);
+      tmpValidityNode = tmpResourceCache.get(resourceID);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.TimeFrom <= Time) &
-            (tmpValidityNode.TimeTo > Time))
+        if ((tmpValidityNode.timeFrom <= time) &
+            (tmpValidityNode.timeTo > time))
         {
-          return tmpValidityNode.Results.get(0);
+          return tmpValidityNode.results.get(0);
         }
 
         // Move down the map
@@ -274,31 +274,31 @@ public class MultipleValidityCache
   * Returns the result vector matching the resourceID in the given
   * group at the given time
   *
-  * @param Group The resource group to search in
-  * @param ResourceID The resource identifier to search for
-  * @param Time The time to search for
+  * @param group The resource group to search in
+  * @param resourceID The resource identifier to search for
+  * @param time The time to search for
   * @return The retrieved value vector, or null if none found
   */
-  public ArrayList<String> getFirstValidityMatchWithChildData(String Group, String ResourceID, long Time)
+  public ArrayList<String> getFirstValidityMatchWithChildData(String group, String resourceID, long time)
   {
     HashMap<String,ValidityNode> tmpResourceCache;
     ValidityNode   			     tmpValidityNode;
     ArrayList<String> Value = null;
 
     // Get the service if we know it
-    tmpResourceCache = GroupCache.get(Group);
+    tmpResourceCache = GroupCache.get(group);
 
     if (tmpResourceCache != null)
     {
-      tmpValidityNode = tmpResourceCache.get(ResourceID);
+      tmpValidityNode = tmpResourceCache.get(resourceID);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.TimeFrom <= Time) &
-            (tmpValidityNode.TimeTo > Time))
+        if ((tmpValidityNode.timeFrom <= time) &
+            (tmpValidityNode.timeTo > time))
         {
-          return tmpValidityNode.Results;
+          return tmpValidityNode.results;
         }
 
         // Move down the map
@@ -313,32 +313,32 @@ public class MultipleValidityCache
   * Returns the vector of all matches to the resourceID in the given
   * group at the given time
   *
-  * @param Group The resource group to search in
-  * @param ResourceID The resource identifier to search for
-  * @param Time The time to search for
+  * @param group The resource group to search in
+  * @param resourceID The resource identifier to search for
+  * @param time The time to search for
   * @return The retrieved value vector, or null if none found
   */
-  public ArrayList<String> getAllValidityMatches(String Group, String ResourceID, long Time)
+  public ArrayList<String> getAllValidityMatches(String group, String resourceID, long time)
   {
     HashMap<String,ValidityNode> tmpResourceCache;
     ValidityNode      			 tmpValidityNode;
     ArrayList<String> returnValue = new ArrayList<>();
 
     // Get the service if we know it
-    tmpResourceCache = GroupCache.get(Group);
+    tmpResourceCache = GroupCache.get(group);
 
     if (tmpResourceCache != null)
     {
-      tmpValidityNode = tmpResourceCache.get(ResourceID);
+      tmpValidityNode = tmpResourceCache.get(resourceID);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.TimeFrom <= Time) &
-            (tmpValidityNode.TimeTo > Time))
+        if ((tmpValidityNode.timeFrom <= time) &
+            (tmpValidityNode.timeTo > time))
         {
           // Add the value to the results list
-          returnValue.add(tmpValidityNode.Results.get(0));
+          returnValue.add(tmpValidityNode.results.get(0));
         }
 
         // Move down the map
@@ -353,32 +353,32 @@ public class MultipleValidityCache
   * Returns the vector of all matches to the resourceID in the given
   * group at the given time
   *
-  * @param Group The resource group to search in
-  * @param ResourceID The resource identifier to search for
-  * @param Time The time to search for
+  * @param group The resource group to search in
+  * @param resourceID The resource identifier to search for
+  * @param time The time to search for
   * @return The retrieved value vector, or null if none found
   */
-  public ArrayList<ArrayList<String>> getAllValidityMatchesWithChildData(String Group, String ResourceID, long Time)
+  public ArrayList<ArrayList<String>> getAllValidityMatchesWithChildData(String group, String resourceID, long time)
   {
     HashMap<String,ValidityNode> tmpResourceCache;
     ValidityNode                 tmpValidityNode;
     ArrayList<ArrayList<String>> returnValue = new ArrayList<>();
 
     // Get the service if we know it
-    tmpResourceCache = GroupCache.get(Group);
+    tmpResourceCache = GroupCache.get(group);
 
     if (tmpResourceCache != null)
     {
-      tmpValidityNode = tmpResourceCache.get(ResourceID);
+      tmpValidityNode = tmpResourceCache.get(resourceID);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.TimeFrom <= Time) &
-            (tmpValidityNode.TimeTo > Time))
+        if ((tmpValidityNode.timeFrom <= time) &
+            (tmpValidityNode.timeTo > time))
         {
           // Add the value to the results list
-          returnValue.add(tmpValidityNode.Results);
+          returnValue.add(tmpValidityNode.results);
         }
 
         // Move down the map
@@ -400,16 +400,16 @@ public class MultipleValidityCache
   public synchronized void loadDataFromFile() throws InitializationException
   {
     // Variable declarations
-    int               ValidityPeriodsLoaded = 0;
+    int               validityPeriodsLoaded = 0;
     BufferedReader    inFile;
     String            tmpFileRecord;
-    String[]          ZoneFields;
-    String            Group;
-    String            ResourceID;
-    long              TimeFrom;
-    long              TimeTo;
-    ArrayList<String> Result;
-    int               Index;
+    String[]          zoneFields;
+    String            group;
+    String            resourceID;
+    long              timeFrom;
+    long              timeTo;
+    ArrayList<String> result;
+    int               idx;
     String            tmpStartDate = null;
     String            tmpEndDate = null;
 
@@ -419,7 +419,7 @@ public class MultipleValidityCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
@@ -443,45 +443,45 @@ public class MultipleValidityCache
         }
         else
         {
-          ValidityPeriodsLoaded++;
-          ZoneFields = tmpFileRecord.split(";");
-          Group = ZoneFields[0];
-          ResourceID = ZoneFields[1];
-          tmpStartDate = ZoneFields[2];
-          tmpEndDate = ZoneFields[3];
-          TimeFrom = (int) fieldInterpreter.convertInputDateToUTC(tmpStartDate);
-          TimeTo = (int) fieldInterpreter.convertInputDateToUTC(tmpEndDate);
+          validityPeriodsLoaded++;
+          zoneFields = tmpFileRecord.split(";");
+          group = zoneFields[0];
+          resourceID = zoneFields[1];
+          tmpStartDate = zoneFields[2];
+          tmpEndDate = zoneFields[3];
+          timeFrom = (int) fieldInterpreter.convertInputDateToUTC(tmpStartDate);
+          timeTo = (int) fieldInterpreter.convertInputDateToUTC(tmpEndDate);
 
           // Interpret 0 values
-          if (TimeFrom == 0) TimeFrom = CommonConfig.LOW_DATE;
-          if (TimeTo == 0) TimeFrom = CommonConfig.HIGH_DATE;
+          if (timeFrom == 0) timeFrom = CommonConfig.LOW_DATE;
+          if (timeTo == 0) timeFrom = CommonConfig.HIGH_DATE;
 
           // now make an ArrayList of the results
-          Result = new ArrayList<>();
-          for (Index = 4 ; Index < ZoneFields.length ; Index++)
+          result = new ArrayList<>();
+          for (idx = 4 ; idx < zoneFields.length ; idx++)
           {
-            Result.add(ZoneFields[Index]);
+            result.add(zoneFields[idx]);
           }
 
           // Interpret 0 values
-          if (TimeFrom == 0)
+          if (timeFrom == 0)
           {
-            TimeFrom = CommonConfig.LOW_DATE;
+            timeFrom = CommonConfig.LOW_DATE;
           }
 
-          if (TimeTo == 0)
+          if (timeTo == 0)
           {
-            TimeTo = CommonConfig.HIGH_DATE;
+            timeTo = CommonConfig.HIGH_DATE;
           }
 
-          addEntry(Group, ResourceID, TimeFrom, TimeTo, Result);
+          addEntry(group, resourceID, timeFrom, timeTo, result);
 
           // Update to the log file
-          if ((ValidityPeriodsLoaded % loadingLogNotificationStep) == 0)
+          if ((validityPeriodsLoaded % loadingLogNotificationStep) == 0)
           {
-            message = "Multiple Validity Data Loading: <" + ValidityPeriodsLoaded +
+            message = "Multiple Validity Data Loading: <" + validityPeriodsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                  CacheDataFile + ">";
+                  cacheDataFile + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
@@ -490,20 +490,20 @@ public class MultipleValidityCache
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
-            "> in record <" + ValidityPeriodsLoaded + ">. IO Error.");
+            "Error reading input file <" + cacheDataFile +
+            "> in record <" + validityPeriodsLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
-            "> in record <" + ValidityPeriodsLoaded + ">. Malformed Record.");
+            "Error reading input file <" + cacheDataFile +
+            "> in record <" + validityPeriodsLoaded + ">. Malformed Record.");
     }
     catch (ParseException pe)
     {
       message =
             "Error converting date from <" + getSymbolicName() + "> in record <" +
-            ValidityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
+            validityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
             ">, <" + tmpEndDate + ">";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
@@ -518,15 +518,15 @@ public class MultipleValidityCache
       catch (IOException ex)
       {
         OpenRate.getOpenRateFrameworkLog().error(
-              "Error closing input file <" + CacheDataFile +
+              "Error closing input file <" + cacheDataFile +
               ">", ex);
       }
     }
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Multiple Validity Map Data Loading completed. " +
-          ValidityPeriodsLoaded + " configuration lines loaded from <" +
-          CacheDataFile + ">");
+          validityPeriodsLoaded + " configuration lines loaded from <" +
+          cacheDataFile + ">");
   }
 
  /**
@@ -537,13 +537,13 @@ public class MultipleValidityCache
   public synchronized void loadDataFromDB()
                       throws InitializationException
   {
-    int               ValidityPeriodsLoaded = 0;
-    String            Group;
-    String            ResourceID;
-    long              TimeFrom;
-    long              TimeTo;
-    ArrayList<String> Result;
-    int               Index;
+    int               validityPeriodsLoaded = 0;
+    String            group;
+    String            resourceID;
+    long              timeFrom;
+    long              timeTo;
+    ArrayList<String> result;
+    int               idx;
     String            tmpStartDate = null;
     String            tmpEndDate = null;
 
@@ -577,32 +577,32 @@ public class MultipleValidityCache
 
         while (mrs.next())
         {
-          ValidityPeriodsLoaded++;
-          Group = mrs.getString(1);
-          ResourceID = mrs.getString(2);
+          validityPeriodsLoaded++;
+          group = mrs.getString(1);
+          resourceID = mrs.getString(2);
           tmpStartDate = mrs.getString(3);
           tmpEndDate = mrs.getString(4);
-          TimeFrom = (int) fieldInterpreter.convertInputDateToUTC(tmpStartDate);
-          TimeTo = (int) fieldInterpreter.convertInputDateToUTC(tmpEndDate);
+          timeFrom = (int) fieldInterpreter.convertInputDateToUTC(tmpStartDate);
+          timeTo = (int) fieldInterpreter.convertInputDateToUTC(tmpEndDate);
 
           // Interpret 0 values
-          if (TimeFrom == 0) TimeFrom = CommonConfig.LOW_DATE;
-          if (TimeTo == 0) TimeTo = CommonConfig.HIGH_DATE;
+          if (timeFrom == 0) timeFrom = CommonConfig.LOW_DATE;
+          if (timeTo == 0) timeTo = CommonConfig.HIGH_DATE;
 
           // now make an ArrayList of the results
-          Result = new ArrayList<>();
-          for (Index = 5 ; Index <= mrs.getMetaData().getColumnCount() ; Index++)
+          result = new ArrayList<>();
+          for (idx = 5 ; idx <= mrs.getMetaData().getColumnCount() ; idx++)
           {
-            Result.add(mrs.getString(Index));
+            result.add(mrs.getString(idx));
           }
 
           // Add the map
-          addEntry(Group, ResourceID, TimeFrom, TimeTo, Result);
+          addEntry(group, resourceID, timeFrom, timeTo, result);
 
           // Update to the log file
-          if ((ValidityPeriodsLoaded % loadingLogNotificationStep) == 0)
+          if ((validityPeriodsLoaded % loadingLogNotificationStep) == 0)
           {
-            message = "Multiple Validity Data Loading: <" + ValidityPeriodsLoaded +
+            message = "Multiple Validity Data Loading: <" + validityPeriodsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
                   cacheDataSourceName + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
@@ -619,7 +619,7 @@ public class MultipleValidityCache
       {
         message =
               "Error converting date from <" + getSymbolicName() + "> in record <" +
-              ValidityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
+              validityPeriodsLoaded + ">. Unexpected date value <" + tmpStartDate +
               ">, <" + tmpEndDate + ">. message = <" + pe.getMessage() + ">";
         OpenRate.getOpenRateFrameworkLog().fatal(message,pe);
         throw new InitializationException(message,getSymbolicName());
@@ -648,7 +648,7 @@ public class MultipleValidityCache
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Multiple Validity Map Data Loading completed. " +
-          ValidityPeriodsLoaded + " configuration lines loaded from <" +
+          validityPeriodsLoaded + " configuration lines loaded from <" +
           cacheDataSourceName + ">");
   }
 
@@ -660,14 +660,14 @@ public class MultipleValidityCache
                       throws InitializationException
   {
     // Variable declarations
-    int            ValidityPeriodsLoaded = 0;
-    int            formFactor;
-    String         Group;
-    String         ResourceID;
-    long           TimeFrom;
-    long           TimeTo;
-    ArrayList<String> Result;
-    int            Index;
+    int               validityPeriodsLoaded = 0;
+    int               formFactor;
+    String            group;
+    String            resourceID;
+    long              timeFrom;
+    long              timeTo;
+    ArrayList<String> result;
+    int               idx;
     ArrayList<String> tmpMethodResult;
 
     // Find the location of the  zone configuration file
@@ -683,7 +683,7 @@ public class MultipleValidityCache
     // loop through the results for the customer login cache
     while (methodDataToLoadIterator.hasNext())
     {
-      ValidityPeriodsLoaded++;
+      validityPeriodsLoaded++;
       tmpMethodResult = methodDataToLoadIterator.next();
       formFactor = tmpMethodResult.size();
 
@@ -691,40 +691,40 @@ public class MultipleValidityCache
       {
         // There are not enough fields
         message = "Error reading input data from <" + cacheDataSourceName +
-        "> in record <" + ValidityPeriodsLoaded + ">. Not enough fields.";
+        "> in record <" + validityPeriodsLoaded + ">. Not enough fields.";
 
         OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
-      Group = tmpMethodResult.get(0);
-      ResourceID = tmpMethodResult.get(1);
-      TimeFrom = Integer.valueOf(tmpMethodResult.get(2));
-      TimeTo = Integer.valueOf(tmpMethodResult.get(3));
+      group = tmpMethodResult.get(0);
+      resourceID = tmpMethodResult.get(1);
+      timeFrom = Long.valueOf(tmpMethodResult.get(2));
+      timeTo = Long.valueOf(tmpMethodResult.get(3));
 
       // Interpret 0 values
-      if (TimeFrom == 0) TimeFrom = CommonConfig.LOW_DATE;
-      if (TimeTo == 0) TimeTo = CommonConfig.HIGH_DATE;
+      if (timeFrom == 0) timeFrom = CommonConfig.LOW_DATE;
+      if (timeTo == 0) timeTo = CommonConfig.HIGH_DATE;
 
       // now make an ArrayList of the results
-      Result = new ArrayList<>();
-      for (Index = 4 ; Index < tmpMethodResult.size() ; Index++)
+      result = new ArrayList<>();
+      for (idx = 4 ; idx < tmpMethodResult.size() ; idx++)
       {
-        Result.add(tmpMethodResult.get(Index));
+        result.add(tmpMethodResult.get(idx));
       }
 
       // deal with high dates
-      if (TimeTo == 0)
+      if (timeTo == 0)
       {
-        TimeTo = CommonConfig.HIGH_DATE;
+        timeTo = CommonConfig.HIGH_DATE;
       }
 
-      addEntry(Group, ResourceID, TimeFrom, TimeTo, Result);
+      addEntry(group, resourceID, timeFrom, timeTo, result);
 
       // Update to the log file
-      if ((ValidityPeriodsLoaded % loadingLogNotificationStep) == 0)
+      if ((validityPeriodsLoaded % loadingLogNotificationStep) == 0)
       {
-        message = "Multiple Validity Data Loading: <" + ValidityPeriodsLoaded +
+        message = "Multiple Validity Data Loading: <" + validityPeriodsLoaded +
               "> configurations loaded for <" + getSymbolicName() + "> from <" +
               cacheDataSourceName + ">";
         OpenRate.getOpenRateFrameworkLog().info(message);
@@ -733,7 +733,7 @@ public class MultipleValidityCache
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Multiple Validity Map Data Loading completed. " +
-          ValidityPeriodsLoaded + " configuration lines loaded from <" +
+          validityPeriodsLoaded + " configuration lines loaded from <" +
           cacheDataSourceName + ">");
   }
 
@@ -767,51 +767,51 @@ public class MultipleValidityCache
   * External Control Interface
   *
   * @param Command - command that is understand by the client module
-  * @param Init - we are performing initial configuration if true
-  * @param Parameter - parameter for the command
+  * @param init - we are performing initial configuration if true
+  * @param parameter - parameter for the command
   * @return The result string of the operation
   */
   @Override
-  public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
+  public String processControlEvent(String command, boolean init,
+                                    String parameter)
   {
     HashMap<String,ValidityNode> tmpResource;
     Collection<String>           tmpGroups;
-    Iterator<String>             GroupIter;
+    Iterator<String>             groupIter;
     String                       tmpGroupName;
-    int Objects = 0;
-    int ResultCode = -1;
+    int                          objects = 0;
+    int                          resultCode = -1;
 
     // Return the number of objects in the cache
-    if (Command.equalsIgnoreCase(SERVICE_GROUP_COUNT))
+    if (command.equalsIgnoreCase(SERVICE_GROUP_COUNT))
     {
       return Integer.toString(GroupCache.size());
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_OBJECT_COUNT))
+    if (command.equalsIgnoreCase(SERVICE_OBJECT_COUNT))
     {
       tmpGroups = GroupCache.keySet();
-      GroupIter = tmpGroups.iterator();
+      groupIter = tmpGroups.iterator();
 
-      while (GroupIter.hasNext())
+      while (groupIter.hasNext())
       {
-        tmpGroupName = GroupIter.next();
+        tmpGroupName = groupIter.next();
         tmpResource = GroupCache.get(tmpGroupName);
-        Objects += tmpResource.size();
+        objects += tmpResource.size();
       }
 
-      return Integer.toString(Objects);
+      return Integer.toString(objects);
     }
 
-    if (ResultCode == 0)
+    if (resultCode == 0)
     {
-      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), Command, Parameter));
+      OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECICacheCommand(getSymbolicName(), command, parameter));
 
       return "OK";
     }
     else
     {
-      return super.processControlEvent(Command,Init,Parameter);
+      return super.processControlEvent(command,init,parameter);
     }
   }
 

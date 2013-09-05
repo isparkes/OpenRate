@@ -394,7 +394,7 @@ public class ValiditySegmentCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
@@ -449,7 +449,7 @@ public class ValiditySegmentCache
           {
             message = "Validity Segment Map Data Loading: <" + ValidityPeriodsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                  CacheDataFile + ">";
+                  cacheDataFile + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
@@ -458,13 +458,13 @@ public class ValiditySegmentCache
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + ValidityPeriodsLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + ValidityPeriodsLoaded + ">. Malformed Record.");
     }
     catch (ParseException pe)
@@ -486,7 +486,7 @@ public class ValiditySegmentCache
       catch (IOException ex)
       {
         OpenRate.getOpenRateFrameworkLog().error(
-              "Error closing input file <" + CacheDataFile +
+              "Error closing input file <" + cacheDataFile +
               ">", ex);
       }
     }
@@ -494,7 +494,7 @@ public class ValiditySegmentCache
     OpenRate.getOpenRateFrameworkLog().info(
           "Validity Segment Map Data Loading completed. " +
           ValidityPeriodsLoaded + " configuration lines loaded from <" +
-          CacheDataFile + ">");
+          cacheDataFile + ">");
   }
 
  /**

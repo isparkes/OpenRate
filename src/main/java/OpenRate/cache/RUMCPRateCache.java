@@ -320,12 +320,12 @@ public class RUMCPRateCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException fnfe)
     {
       message = "Not able to read file : <" +
-            CacheDataFile + ">. message = <" + fnfe.getMessage() + ">";
+            cacheDataFile + ">. message = <" + fnfe.getMessage() + ">";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
@@ -395,7 +395,7 @@ public class RUMCPRateCache
     }
     catch (IOException ex)
     {
-      message = "Error reading input file <" + CacheDataFile +
+      message = "Error reading input file <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
@@ -403,7 +403,7 @@ public class RUMCPRateCache
     catch (ArrayIndexOutOfBoundsException ex)
     {
       message =
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record.";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
@@ -411,7 +411,7 @@ public class RUMCPRateCache
     catch (ParseException pe)
     {
       message =
-            "Error converting date from <" + CacheDataFile +
+            "Error converting date from <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
@@ -425,7 +425,7 @@ public class RUMCPRateCache
       }
       catch (IOException ex)
       {
-        message = "Error closing input file <" + CacheDataFile +
+        message = "Error closing input file <" + cacheDataFile +
                   ">. message = <" + ex.getMessage() + ">";
         OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
@@ -434,7 +434,7 @@ public class RUMCPRateCache
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Price Model Data Loading completed. " + RatesLoaded +
-          " configuration lines loaded from <" + CacheDataFile +
+          " configuration lines loaded from <" + cacheDataFile +
           ">");
   }
 

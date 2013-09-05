@@ -55,6 +55,7 @@
 
 package OpenRate.resource;
 
+import OpenRate.OpenRate;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.LogFactory;
 import java.util.Collection;

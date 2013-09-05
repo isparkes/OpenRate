@@ -264,12 +264,12 @@ public class RateCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
         
-      message = "Application is not able to read file : <" + CacheDataFile + ">";
+      message = "Application is not able to read file : <" + cacheDataFile + ">";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
@@ -294,7 +294,7 @@ public class RateCache
           if (RateFields.length != 7)
           {
             // bad record, log but try to continue
-            message = "Error reading input file <" + CacheDataFile +
+            message = "Error reading input file <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record <" + tmpFileRecord +
             ">. Expecting <7> fields but got <" + RateFields.length + ">";
             OpenRate.getOpenRateFrameworkLog().error(message);
@@ -318,7 +318,7 @@ public class RateCache
             {
               message = "Rate Cache Data Loading: <" + RatesLoaded +
                     "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                    CacheDataFile + ">";
+                    cacheDataFile + ">";
               OpenRate.getOpenRateFrameworkLog().info(message);
             }
           }
@@ -328,7 +328,7 @@ public class RateCache
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.");
     }
     finally
@@ -339,14 +339,14 @@ public class RateCache
       }
       catch (IOException ex)
       {
-        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + cacheDataFile +
                   ">", ex);
       }
     }
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Rate Cache Data Loading completed. " + RatesLoaded +
-          " configuration lines loaded from <" + CacheDataFile +
+          " configuration lines loaded from <" + cacheDataFile +
           ">");
   }
 

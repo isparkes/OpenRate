@@ -377,12 +377,12 @@ public class NumberRangeCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
       message = "Application is not able to read file : <" +
-            CacheDataFile + ">";
+            cacheDataFile + ">";
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -451,7 +451,7 @@ public class NumberRangeCache
           {
             message = "Number Range Data Loading: <" + ObjectLinesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                  CacheDataFile + ">";
+                  cacheDataFile + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
@@ -460,13 +460,13 @@ public class NumberRangeCache
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + ObjectLinesLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + ObjectLinesLoaded + ">. Malformed Record.");
     }
     finally
@@ -478,7 +478,7 @@ public class NumberRangeCache
       catch (IOException ex)
       {
         OpenRate.getOpenRateFrameworkLog().error(
-              "Error closing input file <" + CacheDataFile +
+              "Error closing input file <" + cacheDataFile +
               ">", ex);
       }
     }
@@ -486,7 +486,7 @@ public class NumberRangeCache
     OpenRate.getOpenRateFrameworkLog().info(
           "Number Range Data Loading completed. <" + ObjectLinesLoaded +
           "> configuration lines loaded from <" +
-          CacheDataFile + ">");
+          cacheDataFile + ">");
   }
 
  /**

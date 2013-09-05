@@ -1,0 +1,6 @@
+DefaultMap;01.*;.*;OK1;OUT2
+DefaultMap;0.*;.*;OK2;OUT2
+NumericalMap;>1;<=7;OK1;OUT2
+NumericalMap;<1;=2;OK2;OUT2
+NumericalMap;=9.2;=9.2;OK3;OUT3
+

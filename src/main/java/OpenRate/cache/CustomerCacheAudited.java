@@ -1066,7 +1066,7 @@ public class CustomerCacheAudited
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException exFileNotFound)
     {
@@ -1207,13 +1207,13 @@ public class CustomerCacheAudited
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + lineCounter + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + lineCounter + ">. Malformed Record.");
     }
     finally
@@ -1224,7 +1224,7 @@ public class CustomerCacheAudited
       }
       catch (IOException ex)
       {
-        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + cacheDataFile +
                   ">", ex);
       }
     }
@@ -1235,7 +1235,7 @@ public class CustomerCacheAudited
     // finished
     OpenRate.getOpenRateFrameworkLog().info(
           "Customer Cache Data Loading completed. " + lineCounter +
-          " configuration lines loaded from <" + CacheDataFile +
+          " configuration lines loaded from <" + cacheDataFile +
           ">");
     OpenRate.getOpenRateFrameworkLog().info("Alias Loaded:                  " + aliasLoaded);
     OpenRate.getOpenRateFrameworkLog().info("CustomerAudit Segments Loaded: " + auditSegsLoaded);

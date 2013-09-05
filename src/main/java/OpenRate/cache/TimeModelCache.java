@@ -702,10 +702,10 @@ public class TimeModelCache
 
       // Try to open the file
       try {
-          inFile = new BufferedReader(new FileReader(CacheDataFile));
+          inFile = new BufferedReader(new FileReader(cacheDataFile));
       } catch (FileNotFoundException fnfe) {
           message = "Not able to read time model data file <" +
-                  CacheDataFile + "> in <" + getSymbolicName() + ">" ;
+                  cacheDataFile + "> in <" + getSymbolicName() + ">" ;
           OpenRate.getOpenRateFrameworkLog().error(message);
           throw new InitializationException(message,getSymbolicName());
       }
@@ -757,7 +757,7 @@ public class TimeModelCache
       OpenRate.getOpenRateFrameworkLog().info(
               "Time Model Data Loading completed. <" + LinesLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + " > from <"
-          + CacheDataFile + ">");
+          + cacheDataFile + ">");
   }
 
  /**

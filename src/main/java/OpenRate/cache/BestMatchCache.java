@@ -159,12 +159,12 @@ public class BestMatchCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException exFileNotFound)
     {
       message = "Application is not able to read file : <" +
-            CacheDataFile + ">";
+            cacheDataFile + ">";
       throw new InitializationException(message,exFileNotFound,getSymbolicName());
     }
 
@@ -191,7 +191,7 @@ public class BestMatchCache
             if (formFactor != 0)
             {
               // this is a change - NO NO
-              message = "Form factor change <" + CacheDataFile +
+              message = "Form factor change <" + cacheDataFile +
               "> in record <" + ZonesLoaded + ">. Originally got <" + formFactor +
               "> fields in a record, not getting <" + ZoneFields.length + ">";
 
@@ -207,7 +207,7 @@ public class BestMatchCache
           if (ZoneFields.length < 3)
           {
             // There are not enough fields
-            message = "Error reading input file <" + CacheDataFile +
+            message = "Error reading input file <" + cacheDataFile +
             "> in record <" + ZonesLoaded + ">. Malformed Record.";
 
             throw new InitializationException(message,getSymbolicName());
@@ -230,7 +230,7 @@ public class BestMatchCache
           {
             message = "Best Match Data Loading: <" + ZonesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                  CacheDataFile + ">";
+                  cacheDataFile + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
@@ -258,7 +258,7 @@ public class BestMatchCache
     OpenRate.getOpenRateFrameworkLog().info(
           "Best Match Data Loading completed. <" + ZonesLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + " > from <"
-          + CacheDataFile + ">");
+          + cacheDataFile + ">");
     OpenRate.getOpenRateFrameworkLog().info(
           "Loaded <3> base fields and <" + (formFactor - 3) +
           "> additional data fields");

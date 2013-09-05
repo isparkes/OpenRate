@@ -521,12 +521,14 @@ public class OpenRate
 
   /**
    * Finalises the close down of the OpenRate application. Primarily here
-   * so that the OpenRate core can be embedded in other applications.
+   * so that the OpenRate core can be embedded in other applications. This is
+   * called after the pipelines have stopped, and manages the process of 
+   * unloading the resources and tidying up.
    */
   public void finaliseApplication()
   {
     // Close down any resources or modules gracefully
-    System.out.println("Shutting down...");
+    System.out.println("Shutting down applicaton <" + applicationName + ">");
 
     // put a message into the log
     if( getFwLog() != null){
@@ -1092,8 +1094,6 @@ public class OpenRate
     
     // Deallocate the properties object
     PropertyUtils.closePropertyUtils();
-    
-    
   }
 
   /**
@@ -1333,7 +1333,7 @@ public class OpenRate
   private void closeResources()
   {
     // shutdown any configured resources via ResourceContext.
-    System.out.println("Closing resources...");
+    System.out.println("Closing All Resources...");
 
     resourceContext.cleanup();
     

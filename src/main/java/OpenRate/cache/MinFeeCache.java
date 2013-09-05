@@ -110,15 +110,15 @@ public class MinFeeCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
       OpenRate.getOpenRateFrameworkLog().error(
             "Application is not able to read file : <" +
-            CacheDataFile + ">");
+            cacheDataFile + ">");
       throw new InitializationException("Application is not able to read file: <" +
-                                        CacheDataFile + ">",
+                                        cacheDataFile + ">",
                                         ex,
                                         getSymbolicName());
     }
@@ -151,13 +151,13 @@ public class MinFeeCache
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + dataLoaded + ">. IO Error.");
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + dataLoaded + ">. Malformed Record.");
     }
     finally
@@ -168,14 +168,14 @@ public class MinFeeCache
       }
       catch (IOException ex)
       {
-        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CacheDataFile +
+        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + cacheDataFile +
                   ">", ex);
       }
     }
 
     OpenRate.getOpenRateFrameworkLog().info(
           "MinFeeCache Cache Data Loading completed. " + dataLoaded +
-          " configuration lines loaded from <" + CacheDataFile +
+          " configuration lines loaded from <" + cacheDataFile +
           ">");
   }
 

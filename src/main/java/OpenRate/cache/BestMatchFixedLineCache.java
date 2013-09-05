@@ -148,11 +148,11 @@ public class BestMatchFixedLineCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
-      message = "Application is not able to read file : <" + CacheDataFile + ">";
+      message = "Application is not able to read file : <" + cacheDataFile + ">";
       throw new InitializationException(message,ex,getSymbolicName());
     }
 
@@ -179,7 +179,7 @@ public class BestMatchFixedLineCache
             if (formFactor != 0)
             {
               // this is a change - NO NO
-              message = "Form factor change <" + CacheDataFile +
+              message = "Form factor change <" + cacheDataFile +
               "> in record <" + ZonesLoaded + ">. Originally got <" + formFactor +
               "> fields in a record, not getting <" + ZoneFields.length + ">";
 
@@ -195,7 +195,7 @@ public class BestMatchFixedLineCache
           if (ZoneFields.length < 4)
           {
             // There are not enough fields
-            message = "Error reading input file <" + CacheDataFile +
+            message = "Error reading input file <" + cacheDataFile +
             "> in record <" + ZonesLoaded + ">. Malformed Record.";
 
             throw new InitializationException(message,getSymbolicName());
@@ -220,7 +220,7 @@ public class BestMatchFixedLineCache
           {
             String message = "Best Match Data Loading: <" + ZonesLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                  CacheDataFile + ">";
+                  cacheDataFile + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
@@ -229,7 +229,7 @@ public class BestMatchFixedLineCache
     catch (IOException ex)
     {
       OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + ZonesLoaded + ">. IO Error.");
     }
     finally
@@ -240,14 +240,14 @@ public class BestMatchFixedLineCache
       }
       catch (IOException ex)
       {
-        message = "Error closing input file <" + CacheDataFile + ">";
+        message = "Error closing input file <" + cacheDataFile + ">";
         throw new InitializationException(message,ex,getSymbolicName());
       }
     }
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Best Match Cache Data Loading completed. " + ZonesLoaded +
-          " configuration lines loaded from <" + CacheDataFile +
+          " configuration lines loaded from <" + cacheDataFile +
           ">");
     OpenRate.getOpenRateFrameworkLog().info(
           "Loaded <4> base fields and <" + (formFactor - 4) +

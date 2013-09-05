@@ -449,11 +449,11 @@ public class IndexedLookupCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
-      message = "Application is not able to read file : <" + CacheDataFile +
+      message = "Application is not able to read file : <" + cacheDataFile +
                        "> in module <" + getSymbolicName() + ">";
       throw new InitializationException(message,ex,getSymbolicName());
     }
@@ -500,14 +500,14 @@ public class IndexedLookupCache
     }
     catch (IOException ex)
     {
-      message =  "Error reading input file <" + CacheDataFile +
+      message =  "Error reading input file <" + cacheDataFile +
                         "> in record <" + ObjectLinesLoaded + "> in module <" +
                         getSymbolicName() + ">. IO Error.";
       throw new InitializationException(message,ex,getSymbolicName());
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      message = "Error reading input file <" + CacheDataFile +
+      message = "Error reading input file <" + cacheDataFile +
                        "> in record <" + ObjectLinesLoaded + "> in module <" +
                        getSymbolicName() + ">. Malformed Record.";
       throw new InitializationException(message,ex,getSymbolicName());
@@ -520,7 +520,7 @@ public class IndexedLookupCache
       }
       catch (IOException ex)
       {
-        message = "Error closing input file <" + CacheDataFile +
+        message = "Error closing input file <" + cacheDataFile +
                          "> in module <" + getSymbolicName() + ">";
         throw new InitializationException(message,ex,getSymbolicName());
       }
@@ -529,7 +529,7 @@ public class IndexedLookupCache
     OpenRate.getOpenRateFrameworkLog().info(
           "Indexed Match Data Loading completed. <" + ObjectLinesLoaded +
           "> configuration lines loaded from <" +
-          CacheDataFile + ">");
+          cacheDataFile + ">");
   }
 
  /**

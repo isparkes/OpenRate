@@ -813,12 +813,12 @@ public class RegexMatchCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException ex)
     {
       message = "Application is not able to read file : <" +
-            CacheDataFile + ">";
+            cacheDataFile + ">";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,ex,getSymbolicName());
     }
@@ -868,7 +868,7 @@ public class RegexMatchCache
               ResultFormFactor = 1;
               KeyFormFactor = ColumnCount - ResultFormFactor - 1;
               message = "Using default key factor for regex cache <" +
-                               CacheDataFile + ">. Assuming Key = <" +
+                               cacheDataFile + ">. Assuming Key = <" +
                                Integer.toString(KeyFormFactor) + "> and Result = <" +
                                Integer.toString(ResultFormFactor) + 
                                "> in module <"+getSymbolicName()+">";
@@ -879,7 +879,7 @@ public class RegexMatchCache
               // Use the given factor
               ResultFormFactor = ColumnCount - KeyFormFactor - 1;
               message = "Using defined key factor for regex cache <" +
-                               CacheDataFile + ">. Using Key = <" +
+                               cacheDataFile + ">. Using Key = <" +
                                Integer.toString(KeyFormFactor) + "> and Result = <" +
                                Integer.toString(ResultFormFactor) + "> in module <"+ 
                                getSymbolicName()+">";
@@ -923,7 +923,7 @@ public class RegexMatchCache
           {
             message = "Regex Map Data Loading: <" + MapsLoaded +
                   "> configurations loaded for <" + getSymbolicName() + "> from <" +
-                  CacheDataFile + ">";
+                  cacheDataFile + ">";
             OpenRate.getOpenRateFrameworkLog().info(message);
           }
         }
@@ -931,19 +931,19 @@ public class RegexMatchCache
     }
     catch (IOException ex)
     {
-      message = "Error reading input file  <" + CacheDataFile +
+      message = "Error reading input file  <" + cacheDataFile +
             "> in record <" + MapsLoaded + ">. IO Error.";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     catch (ArrayIndexOutOfBoundsException ex)
     {
-      message = "Error reading input file  <" + CacheDataFile +
+      message = "Error reading input file  <" + cacheDataFile +
             "> in record <" + MapsLoaded + ">. Malformed Record.";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
     catch (NullPointerException npe)
     {
-      message = "Error reading input file  <" + CacheDataFile +
+      message = "Error reading input file  <" + cacheDataFile +
             "> in record <" + MapsLoaded + ">. Malformed Record in module <"+getSymbolicName()+">";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
@@ -955,7 +955,7 @@ public class RegexMatchCache
       }
       catch (IOException ex)
       {
-        message = "Error closing input file <" + CacheDataFile + 
+        message = "Error closing input file <" + cacheDataFile + 
                          "> in module <"+getSymbolicName()+">";
         OpenRate.getOpenRateFrameworkLog().error(message, ex);
       }
@@ -963,7 +963,7 @@ public class RegexMatchCache
 
     message = "Regex Map Data Loading completed. <" + MapsLoaded +
           "> configuration lines loaded for <" + getSymbolicName() + "> from <" +
-          CacheDataFile + ">";
+          cacheDataFile + ">";
     OpenRate.getOpenRateFrameworkLog().info(message);
   }
 

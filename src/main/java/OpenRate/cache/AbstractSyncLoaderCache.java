@@ -103,7 +103,7 @@ public abstract class AbstractSyncLoaderCache
   /**
    * This is used to hold the name of the file to load the data from
    */
-  protected String CacheDataFile;
+  protected String cacheDataFile;
 
   /**
    * This is our connection object
@@ -394,12 +394,12 @@ public abstract class AbstractSyncLoaderCache
   */
   protected boolean getDataFiles(String ResourceName, String CacheName) throws InitializationException
   {
-    CacheDataFile = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
+    cacheDataFile = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
                                                               CacheName,
                                                               "DataFile",
                                                               "None");
 
-    if (CacheDataFile.equals("None"))
+    if (cacheDataFile.equals("None"))
     {
       return false;
     }
@@ -500,7 +500,7 @@ public abstract class AbstractSyncLoaderCache
     }
 
     // Now we can get the data from the method
-    Result = (ArrayList<ArrayList<String>>) DataMethod.getCacheDataFromMethod(CacheDataFile, MethodClassName);
+    Result = (ArrayList<ArrayList<String>>) DataMethod.getCacheDataFromMethod(cacheDataFile, MethodClassName);
 
     return Result;
   }

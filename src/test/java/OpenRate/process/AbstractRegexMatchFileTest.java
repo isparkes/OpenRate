@@ -60,16 +60,15 @@ import OpenRate.exception.ProcessingException;
 import OpenRate.record.IRecord;
 import TestUtils.FrameworkUtils;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.ArrayList;
 import org.junit.*;
 
 /**
- * Unit test for AbstractRegexMatch.
+ * Unit test for AbstractRegexMatch using the file based interface.
  *
  * @author tgdspia1
  */
-public class AbstractRegexMatchTest
+public class AbstractRegexMatchFileTest
 {
   private static URL FQConfigFileName;
   private static AbstractRegexMatch instance;
@@ -80,7 +79,7 @@ public class AbstractRegexMatchTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
-    FQConfigFileName = new URL("File:src/test/resources/TestRegexDB.properties.xml");
+    FQConfigFileName = new URL("File:src/test/resources/TestRegexFile.properties.xml");
     
    // Set up the OpenRate internal logger - this is normally done by app startup
     OpenRate.getApplicationInstance();
@@ -94,43 +93,6 @@ public class AbstractRegexMatchTest
     // Get the transaction manager
     FrameworkUtils.startupTransactionManager();
     
-    // Get Data Sources
-    FrameworkUtils.startupDataSources();
-    
-    // Get a connection
-    Connection JDBCChcon = FrameworkUtils.getDBConnection("RegexMatchTestCache");
-
-    try
-    {
-      JDBCChcon.prepareStatement("DROP TABLE TEST_REGEX").execute();
-    }
-    catch (Exception ex)
-    {
-    if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
-        (ex.getMessage().startsWith("user lacks")))      // HSQL
-      {
-        // It's OK
-      }
-      else
-      {
-        // Not OK, Assert.fail the case
-        message = "Error dropping table TEST_REGEX in test <AbstractRegexMatchTest>.";
-        Assert.fail(message);
-      }
-    }
-
-    // Create the test table
-    JDBCChcon.prepareStatement("CREATE TABLE TEST_REGEX (MAP_GROUP varchar(24), INPUT_VAL1 varchar(64), INPUT_VAL2 varchar(64), OUTPUT_VAL1 varchar(64), OUTPUT_VAL2 varchar(64), RANK int);").execute();
-
-    // Create some records in the table
-    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('DefaultMap','01.*','.*','OK1','OUT2',1);").execute();
-    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('DefaultMap','0.*','.*','OK2','OUT2',2);").execute();
-
-    // Create some records in the table for numerical matching
-    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('NumericalMap','>1','<=7','OK1','OUT2',1);").execute();
-    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('NumericalMap','<1','=2','OK2','OUT2',2);").execute();
-    JDBCChcon.prepareStatement("INSERT INTO TEST_REGEX (MAP_GROUP,INPUT_VAL1,INPUT_VAL2,OUTPUT_VAL1,OUTPUT_VAL2,RANK) values ('NumericalMap','=9.2','=9.2','OK3','OUT3',2);").execute();
-
     // Get the caches that we are using
     FrameworkUtils.startupCaches();
   }
@@ -161,7 +123,7 @@ public class AbstractRegexMatchTest
     String expResult;
     String Group;
 
-    System.out.println("getRegexMatch");
+    System.out.println("getRegexMatch File");
 
     String[] searchParameters = new String[1];
 
@@ -204,7 +166,7 @@ public class AbstractRegexMatchTest
     String expResult;
     String Group;
 
-    System.out.println("getRegexMatch (Numerical Comparison)");
+    System.out.println("getRegexMatch (Numerical Comparison) File");
 
     String[] searchParameters = new String[2];
 
@@ -256,7 +218,7 @@ public class AbstractRegexMatchTest
     ArrayList<String> expResult = new ArrayList<>();
     String Group;
 
-    System.out.println("getRegexMatchWithChildData");
+    System.out.println("getRegexMatchWithChildData File");
 
     String[] searchParameters = new String[1];
 
@@ -301,14 +263,12 @@ public class AbstractRegexMatchTest
   @Test
   public void testGetAllEntries()
   {
-    System.out.println("getAllEntries");
+    System.out.println("getAllEntries File");
 
     ArrayList<String> result;
     String expResult;
     String Group;
     int resultCount;
-
-    System.out.println("getRegexMatch");
 
     String[] searchParameters = new String[1];
 
@@ -345,7 +305,7 @@ public class AbstractRegexMatchTest
     boolean expResult;
     boolean result;
 
-    System.out.println("isValidRegexMatchResult");
+    System.out.println("isValidRegexMatchResult File");
 
     String[] searchParameters = new String[1];
 
@@ -386,7 +346,7 @@ public class AbstractRegexMatchTest
     boolean expResult;
     boolean result;
 
-    System.out.println("isValidRegexMatchResult");
+    System.out.println("isValidRegexMatchResult File");
 
     String[] searchParameters = new String[1];
 
@@ -455,7 +415,7 @@ public class AbstractRegexMatchTest
     if (instance == null)
     {
       // Get an initialise the cache
-      instance = new AbstractRegexMatchTest.AbstractRegexMatchImpl();
+      instance = new AbstractRegexMatchFileTest.AbstractRegexMatchImpl();
       
       try
       {

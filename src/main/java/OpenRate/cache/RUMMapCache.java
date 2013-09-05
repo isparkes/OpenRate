@@ -356,12 +356,12 @@ public class RUMMapCache
     // Try to open the file
     try
     {
-      inFile = new BufferedReader(new FileReader(CacheDataFile));
+      inFile = new BufferedReader(new FileReader(cacheDataFile));
     }
     catch (FileNotFoundException fnfe)
     {
       message = "Not able to read file : <" +
-            CacheDataFile + ">. message = <" + fnfe.getMessage() + ">";
+            cacheDataFile + ">. message = <" + fnfe.getMessage() + ">";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
@@ -397,7 +397,7 @@ public class RUMMapCache
     }
     catch (IOException ex)
     {
-      message = "Error reading input file <" + CacheDataFile +
+      message = "Error reading input file <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. IO Error.";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
@@ -405,7 +405,7 @@ public class RUMMapCache
     catch (ArrayIndexOutOfBoundsException ex)
     {
       message =
-            "Error reading input file <" + CacheDataFile +
+            "Error reading input file <" + cacheDataFile +
             "> in record <" + RatesLoaded + ">. Malformed Record.";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message,getSymbolicName());
@@ -418,7 +418,7 @@ public class RUMMapCache
       }
       catch (IOException ex)
       {
-        message = "Error closing input file <" + CacheDataFile +
+        message = "Error closing input file <" + cacheDataFile +
                   ">. message = <" + ex.getMessage() + ">";
         OpenRate.getOpenRateFrameworkLog().error(message);
         throw new InitializationException(message,getSymbolicName());
@@ -427,7 +427,7 @@ public class RUMMapCache
 
     OpenRate.getOpenRateFrameworkLog().info(
           "Price Group Data Loading completed. " + MapsLoaded +
-          " configuration lines loaded from <" + CacheDataFile +
+          " configuration lines loaded from <" + cacheDataFile +
           ">");
   }
 
