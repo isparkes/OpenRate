@@ -106,7 +106,6 @@ public class BestMatchCache
   * stored in the search tree
   */
   protected HashMap<String, DigitTree> groupCache;
-  private DigitTree prefixCache;
 
   // List of Services that this Client supports
   private final static String SERVICE_OBJECT_COUNT = "ObjectCount";
@@ -473,7 +472,7 @@ public class BestMatchCache
     if (!groupCache.containsKey(mapGroup))
     {
       // Create the new Digit Tree
-      prefixCache = new DigitTree();
+      DigitTree prefixCache = new DigitTree();
 
       groupCache.put(mapGroup, prefixCache);
 
@@ -490,12 +489,13 @@ public class BestMatchCache
     else
     {
       // Otherwise just add it to the existing Digit Tree
-      prefixCache = groupCache.get(mapGroup);
+      DigitTree prefixCache = groupCache.get(mapGroup);
+      
       try
       {
         prefixCache.addPrefix(prefix, resultList);
       }
-      catch (ArrayIndexOutOfBoundsException aiex)
+      catch (ArrayIndexOutOfBoundsException ex)
       {
         message = "Error Adding Prefix <" + prefix + "> to model <" + mapGroup + "> in module <" + getSymbolicName() + ">";
         OpenRate.getOpenRateFrameworkLog().fatal(message);
@@ -518,7 +518,7 @@ public class BestMatchCache
     String Value;
 
     // Get the service if we know it
-    prefixCache = groupCache.get(mapGroup);
+    DigitTree prefixCache = groupCache.get(mapGroup);
 
     if (prefixCache != null)
     {
@@ -545,7 +545,7 @@ public class BestMatchCache
   public ArrayList<String> getMatchWithChildData(String mapGroup, String prefix)
   {
     // Get the service if we know it
-    prefixCache = groupCache.get(mapGroup);
+    DigitTree prefixCache = groupCache.get(mapGroup);
 
     if (prefixCache != null)
     {

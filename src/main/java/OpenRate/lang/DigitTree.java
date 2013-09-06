@@ -67,22 +67,21 @@ public class DigitTree
    */
   public static final String NO_DIGIT_TREE_MATCH = "NOMATCH";
 
-  private Node               root                = new Node();
+  private Node               root;
+  private ArrayList<String>  nullResultList;
   private int                nodeCount           = 0;
 
  /**
-  * Default constructor
+  * Default constructor - sets up the root node
   */
   public DigitTree()
   {
     // Set up the root node so that it returns NOMATCH by default
-    Node nullNode = new Node();
-    ArrayList<String> nullResult = new ArrayList();
-    nullResult.add(NO_DIGIT_TREE_MATCH);
-    nullNode.Results = nullResult;
-
-    for (int idx = 0 ; idx < 10 ; idx++)
-    root.children[idx] = nullNode;
+    root = new Node();
+    
+    // Set up the null node return result
+    nullResultList = new ArrayList();
+    nullResultList.add(NO_DIGIT_TREE_MATCH);
   }
 
  /**
@@ -93,7 +92,7 @@ public class DigitTree
   */
   public void addPrefix(String prefix, ArrayList<String> resultList)
   {
-    char[] numberChars = prefix.toCharArray();
+   char[] numberChars = prefix.toCharArray();
 
     Node   node        = root;
 
@@ -144,7 +143,15 @@ public class DigitTree
       }
     }
 
-    return bestNode.Results.get(0);
+    // return the best match we got - sometimes this is no match at all
+    if (bestNode.Results == null)
+    {
+      return NO_DIGIT_TREE_MATCH;
+    }
+    else
+    {
+      return bestNode.Results.get(0);
+    }
   }
 
  /**
@@ -179,7 +186,15 @@ public class DigitTree
     }
 
     // No match found, so return the default root value
-    return bestNode.Results;
+    // return the best match we got - sometimes this is no match at all
+    if (bestNode.Results == null)
+    {
+      return nullResultList;
+    }
+    else
+    {
+      return bestNode.Results;
+    }
   }
 
  /**

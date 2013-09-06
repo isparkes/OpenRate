@@ -136,6 +136,12 @@ public class AbstractBestMatchTest
     JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','0044','UK','UK Any');").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('DefaultMap','00','INTL','Rest of the world');").execute();
     
+    // Create some records in the table
+    JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('WholeSale1','0032','WD1','Belgium');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('WholeSale1','00328165','WD2','Termination to Belgium Geographical Number');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('WholeSale2','0032','WD3','Belgium');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_BEST_MATCH (MAP_GROUP,INPUT_VAL,OUTPUT_VAL1,OUTPUT_VAL2) values ('WholeSale2','00328165','WD4','Termination to Belgium Geographical Number');").execute();
+    
     // Get the caches that we are using
     FrameworkUtils.startupCaches();
   }
@@ -182,6 +188,62 @@ public class AbstractBestMatchTest
     BNumber = "004923434";
     result = instance.getBestMatch(Group, BNumber);
     expResult = "INTL";
+    Assert.assertEquals(expResult, result);
+  }
+
+  /**
+   * Test of getBestMatch method, of class AbstractBestMatch - defect case
+   */
+  @Test
+  public void testGetBestMatchErg()
+  {
+    String BNumber;
+    String result;
+    String expResult;
+    String Group;
+
+    System.out.println("getBestMatchErg");
+
+    // Simple good case
+    Group = "WholeSale1";
+    BNumber = "003281656264";
+    result = instance.getBestMatch(Group, BNumber);
+    expResult = "WD2";
+    Assert.assertEquals(expResult, result);
+    
+    // Simple good case
+    Group = "WholeSale2";
+    BNumber = "003281656264";
+    result = instance.getBestMatch(Group, BNumber);
+    expResult = "WD4";
+    Assert.assertEquals(expResult, result);
+  }
+
+  /**
+   * Test of getBestMatch method, of class AbstractBestMatch - defect case
+   */
+  @Test
+  public void testGetBestMatchNoResults()
+  {
+    String BNumber;
+    String result;
+    String expResult;
+    String Group;
+
+    System.out.println("testGetBestMatchNoResults");
+
+    // Access a map group (digit tree) we don't have at all
+    Group = "WholeSale9";
+    BNumber = "003281656264";
+    result = instance.getBestMatch(Group, BNumber);
+    expResult = "NOMATCH";
+    Assert.assertEquals(expResult, result);
+    
+    // Simple good case
+    Group = "WholeSale1";
+    BNumber = "99999999999";
+    result = instance.getBestMatch(Group, BNumber);
+    expResult = "NOMATCH";
     Assert.assertEquals(expResult, result);
   }
 
