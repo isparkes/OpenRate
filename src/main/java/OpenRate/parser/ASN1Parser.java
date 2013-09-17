@@ -60,6 +60,7 @@
 package OpenRate.parser;
 
 import OpenRate.exception.ASN1Exception;
+import java.util.Formatter;
 
 /**
  * ASN.1 file parser
@@ -73,103 +74,103 @@ public class ASN1Parser implements IBinaryParser
  /**
   * 0: Constructed (Sequence/Choice...)
   */
-  public final int CONSTRUCTED     = 0x00;
+  public static final int CONSTRUCTED     = 0x00;
 
  /**
   * 170: BCD String (Octet String)
   */
-  public final int BCDString       = 0xAA;
+  public static final int BCDString       = 0xAA;
 
   /* Types - not used in v.1, maybe when improved further */
  /**
   * 1: Boolean
   */
-  public final int BOOLEAN         = 0x01;
+  public static final int BOOLEAN         = 0x01;
 
  /**
   * 2: Integer
   */
-  public final int INTEGER         = 0x02;
+  public static final int INTEGER         = 0x02;
 
  /**
   * 2: Bit string
   */
-  public final int BITSTRING       = 0x03;
+  public static final int BITSTRING       = 0x03;
 
  /**
   * 4: Byte string
   */
-  public final int OCTETSTRING     = 0x04;
+  public static final int OCTETSTRING     = 0x04;
 
  /**
   * 5: NULL
   */
-  public final int NULLTAG         = 0x05;
+  public static final int NULLTAG         = 0x05;
 
  /**
   * 6: Object Identifier
   */
-  public final int OID             = 0x06;
+  public static final int OID             = 0x06;
 
  /**
   * 7: Object Descriptor
   */
-  public final int OBJDESCRIPTOR   = 0x07;
+  public static final int OBJDESCRIPTOR   = 0x07;
 
  /**
   * 8: External
   */
-  public final int EXTERNAL        = 0x08;
+  public static final int EXTERNAL        = 0x08;
 
  /**
   * 9: Real
   */
-  public final int REAL            = 0x09;
+  public static final int REAL            = 0x09;
 
  /**
   * 10: Enumerated
   */
-  public final int ENUMERATED      = 0x0A;
+  public static final int ENUMERATED      = 0x0A;
 
  /**
   * 11: Embedded Presentation Data Value
   */
-  public final int EMBEDDED_PDV    = 0x0B;
+  public static final int EMBEDDED_PDV    = 0x0B;
 
  /**
   * 12: UTF8 string
   */
-  public final int UTF8STRING      = 0x0C;
+  public static final int UTF8STRING      = 0x0C;
 
  /**
   * 16: Sequence/sequence of
   */
-  public final int SEQUENCE        = 0x10;
+  public static final int SEQUENCE        = 0x10;
 
  /**
   * 17: Set/set of
   */
-  public final int SET             = 0x11;
+  public static final int SET             = 0x11;
 
  /**
   * 18: Numeric string
   */
-  public final int NUMERICSTRING   = 0x12;
+  public static final int NUMERICSTRING   = 0x12;
 
  /**
   * 19: Printable string (ASCII subset)
   */
-  public final int PRINTABLESTRING = 0x13;
+  public static final int PRINTABLESTRING = 0x13;
 
  /**
   * 20: T61/Teletex string
   */
-  public final int T61STRING       = 0x14;
+  public static final int T61STRING       = 0x14;
 
  /**
   * 21: Videotex string
   */
-  public final int VIDEOTEXSTRING  = 0x15;
+  public static final int VIDEOTEXSTRING  = 0x15;
 
  /**
   * 22: IA5/ASCII string
@@ -179,37 +180,37 @@ public class ASN1Parser implements IBinaryParser
  /**
   * 23: UTC time
   */
-  public final int UTCTIME         = 0x17;
+  public static final int UTCTIME         = 0x17;
 
  /**
   * 24: Generalized time
   */
-  public final int GENERALIZEDTIME = 0x18;
+  public static final int GENERALIZEDTIME = 0x18;
 
  /**
   * 25: Graphic string
   */
-  public final int GRAPHICSTRING   = 0x19;
+  public static final int GRAPHICSTRING   = 0x19;
 
  /**
   * 26: Visible string (ASCII subset)
   */
-  public final int VISIBLESTRING   = 0x1A;
+  public static final int VISIBLESTRING   = 0x1A;
 
  /**
   * 27: General string
   */
-  public final int GENERALSTRING   = 0x1B;
+  public static final int GENERALSTRING   = 0x1B;
 
  /**
   * 28: Universal string
   */
-  public final int UNIVERSALSTRING = 0x1C;
+  public static final int UNIVERSALSTRING = 0x1C;
 
  /**
   * 30: Basic Multilingual Plane/Unicode string
   */
-  public final int BMPSTRING       = 0x1E;
+  public static final int BMPSTRING       = 0x1E;
 
   private IASN1Def ASN1Def;
 
@@ -299,7 +300,7 @@ public class ASN1Parser implements IBinaryParser
   }
 
   /**
-   * Set the data to be parsed
+   * Set the data to be parsed.
    *
    * @param data The data to be parsed
    */
@@ -355,61 +356,88 @@ public class ASN1Parser implements IBinaryParser
   }
 
   /**
-   * @param tag
-	 *            the tag number
-   * @param value
-	 *            the input BCD encoded array
+   * formats the value of the tag as an integer and return as a BCD string value.
+   * No value checking is done. Padding is removed.
+   * 
+   * @param value the input BCD encoded array
 	 * @return The decoded string
 	 *
 	 */
-	public String parseBCDString(int tag, byte[] value) {
+	public String parseBCDString(byte[] value) {
 		StringBuilder buf = new StringBuilder(value.length * 2);
 
 		for (int i = 0; i < value.length; ++i) {
-			buf.append((char) (((value[i] & 0xf0) >> 4) + '0'));
-			if ((i != value.length) && ((value[i] & 0xf) != 0x0A)) // if not pad char
-				buf.append((char) ((value[i] & 0x0f) + '0'));
+      int hiNibble = ((value[i] & 0xf0) >> 4);
+      int loNibble = (value[i] & 0x0f);
+			if ((i != value.length) && (hiNibble != 0x0f)) // if not pad char
+  			buf.append((char) (hiNibble + '0'));
+			if ((i != value.length) && (loNibble != 0x0f)) // if not pad char
+				buf.append((char) (loNibble + '0'));
 		}
 		return buf.toString();
     }
 
   /**
-   * Parse an integer out
+   * formats the value of the tag as an integer and return as a string value.
+   * No value checking is done.
    *
-   * @param tag The tag to get the value for
-   * @param value The value to parse
+   * @param value the input hexadecimal byte encoded array
    * @return The parsed value
-   * @throws ASN1Exception
    */
-  public String parseInteger(int tag, byte[] value) throws ASN1Exception {
-        String output = "";
-        boolean negative;
-        long sum_up;
+  public String parseInteger(byte[] value) {
+    String output = "";
+    boolean negative;
+    long sum_up;
 
-        if ( value != null ) {
-            negative = ((value[0]>>7) != 0);
-            sum_up=0;
+    if ( value != null ) {
+        negative = ((value[0]>>7) != 0);
+        sum_up=0;
 
-            for(int i = 0; i < value.length; i++)
-            {
-                sum_up<<=8;
-                sum_up+=(long)(value[i] & 0xFF);
-                if (negative) sum_up-=0x01<<(8*value.length);
-            }
-
-            output += "" + sum_up;
+        for(int i = 0; i < value.length; i++)
+        {
+            sum_up<<=8;
+            sum_up+=(long)(value[i] & 0xFF);
+            if (negative) sum_up-=0x01<<(8*value.length);
         }
-        return output;
-    }
+
+        output += "" + sum_up;
+      }
+      return output;
+  }
 
   /**
-   * Parse a string
+   * formats the value of the tag as an integer and return as an integer value.
+   * No value checking is done.
    *
-   * @param tag The tag
-   * @param value The byte array of values
+   * @param value the input hexadecimal byte encoded array
+   * @return The parsed value
+   */
+  public int parseIntegerAsInteger(byte[] value) {
+    boolean negative;
+    int sum_up = 0;
+
+    if ( value != null ) {
+      negative = ((value[0]>>7) != 0);
+      sum_up=0;
+
+      for(int i = 0; i < value.length; i++)
+      {
+        sum_up<<=8;
+        sum_up+=(long)(value[i] & 0xFF);
+        if (negative) sum_up-=0x01<<(8*value.length);
+      }
+    }
+    return sum_up;
+  }
+  
+  /**
+   * formats the value of the tag as a printable string. No value checking
+   * is done.
+   *
+   * @param value the input hexadecimal byte encoded array
    * @return The string
    */
-  public String parsePrintableString(int tag, byte[] value)
+  public String parsePrintableString(byte[] value)
     {
         String output = "";
 
@@ -424,13 +452,13 @@ public class ASN1Parser implements IBinaryParser
     }
 
   /**
-   * Parse the value as an IA5String
-   *
-   * @param tag The tag
-   * @param value The byte array of values
-   * @return The string
+   * formats the value of the tag as an IA5String. No value checking
+   * is done.
+   * 
+   * @param value the input hexadecimal byte encoded array
+	 * @return The decoded string
    */
-    private String parseIA5String(int tag, byte[] value) {
+    public String parseIA5String(byte[] value) {
       String output = "";
       int i,len = value.length;
       for (i = 0; i < len; ++i) {
@@ -442,6 +470,54 @@ public class ASN1Parser implements IBinaryParser
     }
 
   /**
+   * formats the value of the tag as a hexadecimal byte array. Value checking
+   * is done. If a null value is passed in, we pass back an empty string.
+   * 
+   * @param value the input hexadecimal byte encoded array
+	 * @return The decoded string
+	 */
+	public String parseBytes(byte[] value) {
+    if (value == null)
+    {
+      return "";
+    }
+    else
+    {
+      StringBuilder buf = new StringBuilder(value.length * 2);
+
+      Formatter formatter = new Formatter(buf);  
+      for (byte b : value) {  
+          formatter.format("%02x", b);  
+      }
+      return buf.toString();
+    }
+  }
+
+  /**
+   * formats the value of the tag as a hexadecimal byte array. Value checking
+   * is done. If a null value is passed in, we pass back an empty string.
+   * 
+   * @param value the input hexadecimal byte encoded array
+	 * @return The decoded string
+	 */
+	public String parseBytes(byte[] value, int length) {
+    if (value == null)
+    {
+      return "";
+    }
+    else
+    {
+      StringBuilder buf = new StringBuilder(value.length * 2);
+
+      Formatter formatter = new Formatter(buf);  
+      for (byte b : value) {  
+          formatter.format("%02x", b);  
+      }
+      return buf.toString().substring(0, length*2);
+    }
+  }
+
+  /**
    * Parse the ASN.1
    *
    * @param tag The tag
@@ -449,17 +525,17 @@ public class ASN1Parser implements IBinaryParser
    * @return The string
    * @throws ASN1Exception
    */
-  public String parseASN1(int tag, byte[] value) throws ASN1Exception
+  public String parseASN1(int tagType, byte[] value) throws ASN1Exception
     {
         String output ="";
         if ( value != null ) {
-            switch (this.getType(tag)) {
-                case INTEGER:         output=parseInteger(tag, value); break;
-                case PRINTABLESTRING: output=parsePrintableString(tag, value); break;
-                case OCTETSTRING:     output=parsePrintableString(tag, value); break;
-                case IA5STRING:       output=parseIA5String(tag, value); break;
-                case 0xAA:  output=parseBCDString(tag, value); break;
-                default: output="";break;
+            switch (tagType) {
+                case INTEGER:         output=parseInteger(value); break;
+                case PRINTABLESTRING: output=parsePrintableString(value); break;
+                case OCTETSTRING:     output=parsePrintableString(value); break;
+                case IA5STRING:       output=parseIA5String(value); break;
+                case BCDString:       output=parseBCDString(value); break;
+                default:              output=parseBytes(value);break;
             }
         }
         return output;
@@ -472,6 +548,23 @@ public class ASN1Parser implements IBinaryParser
   }
 
   /**
+   * Reads the next element in the parsing sequence as a block. This allows us
+   * to easily separate records out of logical streams.
+   *
+   * @param length The length of the block to return
+   * @return The block
+   */
+  public byte[] readBlock(int length)
+  {
+    byte[] block = new byte[length];
+    
+    for (int idx = 0 ; idx < length ; idx++)
+      block[idx] = reader.readByte();
+    
+    return block;
+  }
+  
+  /**
    * Reads the next element in the parsing sequence
    *
    * @return The next element
@@ -480,7 +573,6 @@ public class ASN1Parser implements IBinaryParser
   public Asn1Class readNextElement() throws Exception
   {
     Asn1Class output = new Asn1Class();
-    int tag;
     int length;
 
     /* Local variables */
@@ -488,13 +580,22 @@ public class ASN1Parser implements IBinaryParser
     int value;
     byte[] header = new byte[5];
 
-    output.setTag(reader.readByte());
+    // Get the first byte for analysis
+    byte nextByte = reader.readByte();
+        
+    // if this is a filler byte skip it
+    if (nextByte == 0x00)
+    {
+      output.setNullTag(true);
+      return output;
+    }
+    
+    output.setTag(nextByte);
 
     header[0] = (byte) output.getTag();
     output.setId(output.getTag() & ~output.TAG_MASK);
-    output.setTag(output.getTag() & output.TAG_MASK);
 
-    if (output.getTag() == output.TAG_MASK) {
+    if ((output.getTag() & output.TAG_MASK) == output.TAG_MASK) {
       /* Long tag encoded as sequence of 7-bit values.  This doesn't try to
       handle tags > INT_MAX, it'd be pretty peculiar ASN.1 if it had to
       use tags this large */
@@ -505,16 +606,31 @@ public class ASN1Parser implements IBinaryParser
         output.setTag((output.getTag() << 7) | (value & 0x7F));
         index++;
       } while (((value & output.LEN_XTND) != 0) && (index < 5) && (reader.ready()));
+
+      // set the raw tag
+      output.setRawTag(parseBytes(header,index+1));
+
       if (index == 5) {
         return null;
       }
+    }
+    else
+    {
+      // Simple 1 byte tag
+      output.setTag(output.getTag() & output.TAG_MASK);
+      output.setRawTag(parseBytes(header,1));
     }
 
     output.setTagFromByteArray(reader.chopByteArray(header, index + 1));
     output.setTagname(ASN1Def.getTagName(output.getTag()));
 
+    // Parse the length out of the stream
     length = reader.readByte();
-    if ((length & output.LEN_MASK) == 0x00) {
+    if (length == 0) {
+      // if really is 0
+      length = 0;
+    } else if ((length & output.LEN_MASK) == 0x00) {
+      // interpret as 128
       length = 128;
     } else if ((length & output.LEN_MASK) != length) {
       // This is a multibyte length.  Find the actual length
@@ -547,14 +663,14 @@ public class ASN1Parser implements IBinaryParser
                   | (0x000000FF & buffer[3]);
           break;
         default:
-          throw new Exception("Length cannot be represented as "
-                  + "a Java int");
+          throw new Exception("Length cannot be represented as a Java int");
       }
     }
     output.setLength(length);
-    if (!output.getConstructed()) {
+    if (!output.isConstructed()) {
       output.setValue(readValue(output.getLength()));
     }
+    
     return output;
   }
 

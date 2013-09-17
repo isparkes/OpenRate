@@ -272,7 +272,7 @@ public abstract class ASN1FileInputAdapter
             throw new EOCException("End of block found");
           }
 
-          readByte &= 0xff;              // Make it unsigned
+          readByte &= 0xff; // Make it unsigned
 
           this.id = readByte & ~TAG_MASK;
           this.constructed = ((id & FORM_MASK) == CONSTRUCTED ); // is the tag constructed or primitive?

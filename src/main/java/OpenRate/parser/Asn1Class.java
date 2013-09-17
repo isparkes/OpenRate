@@ -63,11 +63,12 @@ import java.util.ArrayList;
 
 public class Asn1Class
 {
+  private boolean nullTag = false;
   private String tagname = "";
+  private String rawTag = "";
   private int tag = 0;
   private int id = 0;
   private int length = 0;
-  private byte[] tagByteArray;
   private byte[] value;
   public int RECORD_TYPE = 0;
 
@@ -75,18 +76,28 @@ public class Asn1Class
   public int LEN_XTND = 0x80;         /* Indefinite or long form */
   public int LEN_MASK = 0x7F;         /* Bits 7 - 1 */
   public int EOC = 0x00;              /* End of content Octet */
-  public int FORM_MASK = 0x20;        /* Bit 6 */
-  public int PRIMITIVE = 0x00;        /* 0 = primitive */
-  public int CONSTRUCTED = 0x20;      /* 1 = constructed */
+  public int FORM_MASK = 0x20;        /* Bit 6 Mask */
+  public int PRIMITIVE = 0x00;        /* Bit 6: 0 = primitive */
+  public int CONSTRUCTED = 0x20;      /* Bit 6: 1 = constructed */
 
   public Asn1Class() {
 
   }
 
-  public boolean getConstructed() {
+ /**
+  * Tells us if the tag is the header of a constructed element.
+  * 
+  * @return True if the element is a constructed class header
+  */
+  public boolean isConstructed() {
     return ((this.id & FORM_MASK) == CONSTRUCTED);
   }
 
+ /**
+  * Set the length of the tag
+  * 
+  * @param length The length to set
+  */
   public void setLength(int length) {
     this.length = length;
   }
@@ -95,10 +106,40 @@ public class Asn1Class
     this.tag = tag;
   }
 
+ /**
+  * Set the raw (unprocessed) tag value. This is useful for some ASN.1 types
+  * which make unusual use of the tag values (e.g. Huawei).
+  * 
+  * @param tag The tag to get the value from
+  */
+  public void setRawTag(String tag) {
+    this.rawTag = tag;
+  }
+
+ /**
+  * Get the raw (unprocessed) tag value as a Hex value. This is useful for some 
+  * ASN.1 types which make unusual use of the tag values (e.g. Huawei).
+  * 
+  * @return tag The tag to get the value from
+  */
+  public String getRawTag() {
+    return this.rawTag;
+  }
+  
+ /**
+  * Set the value as a byte array.
+  * 
+  * @param the value in the original byte form
+  */
   public void setValue(byte[] value) {
     this.value = value;
   }
 
+ /**
+  * Get the value as the original byte array.
+  * 
+  * @return the value in the original byte form
+  */
   public byte[] getOrigValue() {
     return this.value;
   }
@@ -164,7 +205,6 @@ public class Asn1Class
   }
 
   public void setTagFromByteArray(byte[] header) throws Exception {
-    this.tagByteArray = header;
     setTag(setTagByteArray(header));
   }
 
@@ -185,17 +225,35 @@ public class Asn1Class
   }
 
   /**
-   * @return the tagname
+   * Get the tag name of the tag
+   * 
+   * @return the tag name
    */
   public String getTagname() {
     return tagname;
   }
 
   /**
-   * @param tagname the tagname to set
+   * Set the tag name of the tag.
+   * 
+   * @param tagname the tag name to set
    */
   public void setTagname(String tagname) {
     this.tagname = tagname;
+  }
+
+  /**
+   * @return the nullTag
+   */
+  public boolean isNullTag() {
+    return nullTag;
+  }
+
+  /**
+   * @param nullTag the nullTag to set
+   */
+  public void setNullTag(boolean nullTag) {
+    this.nullTag = nullTag;
   }
 
   }

@@ -84,7 +84,7 @@ public class OpenRateTest {
     String OpenRateVersion = "V1.5.2.1";
     
     // This has to match the current SVN revision tag
-    int    revisionNumber = 26;
+    int    revisionNumber = 27;
     
     // By default we check that the build date is created on each build
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -215,9 +215,9 @@ public class OpenRateTest {
         openRateThread.start();
         
         // wait for it to start
+        System.out.println("Waiting for the system to come up");
         while (!appl.isFrameworkActive())
         {
-          System.out.println("Waiting 100mS for the system to come up");
           try {
             Thread.sleep(100);
           }
@@ -230,9 +230,9 @@ public class OpenRateTest {
         appl.processControlEvent("Shutdown", false, "true");
         
         // wait for it to stop
+        System.out.println("Waiting for the system to stop");
         while (appl.isFrameworkActive())
         {
-          System.out.println("Waiting 1000mS for the system to stop");
           try {
             Thread.sleep(1000);
           }
@@ -309,9 +309,9 @@ public class OpenRateTest {
         }
         
         // wait for it to stop
+        System.out.println("Waiting for the system to stop");
         while (appl.isFrameworkActive())
         {
-          System.out.println("Waiting 1000mS for the system to stop");
           try {
             Thread.sleep(1000);
           }
@@ -346,9 +346,9 @@ public class OpenRateTest {
         Thread openRateThread = new Thread(appl);
         openRateThread.start();
         
+        System.out.println("Waiting for startup to complete");
         while (!appl.isFrameworkActive())
         {
-          System.out.println("Waiting 100mS for startup to complete");
           try {
             Thread.sleep(100);
           } catch (InterruptedException ex) {
@@ -479,6 +479,7 @@ public class OpenRateTest {
           out.println("Framework:Shutdown=true");
 
           // wait for it to stop
+          System.out.println("Waiting for the system to stop");
           while (appl.isFrameworkActive())
           {
             try {

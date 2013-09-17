@@ -1047,7 +1047,6 @@ public abstract class BinaryFileInputAdapter
    */
   private void initFileName() throws InitializationException
   {
-    String  message;
     File    dir;
 
     /*
