@@ -68,15 +68,16 @@ public class HuaweiDef implements IASN1Def
   private HashMap<String,Integer> tagTypes;
   private HashMap<String,String> cdrNames;
   
-  private String[] tagNameSimple = new String[10];
-  
   @Override
   public void initASN1() {
   }
 
  /**
   * Initialise the tags for the decoding. The key into the hash maps is 
-  * CDRtype hex;Tag ID hex[;Block ID Hex]
+  * CDRtype hex;Tag ID hex[;Block ID Hex][;Block ID Hex][;Block ID Hex]
+  * 
+  * The exact name of a tag depends on the location in the tree as well as the 
+  * tag id.
   */
   @Override
   public void initTags() {
@@ -134,42 +135,10 @@ public class HuaweiDef implements IASN1Def
     
     // SUPS
     cdrNames.put("0a", "SUPS");
-    
-    // List of tag names
-    for (int idx=0;idx<10;idx++)
-    {
-      tagNameSimple[idx] = "Tag"+idx;
-    }
   }
 
   @Override
-  public String getTagName(int tagId) {
-    if (tagId >= 0 && tagId < tagNameSimple.length)
-    {
-      return tagNameSimple[tagId];
-    }
-    else
-    {
-      return "";
-    }
-  }
-
-  @Override
-  public int getLength(int tagId) {
-    return 0;
-  }
-
-  @Override
-  public int getType(int tagId) {
-    return 0;
-  }
-
-  @Override
-  public String getTypeName(int tagId) {
-    return "";
-  }
-  
-  public String getCompositeName(String tagPath)
+  public String getTagName(String tagPath)
   {
     if (tagNames.containsKey(tagPath))
     {
@@ -193,7 +162,8 @@ public class HuaweiDef implements IASN1Def
     }
   }
   
-  public int getCompositeType(String tagPath)
+  @Override
+  public int getTagType(String tagPath)
   {
     if (tagTypes.containsKey(tagPath))
     {

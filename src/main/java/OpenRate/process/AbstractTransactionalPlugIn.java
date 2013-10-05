@@ -107,7 +107,7 @@ public abstract class AbstractTransactionalPlugIn
 
     // Register as a Transaction Manager client
     TM = TransactionManagerFactory.getTransactionManager(PipelineName);
-    TMClientNumber  = TM.RegisterClient(TMDefs.getTMDefs().CT_CLIENT_PROC,this);
+    TMClientNumber  = TM.registerClient(TMDefs.getTMDefs().CT_CLIENT_PROC,this);
   }
 
  /**

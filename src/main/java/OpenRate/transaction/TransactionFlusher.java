@@ -261,7 +261,7 @@ public class TransactionFlusher implements Runnable
 
  /**
   * Get the number of transactions which have been flushed but not yet
-  * finalsed.
+  * finalised.
   *
   * @return the count.
   */

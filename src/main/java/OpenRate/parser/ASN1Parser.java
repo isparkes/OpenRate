@@ -212,8 +212,10 @@ public class ASN1Parser implements IBinaryParser
   */
   public static final int BMPSTRING       = 0x1E;
 
+  // The definition file we are using
   private IASN1Def ASN1Def;
 
+  // The byte stream reader for this decoder
   private ByteArrayReader reader = new ByteArrayReader();
 
  /**
@@ -226,6 +228,9 @@ public class ASN1Parser implements IBinaryParser
     return reader.ready();
   }
 
+ /**
+  * The internal reader object
+  */
   private class ByteArrayReader {
     private byte[] data;
     private int byteArrayLength = 0;
@@ -251,8 +256,9 @@ public class ASN1Parser implements IBinaryParser
     }
 
    /**
-    * Set the internal data buffer and reset the pointer
-    * @param data
+    * Set the internal data buffer and reset the pointer.
+    * 
+    * @param data The data to set
     */
     private void setData(byte[]data) {
       this.byteArrayLength = data.length;
@@ -260,6 +266,12 @@ public class ASN1Parser implements IBinaryParser
       this.data = data;
     }
 
+   /**
+    * Read a single byte out of the reader, moving the byte pointer on to
+    * be ready for the next byte.
+    * 
+    * @return 
+    */
     public byte readByte() {
       byte output;
       output=this.data[bytePosition];
@@ -267,31 +279,22 @@ public class ASN1Parser implements IBinaryParser
       return output;
     }
 
-    public byte[] readBytes(byte[] buffer) throws Exception {
-      return chopByteArray(buffer.length);
-    }
-
+   /**
+    * Returns true if there are more bytes to read, otherwise false.
+    * 
+    * @return True if there are more bytes left in the reader
+    */
     public boolean ready() {
       return (this.byteArrayLength > this.bytePosition);
     }
 
-    public byte[] chopByteArray(int length) throws Exception {
-      byte[] newhead = new byte[length];
-
-      if (this.byteArrayLength >= (this.bytePosition + length)) {
-        length += this.bytePosition;
-        int headCount = 0;
-        for (int i = this.bytePosition; i < length; i++) {
-          newhead[headCount] = this.data[i];
-          headCount += 1;
-        }
-        this.bytePosition = length;
-      } else {
-        throw new Exception("Position + choplength (" + this.bytePosition + "+" + length +") puts choplength beyond length of array ( "+ this.byteArrayLength + ").");
-      }
-      return newhead;
-    }
-
+   /**
+    * Chop out an array section from an existing array.
+    * 
+    * @param header The original byte array
+    * @param length The number of bytes to chop
+    * @return The new chopped byte array
+    */
     public byte[] chopByteArray(byte[] header, int length) {
       byte[] newhead = new byte[length];
       System.arraycopy(header, 0, newhead, 0, length);
@@ -318,41 +321,6 @@ public class ASN1Parser implements IBinaryParser
   public ASN1Parser(IASN1Def ASN1Specification)
   {
     ASN1Def = ASN1Specification;
-  }
-
-  /**
-   * Parse an ASN.1 name
-   *
-   * @param tag The tag number to get the name for
-   * @return The name of the tag
-   */
-  public String parseASN1Name(int tag)
-  {
-      try {
-          return ASN1Def.getTagName(tag);
-      } catch (Exception e) {
-          return "";
-      }
-  }
-
-  /**
-   * Get the type for a tag
-   *
-   * @param tag The tag to get
-   * @return The type
-   */
-  public int getType(int tag) {
-      return this.ASN1Def.getType(tag);
-  }
-
-  /**
-   * Get the type name for a tag
-   *
-   * @param tag The tag
-   * @return The type name
-   */
-  public String getTypeName(int tag) {
-      return this.ASN1Def.getTypeName(tag);
   }
 
   /**
@@ -541,15 +509,10 @@ public class ASN1Parser implements IBinaryParser
         return output;
     }
 
-  private byte[] readValue(int length) throws Exception {
-    byte[] value = new byte[length];
-    value = reader.readBytes(value);
-    return value;
-  }
-
   /**
-   * Reads the next element in the parsing sequence as a block. This allows us
-   * to easily separate records out of logical streams.
+   * Reads a block out of the byte stream without looking at the contents. This
+   * allows us to easily separate records out of logical streams and treat them
+   * recursively or procedurally.
    *
    * @param length The length of the block to return
    * @return The block
@@ -577,13 +540,14 @@ public class ASN1Parser implements IBinaryParser
 
     /* Local variables */
     int index = 0;
-    int value;
+    byte value;
     byte[] header = new byte[5];
 
     // Get the first byte for analysis
     byte nextByte = reader.readByte();
         
-    // if this is a filler byte skip it
+    // if this is a filler byte skip it - this is used as packing in some
+    // formats e.g. Ericsson to get to the end of a block boundary
     if (nextByte == 0x00)
     {
       output.setNullTag(true);
@@ -600,19 +564,24 @@ public class ASN1Parser implements IBinaryParser
       handle tags > INT_MAX, it'd be pretty peculiar ASN.1 if it had to
       use tags this large */
       output.setTag(0);
+      
       do {
         value = reader.readByte();
-        header[index + 1] = (byte) value;
+        header[index + 1] = value;
         output.setTag((output.getTag() << 7) | (value & 0x7F));
         index++;
       } while (((value & output.LEN_XTND) != 0) && (index < 5) && (reader.ready()));
 
-      // set the raw tag
-      output.setRawTag(parseBytes(header,index+1));
-
+      // If we ran off the end of the header, it is an error
       if (index == 5) {
         return null;
       }
+      
+      // set the tag
+      output.setTagFromByteArray(header);
+      
+      // set the raw tag
+      output.setRawTag(parseBytes(header,index+1));
     }
     else
     {
@@ -621,29 +590,26 @@ public class ASN1Parser implements IBinaryParser
       output.setRawTag(parseBytes(header,1));
     }
 
-    output.setTagFromByteArray(reader.chopByteArray(header, index + 1));
-    output.setTagname(ASN1Def.getTagName(output.getTag()));
-
     // Parse the length out of the stream
     length = reader.readByte();
     if (length == 0) {
-      // if really is 0
+      // it really is 0
       length = 0;
-    } else if ((length & output.LEN_MASK) == 0x00) {
-      // interpret as 128
-      length = 128;
     } else if ((length & output.LEN_MASK) != length) {
       // This is a multibyte length.  Find the actual length
       int numLengthBytes = (length & output.LEN_MASK);
       length = 0x00000000;
       byte[] buffer = new byte[numLengthBytes];
       try {
-        buffer = reader.readBytes(buffer);
+        buffer = readBlock(numLengthBytes);
       } catch (Exception ex) {
         throw ex;
       }
 
       switch (numLengthBytes) {
+        case 0:
+          // we have a zero length
+          break;
         case 1:
           length |= (0x000000FF & buffer[0]);
           break;
@@ -668,23 +634,10 @@ public class ASN1Parser implements IBinaryParser
     }
     output.setLength(length);
     if (!output.isConstructed()) {
-      output.setValue(readValue(output.getLength()));
+      output.setValue(readBlock(output.getLength()));
     }
     
     return output;
-  }
-
-  /**
-   * Reads the next tag
-   *
-   * @param tag
-   * @throws Exception
-   */
-  public void readNextTag(int tag) throws Exception {
-    Asn1Class item;
-
-    item = readNextElement();
-    long endOfTag = item.getLength() + reader.bytePosition;
   }
 }
 

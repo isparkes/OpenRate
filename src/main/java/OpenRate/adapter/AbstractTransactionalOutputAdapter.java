@@ -70,7 +70,7 @@ import OpenRate.transaction.TransactionManagerFactory;
  *
  * @author Ian
  */
-public abstract class AbstractTransactionalSTOutputAdapter
+public abstract class AbstractTransactionalOutputAdapter
   extends AbstractOutputAdapter
   implements ITMClient
 {
@@ -81,7 +81,7 @@ public abstract class AbstractTransactionalSTOutputAdapter
   private int TMClientNumber = 0;
 
   /** Creates a new instance of AbstractTransactionalInputAdapter */
-  public AbstractTransactionalSTOutputAdapter()
+  public AbstractTransactionalOutputAdapter()
   {
     super();
   }
@@ -101,7 +101,7 @@ public abstract class AbstractTransactionalSTOutputAdapter
 
     // Register as a Transaction Manager client
     TM = TransactionManagerFactory.getTransactionManager(PipelineName);
-    TMClientNumber = TM.RegisterClient(TMDefs.getTMDefs().CT_CLIENT_OUTPUT, this);
+    TMClientNumber = TM.registerClient(TMDefs.getTMDefs().CT_CLIENT_OUTPUT, this);
   }
 
   // -----------------------------------------------------------------------------

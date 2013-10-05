@@ -56,7 +56,7 @@
 package OpenRate.adapter.jdbc;
 
 import OpenRate.CommonConfig;
-import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
+import OpenRate.adapter.AbstractTransactionalOutputAdapter;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
@@ -101,7 +101,7 @@ import java.util.Iterator;
  * performance tuning should be found.
  */
 public abstract class JDBCOutputAdapter
-  extends AbstractTransactionalSTOutputAdapter
+  extends AbstractTransactionalOutputAdapter
 {
   /**
    * The query that is used to prepare the database for record insert

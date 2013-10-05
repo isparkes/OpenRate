@@ -64,53 +64,6 @@ package OpenRate.parser;
 public interface IASN1Def
 {
   /**
-   * The ASN.1 definition class
-   */
-  public class ASN1TypeClass {
-    /**
-     * The tag value
-     */
-    public int      tag;
-
-    /**
-     * The tag name
-     */
-    public String   name;
-
-    /**
-     * The tag length
-     */
-    public int      length;
-
-    /**
-     * The tag type
-     */
-    public int      type;
-
-    /**
-     * The tag block key
-     */
-    public int      blockKey;
-
-    /**
-     * Create a new ASN.1 type class
-     *
-     * @param tag The tag id
-     * @param name The tag name
-     * @param type The tag type
-     * @param blockKey The block key
-     * @param length The length
-     */
-    public ASN1TypeClass(int tag, String name, int type, int blockKey, int length) {
-        this.tag = tag;
-        this.name = name;
-        this.length = length;
-        this.type = type;
-        this.blockKey = blockKey;
-      }
-    }
-
-  /**
    * Init
    */
   public void initASN1();
@@ -121,20 +74,16 @@ public interface IASN1Def
   public void initTags();
 
   /**
-   * Get the tag name
+   * Get the tag name for the path of the tag. Note that we don't usually do
+   * this directly on the individual tag id of the element, although theoretically
+   * this is the right way. Many formats re-use tags within structures, and
+   * therefore we have to know the whole path before we can resolve the
+   * exact tag meaning.
    *
    * @param tagId The id of the tag to get
    * @return The name
    */
-  public String getTagName(int tagId);
-
-  /**
-   * Get the length of a tag
-   *
-   * @param tagId The id of the tag to get
-   * @return Th length
-   */
-  public int getLength(int tagId);
+  public String getTagName(String tagId);
 
   /**
    * Get the type of a tag
@@ -142,13 +91,5 @@ public interface IASN1Def
    * @param tagId The id of the tag to get
    * @return The type
    */
-  public int getType(int tagId);
-
-  /**
-   * Get the type name of a tag
-   *
-   * @param tagId The id of the tag to get
-   * @return The type name
-   */
-  public String getTypeName(int tagId);
+  public int getTagType(String tagId);
 }

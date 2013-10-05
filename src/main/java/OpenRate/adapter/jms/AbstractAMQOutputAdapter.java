@@ -56,7 +56,7 @@
 package OpenRate.adapter.jms;
 
 import OpenRate.CommonConfig;
-import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
+import OpenRate.adapter.AbstractTransactionalOutputAdapter;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -80,7 +80,7 @@ import org.apache.activemq.command.ActiveMQTopic;
  * This module writes records into an Active MQ Queue.
  */
 public abstract class AbstractAMQOutputAdapter
-  extends AbstractTransactionalSTOutputAdapter
+  extends AbstractTransactionalOutputAdapter
 {
   /**
    * The type of the queue we are scanning.

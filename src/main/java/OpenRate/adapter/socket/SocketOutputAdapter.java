@@ -55,7 +55,7 @@
 
 package OpenRate.adapter.socket;
 
-import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
+import OpenRate.adapter.AbstractTransactionalOutputAdapter;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
@@ -75,7 +75,7 @@ import java.util.Iterator;
  * aware handling.
  */
 public abstract class SocketOutputAdapter
-  extends AbstractTransactionalSTOutputAdapter
+  extends AbstractTransactionalOutputAdapter
   implements IEventInterface
 {
   // Port of the Socket to listen on

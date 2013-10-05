@@ -217,7 +217,6 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   public synchronized int openTransaction(String pipeline)
   {
     int tmpTransactionNumber;
-    String message;
     if (TMStarted)
     {
       tmpTransactionNumber            = getNextTransactionNumber();
@@ -411,7 +410,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
    * @param clientReference The object reference
    * @return Client index
    */
-  public int RegisterClient(int clientType, ITMClient clientReference)
+  public int registerClient(int clientType, ITMClient clientReference)
   {
     // Need to add something here to track the status of the transaction, and
     // perhaps the clients
@@ -671,7 +670,18 @@ public class TransactionManager implements ITransactionManager, IEventInterface
   @Override
   public int getActiveTransactionCount()
   {
-      return activeTransactionCount;
+    return activeTransactionCount;
+  }
+  
+  /**
+   * Return the count of the transactions waiting to be flushed.
+   *
+   * @return The number of transactions waiting to be flushed
+   */
+  @Override
+  public int getFlushedTransactionCount()
+  {
+    return tmf.getFlushedTransactionCount();
   }
 
   /**

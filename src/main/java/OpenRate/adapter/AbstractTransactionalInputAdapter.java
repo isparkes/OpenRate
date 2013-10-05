@@ -101,7 +101,7 @@ public abstract class AbstractTransactionalInputAdapter
 
     // now that we are up and running, register with Transaction Manager
     TM = TransactionManagerFactory.getTransactionManager(PipelineName);
-    TMClientNumber = TM.RegisterClient(TMDefs.getTMDefs().CT_CLIENT_INPUT, this);
+    TMClientNumber = TM.registerClient(TMDefs.getTMDefs().CT_CLIENT_INPUT, this);
   }
 
  /**

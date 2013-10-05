@@ -106,6 +106,14 @@ public interface ITransactionManager
   public int getActiveTransactionCount();
 
   /**
+   * Return the count of the flushed transactions. This is used primarily in
+   * pipeline scheduling.
+   *
+   * @return The number of flushed transactions awaiting closure
+   */
+  public int getFlushedTransactionCount();
+
+  /**
    * Get the overall transaction status. This is the processed summation of the
    * statuses of the individual client processes, processed to give the current
    * processing status of the transaction

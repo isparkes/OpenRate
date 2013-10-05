@@ -57,7 +57,7 @@ package OpenRate.adapter.jdbc;
 
 import OpenRate.CommonConfig;
 import OpenRate.OpenRate;
-import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
+import OpenRate.adapter.AbstractTransactionalOutputAdapter;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.DBUtil;
@@ -87,7 +87,7 @@ import java.util.Iterator;
  * <br>the records are loaded into a MySQL table using a "LOAD FILE" invocation.
  */
 public abstract class MySQLDirectLoadOutputAdapter
-  extends AbstractTransactionalSTOutputAdapter
+  extends AbstractTransactionalOutputAdapter
   implements IEventInterface
 {
   // The buffer size is the size of the buffer in the buffered reader

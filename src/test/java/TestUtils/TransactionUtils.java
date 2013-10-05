@@ -127,7 +127,7 @@ public class TransactionUtils
   {
     // Create a trailer record to stop the transaction management in the module
     ITransactionManager TM = TransactionUtils.getTM();
-    return TM.getActiveTransactionCount();
+    return TM.getActiveTransactionCount() + TM.getFlushedTransactionCount();
   }
 
 

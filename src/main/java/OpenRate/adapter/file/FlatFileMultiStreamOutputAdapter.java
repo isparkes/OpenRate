@@ -56,7 +56,7 @@
 package OpenRate.adapter.file;
 
 import OpenRate.CommonConfig;
-import OpenRate.adapter.AbstractTransactionalSTOutputAdapter;
+import OpenRate.adapter.AbstractTransactionalOutputAdapter;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
@@ -83,7 +83,7 @@ import java.util.Iterator;
  * the implementation layer.
  */
 public abstract class FlatFileMultiStreamOutputAdapter
-  extends AbstractTransactionalSTOutputAdapter
+  extends AbstractTransactionalOutputAdapter
   implements IEventInterface
 {
   // The buffer size is the size of the buffer in the buffered reader

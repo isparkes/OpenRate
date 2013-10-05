@@ -68,6 +68,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a cache for performing duplicate checks on CDRs, using a persistent
@@ -90,18 +91,18 @@ public class DuplicateCheckCache
  /**
   * This stores all the Record IDs for CDRs which have been processed so far
   */
-  protected HashMap<String, Long> recordList;
+  protected ConcurrentHashMap<String, Long> recordList;
 
   /**
    * This stores all the Record IDs for CDRs which have been processed so far in
    * the current transaction
    */
-  protected HashMap<Integer,HashMap<String, Long>> TransRecordList;
+  protected ConcurrentHashMap<Integer,HashMap<String, Long>> TransRecordList;
 
  /**
   * This stores the DB insert connection per transaction for inserts/speculative inserts
   */
-  protected HashMap<Integer, Connection> insertConnection;
+  protected ConcurrentHashMap<Integer, Connection> insertConnection;
 
   // Purge the internal memory
   private final static String SERVICE_PURGE   = "Purge";
@@ -178,13 +179,13 @@ public class DuplicateCheckCache
   public DuplicateCheckCache()
   {
     // This is the in-memory duplicate table
-    recordList = new HashMap<>(50000);
+    recordList = new ConcurrentHashMap<>(50000);
 
     // This is the in-memory duplicate table for the current transaction
-    TransRecordList = new HashMap<>(100);
+    TransRecordList = new ConcurrentHashMap<>(100);
 
     // initialise the inser connection array
-    insertConnection = new HashMap<>(10);
+    insertConnection = new ConcurrentHashMap<>(10);
   }
 // -----------------------------------------------------------------------------
 // ------------------ Start of inherited Plug In functions ---------------------
@@ -466,7 +467,7 @@ public class DuplicateCheckCache
         catch (SQLException ex)
         {
           // check which type of exception we got
-          String message=ex.getMessage();
+          message=ex.getMessage();
           if (message.matches(".*uplicate.*"))
           {
             // the unique constraint of the DB has been violated, that means the key is already there
@@ -528,7 +529,11 @@ public class DuplicateCheckCache
     else
     {
       int recordCount = ThisTrxRecordList.size();
+      int recordsInserted = 0;
 
+      message = "Inserting <" + recordCount + "> records into duplicate check table" +
+                        " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
+      
       if (recordCount > 0)
       {
         // we are going to insert something, get the connection and statement
@@ -547,10 +552,13 @@ public class DuplicateCheckCache
               Timestamp date = new Timestamp(ThisTrxRecordList.get(key)*1000);
               tmpInsertStatement.setTimestamp(2, date);
               tmpInsertStatement.execute();
+              
+              // Update the count of what we have inserted
+              recordsInserted++;
             }
             catch (SQLException ex)
             {
-              String message=ex.getMessage();
+              message=ex.getMessage();
               if (message.matches(".*uplicate.*"))
               {
                 // other SQL exception
@@ -585,7 +593,7 @@ public class DuplicateCheckCache
       TransRecordList.remove(TransactionNumber);
 
       // Log what we did
-      message = "Inserted <" + recordCount + "> records into duplicate check table" +
+      message = "Inserted <" + recordsInserted + "> records into duplicate check table" +
                         " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
       OpenRate.getOpenRateFrameworkLog().info(message);
     }
@@ -832,7 +840,7 @@ public class DuplicateCheckCache
       // **** Clean up the memory ****
       // Create a new HashMap that will replace the current one. We cannot simply
       // remove the items from the current one due to the ConcurrentModificationException
-      HashMap<String, Long> NewRecordList = new HashMap<>(50000);
+      ConcurrentHashMap<String, Long> NewRecordList = new ConcurrentHashMap<>(50000);
 
       // Dump the contents of the current hashmap
       Set<String> keySet = recordList.keySet();
