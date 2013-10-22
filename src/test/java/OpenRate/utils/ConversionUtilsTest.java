@@ -74,6 +74,7 @@ public class ConversionUtilsTest
 {
   private static URL FQConfigFileName;
   private static ConversionUtils instance;
+  private static TimeZone tz;
 
   public ConversionUtilsTest() {
   }
@@ -81,6 +82,10 @@ public class ConversionUtilsTest
   @BeforeClass
   public static void setUpClass() throws Exception
   {
+    tz = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone("CET"));
+
+    // Get an initialise the cache
     FQConfigFileName = new URL("File:src/test/resources/TestUtils.properties.xml");
     
    // Set up the OpenRate internal logger - this is normally done by app startup
@@ -99,6 +104,9 @@ public class ConversionUtilsTest
   @AfterClass
   public static void tearDownClass() {
     // Deallocate
+    if (tz != null) {
+      TimeZone.setDefault(tz);
+    }
     OpenRate.getApplicationInstance().cleanup();
   }
 
@@ -491,7 +499,6 @@ public class ConversionUtilsTest
     instance.setInputDateFormat("yyyyMMddHHmmss");
     dateFormatted = instance.getDatefromLongFormat(DateToFormat);
     dateInput = (int) (dateFormatted.getTime() / 1000);
-    TimeZone tz = TimeZone.getDefault();
     offSet = tz.getOffset( dateInput * 1000 );
     dateFormatted = instance.getDateFromUTC(dateInput);
     expResult = instance.getDateFromUTC(dateInput - (offSet/1000));
@@ -519,7 +526,6 @@ public class ConversionUtilsTest
     System.out.println("getDateInDST");
 
     Date date = new Date();
-    TimeZone tz = TimeZone.getDefault();
     int offSet = tz.getOffset( new Date().getTime() );
     int offSetDST = tz.getDSTSavings();
     boolean expResult = ( offSet != offSetDST );
