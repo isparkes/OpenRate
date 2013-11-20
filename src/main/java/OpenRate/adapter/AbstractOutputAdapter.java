@@ -716,24 +716,24 @@ public abstract class AbstractOutputAdapter
   * processControlEvent is the event processing hook for the External Control
   * Interface (ECI). This allows interaction with the external world.
   *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
+  * @param command The command that we are to work on
+  * @param init True if the pipeline is currently being constructed
+  * @param parameter The parameter value for the command
   * @return The result message of the operation
   */
   @Override
-  public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
+  public String processControlEvent(String command, boolean init,
+                                    String parameter)
   {
     int ResultCode = -1;
     double CDRsPerSec;
 
     // Reset the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_STATSRESET))
+    if (command.equalsIgnoreCase(SERVICE_STATSRESET))
     {
       ResultCode = 0;
       // Only reset if we are told to
-      switch (Parameter) {
+      switch (parameter) {
         case "true":
           processingTime = 0;
           recordsProcessed = 0;
@@ -746,7 +746,7 @@ public abstract class AbstractOutputAdapter
     }
 
     // Return the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_STATS))
+    if (command.equalsIgnoreCase(SERVICE_STATS))
     {
       if (processingTime == 0)
       {
@@ -765,9 +765,9 @@ public abstract class AbstractOutputAdapter
              Long.toString(bufferHits);
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_BUFFERSIZE))
+    if (command.equalsIgnoreCase(SERVICE_BUFFERSIZE))
     {
-      if (Parameter.equals(""))
+      if (parameter.equals(""))
       {
         return Integer.toString(bufferSize);
       }
@@ -775,22 +775,22 @@ public abstract class AbstractOutputAdapter
       {
         try
         {
-          bufferSize = Integer.parseInt(Parameter);
+          bufferSize = Integer.parseInt(parameter);
         }
         catch (NumberFormatException nfe)
         {
                     getPipeLog().error(
                 "Invalid number for batch size. Passed value = <" +
-                Parameter + ">");
+                parameter + ">");
         }
 
         ResultCode = 0;
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_BATCHSIZE))
+    if (command.equalsIgnoreCase(SERVICE_BATCHSIZE))
     {
-      if (Parameter.equals(""))
+      if (parameter.equals(""))
       {
         return Integer.toString(batchSize);
       }
@@ -798,29 +798,29 @@ public abstract class AbstractOutputAdapter
       {
         try
         {
-          batchSize = Integer.parseInt(Parameter);
+          batchSize = Integer.parseInt(parameter);
         }
         catch (NumberFormatException nfe)
         {
                     getPipeLog().error(
                 "Invalid number for batch size. Passed value = <" +
-                Parameter + ">");
+                parameter + ">");
         }
 
         ResultCode = 0;
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_OUTPUTNAME))
+    if (command.equalsIgnoreCase(SERVICE_OUTPUTNAME))
     {
-      if (Init)
+      if (init)
       {
-          outputName = Parameter;
+          outputName = parameter;
           ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return outputName;
         }
@@ -831,9 +831,9 @@ public abstract class AbstractOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_MAX_SLEEP))
+    if (command.equalsIgnoreCase(SERVICE_MAX_SLEEP))
     {
-      if (Parameter.equals(""))
+      if (parameter.equals(""))
       {
         return Integer.toString(sleepTime);
       }
@@ -841,27 +841,27 @@ public abstract class AbstractOutputAdapter
       {
         try
         {
-          sleepTime = Integer.parseInt(Parameter);
+          sleepTime = Integer.parseInt(parameter);
         }
         catch (NumberFormatException nfe)
         {
                     getPipeLog().error(
                 "Invalid number for sleep time. Passed value = <" +
-                Parameter + ">");
+                parameter + ">");
         }
 
         ResultCode = 0;
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_LOG_DISC))
+    if (command.equalsIgnoreCase(SERVICE_LOG_DISC))
     {
-      if (Parameter.equalsIgnoreCase("true"))
+      if (parameter.equalsIgnoreCase("true"))
       {
         LogDiscardedRecords = true;
         ResultCode = 0;
       }
-      else if (Parameter.equalsIgnoreCase("false"))
+      else if (parameter.equalsIgnoreCase("false"))
       {
         LogDiscardedRecords = false;
         ResultCode = 0;
@@ -882,7 +882,7 @@ public abstract class AbstractOutputAdapter
 
     if (ResultCode == 0)
     {
-            getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
+            getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), command, parameter));
 
       return "OK";
     }

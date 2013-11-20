@@ -233,16 +233,17 @@ public abstract class FlatFileInputAdapter
   private BufferedReader reader;
 
   // List of Services that this Client supports
-  private static final String SERVICE_I_PATH = "InputFilePath";
-  private static final String SERVICE_D_PATH = "DoneFilePath";
-  private static final String SERVICE_E_PATH = "ErrFilePath";
-  private static final String SERVICE_I_PREFIX = "InputFilePrefix";
-  private static final String SERVICE_D_PREFIX = "DoneFilePrefix";
-  private static final String SERVICE_E_PREFIX = "ErrFilePrefix";
-  private static final String SERVICE_I_SUFFIX = "InputFileSuffix";
-  private static final String SERVICE_D_SUFFIX = "DoneFileSuffix";
-  private static final String SERVICE_E_SUFFIX = "ErrFileSuffix";
+  private static final String SERVICE_I_PATH     = "InputFilePath";
+  private static final String SERVICE_D_PATH     = "DoneFilePath";
+  private static final String SERVICE_E_PATH     = "ErrFilePath";
+  private static final String SERVICE_I_PREFIX   = "InputFilePrefix";
+  private static final String SERVICE_D_PREFIX   = "DoneFilePrefix";
+  private static final String SERVICE_E_PREFIX   = "ErrFilePrefix";
+  private static final String SERVICE_I_SUFFIX   = "InputFileSuffix";
+  private static final String SERVICE_D_SUFFIX   = "DoneFileSuffix";
+  private static final String SERVICE_E_SUFFIX   = "ErrFileSuffix";
   private static final String SERVICE_PROCPREFIX = "ProcessingPrefix";
+  private static final String DEFAULT_PROCPREFIX = "tmp";
 
   // This is used to hold the calculated file names
   private class TransControlStructure
@@ -1020,7 +1021,7 @@ public abstract class FlatFileInputAdapter
     String tmpProcPrefix;
     tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
                                                                   SERVICE_PROCPREFIX,
-                                                                  "tmp");
+                                                                  DEFAULT_PROCPREFIX);
 
     return tmpProcPrefix;
   }
@@ -1037,13 +1038,12 @@ public abstract class FlatFileInputAdapter
    *
    * Two methods of finding the file are supported:
    * 1) You can specify a file name and only that file will be read
-   * 2) You can specify a file path and a regex prefix and suffix
+   * 2) You can specify a file path and a regular expression prefix and suffix
    */
   private void initFileName()
                      throws InitializationException
   {
-    String  message;
-    File           dir;
+    File dir;
 
     /*
      * Validate the inputs we have received. We must end up with three
@@ -1320,27 +1320,31 @@ public abstract class FlatFileInputAdapter
     }
   }
 
+  // -----------------------------------------------------------------------------
+  // -------------------------- Start custom functions ---------------------------
+  // -----------------------------------------------------------------------------
+  
  /**
   * Calculate and return the processing file path for the given base name. This
   * is the name the file will have during the processing.
   *
   * @param fileName The base file name of the file to work on
-  * @param InputFilePath The path of the input file
-  * @param InputFilePrefix The file prefix of the input file
-  * @param InputFileSuffix The file suffix of the input file
-  * @param ProcessingPrefix the file processing prefix to use
+  * @param inputFilePath The path of the input file
+  * @param inputFilePrefix The file prefix of the input file
+  * @param inputFileSuffix The file suffix of the input file
+  * @param processingPrefix the file processing prefix to use
   * @param tmpTransNumber The transaction number
   * @return The full file path of the file in processing
   */
   protected String getProcFilePath(String fileName,
-                                   String InputFilePath,
-                                   String InputFilePrefix,
-                                   String InputFileSuffix,
-                                   String ProcessingPrefix,
+                                   String inputFilePath,
+                                   String inputFilePrefix,
+                                   String inputFileSuffix,
+                                   String processingPrefix,
                                    int    tmpTransNumber)
   {
-    return InputFilePath + System.getProperty("file.separator") +
-           ProcessingPrefix + fileName;
+    return inputFilePath + System.getProperty("file.separator") +
+           processingPrefix + fileName;
   }
 
  /**
@@ -1348,29 +1352,29 @@ public abstract class FlatFileInputAdapter
   * is the name the file will have during the processing.
   *
   * @param fileName The base file name of the file to work on
-  * @param InputFilePrefix The file prefix of the input file
-  * @param DoneFilePath The path of the done file
-  * @param DoneFilePrefix The prefix of the done file
-  * @param DoneFileSuffix The suffix of the done file
-  * @param InputFileSuffix The file suffix of the input file
+  * @param inputFilePrefix The file prefix of the input file
+  * @param doneFilePath The path of the done file
+  * @param doneFilePrefix The prefix of the done file
+  * @param doneFileSuffix The suffix of the done file
+  * @param inputFileSuffix The file suffix of the input file
   * @param tmpTransNumber The transaction number
   * @return The full file path of the file in processing
   */
   protected String getDoneFilePath(String fileName,
-                                   String InputFilePrefix,
-                                   String InputFileSuffix,
-                                   String DoneFilePath,
-                                   String DoneFilePrefix,
-                                   String DoneFileSuffix,
+                                   String inputFilePrefix,
+                                   String inputFileSuffix,
+                                   String doneFilePath,
+                                   String doneFilePrefix,
+                                   String doneFileSuffix,
                                    int    tmpTransNumber)
   {
     String baseName;
 
-    baseName = fileName.replaceAll("^" + InputFilePrefix, "");
-    baseName = baseName.replaceAll(InputFileSuffix + "$", "");
+    baseName = fileName.replaceAll("^" + inputFilePrefix, "");
+    baseName = baseName.replaceAll(inputFileSuffix + "$", "");
 
-    return DoneFilePath + System.getProperty("file.separator") +
-           DoneFilePrefix + baseName + DoneFileSuffix;
+    return doneFilePath + System.getProperty("file.separator") +
+           doneFilePrefix + baseName + doneFileSuffix;
   }
 
  /**
@@ -1378,29 +1382,29 @@ public abstract class FlatFileInputAdapter
   * is the name the file will have during the processing.
   *
   * @param fileName The base file name of the file to work on
-  * @param InputFilePrefix The file prefix of the input file
-  * @param ErrFilePath The file path of the error file
-  * @param ErrFilePrefix The prefix of the error file
-  * @param ErrFileSuffix The suffix of the error file
-  * @param InputFileSuffix The file suffix of the input file
+  * @param inputFilePrefix The file prefix of the input file
+  * @param errFilePath The file path of the error file
+  * @param errFilePrefix The prefix of the error file
+  * @param errFileSuffix The suffix of the error file
+  * @param inputFileSuffix The file suffix of the input file
   * @param tmpTransNumber The transaction number
   * @return The full file path of the file in processing
   */
   protected String getErrorFilePath(String fileName,
-                                    String InputFilePrefix,
-                                    String InputFileSuffix,
-                                    String ErrFilePath,
-                                    String ErrFilePrefix,
-                                    String ErrFileSuffix,
+                                    String inputFilePrefix,
+                                    String inputFileSuffix,
+                                    String errFilePath,
+                                    String errFilePrefix,
+                                    String errFileSuffix,
                                     int    tmpTransNumber)
   {
     String baseName;
 
-    baseName = fileName.replaceAll("^" + InputFilePrefix, "");
-    baseName = baseName.replaceAll(InputFileSuffix + "$", "");
+    baseName = fileName.replaceAll("^" + inputFilePrefix, "");
+    baseName = baseName.replaceAll(inputFileSuffix + "$", "");
 
-    return ErrFilePath + System.getProperty("file.separator") +
-           ErrFilePrefix + baseName + ErrFileSuffix;
+    return errFilePath + System.getProperty("file.separator") +
+           errFilePrefix + baseName + errFileSuffix;
   }
 
  /**
@@ -1408,20 +1412,20 @@ public abstract class FlatFileInputAdapter
   * is the name the file will have during the processing.
   *
   * @param fileName The file name to use
-  * @param InputFilePrefix The input file prefix
-  * @param InputFileSuffix The input file suffix
-  * @param TransactionNumber The transaction number
+  * @param inputFilePrefix The input file prefix
+  * @param inputFileSuffix The input file suffix
+  * @param transactionNumber The transaction number
   * @return The base name for the transaction
   */
   protected String getFileBaseName(String fileName,
-                                    String InputFilePrefix,
-                                    String InputFileSuffix,
-                                    int    TransactionNumber)
+                                   String inputFilePrefix,
+                                   String inputFileSuffix,
+                                   int    transactionNumber)
   {
     String baseName;
 
-    baseName = fileName.replaceAll("^" + InputFilePrefix, "");
-    baseName = baseName.replaceAll(InputFileSuffix + "$", "");
+    baseName = fileName.replaceAll("^" + inputFilePrefix, "");
+    baseName = baseName.replaceAll(inputFileSuffix + "$", "");
 
     return baseName;
   }

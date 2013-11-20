@@ -99,15 +99,15 @@ public abstract class FlatFileOutputAdapter
   private String           errPath;
   private String           errPrefix;
   private String           errSuffix;
-  private boolean          DelEmptyOutFile = false;
-  private boolean          DelEmptyErrFile = true;
+  private boolean          delEmptyOutFile = false;
+  private boolean          delEmptyErrFile = true;
 
   // This is the prefix that will be added during processing
-  private String ProcessingPrefix;
+  private String processingPrefix;
 
   // This tells us if we should look for a file to open
   // or continue reading from the one we have
-  private boolean OutputStreamOpen = false;
+  private boolean outputStreamOpen = false;
 
   // This is the base name of the file we are outputting
   private String fileBaseName = null;
@@ -123,6 +123,7 @@ public abstract class FlatFileOutputAdapter
   private final static String SERVICE_ERR_SUFFIX         = "ErrFileSuffix";
   private final static String SERVICE_DEL_EMPTY_ERR_FILE = "DeleteEmptyErrorFile";
   private static final String SERVICE_PROCPREFIX         = "ProcessingPrefix";
+  private static final String DEFAULT_PROCPREFIX         = "tmp";
 
   //final static String SERVICE_OUT_FILE_NAME = "OutputFileName";
   //final static String SERVICE_ERR_FILE_NAME = "ErrFileName";
@@ -130,10 +131,10 @@ public abstract class FlatFileOutputAdapter
   // This is used to hold the calculated file names
   private class TransControlStructure
   {
-    String OutputFileName;
-    String ErrorFileName;
-    String ProcOutputFileName;
-    String ProcErrorFileName;
+    String outputFileName;
+    String errorFileName;
+    String procOutputFileName;
+    String procErrorFileName;
   }
 
   // This holds the file names for the files that are in processing at any
@@ -190,20 +191,20 @@ public abstract class FlatFileOutputAdapter
   public void init(String PipelineName, String ModuleName)
             throws InitializationException
   {
-    String ConfigHelper;
+    String configHelper;
 
     super.init(PipelineName, ModuleName);
 
-    ConfigHelper = initGetFilePath();
-    processControlEvent(SERVICE_FILE_PATH, true, ConfigHelper);
-    ConfigHelper = initGetOutFilePrefix();
-    processControlEvent(SERVICE_FILE_PREFIX, true, ConfigHelper);
-    ConfigHelper = initGetOutFileSuffix();
-    processControlEvent(SERVICE_FILE_SUFFIX, true, ConfigHelper);
-    ConfigHelper = initGetDelEmptyOutFile();
-    processControlEvent(SERVICE_DEL_EMPTY_OUT_FILE, true, ConfigHelper);
-    ConfigHelper = initGetSingleOutputFile();
-    processControlEvent(SERVICE_SINGLE_OUTPUT, true, ConfigHelper);
+    configHelper = initGetFilePath();
+    processControlEvent(SERVICE_FILE_PATH, true, configHelper);
+    configHelper = initGetOutFilePrefix();
+    processControlEvent(SERVICE_FILE_PREFIX, true, configHelper);
+    configHelper = initGetOutFileSuffix();
+    processControlEvent(SERVICE_FILE_SUFFIX, true, configHelper);
+    configHelper = initGetDelEmptyOutFile();
+    processControlEvent(SERVICE_DEL_EMPTY_OUT_FILE, true, configHelper);
+    configHelper = initGetSingleOutputFile();
+    processControlEvent(SERVICE_SINGLE_OUTPUT, true, configHelper);
     if (singleWriter)
     {
       // Single writer defined
@@ -212,17 +213,18 @@ public abstract class FlatFileOutputAdapter
     }
     else
     {
-      ConfigHelper = initGetErrFilePath();
-      processControlEvent(SERVICE_ERR_PATH, true, ConfigHelper);
-      ConfigHelper = initGetErrFilePrefix();
-      processControlEvent(SERVICE_ERR_PREFIX, true, ConfigHelper);
-      ConfigHelper = initGetErrFileSuffix();
-      processControlEvent(SERVICE_ERR_SUFFIX, true, ConfigHelper);
-      ConfigHelper = initGetDelEmptyErrFile();
-      processControlEvent(SERVICE_DEL_EMPTY_ERR_FILE, true, ConfigHelper);
-      ConfigHelper = initGetProcPrefix();
+      configHelper = initGetErrFilePath();
+      processControlEvent(SERVICE_ERR_PATH, true, configHelper);
+      configHelper = initGetErrFilePrefix();
+      processControlEvent(SERVICE_ERR_PREFIX, true, configHelper);
+      configHelper = initGetErrFileSuffix();
+      processControlEvent(SERVICE_ERR_SUFFIX, true, configHelper);
+      configHelper = initGetDelEmptyErrFile();
+      processControlEvent(SERVICE_DEL_EMPTY_ERR_FILE, true, configHelper);
     }
-    processControlEvent(SERVICE_PROCPREFIX, true, ConfigHelper);
+    
+    configHelper = initGetProcPrefix();
+    processControlEvent(SERVICE_PROCPREFIX, true, configHelper);
 
     // Check the parameters we received
     initFileName();
@@ -251,27 +253,27 @@ public abstract class FlatFileOutputAdapter
 
     // if we are not currently streaming, open the stream using the transaction
     // information for the transaction we are processing
-    if (!OutputStreamOpen)
+    if (!outputStreamOpen)
     {
       fileBaseName = tmpHeader.getStreamName();
       tmpTransNumber = tmpHeader.getTransactionNumber();
 
       // Calculate the names and open the writers
-      tmpFileNames.ProcOutputFileName = filePath + System.getProperty("file.separator") +
-                                        ProcessingPrefix + filePrefix + fileBaseName + fileSuffix;
-      tmpFileNames.OutputFileName     = filePath + System.getProperty("file.separator") +
+      tmpFileNames.procOutputFileName = filePath + System.getProperty("file.separator") +
+                                        processingPrefix + filePrefix + fileBaseName + fileSuffix;
+      tmpFileNames.outputFileName     = filePath + System.getProperty("file.separator") +
                                         filePrefix + fileBaseName + fileSuffix;
-      tmpFileNames.ProcErrorFileName  = errPath + System.getProperty("file.separator") +
-                                        ProcessingPrefix + errPrefix + fileBaseName + errSuffix;
-      tmpFileNames.ErrorFileName      = errPath + System.getProperty("file.separator") +
+      tmpFileNames.procErrorFileName  = errPath + System.getProperty("file.separator") +
+                                        processingPrefix + processingPrefix + fileBaseName + errSuffix;
+      tmpFileNames.errorFileName      = errPath + System.getProperty("file.separator") +
                                         errPrefix + fileBaseName + errSuffix;
 
       // Store the names for later
       CurrentFileNames.put(tmpTransNumber, tmpFileNames);
 
-      openValidFile(tmpFileNames.ProcOutputFileName);
-      openErrFile(tmpFileNames.ProcErrorFileName);
-      OutputStreamOpen = true;
+      openValidFile(tmpFileNames.procOutputFileName);
+      openErrFile(tmpFileNames.procErrorFileName);
+      outputStreamOpen = true;
     }
 
     return r;
@@ -461,7 +463,7 @@ public abstract class FlatFileOutputAdapter
     boolean ErrorFound = false;
     int ReturnCode = 0;
 
-    if (OutputStreamOpen)
+    if (outputStreamOpen)
     {
       try
       {
@@ -493,7 +495,7 @@ public abstract class FlatFileOutputAdapter
         }
       }
 
-      OutputStreamOpen = false;
+      outputStreamOpen = false;
 
       if (ErrorFound)
       {
@@ -519,7 +521,7 @@ public abstract class FlatFileOutputAdapter
 
     // rename the valid file
     f = new File(getProcOutputName(transactionNumber));
-    if (DelEmptyOutFile && getOutputFileEmpty(transactionNumber))
+    if (delEmptyOutFile && getOutputFileEmpty(transactionNumber))
     {
       // Delete the empty file
       getPipeLog().debug("Deleted empty valid output file <" + getProcOutputName(transactionNumber) + ">");
@@ -536,7 +538,7 @@ public abstract class FlatFileOutputAdapter
     if (singleWriter == false)
     {
       f = new File(getProcErrorName(transactionNumber));
-      if (DelEmptyErrFile && getErrorFileEmpty(transactionNumber))
+      if (delEmptyErrFile && getErrorFileEmpty(transactionNumber))
       {
         // Delete the empty file
         getPipeLog().debug("Deleted empty error output file <" + getProcErrorName(transactionNumber) + ">");
@@ -708,27 +710,28 @@ public abstract class FlatFileOutputAdapter
   * processControlEvent is the event processing hook for the External Control
   * Interface (ECI). This allows interaction with the external world.
   *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
+  * @param command The command that we are to work on
+  * @param init True if the pipeline is currently being constructed
+  * @param parameter The parameter value for the command
   * @return The result message of the operation
   */
   @Override
-  public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
+  public String processControlEvent(String  command, 
+                                    boolean init,
+                                    String  parameter)
   {
     int ResultCode = -1;
 
-    if (Command.equalsIgnoreCase(SERVICE_FILE_PATH))
+    if (command.equalsIgnoreCase(SERVICE_FILE_PATH))
     {
-      if (Init)
+      if (init)
       {
-        filePath = Parameter;
+        filePath = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return filePath;
         }
@@ -739,16 +742,16 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_FILE_PREFIX))
+    if (command.equalsIgnoreCase(SERVICE_FILE_PREFIX))
     {
-      if (Init)
+      if (init)
       {
-        filePrefix = Parameter;
+        filePrefix = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return filePrefix;
         }
@@ -759,16 +762,16 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_FILE_SUFFIX))
+    if (command.equalsIgnoreCase(SERVICE_FILE_SUFFIX))
     {
-      if (Init)
+      if (init)
       {
-        fileSuffix = Parameter;
+        fileSuffix = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return fileSuffix;
         }
@@ -779,16 +782,16 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_SINGLE_OUTPUT))
+    if (command.equalsIgnoreCase(SERVICE_SINGLE_OUTPUT))
     {
-      if (Init)
+      if (init)
       {
-        singleWriter = Boolean.parseBoolean(Parameter);
+        singleWriter = Boolean.parseBoolean(parameter);
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return Boolean.toString(singleWriter);
         }
@@ -799,16 +802,16 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ERR_PATH))
+    if (command.equalsIgnoreCase(SERVICE_ERR_PATH))
     {
-      if (Init)
+      if (init)
       {
-        errPath = Parameter;
+        errPath = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return errPath;
         }
@@ -819,16 +822,16 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ERR_PREFIX))
+    if (command.equalsIgnoreCase(SERVICE_ERR_PREFIX))
     {
-      if (Init)
+      if (init)
       {
-        errPrefix = Parameter;
+        errPrefix = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return errPrefix;
         }
@@ -839,16 +842,16 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ERR_SUFFIX))
+    if (command.equalsIgnoreCase(SERVICE_ERR_SUFFIX))
     {
-      if (Init)
+      if (init)
       {
-        errSuffix = Parameter;
+        errSuffix = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
           return errSuffix;
         }
@@ -859,30 +862,30 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_DEL_EMPTY_OUT_FILE))
+    if (command.equalsIgnoreCase(SERVICE_DEL_EMPTY_OUT_FILE))
     {
-      if (Init)
+      if (init)
       {
-        if (Parameter != null)
+        if (parameter != null)
         {
-          if (Parameter.equalsIgnoreCase("true"))
+          if (parameter.equalsIgnoreCase("true"))
           {
-            DelEmptyOutFile = true;
+            delEmptyOutFile = true;
             ResultCode = 0;
           }
 
-          if (Parameter.equalsIgnoreCase("false"))
+          if (parameter.equalsIgnoreCase("false"))
           {
-            DelEmptyOutFile = false;
+            delEmptyOutFile = false;
             ResultCode = 0;
           }
         }
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter.equals(""))
         {
-          if (DelEmptyOutFile)
+          if (delEmptyOutFile)
           {
             return "true";
           }
@@ -898,72 +901,81 @@ public abstract class FlatFileOutputAdapter
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_DEL_EMPTY_ERR_FILE))
+    if (command.equalsIgnoreCase(SERVICE_DEL_EMPTY_ERR_FILE))
     {
-      if (Init)
+      if (init)
       {
-        if (Parameter.equalsIgnoreCase("true"))
+        if (parameter != null)
         {
-          DelEmptyErrFile = true;
-          ResultCode = 0;
-        }
+          if (parameter.equalsIgnoreCase("true"))
+          {
+            delEmptyErrFile = true;
+            ResultCode = 0;
+          }
 
-        if (Parameter.equalsIgnoreCase("false"))
-        {
-          DelEmptyErrFile = false;
-          ResultCode = 0;
+          if (parameter.equalsIgnoreCase("false"))
+          {
+            delEmptyErrFile = false;
+            ResultCode = 0;
+          }
         }
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter != null)
         {
-          if (DelEmptyErrFile)
+          if (parameter.equals(""))
           {
-            return "true";
+            if (delEmptyErrFile)
+            {
+              return "true";
+            }
+            else
+            {
+              return "false";
+            }
           }
           else
           {
-            return "false";
+            return CommonConfig.NON_DYNAMIC_PARAM;
           }
-        }
-        else
-        {
-          return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_PROCPREFIX))
+    if (command.equalsIgnoreCase(SERVICE_PROCPREFIX))
     {
-      if (Init)
+      if (init)
       {
-        ProcessingPrefix = Parameter;
+        processingPrefix = parameter;
         ResultCode = 0;
       }
       else
       {
-        if (Parameter.equals(""))
+        if (parameter != null)
         {
-          return ProcessingPrefix;
-        }
-        else
-        {
-          return CommonConfig.NON_DYNAMIC_PARAM;
+          if (parameter.equals(""))
+          {
+            return processingPrefix;
+          }
+          else
+          {
+            return CommonConfig.NON_DYNAMIC_PARAM;
+          }
         }
       }
     }
 
     if (ResultCode == 0)
     {
-      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
+      getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), command, parameter));
 
       return "OK";
     }
     else
     {
       // This is not our event, pass it up the stack
-      return super.processControlEvent(Command, Init, Parameter);
+      return super.processControlEvent(command, init, parameter);
     }
   }
 
@@ -1134,7 +1146,8 @@ public abstract class FlatFileOutputAdapter
   {
     String tmpProcPrefix;
     tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                                  SERVICE_PROCPREFIX,"tmp");
+                                                                  SERVICE_PROCPREFIX,
+                                                                  DEFAULT_PROCPREFIX);
 
     return tmpProcPrefix;
   }
@@ -1148,7 +1161,6 @@ public abstract class FlatFileOutputAdapter
   */
   private void initFileName() throws InitializationException
   {
-    String message;
     File   dir;
 
     if (filePath == null)
@@ -1195,7 +1207,7 @@ public abstract class FlatFileOutputAdapter
     // Get the name to work on
     tmpFileNames = CurrentFileNames.get(transactionNumber);
 
-    return tmpFileNames.ProcOutputFileName;
+    return tmpFileNames.procOutputFileName;
   }
 
  /**
@@ -1212,7 +1224,7 @@ public abstract class FlatFileOutputAdapter
     // Get the name to work on
     tmpFileNames = CurrentFileNames.get(transactionNumber);
 
-    return tmpFileNames.OutputFileName;
+    return tmpFileNames.outputFileName;
   }
 
  /**
@@ -1229,7 +1241,7 @@ public abstract class FlatFileOutputAdapter
     // Get the name to work on
     tmpFileNames = CurrentFileNames.get(transactionNumber);
 
-    return tmpFileNames.ProcErrorFileName;
+    return tmpFileNames.procErrorFileName;
   }
 
  /**
@@ -1246,6 +1258,6 @@ public abstract class FlatFileOutputAdapter
     // Get the name to work on
     tmpFileNames = CurrentFileNames.get(transactionNumber);
 
-    return tmpFileNames.ErrorFileName;
+    return tmpFileNames.errorFileName;
   }
 }
