@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!-- Properties file for supporting unit tests. This is not a Typical properties
+     file and should not be taken as a general example because it won't work
+     outside of the context of unit tests!!! -->
+<config>
+	<Application>
+    DBTest
+  </Application>
+
+	<PipelineList>
+		<DBTestPipe>
+			<Active>True</Active>
+		</DBTestPipe>
+	</PipelineList>
+  
+	<DBTestPipe>
+    <InputAdapter>
+      <NullInput>
+        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </NullInput>
+    </InputAdapter>
+        
+		<Process>
+			<AbstractPersistentObjectProcessTest>
+				<DataCache>DailyBalanceCache</DataCache>
+				<BatchSize>5000</BatchSize>
+			</AbstractPersistentObjectProcessTest>
+		</Process>
+    
+    <OutputAdapter>
+      <NullOutput>
+        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+        <BatchSize>5000</BatchSize>
+      </NullOutput>
+    </OutputAdapter>
+	</DBTestPipe>
+
+	<Resource>
+		<LogFactory>
+			<ClassName>OpenRate.logging.LogFactory</ClassName>
+			<Properties>logUnitTest.properties</Properties>
+			<DefaultCategory>RatingTest</DefaultCategory>
+		</LogFactory>
+
+		<ECI>
+			<ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+			<Port>8086</Port>
+			<MaxConnection>2</MaxConnection>
+		</ECI>
+
+		<TransactionManagerFactory>
+			<ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+		</TransactionManagerFactory>
+
+		<CacheFactory>
+			<ClassName>OpenRate.resource.CacheFactory</ClassName>
+			<CacheableClass>
+        <DailyBalanceCache>
+          <ClassName>OpenRate.cache.PersistentIndexedObject</ClassName>
+          <DataSourceType>File</DataSourceType>
+          <DataFile>daily_balance.dat</DataFile>
+        </DailyBalanceCache>
+			</CacheableClass>
+		</CacheFactory>
+	</Resource>
+</config>

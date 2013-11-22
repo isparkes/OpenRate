@@ -327,7 +327,7 @@ public class PersistentIndexedObject
     //Register services for this Client
     //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PERSIST, ClientManager.PARAM_DYNAMIC);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC);
-    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
   }
 
  /**
@@ -355,13 +355,13 @@ public class PersistentIndexedObject
 
         ResultCode = 0;
       }
-      else if (Parameter.equalsIgnoreCase("true"))
-      {
-        // do nothing
-      }
-      else if (Parameter.equals(""))
+      else if (Parameter.isEmpty())
       {
         return "false";
+      }
+      else
+      {
+        return getSymbolicName()+":"+SERVICE_PURGE+"=true to purge cache";
       }
     }
 
@@ -427,19 +427,15 @@ public class PersistentIndexedObject
       try
       {
         objOutStream = new ObjectOutputStream(outStream);
-
-        if (objOutStream != null)
+        if (ObjectList instanceof Serializable)
         {
-          if (ObjectList instanceof Serializable)
-          {
-            objOutStream.writeObject(ObjectList);
-            objOutStream.flush();
-            objOutStream.close();
-          }
-          else
-          {
-            OpenRate.getOpenRateFrameworkLog().error("Class contains non-serializable data");
-          }
+          objOutStream.writeObject(ObjectList);
+          objOutStream.flush();
+          objOutStream.close();
+        }
+        else
+        {
+          OpenRate.getOpenRateFrameworkLog().error("Class contains non-serializable data");
         }
       }
       catch (IOException ex)

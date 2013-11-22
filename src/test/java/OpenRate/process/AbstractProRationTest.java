@@ -383,7 +383,7 @@ public class AbstractProRationTest
       try
       {
         // Get the instance
-        instance.init("DBTestPipe", "AbstractMultipleValidityMatchTest");
+        instance.init("DBTestPipe", "AbstractProRationTest");
       }
       catch (InitializationException ex)
       {
