@@ -136,6 +136,9 @@ public class AbstractPersistentObjectProcessTest {
     
     result = (String) instance.getObject(ObjectKey+"not there");
     assertEquals(null, result);
+    
+    // Clean up to make tests order independent
+    instance.deleteObject(ObjectKey);
   }
 
   /**

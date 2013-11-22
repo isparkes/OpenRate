@@ -84,7 +84,7 @@ public class OpenRateTest {
     String OpenRateVersion = "V1.5.2.1";
     
     // This has to match the current SVN revision tag
-    int    revisionNumber = 32;
+    int    revisionNumber = 33;
     
     // By default we check that the build date is created on each build
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
