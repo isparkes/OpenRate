@@ -7,7 +7,7 @@
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2013.
+ * is Copyright of the OpenRate project 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -84,7 +84,7 @@ public class OpenRateTest {
     String OpenRateVersion = "V1.5.2.1";
     
     // This has to match the current SVN revision tag
-    int    revisionNumber = 33;
+    int    revisionNumber = 34;
     
     // By default we check that the build date is created on each build
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");

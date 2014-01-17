@@ -64,6 +64,7 @@ import OpenRate.logging.LogUtil;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.PropertyUtils;
 import java.io.*;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -73,7 +74,7 @@ import java.util.Set;
  * be saved on shutdown or periodically.
  */
 public class PersistentIndexedObject
-     extends AbstractCache
+  extends AbstractCache
   implements ICacheLoader,
              ICacheSaver,
              IEventInterface,
@@ -97,18 +98,15 @@ public class PersistentIndexedObject
   private final static String SERVICE_PERSIST = "Persist";
   private final static String SERVICE_PURGE = "Purge";
   private final static String SERVICE_OBJECT_COUNT = "ObjectCount";
+  private final static String SERVICE_DUMP_OBJECTS = "DumpObjects";
+  private final static String SERVICE_INITIAL_HASH_SIZE = "InitialHashSize";
+  private final static String DEFAULT_INITIAL_HASH_SIZE = "50000";
 
   // Variables for managing the sync points
   private int SyncStatus = 0;
-
-  /**
-   * Constructor. Create the persistent object cache.
-   */
-  public PersistentIndexedObject()
-  {
-    // Initialise the object cache
-    ObjectList = new HashMap<>(50000);
-  }
+  
+  // Variable holding the initial hash size
+  private int initialHashSize;
 
 // -----------------------------------------------------------------------------
 // ------------------ Start of inherited Plug In functions ---------------------
@@ -184,6 +182,26 @@ public class PersistentIndexedObject
               CachePersistenceName + ">");
       }
     }
+
+    // Get the initial hash size
+    String tmpInitialSize = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
+                                                                     CacheName,
+                                                                     SERVICE_INITIAL_HASH_SIZE,
+                                                                     DEFAULT_INITIAL_HASH_SIZE);
+    
+    try
+    {
+      initialHashSize = Integer.valueOf(tmpInitialSize);
+    }
+    catch (NumberFormatException ex)
+    {
+      message = "Expected a numeric value for <"+SERVICE_INITIAL_HASH_SIZE+"> in cache <" + getSymbolicName() + ">, but got <" + tmpInitialSize +">";
+      OpenRate.getOpenRateFrameworkLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
+    }
+    
+    // Initialise the object cache
+    ObjectList = new HashMap<>(initialHashSize);
 
     // perform the actual loading
     loadCacheObjectsFromFile();
@@ -325,9 +343,10 @@ public class PersistentIndexedObject
     ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
 
     //Register services for this Client
-    //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PERSIST, ClientManager.PARAM_DYNAMIC);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PURGE, ClientManager.PARAM_DYNAMIC);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INITIAL_HASH_SIZE, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DUMP_OBJECTS, ClientManager.PARAM_NONE);
   }
 
  /**
@@ -369,6 +388,31 @@ public class PersistentIndexedObject
     if (Command.equalsIgnoreCase(SERVICE_OBJECT_COUNT))
     {
       return Integer.toString(ObjectList.size());
+    }
+
+    // Return the number initial size of the hash
+    if (Command.equalsIgnoreCase(SERVICE_INITIAL_HASH_SIZE))
+    {
+      return Integer.toString(initialHashSize);
+    }
+
+    if (Command.equalsIgnoreCase(SERVICE_DUMP_OBJECTS))
+    {
+      if (Parameter.equalsIgnoreCase("true"))
+      {
+        // Clear the persistence object
+        dumpObjects();
+
+        ResultCode = 0;
+      }
+      else if (Parameter.isEmpty())
+      {
+        return "false";
+      }
+      else
+      {
+        return getSymbolicName()+":"+SERVICE_DUMP_OBJECTS+"=true to dump stored objects";
+      }
     }
 
     if (Command.equalsIgnoreCase(SERVICE_PERSIST))
@@ -461,7 +505,7 @@ public class PersistentIndexedObject
     {
       inStream = new FileInputStream(CachePersistenceName);
     }
-    catch (FileNotFoundException fnfe)
+    catch (FileNotFoundException ex)
     {
       OpenRate.getOpenRateFrameworkLog().warning(
             "Persistent data file <" + CachePersistenceName +
@@ -495,10 +539,53 @@ public class PersistentIndexedObject
     }
     catch (ClassNotFoundException ex)
     {
-        message = "Class not found loading persistent objects";
-        OpenRate.getOpenRateFrameworkLog().fatal(message);
+      message = "Class not found loading persistent objects";
+      OpenRate.getOpenRateFrameworkLog().fatal(message);
     }
  }
+
+ /**
+  * Dump the internal objects. The implementation class is responsible for
+  * formatting the objects.
+  */
+  public void dumpObjects()
+  {
+    String objectKey;
+    Object tmpObject;
+    
+    String filename = "Dump-" + getSymbolicName() + "-All-" + Calendar.getInstance().getTimeInMillis() + ".dump";
+    OpenRate.getOpenRateFrameworkLog().info("Dumping PersistentIndexedObject data to file <" + filename + ">");
+
+    try (BufferedWriter outFile = new BufferedWriter(new FileWriter(filename))) {
+      outFile.write("# Balance data dump file\n");
+      Iterator<String> objectIter = ObjectList.keySet().iterator();
+
+      while (objectIter.hasNext())
+      {
+        objectKey = objectIter.next();
+        tmpObject = ObjectList.get(objectKey);
+        String fileLine = formatObject(objectKey, tmpObject);
+        
+        outFile.write(fileLine+"\n");
+      }
+      
+      outFile.flush();
+      outFile.close();
+    } catch (IOException ex) {
+      message = "IO Error dumping data in cache <" + getSymbolicName() + ">";
+      OpenRate.getOpenRateFrameworkLog().fatal(message,ex);
+    }
+  }
+
+ /**
+  * Format the object for outputting to the dump file. Because we cannot know in
+  * advance how the Object will be stored, we delegate the formatting to the
+  * implementation class.
+  */
+  public String formatObject(String key, Object object)
+  {
+    return "Override 'formatObject' of <" + getSymbolicName() + "> for a better output";
+  }
 
  /**
   * Save the object data to a table. This works with objects that are serializable

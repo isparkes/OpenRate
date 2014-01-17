@@ -7,7 +7,7 @@
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2013.
+ * is Copyright of the OpenRate project 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -633,6 +633,8 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
           tmpDumpList.add("    Zone Result    " + pad + "= <" + tmpCP.zoneResult + ">");
           tmpDumpList.add("    Price Group    " + pad + "= <" + tmpCP.priceGroup + ">");
           tmpDumpList.add("    Price Model    " + pad + "= <" + tmpCP.priceModel + ">");
+          tmpDumpList.add("    Rating Type    " + pad + "= <" + tmpCP.ratingType + ">");
+          tmpDumpList.add("    Rating Desc    " + pad + "= <" + tmpCP.ratingTypeDesc + ">");
           tmpDumpList.add("    Rated Value    " + pad + "= <" + tmpCP.chargedValue + ">");
           tmpDumpList.add("    ----------------");
             

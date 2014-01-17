@@ -60,10 +60,13 @@ import OpenRate.OpenRate;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.RateMapEntry;
+import OpenRate.utils.PropertyUtils;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -123,6 +126,22 @@ public class RUMCPRateCache
   * rate plans.
   */
   protected HashMap<String, ArrayList<RateMapEntry>> PriceModelCache;
+
+  /**
+   * these are the statements that we have to prepare to be able to get records
+   * once and only once
+   */
+  protected static String PriceModelDataSelectQuery;
+
+  /**
+   * these are the prepared statements
+   */
+  protected static PreparedStatement StmtPriceModelDataSelectQuery;
+
+  /**
+   * this is the name of the file that holds price models
+   */
+  protected static String PriceModelDataFile;
 
  /** Constructor
   * Creates a new instance of the Plan Cache. The plan cache
@@ -282,6 +301,94 @@ public class RUMCPRateCache
 
     // and return it
     return tmpEntry;
+  }
+
+  // -----------------------------------------------------------------------------
+  // ---------------- Start of data base data layer functions --------------------
+  // -----------------------------------------------------------------------------
+
+ /**
+  * Get the data files that we are going to be reading, when reading from "File"
+  * data source types
+  *
+  * @return true if the configuration is good, otherwise false.
+  * @throws OpenRate.exception.InitializationException
+  */
+  @Override
+  protected boolean getDataFiles(String ResourceName, String CacheName) throws InitializationException
+  {
+    // Get the Select statement
+    PriceModelDataFile = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
+                                                                     CacheName,
+                                                                     "PriceModelDataFile",
+                                                                     "None");
+
+    if (PriceModelDataFile.equals("None"))
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
+
+ /**
+  * get the select statement(s). Implemented as a separate function so that it can
+  * be overwritten in implementation classes.
+  *
+  * @return true if the configuration is good, otherwise false.
+  * @throws OpenRate.exception.InitializationException
+  */
+  @Override
+  protected boolean getDataStatements(String ResourceName, String CacheName) throws InitializationException
+  {
+    // Get the Select statement
+    PriceModelDataSelectQuery = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
+                                                                     CacheName,
+                                                                     "PriceModelStatement",
+                                                                     "None");
+
+    if (PriceModelDataSelectQuery.equals("None"))
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
+
+  /**
+  * PrepareStatements creates the statements from the SQL expressions
+  * so that they can be run as needed.
+   *
+   * @throws OpenRate.exception.InitializationException
+   */
+  @Override
+  protected void prepareStatements()
+                          throws InitializationException
+  {
+    // prepare our statements
+    try
+    {
+      // prepare the SQL for the TestStatement
+      StmtPriceModelDataSelectQuery = JDBCcon.prepareStatement(PriceModelDataSelectQuery,
+                                                      ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                                      ResultSet.CONCUR_READ_ONLY);
+    }
+    catch (SQLException ex)
+    {
+      message = "Error preparing the statement " + PriceModelDataSelectQuery;
+      OpenRate.getOpenRateFrameworkLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
+    }
+    catch (Exception ex)
+    {
+      message = "Error preparing the statement <" + PriceModelDataSelectQuery + ">. message: " + ex.getMessage();
+      OpenRate.getOpenRateFrameworkLog().error(message);
+      throw new InitializationException(message,getSymbolicName());
+    }
   }
 
   // -----------------------------------------------------------------------------

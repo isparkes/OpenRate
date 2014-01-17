@@ -7,7 +7,7 @@
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2013.
+ * is Copyright of the OpenRate project 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -124,13 +124,13 @@ public class CallAssemblyCache
   @Override
   public void saveCacheObjectsToFile() throws ProcessingException
   {
-    int            ObjectsLoaded = 0;
-    BufferedWriter outFile = null;
-    String         tmpFileRecord;
-    Collection<String>     objectSet;
-    Iterator<String>       objectIterator;
-    String         tmpKey;
-    AssemblyCtx    tmpInfo;
+    int                objectsLoaded = 0;
+    BufferedWriter     outFile = null;
+    String             tmpFileRecord;
+    Collection<String> objectSet;
+    Iterator<String>   objectIterator;
+    String             tmpKey;
+    AssemblyCtx        tmpInfo;
 
     // Log that we are starting the loading
     OpenRate.getOpenRateFrameworkLog().info("Starting Assembly Cache saving to file");
@@ -183,7 +183,7 @@ public class CallAssemblyCache
     }
 
     OpenRate.getOpenRateFrameworkLog().info(
-          "Assembly Data Saving completed. " + ObjectsLoaded +
+          "Assembly Data Saving completed. " + objectsLoaded +
           " configuration lines saved <" + CachePersistenceName +
           ">");
   }
@@ -219,62 +219,65 @@ public class CallAssemblyCache
             CachePersistenceName + ">");
     }
 
-    // File open, now get the stuff
-    try
+    if (inFile != null)
     {
-      while (inFile.ready())
+      // File open, now get the stuff
+      try
       {
-        tmpFileRecord = inFile.readLine();
-
-        if ((tmpFileRecord.startsWith("#")) |
-            tmpFileRecord.trim().equals(""))
+        while (inFile.ready())
         {
-          // Comment line, ignore
-        }
-        else
-        {
-          ObjectsLoaded++;
-          ObjectFields = tmpFileRecord.split(";");
-          AssemblyCtx tmpInfo = new AssemblyCtx();
-          tmpInfo.totalDuration = Double.valueOf(ObjectFields[1]);
-          tmpInfo.totalData     = Double.valueOf(ObjectFields[2]);
-          tmpInfo.uplink        = Double.valueOf(ObjectFields[3]);
-          tmpInfo.downlink      = Double.valueOf(ObjectFields[4]);
-          tmpInfo.state         = Integer.parseInt(ObjectFields[5]);
-          tmpInfo.StartDate     = Integer.parseInt(ObjectFields[6]);
-          tmpInfo.ClosedDate    = Integer.parseInt(ObjectFields[7]);
+          tmpFileRecord = inFile.readLine();
 
-          // if the call is not too old
-          if (tmpInfo.ClosedDate > storeCutoff)
+          if ((tmpFileRecord.startsWith("#")) |
+              tmpFileRecord.trim().equals(""))
           {
-            // add it to the cache
-            ObjectList.put(ObjectFields[0],tmpInfo);
+            // Comment line, ignore
+          }
+          else
+          {
+            ObjectsLoaded++;
+            ObjectFields = tmpFileRecord.split(";");
+            AssemblyCtx tmpInfo = new AssemblyCtx();
+            tmpInfo.totalDuration = Double.valueOf(ObjectFields[1]);
+            tmpInfo.totalData     = Double.valueOf(ObjectFields[2]);
+            tmpInfo.uplink        = Double.valueOf(ObjectFields[3]);
+            tmpInfo.downlink      = Double.valueOf(ObjectFields[4]);
+            tmpInfo.state         = Integer.parseInt(ObjectFields[5]);
+            tmpInfo.StartDate     = Integer.parseInt(ObjectFields[6]);
+            tmpInfo.ClosedDate    = Integer.parseInt(ObjectFields[7]);
+
+            // if the call is not too old
+            if (tmpInfo.ClosedDate > storeCutoff)
+            {
+              // add it to the cache
+              ObjectList.put(ObjectFields[0],tmpInfo);
+            }
           }
         }
       }
-    }
-    catch (IOException ex)
-    {
-      OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CachePersistenceName +
-            "> in record <" + ObjectsLoaded + ">. IO Error.");
-    }
-    catch (ArrayIndexOutOfBoundsException ex)
-    {
-      OpenRate.getOpenRateFrameworkLog().fatal(
-            "Error reading input file <" + CachePersistenceName +
-            "> in record <" + ObjectsLoaded + ">. Malformed Record.");
-    }
-    finally
-    {
-      try
-      {
-        inFile.close();
-      }
       catch (IOException ex)
       {
-        OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CachePersistenceName +
-                  ">", ex);
+        OpenRate.getOpenRateFrameworkLog().fatal(
+              "Error reading input file <" + CachePersistenceName +
+              "> in record <" + ObjectsLoaded + ">. IO Error.");
+      }
+      catch (ArrayIndexOutOfBoundsException ex)
+      {
+        OpenRate.getOpenRateFrameworkLog().fatal(
+              "Error reading input file <" + CachePersistenceName +
+              "> in record <" + ObjectsLoaded + ">. Malformed Record.");
+      }
+      finally
+      {
+        try
+        {
+          inFile.close();
+        }
+        catch (IOException ex)
+        {
+          OpenRate.getOpenRateFrameworkLog().error("Error closing input file <" + CachePersistenceName +
+                    ">", ex);
+        }
       }
     }
 
@@ -358,5 +361,30 @@ public class CallAssemblyCache
       // This is not our event, pass it up the stack
       return super.processControlEvent(Command, Init, Parameter);
     }
+  }
+
+  /**
+   * Format the internal record for dumping
+   * 
+   * @param key
+   * @param object
+   * @return 
+   */
+  @Override
+  public String formatObject(String key, Object object) {
+    // Cast to our object
+    AssemblyCtx tmpCtx = (AssemblyCtx) object;
+
+    String result =
+      key + ":" +
+      String.valueOf(tmpCtx.totalDuration) + ";" +
+      String.valueOf(tmpCtx.totalData) + ";" +
+      String.valueOf(tmpCtx.uplink) + ";" +
+      String.valueOf(tmpCtx.downlink) + ";" +
+      String.valueOf(tmpCtx.state) + ";" +
+      String.valueOf(tmpCtx.StartDate) + ";" +
+      String.valueOf(tmpCtx.ClosedDate);
+    
+    return result;
   }
 }

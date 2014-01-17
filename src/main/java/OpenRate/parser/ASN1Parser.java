@@ -11,7 +11,7 @@
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2013.
+ * is Copyright of the OpenRate project 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -80,6 +80,11 @@ public class ASN1Parser implements IBinaryParser
   * 170: BCD String (Octet String)
   */
   public static final int BCDString       = 0xAA;
+
+ /**
+  * 171: BCD String (Octet String), little endian format
+  */
+  public static final int BCDStringLE     = 0xAB;
 
   /* Types - not used in v.1, maybe when improved further */
  /**
@@ -216,7 +221,7 @@ public class ASN1Parser implements IBinaryParser
   private IASN1Def ASN1Def;
 
   // The byte stream reader for this decoder
-  private ByteArrayReader reader = new ByteArrayReader();
+  private ASN1Parser.ByteArrayReader reader = new ASN1Parser.ByteArrayReader();
 
  /**
   * Find out whether the reader is ready for another call
@@ -337,6 +342,29 @@ public class ASN1Parser implements IBinaryParser
 		for (int i = 0; i < value.length; ++i) {
       int hiNibble = ((value[i] & 0xf0) >> 4);
       int loNibble = (value[i] & 0x0f);
+			if ((i != value.length) && (hiNibble != 0x0f)) // if not pad char
+  			buf.append((char) (hiNibble + '0'));
+			if ((i != value.length) && (loNibble != 0x0f)) // if not pad char
+				buf.append((char) (loNibble + '0'));
+		}
+		return buf.toString();
+    }
+
+  /**
+   * formats the value of the tag as an integer and return as a BCD string value.
+   * No value checking is done. Padding is removed. The nibbles of the BCD are
+   * reversed, à la Ericsson.
+   * 
+   * @param value the input BCD encoded array
+	 * @return The decoded string
+	 *
+	 */
+	public String parseBCDStringLE(byte[] value) {
+		StringBuilder buf = new StringBuilder(value.length * 2);
+
+		for (int i = 0; i < value.length; ++i) {
+      int loNibble = ((value[i] & 0xf0) >> 4);
+      int hiNibble = (value[i] & 0x0f);
 			if ((i != value.length) && (hiNibble != 0x0f)) // if not pad char
   			buf.append((char) (hiNibble + '0'));
 			if ((i != value.length) && (loNibble != 0x0f)) // if not pad char
@@ -503,6 +531,7 @@ public class ASN1Parser implements IBinaryParser
                 case OCTETSTRING:     output=parsePrintableString(value); break;
                 case IA5STRING:       output=parseIA5String(value); break;
                 case BCDString:       output=parseBCDString(value); break;
+                case BCDStringLE:     output=parseBCDStringLE(value); break;
                 default:              output=parseBytes(value);break;
             }
         }

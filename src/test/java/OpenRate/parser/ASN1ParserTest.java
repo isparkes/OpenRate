@@ -7,7 +7,7 @@
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2013.
+ * is Copyright of the OpenRate project 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -262,6 +262,43 @@ public class ASN1ParserTest {
     // perform the conversion
     String result = instance.parseASN1(ASN1Parser.BCDString, output.getOrigValue());
     String expectedResult = "260203114609127";
+    Assert.assertEquals(expectedResult, result);
+  }
+
+  /**
+   * Test of parseBCDString method, of class ASN1Parser.
+   * (Little endian BCD as used by Ericsson AXE).
+   */
+  @Test
+  public void testParseBCDStringLE() throws Exception {
+    System.out.println("parseBCDString");
+    
+    // Defintion of the tags and so on
+    HuaweiDef asn1Specification = new HuaweiDef();
+    asn1Specification.initTags();
+    
+    // Set up the parser instance
+    ASN1Parser instance = new ASN1Parser(asn1Specification);
+    
+    // Test 2 byte length
+    byte[] testArray = new byte[10];
+    testArray[0] = (byte) -126;
+    testArray[1] = (byte) 8	;
+    testArray[2] = (byte) 38	;
+    testArray[3] = (byte) 2	;
+    testArray[4] = (byte) 3	;
+    testArray[5] = (byte) 17	;
+    testArray[6] = (byte) 70	;
+    testArray[7] = (byte) 9	;
+    testArray[8] = (byte) 18	;
+    testArray[9] = (byte) -9	;
+
+    instance.setDataToParse(testArray);
+    Asn1Class output = instance.readNextElement();
+    
+    // perform the conversion
+    String result = instance.parseASN1(ASN1Parser.BCDStringLE, output.getOrigValue());
+    String expectedResult = "622030116490217";
     Assert.assertEquals(expectedResult, result);
   }
 
