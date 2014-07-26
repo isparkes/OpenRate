@@ -733,6 +733,7 @@ public class BalanceCache extends AbstractCache
   * and publishes the commands that the plug in understands. The listener is
   * responsible for delivering only these commands to the plug in.
   *
+  * @throws OpenRate.exception.InitializationException
   */
   @Override
   public void registerClientManager() throws InitializationException
@@ -766,7 +767,6 @@ public class BalanceCache extends AbstractCache
       switch (Parameter) {
         case "":
           // do nothing
-          ResultCode = 0;
           break;
         case "All":
           // calculate the file name

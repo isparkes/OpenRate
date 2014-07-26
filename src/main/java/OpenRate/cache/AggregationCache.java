@@ -98,15 +98,15 @@ public class AggregationCache
   private String AggregationResultPath;
 
   // The size of the write buffer for writing the output aggregations
-  private int    BUF_SIZE = 8192;
+  private final int BUF_SIZE = 8192;
   
  /**
   * This stores all the cacheable data. The KeyList is the list of aggregation
   * keys that we know about, the scenario list is the mapping of all the
   * scenarios that have been defined.
   */
-  private HashMap<String, AggScenarioList> keyList;
-  private HashMap<String, AggScenario>     scenarioList;
+  private final HashMap<String, AggScenarioList> keyList;
+  private final HashMap<String, AggScenario>     scenarioList;
 
   // When we merge output results, this is the order we do them in
   private class MergeString
@@ -115,7 +115,7 @@ public class AggregationCache
   }
 
   // This is used to know the order of the merge that will be done
-  private HashMap<String, MergeString> MergeStrings;
+  private final HashMap<String, MergeString> MergeStrings;
 
   // List of Services that this Client supports
   private final static String SERVICE_PERSIST = "Persist";
@@ -1003,7 +1003,7 @@ public class AggregationCache
 
       while (resKeySetIterator.hasNext())
       {
-        resultIterator = (String) resKeySetIterator.next();
+        resultIterator = resKeySetIterator.next();
         tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
         tmpAggResult = tmpAggResultList.AccumulatedResult;
 
@@ -1120,7 +1120,7 @@ public class AggregationCache
 
         while (resKeySetIterator.hasNext())
         {
-          resultIterator = (String) resKeySetIterator.next();
+          resultIterator = resKeySetIterator.next();
           tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
           tmpAggResult = tmpAggResultList.AccumulatedResult;
 
@@ -1228,7 +1228,7 @@ public class AggregationCache
 
           while (resKeySetIterator.hasNext())
           {
-            resultIterator = (String) resKeySetIterator.next();
+            resultIterator = resKeySetIterator.next();
             tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
             tmpAggResult = tmpAggResultList.AccumulatedResult;
 
@@ -1402,7 +1402,7 @@ public class AggregationCache
 
       while (resKeySetIterator.hasNext())
       {
-        resultIterator = (String) resKeySetIterator.next();
+        resultIterator = resKeySetIterator.next();
         tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
 
         // See if we have information for this transaction
@@ -1466,7 +1466,7 @@ public class AggregationCache
 
       while (resKeySetIterator.hasNext())
       {
-        resultIterator = (String) resKeySetIterator.next();
+        resultIterator = resKeySetIterator.next();
         tmpAggResultList = tmpAggScenario.resultCache.get(resultIterator);
 
         // See if we have information for this transaction
@@ -1524,8 +1524,9 @@ public class AggregationCache
   * registerClientManager registers this class as a client of the ECI listener
   * and publishes the commands that the plug in understands. The listener is
   * responsible for delivering only these commands to the plug in.
-   *
-   */
+  *
+  * @throws OpenRate.exception.InitializationException
+  */
   @Override
   public void registerClientManager() throws InitializationException
   {

@@ -149,7 +149,7 @@ public abstract class AbstractSyncLoaderCache
   private int syncStatus = 0;
 
   // The pending commands ArrayList provides the buffering for sync processing
-  private ArrayList<String> pendingCommands;
+  private final ArrayList<String> pendingCommands;
 
   /**
    * this is used to handle multiple data formats easily
@@ -640,6 +640,7 @@ public abstract class AbstractSyncLoaderCache
   * and publishes the commands that the plug in understands. The listener is
   * responsible for delivering only these commands to the plug in.
   *
+  * @throws OpenRate.exception.InitializationException
   */
   @Override
   public void registerClientManager() throws InitializationException
@@ -733,10 +734,10 @@ public abstract class AbstractSyncLoaderCache
         // try to set the new value
         try
         {
-          autoReloadPeriod = Long.valueOf(autoReloadPeriod);
+          autoReloadPeriod = Long.valueOf(Parameter);
           ResultCode = 0;
         }
-        catch (Exception e)
+        catch (NumberFormatException e)
         {
           return "Could not interpret <" + autoReloadPeriod + "> as an integer value";
         }
@@ -794,13 +795,6 @@ public abstract class AbstractSyncLoaderCache
     catch (SQLException ex)
     {
       message = "Error preparing the statement " + CacheDataSelectQuery;
-      OpenRate.getOpenRateFrameworkLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
-    }
-    catch (Exception ex)
-    {
-      message = "Error preparing the statement <" + CacheDataSelectQuery +
-                       ">. message: " + ex.getMessage();
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }

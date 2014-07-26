@@ -383,12 +383,6 @@ public class RUMCPRateCache
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
-    catch (Exception ex)
-    {
-      message = "Error preparing the statement <" + PriceModelDataSelectQuery + ">. message: " + ex.getMessage();
-      OpenRate.getOpenRateFrameworkLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
-    }
   }
 
   // -----------------------------------------------------------------------------
@@ -582,7 +576,7 @@ public class RUMCPRateCache
     // Execute the query
     try
     {
-      mrs = StmtCacheDataSelectQuery.executeQuery();
+      mrs = StmtPriceModelDataSelectQuery.executeQuery();
       Columns = mrs.getMetaData().getColumnCount();
     }
     catch (SQLException ex)
@@ -663,7 +657,7 @@ public class RUMCPRateCache
     try
     {
       mrs.close();
-      StmtCacheDataSelectQuery.close();
+      StmtPriceModelDataSelectQuery.close();
       JDBCcon.close();
     }
     catch (SQLException ex)
@@ -682,10 +676,11 @@ public class RUMCPRateCache
 
  /**
   * Load the data from the defined Data Source Method
+  * 
+  * @throws OpenRate.exception.InitializationException
   */
   @Override
-  public void loadDataFromMethod()
-                      throws InitializationException
+  public void loadDataFromMethod() throws InitializationException
   {
     throw new InitializationException("Not implemented yet",getSymbolicName());
   }

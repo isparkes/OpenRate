@@ -183,6 +183,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * This should return 0 if everything was OK, otherwise -1.
   *
   * @param transactionNumber
+  * @return it is OK to start the transaction
   */
   @Override
   public int startTransaction(int transactionNumber)
@@ -425,6 +426,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
         // we are crossing a threshold
         tmpDiscount = tmpCounter.CurrentBalance;
         currentRecord.updateRUMValue(rumToUse,-tmpCounter.CurrentBalance);
+        double oldBal = tmpCounter.CurrentBalance;
         tmpCounter.CurrentBalance = 0;
 
         // Add the balance impact
@@ -439,7 +441,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
         tmpBalImpact.rumValueAfter = currentRecord.getRUMValue(rumToUse);
         tmpBalImpact.rumValueUsed = tmpDiscount;
         tmpBalImpact.balanceAfter = 0;
-        tmpBalImpact.balanceDelta = -tmpDiscount;
+        tmpBalImpact.balanceDelta = tmpBalImpact.balanceAfter - oldBal;
         tmpBalImpact.startDate = tmpCounter.validFrom;
         tmpBalImpact.endDate = tmpCounter.validTo;
 
@@ -468,6 +470,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
       else
       {
         // we are just decrementing the counter, using all of the impact
+        double oldBal = tmpCounter.CurrentBalance;
         tmpCounter.CurrentBalance -= tmpRUMValue;
         tmpDiscount = tmpRUMValue;
         currentRecord.updateRUMValue(rumToUse,-currentRecord.getRUMValue(rumToUse));
@@ -485,7 +488,7 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
         tmpBalImpact.rumValueAfter = 0.0;
         tmpBalImpact.rumValueUsed = tmpDiscount;
         tmpBalImpact.balanceAfter = tmpCounter.CurrentBalance;
-        tmpBalImpact.balanceDelta = -tmpDiscount;
+        tmpBalImpact.balanceDelta = tmpBalImpact.balanceAfter - oldBal;
         tmpBalImpact.startDate = tmpCounter.validFrom;
         tmpBalImpact.endDate = tmpCounter.validTo;
 
@@ -605,7 +608,8 @@ public abstract class AbstractBalanceHandlerPlugIn extends AbstractTransactional
   * the record, and a discounting summary is passed back to the caller.
   *
   * This method assumes that the counter has 0 as an initial value, which is
-  * progressively incremented.
+  * progressively incremented. There are no thresholds to be taken into account
+  * in this case, so the management of the counter is relatively straightforward.
   *
   * The RUM value is left untouched (it is not consumed).
   *
