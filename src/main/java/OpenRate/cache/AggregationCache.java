@@ -798,7 +798,7 @@ public class AggregationCache
             // Now check that they are identical
             for (int Index = 0 ; Index < tmpMergeIntoScenario.groupingFieldIndex ; Index++)
             {
-              if (tmpMergeIntoScenario.groupingFieldList.get(Index) != tmpAggScenario.groupingFieldList.get(Index))
+              if (tmpMergeIntoScenario.groupingFieldList.get(Index).compareTo(tmpAggScenario.groupingFieldList.get(Index)) != 0)
               {
                 message = "Aggregation scenarios <" + scenarioName + "> and <" + mergeIntoScenarioName + "> do not have identical grouping keys. They cannot be merged.";
                 OpenRate.getOpenRateFrameworkLog().error(message);
