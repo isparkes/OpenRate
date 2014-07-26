@@ -62,6 +62,7 @@ import OpenRate.utils.ConversionUtils;
 import TestUtils.FrameworkUtils;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.SQLException;
 import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
@@ -107,7 +108,7 @@ public class AbstractRateCalcTest
     {
       JDBCChcon.prepareStatement("DROP TABLE TEST_PRICE_MODEL;").execute();
     }
-    catch (Exception ex)
+    catch (SQLException ex)
     {
       if ((ex.getMessage().startsWith("Unknown table")) || // Mysql
           (ex.getMessage().startsWith("user lacks")))      // HSQL
@@ -159,6 +160,8 @@ public class AbstractRateCalcTest
     /**
      * Test of rateCalculateTiered method, of class AbstractRateCalc. This test
      * uses a simple non-tiered model, with no time bounding.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testRateCalculateTieredNonTimeBoundNonTiered() throws Exception {
@@ -221,6 +224,8 @@ public class AbstractRateCalcTest
     /**
      * Test of rateCalculateTiered method, of class AbstractRateCalc. This test
      * uses a simple tiered model, with no time bounding.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testRateCalculateTieredNonTimeBoundTiered() throws Exception {
@@ -283,6 +288,8 @@ public class AbstractRateCalcTest
     /**
      * Test of rateCalculateTiered method, of class AbstractRateCalc. This test
      * uses a simple non-tiered model, with no time bounding.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testRateCalculateTieredTimeBoundNonTiered() throws Exception {
@@ -354,6 +361,8 @@ public class AbstractRateCalcTest
     /**
      * Test of rateCalculateThreshold method, of class AbstractRateCalc. This test
      * uses a simple tiered threshold model, with no time bounding.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testRateCalculateThresholdTiered() throws Exception {
@@ -416,6 +425,8 @@ public class AbstractRateCalcTest
     /**
      * Test of rateCalculateFlat method, of class AbstractRateCalc. This test
      * uses a simple flat threshold model, with no time bounding.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testRateCalculateFlat() throws Exception {
@@ -452,6 +463,8 @@ public class AbstractRateCalcTest
     /**
      * Test of rateCalculateEvent method, of class AbstractRateCalc. This test
      * uses a simple event threshold model, with no time bounding.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testRateCalculateEvent() throws Exception {
@@ -487,6 +500,8 @@ public class AbstractRateCalcTest
     /**
      * Test of authCalculateTiered method, of class AbstractRateCalc. Work out
      * how much RUM can be got for the current available balance.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testAuthCalculateTiered() throws Exception {
@@ -527,6 +542,8 @@ public class AbstractRateCalcTest
 
     /**
      * Test of authCalculateThreshold method, of class AbstractRateCalc.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testAuthCalculateThreshold() throws Exception {
@@ -569,6 +586,8 @@ public class AbstractRateCalcTest
 
     /**
      * Test of authCalculateFlat method, of class AbstractRateCalc.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testAuthCalculateFlat() throws Exception {
@@ -611,6 +630,8 @@ public class AbstractRateCalcTest
 
     /**
      * Test of authCalculateEvent method, of class AbstractRateCalc.
+     * 
+     * @throws java.lang.Exception
      */
     @Test
     public void testAuthCalculateEvent() throws Exception {

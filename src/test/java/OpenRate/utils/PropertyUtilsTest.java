@@ -63,19 +63,18 @@ import org.junit.*;
  *
  * @author TGDSPIA1
  */
-public class PropertyUtilsTest
-{
+public class PropertyUtilsTest {
+
   private static URL FQConfigFileName;
 
   public PropertyUtilsTest() {
   }
 
   @BeforeClass
-  public static void setUpClass() throws Exception
-  {
+  public static void setUpClass() throws Exception {
     FQConfigFileName = new URL("File:src/test/resources/PropertyUtils.properties.xml");
-    
-   // Set up the OpenRate internal logger - this is normally done by app startup
+
+    // Set up the OpenRate internal logger - this is normally done by app startup
     OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
@@ -87,15 +86,16 @@ public class PropertyUtilsTest
 
   @AfterClass
   public static void tearDownClass() {
+    OpenRate.getApplicationInstance().cleanup();
   }
 
-    @Before
-    public void setUp() {
-    }
+  @Before
+  public void setUp() {
+  }
 
-    @After
-    public void tearDown() {
-    }
+  @After
+  public void tearDown() {
+  }
 
   /**
    * Test of getPropertyUtils method, of class PropertyUtils.
@@ -234,7 +234,8 @@ public class PropertyUtilsTest
   }
 
   /**
-   * Test of getBatchInputAdapterPropertyValueDef method, of class PropertyUtils.
+   * Test of getBatchInputAdapterPropertyValueDef method, of class
+   * PropertyUtils.
    */
   @Test
   public void testGetBatchInputAdapterPropertyValueDef() {
@@ -460,7 +461,8 @@ public class PropertyUtilsTest
   }
 
   /**
-   * Test of getBatchOutputAdapterPropertyValueDef method, of class PropertyUtils.
+   * Test of getBatchOutputAdapterPropertyValueDef method, of class
+   * PropertyUtils.
    */
   @Test
   public void testGetBatchOutputAdapterPropertyValueDef() throws Exception {

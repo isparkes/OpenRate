@@ -801,6 +801,7 @@ public class ConversionUtilsTest
     result = instance.getRoundedValueRoundHalfEven(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
   }
+  
  /**
   * Method to get an instance of the implementation. Done this way to allow
   * tests to be executed individually.

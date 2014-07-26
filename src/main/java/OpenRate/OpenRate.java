@@ -249,6 +249,9 @@ public class OpenRate
   // This is true all the time that there are some pipes active
   private boolean pipelinesActive = false;
   
+  // Shows if the framework is active
+  private static boolean frameworkActive = false;
+  
   /**
    * default constructor
    */
@@ -278,6 +281,7 @@ public class OpenRate
 
     // Create the application - this initialises the entire system
     appl = OpenRate.getApplicationInstance();
+    frameworkActive = true;
     
     if (appl == null)
     {
@@ -296,6 +300,7 @@ public class OpenRate
 
     // print shutdown message
     appl.finaliseApplication();
+    frameworkActive = false;
 
     // Bye bye, please come back soon
     System.exit(status);
@@ -1094,6 +1099,9 @@ public class OpenRate
     
     // Deallocate the properties object
     PropertyUtils.closePropertyUtils();
+    
+    // Clean up client map
+    ClientManager.getClientManager().clear();
   }
 
   /**
@@ -1590,6 +1598,6 @@ public class OpenRate
      * @return the frameworkActive
      */
     public boolean isFrameworkActive() {
-        return pipelinesActive;
+        return frameworkActive || pipelinesActive;
     }
 }

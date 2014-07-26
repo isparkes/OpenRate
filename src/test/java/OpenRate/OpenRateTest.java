@@ -304,7 +304,7 @@ public class OpenRateTest {
           try (BufferedWriter out = new BufferedWriter(fstream)) {
             out.write("Framework:Shutdown=true");
           }
-        }catch (Exception e){//Catch exception if any
+        } catch (IOException e) {//Catch exception if any
           Assert.fail();
         }
         
