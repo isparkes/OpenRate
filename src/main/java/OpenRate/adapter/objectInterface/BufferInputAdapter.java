@@ -3,7 +3,7 @@
  *
  * The exclusive owner of this work is the OpenRate project.
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2013.
+ * is Copyright of the OpenRate project 2006-2014.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
@@ -37,7 +37,7 @@
  * This software is provided "as is" and any expressed or impled warranties,
  * including, but not limited to, the impled warranties of merchantability
  * and fitness for a particular purpose are disclaimed. In no event shall
- * Tiger Shore Management or its officially assigned agents be liable to any
+ * The OpenRate Project or its officially assigned agents be liable to any
  * direct, indirect, incidental, special, exemplary, or consequential damages
  * (including but not limited to, procurement of substitute goods or services;
  * Loss of use, data, or profits; or any business interruption) however caused

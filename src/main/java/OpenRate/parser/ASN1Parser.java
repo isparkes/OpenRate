@@ -45,7 +45,7 @@
  * This software is provided "as is" and any expressed or impled warranties,
  * including, but not limited to, the impled warranties of merchantability
  * and fitness for a particular purpose are disclaimed. In no event shall
- * Tiger Shore Management or its officially assigned agents be liable to any
+ * The OpenRate Project or its officially assigned agents be liable to any
  * direct, indirect, incidental, special, exemplary, or consequential damages
  * (including but not limited to, procurement of substitute goods or services;
  * Loss of use, data, or profits; or any business interruption) however caused
