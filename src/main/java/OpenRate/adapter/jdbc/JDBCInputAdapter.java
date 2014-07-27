@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.adapter.jdbc;
 
 import OpenRate.CommonConfig;
@@ -76,59 +75,55 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=JDBC_Input_Adapter'>click here</a> to go to wiki page.
+ * Please <a target='new'
+ * href='http://www.open-rate.com/wiki/index.php?title=JDBC_Input_Adapter'>click
+ * here</a> to go to wiki page.
  *
- * <p>Generic JDBC InputAdapter.<br>This module is a little more complicated than the
- * file input adapter, because we are more restricted about the way that we
+ * <p>
+ * Generic JDBC InputAdapter.<br>This module is a little more complicated than
+ * the file input adapter, because we are more restricted about the way that we
  * deal with done records, which will depend on the limitations of the upstream
- * systems and your particular business model. Possible strategies are:
- * 1) Read the rows and delete them from the source table
- * 2) Read the rows which have a timestamp after time "t" and then update the
- *    internal value of "t" so that we do not read the records again
- * 3) flag records that have been read with an update
- * 4) mark the records the have been read in a "tick list" so that we do not
- *    process them again
+ * systems and your particular business model. Possible strategies are: 1) Read
+ * the rows and delete them from the source table 2) Read the rows which have a
+ * timestamp after time "t" and then update the internal value of "t" so that we
+ * do not read the records again 3) flag records that have been read with an
+ * update 4) mark the records the have been read in a "tick list" so that we do
+ * not process them again
  *
  * The exact method that is used will have to be decided by you. To provide an
  * abstraction of these methods, JDBCInputAdapter provides the following methods
  * to allow you enough possibilities to hook the adapter to get the results you
  * want:
  *
- *   Initialisation
- *   --------------
+ * Initialisation --------------
  *
  * Initialisation will validate the configuration to ensure that nothing will go
  * wrong at a later stage. While this is not strictly necessary (we could always
- * catch errors on the fly), it is highly recommended that all possible validations
- * are done once and only once here. All checks at a later state will slow things
- * down, and will be performed millions of times (once for each record) instead
- * of once here.
+ * catch errors on the fly), it is highly recommended that all possible
+ * validations are done once and only once here. All checks at a later state
+ * will slow things down, and will be performed millions of times (once for each
+ * record) instead of once here.
  *
- *   Scanning and Processing
- *   -----------------------
+ * Scanning and Processing -----------------------
  *
- * The basic scanning and processing loop looks like this:
- * - getInputAvailable() Scan to see if there is any work to do
- *     assignInput() mark the file as being in processing if we find work to do
- *     open the input stream and create a new transaction object in the TM
- *     read the records in from the stream, updating the TM record count
- *     in batches of n records
- *     - transformInput() is a user definable method in the implementation class
- *       which transforms the FlatRecord read from the file into a record for
- *       the processing
- *       - When the stream runs out, set the TM status to FLUSHED and wait for
- *         the TM to confirm that processing has finished down the pipe
- *         - When the TM confirms that the pipe has flushed by calling the
- *           trigger() method with the parameter of "flushed", the stream is
- *           closed, setting the TM status to FINISHED
- *           - When all the modules have finished, the transaction is committed
- *             by calling the trigger() method with the parameter of "committed"
- *             which causes the input file to be renamed and the transaction
- *             to be committed or rolled back.
+ * The basic scanning and processing loop looks like this: - getInputAvailable()
+ * Scan to see if there is any work to do assignInput() mark the file as being
+ * in processing if we find work to do open the input stream and create a new
+ * transaction object in the TM read the records in from the stream, updating
+ * the TM record count in batches of n records - transformInput() is a user
+ * definable method in the implementation class which transforms the FlatRecord
+ * read from the file into a record for the processing - When the stream runs
+ * out, set the TM status to FLUSHED and wait for the TM to confirm that
+ * processing has finished down the pipe - When the TM confirms that the pipe
+ * has flushed by calling the trigger() method with the parameter of "flushed",
+ * the stream is closed, setting the TM status to FINISHED - When all the
+ * modules have finished, the transaction is committed by calling the trigger()
+ * method with the parameter of "committed" which causes the input file to be
+ * renamed and the transaction to be committed or rolled back.
  */
 public abstract class JDBCInputAdapter
-  extends AbstractTransactionalInputAdapter
-{
+        extends AbstractTransactionalInputAdapter {
+
   /**
    * This is the statement we use to validate the connection
    */
@@ -222,34 +217,31 @@ public abstract class JDBCInputAdapter
   private int transactionNumber = 0;
   private int InputRecordNumber = 0;
 
- /**
-  * Holds the time stamp for the transaction
-  */
+  /**
+   * Holds the time stamp for the transaction
+   */
   protected String ORTransactionId = null;
 
- /**
-  * Default Constructor
-  */
-  public JDBCInputAdapter()
-  {
+  /**
+   * Default Constructor
+   */
+  public JDBCInputAdapter() {
     super();
   }
 
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Initialise the module. Called during pipeline creation.
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The module symbolic name of this module
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation.
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The module symbolic name of this module
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String ConfigHelper;
     super.init(PipelineName, ModuleName);
 
@@ -283,58 +275,54 @@ public abstract class JDBCInputAdapter
     processControlEvent(SERVICE_DATASOURCE_KEY, true, ConfigHelper);
 
     // prepare the data source - this does not open a connection
-    if(DBUtil.initDataSource(dataSourceName) == null)
-    {
+    if (DBUtil.initDataSource(dataSourceName) == null) {
       message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
   }
 
   /**
-   * Retrieve all the source records that should be processed by the
-   * pipeline.
+   * Retrieve all the source records that should be processed by the pipeline.
+   *
+   * @return
+   * @throws OpenRate.exception.ProcessingException
    */
   @Override
-  protected Collection<IRecord> loadBatch() throws ProcessingException
-  {
-    ResultSetMetaData   Rsmd;
+  protected Collection<IRecord> loadBatch() throws ProcessingException {
+    ResultSetMetaData Rsmd;
     Collection<IRecord> Outbatch;
-    int                 ThisBatchCounter = 0;
-    int                 ColumnCount;
-    int                 ColumnIdx;
-    String[]            tmpColumns;
+    int ThisBatchCounter = 0;
+    int ColumnCount;
+    int ColumnIdx;
+    String[] tmpColumns;
 
     // The Record types we will have to deal with
-    HeaderRecord  tmpHeader;
+    HeaderRecord tmpHeader;
     TrailerRecord tmpTrailer;
-    DBRecord      tmpRecord;
-    IRecord       batchRecord;
+    DBRecord tmpRecord;
+    IRecord batchRecord;
 
     getPipeLog().debug("loadBatch()");
     Outbatch = new ArrayList<>();
 
     // This layer deals with opening the stream if we need to
-    if (InputStreamOpen == false)
-    {
+    if (InputStreamOpen == false) {
       // Check to see if there is any new work to do
-      if (canStartNewTransaction() && (getInputAvailable() > 0))
-      {
+      if (canStartNewTransaction() && (getInputAvailable() > 0)) {
         // There is work to do, we execute the Init SQL so that we have the chance to
         // prepare the data for reading
         assignInput();
 
         // the renamed file provided by assignInput
-        try
-        {
+        try {
           // Open the select statement
           prepareSelectStatement();
           rs = stmtSelectQuery.executeQuery();
 
           // See if we get an empty result set
           rs.last();
-          if(rs.getRow() > 0)
-          {
+          if (rs.getRow() > 0) {
             // Create the new transaction to hold the information. This is done in
             // The transactional layer - we just trigger it here
             // Create the transaction base name according to a simple counter
@@ -362,26 +350,21 @@ public abstract class JDBCInputAdapter
 
             // Pass the header to the user layer for any processing that
             // needs to be done
-            tmpHeader = (HeaderRecord)procHeader((IRecord)tmpHeader);
+            tmpHeader = (HeaderRecord) procHeader((IRecord) tmpHeader);
             Outbatch.add(tmpHeader);
-          }
-          else
-          {
+          } else {
             message = "Select statement did not return rows in <" + getSymbolicName() + ">";
             getPipeLog().error(message);
 
             // No work to do - return the empty batch
             return Outbatch;
           }
-        }
-        catch (SQLException Sex)
-        {
-          message = "Select SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+        } catch (SQLException Sex) {
+          message = "Select SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
           getPipeLog().error(message);
 
           // Stop any transactions that are open
-          if (transactionNumber > 0)
-          {
+          if (transactionNumber > 0) {
             cancelTransaction(transactionNumber);
           }
 
@@ -389,22 +372,19 @@ public abstract class JDBCInputAdapter
           closeSelectStatement();
 
           // report the exception
-          throw new ProcessingException(message,getSymbolicName());
+          throw new ProcessingException(message, getSymbolicName());
         }
       }
     }
 
-    if (InputStreamOpen)
-    {
-      try
-      {
+    if (InputStreamOpen) {
+      try {
         // we need to know something about the result set so we can build
         // the records out of it
         Rsmd = rs.getMetaData();
         ColumnCount = Rsmd.getColumnCount();
 
-        while ((ThisBatchCounter < batchSize) & (!rs.isLast()))
-        {
+        while ((ThisBatchCounter < batchSize) & (!rs.isLast())) {
           // get next row
           rs.next();
 
@@ -412,8 +392,7 @@ public abstract class JDBCInputAdapter
           tmpColumns = new String[ColumnCount];
 
           // create the array to transfer the columns into the DBRecord
-          for (ColumnIdx = 0; ColumnIdx < ColumnCount; ColumnIdx++)
-          {
+          for (ColumnIdx = 0; ColumnIdx < ColumnCount; ColumnIdx++) {
             tmpColumns[ColumnIdx] = rs.getString(ColumnIdx + 1);
           }
 
@@ -425,8 +404,7 @@ public abstract class JDBCInputAdapter
 
           // Add the prepared record to the batch, because of record compression
           // we may receive a null here. If we do, don't bother adding it
-          if (batchRecord != null)
-          {
+          if (batchRecord != null) {
             InputRecordNumber++;
 
             Outbatch.add(batchRecord);
@@ -434,30 +412,25 @@ public abstract class JDBCInputAdapter
         }
 
         // see if we have to abort
-        if (transactionAbortRequest(transactionNumber))
-        {
+        if (transactionAbortRequest(transactionNumber)) {
           // if so, clear down the out batch, so we don't keep filling the pipe
-          getPipeLog().warning("Pipe <"+ getSymbolicName() + "> discarded <" + Outbatch.size() + "> input records, because of pending abort.");
+          getPipeLog().warning("Pipe <" + getSymbolicName() + "> discarded <" + Outbatch.size() + "> input records, because of pending abort.");
           Outbatch.clear();
         }
 
         // Keep track of the records
-        updateRecordCount(transactionNumber,InputRecordNumber);
-      }
-      catch (SQLException Sex)
-      {
-        message = "Retrieve SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+        updateRecordCount(transactionNumber, InputRecordNumber);
+      } catch (SQLException Sex) {
+        message = "Retrieve SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
         getPipeLog().error(message);
-        throw new ProcessingException(message,getSymbolicName());
+        throw new ProcessingException(message, getSymbolicName());
       }
 
       // See if we need to add a stream trailer record - this is done immediately
       // after the last real record of the stream
-      try
-      {
+      try {
         // see the reason that we closed
-        if (rs.isLast())
-        {
+        if (rs.isLast()) {
           // we have finished
           InputStreamOpen = false;
 
@@ -470,14 +443,13 @@ public abstract class JDBCInputAdapter
           // needs to be done. To allow for purging in the case of record
           // compression, we allow multiple calls to procTrailer until the
           // trailer is returned
-          batchRecord = procTrailer((IRecord)tmpTrailer);
+          batchRecord = procTrailer((IRecord) tmpTrailer);
 
-          while (!(batchRecord instanceof TrailerRecord))
-          {
+          while (!(batchRecord instanceof TrailerRecord)) {
             // the call the trailer returned a purged record. Add this
             // to the batch and fetch again
             Outbatch.add(batchRecord);
-            batchRecord = procTrailer((IRecord)tmpTrailer);
+            batchRecord = procTrailer((IRecord) tmpTrailer);
           }
 
           Outbatch.add(tmpTrailer);
@@ -489,12 +461,10 @@ public abstract class JDBCInputAdapter
           // Connection will be closed after commit or rollback
           closeSelectStatement();
         }
-      }
-      catch (SQLException Sex)
-      {
-        message = "Close SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+      } catch (SQLException Sex) {
+        message = "Close SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
         getPipeLog().error(message);
-        throw new ProcessingException(message,getSymbolicName());
+        throw new ProcessingException(message, getSymbolicName());
       }
     }
 
@@ -504,313 +474,240 @@ public abstract class JDBCInputAdapter
   // -----------------------------------------------------------------------------
   // --------------- Start of overridable processing  functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Allows any records to be purged at the end of a transaction
-  *
-  * @return The pending record
-  */
+  /**
+   * Allows any records to be purged at the end of a transaction
+   *
+   * @return The pending record
+   */
   @Override
-  public IRecord purgePendingRecord()
-  {
+  public IRecord purgePendingRecord() {
     // default - do nothing
     return null;
   }
 
- /**
-  * Get the transaction id for the transaction. Intended to be overwritten
-  * in the case that you want another transaction ID format.
-  *
-  * @param transactionNumber The number of the transaction
-  * @return The calculated transaction id
-  */
-  public String getTransactionID(int transactionNumber)
-  {
-    return ""+new Date().getTime();
+  /**
+   * Get the transaction id for the transaction. Intended to be overwritten in
+   * the case that you want another transaction ID format.
+   *
+   * @param transactionNumber The number of the transaction
+   * @return The calculated transaction id
+   */
+  public String getTransactionID(int transactionNumber) {
+    return "" + new Date().getTime();
   }
 
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world, for
-  * example turning the dumping on and off.
-  *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
-  * @return The result message of the operation
-  */
+  /**
+   * processControlEvent is the event processing hook for the External Control
+   * Interface (ECI). This allows interaction with the external world, for
+   * example turning the dumping on and off.
+   *
+   * @param Command The command that we are to work on
+   * @param Init True if the pipeline is currently being constructed
+   * @param Parameter The parameter value for the command
+   * @return The result message of the operation
+   */
   @Override
   public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
-  {
+          String Parameter) {
     int ResultCode = -1;
 
-    if (Command.equalsIgnoreCase(SERVICE_INIT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_INIT_QUERY_KEY)) {
+      if (Init) {
         initQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return initQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_COUNT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_COUNT_QUERY_KEY)) {
+      if (Init) {
         countQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return countQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_SELECT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_SELECT_QUERY_KEY)) {
+      if (Init) {
         selectQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return selectQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_COMMIT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_COMMIT_QUERY_KEY)) {
+      if (Init) {
         commitQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return commitQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ROLLBACK_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_ROLLBACK_QUERY_KEY)) {
+      if (Init) {
         rollbackQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return rollbackQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_CONNECTION_TEST_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_CONNECTION_TEST_KEY)) {
+      if (Init) {
         validateQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return validateQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_DATASOURCE_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_DATASOURCE_KEY)) {
+      if (Init) {
         dataSourceName = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return dataSourceName;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (ResultCode == 0)
-    {
+    if (ResultCode == 0) {
       getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
-    }
-    else
-    {
+    } else {
       // This is not our event, pass it up the stack
       return super.processControlEvent(Command, Init, Parameter);
     }
   }
 
- /**
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
-  *
-  */
+  /**
+   * registerClientManager registers this class as a client of the ECI listener
+   * and publishes the commands that the plug in understands. The listener is
+   * responsible for delivering only these commands to the plug in.
+   *
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
-  public void registerClientManager() throws InitializationException
-  {
+  public void registerClientManager() throws InitializationException {
     // Set the client reference and the base services first
     super.registerClientManager();
 
     //Register services for this Client
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DATASOURCE_KEY, ClientManager.PARAM_MANDATORY);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INIT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_SELECT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COUNT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CONNECTION_TEST_KEY,ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_SELECT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COUNT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_CONNECTION_TEST_KEY, ClientManager.PARAM_MANDATORY);
   }
 
   // -----------------------------------------------------------------------------
   // --------------- Start of transactional layer functions ----------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Perform any processing that needs to be done when we are flushing the
-  * transaction
-  *
-  * @param TransactionNumber
-  * @return 0 if everything flushed OK, otherwise -1
-  */
+  /**
+   * Perform any processing that needs to be done when we are flushing the
+   * transaction
+   *
+   * @param TransactionNumber
+   * @return 0 if everything flushed OK, otherwise -1
+   */
   @Override
-  public int flushTransaction(int TransactionNumber)
-  {
-    try
-    {
+  public int flushTransaction(int TransactionNumber) {
+    try {
       // close the input stream
       closeStream();
-    }
-    catch (ProcessingException ex)
-    {
+    } catch (ProcessingException ex) {
       return -1;
     }
 
     return 0;
   }
 
- /**
-  * Perform any processing that needs to be done when we are committing the
-  * transaction
-  *
-  * @param transactionNumber The transaction to commit
-  */
+  /**
+   * Perform any processing that needs to be done when we are committing the
+   * transaction
+   *
+   * @param transactionNumber The transaction to commit
+   */
   @Override
-  public void commitTransaction(int transactionNumber)
-  {
-    try
-    {
+  public void commitTransaction(int transactionNumber) {
+    try {
       CommitStream(transactionNumber);
-    }
-    catch (ProcessingException ex)
-    {
+    } catch (ProcessingException ex) {
       Logger.getLogger(JDBCInputAdapter.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 
   /**
-  * Perform any processing that needs to be done when we are rolling back the
-  * transaction;
-  *
-  * @param transactionNumber The transaction to roll back
-  */
+   * Perform any processing that needs to be done when we are rolling back the
+   * transaction;
+   *
+   * @param transactionNumber The transaction to roll back
+   */
   @Override
-  public void rollbackTransaction(int transactionNumber)
-  {
-    try
-    {
+  public void rollbackTransaction(int transactionNumber) {
+    try {
       RollbackStream(transactionNumber);
-    }
-    catch (ProcessingException ex)
-    {
+    } catch (ProcessingException ex) {
       Logger.getLogger(JDBCInputAdapter.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 
- /**
-  * Close Transaction is the trigger to clean up transaction related information
-  * such as variables, status etc.
-  *
-  * @param transactionNumber The transaction we are working on
-  */
+  /**
+   * Close Transaction is the trigger to clean up transaction related
+   * information such as variables, status etc.
+   *
+   * @param transactionNumber The transaction we are working on
+   */
   @Override
-  public void closeTransaction(int transactionNumber)
-  {
+  public void closeTransaction(int transactionNumber) {
     // Nothing needed
   }
 
   // -----------------------------------------------------------------------------
   // ----------------- Start of inherited IAdapter functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Close all statements and perform clean up
-  */
+  /**
+   * Close all statements and perform clean up
+   */
   @Override
-  public void cleanup()
-  {
+  public void cleanup() {
     getPipeLog().debug("JDBCInputAdapter running cleanup");
 
     // Close the statements and connections
@@ -826,229 +723,121 @@ public abstract class JDBCInputAdapter
   // -----------------------------------------------------------------------------
   // ------------------ Custom connection management functions -------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * PrepareStatements creates the statements from the SQL expressions
-  * so that they can be run as needed
-  */
-  private void prepareInitStatement() throws ProcessingException
-  {
-    try
-    {
+  /**
+   * PrepareStatements creates the statements from the SQL expressions so that
+   * they can be run as needed
+   */
+  private void prepareInitStatement() throws ProcessingException {
+    try {
       // Get the connection
       openConnection();
 
       // prepare the SQL for the TestStatement
       stmtInitQuery = JDBCcon.prepareStatement(initQuery);
-    }
-    catch (SQLException Sex)
-    {
-      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + initQuery + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + initQuery + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
   }
 
- /**
-  * PrepareStatements creates the statements from the SQL expressions
-  * so that they can be run as needed
-  */
+  /**
+   * PrepareStatements creates the statements from the SQL expressions so that
+   * they can be run as needed
+   */
   private void prepareCountStatement()
-    throws ProcessingException
-  {
-    try
-    {
+          throws ProcessingException {
+    try {
       // Get the connection
       openConnection();
 
       // prepare the SQL for the TestStatement
       stmtCountQuery = JDBCcon.prepareStatement(countQuery,
-                                                 ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                 ResultSet.CONCUR_READ_ONLY);
-    }
-    catch (SQLException Sex)
-    {
-      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + countQuery + ">. message = <" + Sex.getMessage() +">";
+              ResultSet.TYPE_SCROLL_INSENSITIVE,
+              ResultSet.CONCUR_READ_ONLY);
+    } catch (SQLException Sex) {
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + countQuery + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
   }
 
- /**
-  * PrepareStatements creates the statements from the SQL expressions
-  * so that they can be run as needed
-  */
+  /**
+   * PrepareStatements creates the statements from the SQL expressions so that
+   * they can be run as needed
+   */
   private void prepareSelectStatement()
-    throws ProcessingException
-  {
-    try
-    {
+          throws ProcessingException {
+    try {
       // Get the connection
       openConnection();
       // prepare the SQL for the TestStatement
       stmtSelectQuery = JDBCcon.prepareStatement(selectQuery,
-                                                 ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                 ResultSet.CONCUR_READ_ONLY);
-      if (stmtSelectQuery.getMaxRows() > batchSize)
-      {
-        message = "Input Adapter <" + getSymbolicName() + "> cannot get requested batch size <" + batchSize + ">, setting to <" + stmtSelectQuery.getMaxRows() +">";
+              ResultSet.TYPE_SCROLL_INSENSITIVE,
+              ResultSet.CONCUR_READ_ONLY);
+      if (stmtSelectQuery.getMaxRows() > batchSize) {
+        message = "Input Adapter <" + getSymbolicName() + "> cannot get requested batch size <" + batchSize + ">, setting to <" + stmtSelectQuery.getMaxRows() + ">";
         getPipeLog().warning(message);
         stmtSelectQuery.setFetchSize(stmtSelectQuery.getMaxRows());
-      }
-      else
-      {
+      } else {
         stmtSelectQuery.setFetchSize(batchSize);
       }
-    }
-    catch (SQLException Sex)
-    {
-      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + selectQuery + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + selectQuery + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
   }
 
- /**
-  * PrepareStatements creates the statements from the SQL expressions
-  * so that they can be run as needed
-  */
+  /**
+   * PrepareStatements creates the statements from the SQL expressions so that
+   * they can be run as needed
+   */
   private void prepareCommitRollbackStatement()
-    throws ProcessingException
-  {
-    try
-    {
+          throws ProcessingException {
+    try {
       // Get the connection
       openConnection();
 
       // prepare the SQL for the TestStatement
-      if(commitQuery == null || commitQuery.isEmpty()){
-          stmtCommitQuery = null;
-      }else{
+      if (commitQuery == null || commitQuery.isEmpty()) {
+        stmtCommitQuery = null;
+      } else {
         stmtCommitQuery = JDBCcon.prepareStatement(commitQuery,
-                                                 ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                 ResultSet.CONCUR_READ_ONLY);
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
       }
-    }
-    catch (SQLException Sex)
-    {
-      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + commitQuery + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + commitQuery + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
 
-    try
-    {
+    try {
       // prepare the SQL for the TestStatement
-      if(rollbackQuery == null || rollbackQuery.isEmpty()){
-          stmtRollbackQuery = null;
-      }else{
+      if (rollbackQuery == null || rollbackQuery.isEmpty()) {
+        stmtRollbackQuery = null;
+      } else {
         stmtRollbackQuery = JDBCcon.prepareStatement(rollbackQuery,
-                                                 ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                 ResultSet.CONCUR_READ_ONLY);
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
       }
-    }
-    catch (SQLException Sex)
-    {
-      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + rollbackQuery + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "SQL Exception in <" + getSymbolicName() + "> preparing query <" + rollbackQuery + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
   }
 
- /**
-  * CloseStatements closes the statements from the SQL expressions
-  */
-  public void closeCountStatement()
-  {
-    if (stmtCountQuery != null)
-    {
-      try
-      {
+  /**
+   * CloseStatements closes the statements from the SQL expressions
+   */
+  public void closeCountStatement() {
+    if (stmtCountQuery != null) {
+      try {
         stmtCountQuery.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + countQuery + ">. message = <" + Sex.getMessage() +">";
-        getPipeLog().error(message);
-      }
-    }
-
-    // close the connection
-    closeConnection();
-  }
-
- /**
-  * CloseStatements closes the statements from the SQL expressions
-  */
-  public void closeInitStatement()
-  {
-    // close all the connections and deallocate objects
-    if (stmtInitQuery != null)
-    {
-      try
-      {
-        stmtInitQuery.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + initQuery + ">. message = <" + Sex.getMessage() +">";
-        getPipeLog().error(message);
-      }
-    }
-
-    // close the connection
-    closeConnection();
-  }
-
- /**
-  * CloseStatements closes the statements from the SQL expressions
-  */
-  public void closeSelectStatement()
-  {
-    if (stmtSelectQuery != null)
-    {
-      try
-      {
-        stmtSelectQuery.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + selectQuery + ">. message = <" + Sex.getMessage() +">";
-        getPipeLog().error(message);
-      }
-    }
-
-    // close the connection
-    closeConnection();
-  }
-
- /**
-  * CloseStatements closes the statements from the SQL expressions
-  */
-  public void closeCommitRollbackStatement()
-  {
-    if (stmtCommitQuery != null)
-    {
-      try
-      {
-        stmtCommitQuery.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + commitQuery + ">. message = <" + Sex.getMessage() +">";
-        getPipeLog().error(message);
-      }
-    }
-
-    if (stmtRollbackQuery != null)
-    {
-      try
-      {
-        stmtRollbackQuery.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + rollbackQuery + ">. message = <" + Sex.getMessage() +">";
+      } catch (SQLException Sex) {
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + countQuery + ">. message = <" + Sex.getMessage() + ">";
         getPipeLog().error(message);
       }
     }
@@ -1058,43 +847,92 @@ public abstract class JDBCInputAdapter
   }
 
   /**
-  * Open the connection
-  */
-  public void openConnection()
-  {
-    try
-    {
-      // Get our connection, exception if it goes wrong
-      if ((JDBCcon == null) || JDBCcon.isClosed())
-      {
-        JDBCcon = DBUtil.getConnection(dataSourceName);
+   * CloseStatements closes the statements from the SQL expressions
+   */
+  public void closeInitStatement() {
+    // close all the connections and deallocate objects
+    if (stmtInitQuery != null) {
+      try {
+        stmtInitQuery.close();
+      } catch (SQLException Sex) {
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + initQuery + ">. message = <" + Sex.getMessage() + ">";
+        getPipeLog().error(message);
       }
     }
-    catch (SQLException Sex)
-    {
-      message = "SQL Exception in <" + getSymbolicName() + "> opening connection. message = <" + Sex.getMessage() +">";
-      getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+
+    // close the connection
+    closeConnection();
+  }
+
+  /**
+   * CloseStatements closes the statements from the SQL expressions
+   */
+  public void closeSelectStatement() {
+    if (stmtSelectQuery != null) {
+      try {
+        stmtSelectQuery.close();
+      } catch (SQLException Sex) {
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + selectQuery + ">. message = <" + Sex.getMessage() + ">";
+        getPipeLog().error(message);
+      }
     }
-    catch (InitializationException ie)
-    {
+
+    // close the connection
+    closeConnection();
+  }
+
+  /**
+   * CloseStatements closes the statements from the SQL expressions
+   */
+  public void closeCommitRollbackStatement() {
+    if (stmtCommitQuery != null) {
+      try {
+        stmtCommitQuery.close();
+      } catch (SQLException Sex) {
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + commitQuery + ">. message = <" + Sex.getMessage() + ">";
+        getPipeLog().error(message);
+      }
+    }
+
+    if (stmtRollbackQuery != null) {
+      try {
+        stmtRollbackQuery.close();
+      } catch (SQLException Sex) {
+        message = "SQL Exception in <" + getSymbolicName() + "> closing query <" + rollbackQuery + ">. message = <" + Sex.getMessage() + ">";
+        getPipeLog().error(message);
+      }
+    }
+
+    // close the connection
+    closeConnection();
+  }
+
+  /**
+   * Open the connection
+   */
+  public void openConnection() {
+    try {
+      // Get our connection, exception if it goes wrong
+      if ((JDBCcon == null) || JDBCcon.isClosed()) {
+        JDBCcon = DBUtil.getConnection(dataSourceName);
+      }
+    } catch (SQLException Sex) {
+      message = "SQL Exception in <" + getSymbolicName() + "> opening connection. message = <" + Sex.getMessage() + ">";
+      getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
+    } catch (InitializationException ie) {
       getExceptionHandler().reportException(ie);
     }
   }
 
   /**
-  * Close down the connection
-  */
-  public void closeConnection()
-  {
-    if (JDBCcon != null)
-    {
-      try
-      {
+   * Close down the connection
+   */
+  public void closeConnection() {
+    if (JDBCcon != null) {
+      try {
         JDBCcon.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception in <" + getSymbolicName() + "> closing connection. message = <" + Sex.getMessage() +">";
+      } catch (SQLException Sex) {
+        message = "SQL Exception in <" + getSymbolicName() + "> closing connection. message = <" + Sex.getMessage() + ">";
         getPipeLog().error(message);
       }
     }
@@ -1103,34 +941,28 @@ public abstract class JDBCInputAdapter
   // -----------------------------------------------------------------------------
   // ----------------- Stream opening and closing functions ----------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * getInputAvailable performs the count query to see the number of records that
-  * are candidates for processing
-  */
-  private int getInputAvailable() throws ProcessingException
-  {
+  /**
+   * getInputAvailable performs the count query to see the number of records
+   * that are candidates for processing
+   */
+  private int getInputAvailable() throws ProcessingException {
     ResultSet Trs;
-    String    WorkingResult;
-    int       InputAvail = 0;
+    String WorkingResult;
+    int InputAvail = 0;
 
-    try
-    {
+    try {
       // prepare the count query
       prepareCountStatement();
 
-      if (stmtCountQuery.execute())
-      {
+      if (stmtCountQuery.execute()) {
         Trs = stmtCountQuery.getResultSet();
 
-        if (Trs.next())
-        {
+        if (Trs.next()) {
           WorkingResult = Trs.getString(1);
           InputAvail = Integer.parseInt(WorkingResult);
 
           // Log what we have got
-          if (InputAvail > 0)
-          {
+          if (InputAvail > 0) {
             OpenRate.getOpenRateStatsLog().info("Input  <" + getSymbolicName() + "> found <" + InputAvail + "> events for processing");
           }
         }
@@ -1140,27 +972,23 @@ public abstract class JDBCInputAdapter
 
       // close the statement
       closeCountStatement();
-    }
-    catch (SQLException Sex)
-    {
-      message = "Count SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "Count SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
 
     return InputAvail;
   }
 
   /**
-  * assignInput performs the init query to mark the input records that we are
-  * going to process. This means that any records that arrive after the
-  * processing has started will not be included in this transaction, but instead
-  * will have to wait for a later transaction
-  */
-  private void assignInput() throws ProcessingException
-  {
-    try
-    {
+   * assignInput performs the init query to mark the input records that we are
+   * going to process. This means that any records that arrive after the
+   * processing has started will not be included in this transaction, but
+   * instead will have to wait for a later transaction
+   */
+  private void assignInput() throws ProcessingException {
+    try {
       // prepare the statement
       prepareInitStatement();
 
@@ -1169,12 +997,10 @@ public abstract class JDBCInputAdapter
 
       // Close the statement
       closeInitStatement();
-    }
-    catch (SQLException Sex)
-    {
-      message = "Init SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "Init SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
   }
 
@@ -1185,89 +1011,75 @@ public abstract class JDBCInputAdapter
    * @throws OpenRate.exception.ProcessingException
    */
   public void closeStream()
-    throws ProcessingException
-  {
+          throws ProcessingException {
     // close down the result set now that we have read everything
-    if (rs != null)
-    {
-      try
-      {
+    if (rs != null) {
+      try {
         rs.close();
-      }
-      catch (SQLException Sex)
-      {
-        message = "SQL Exception closing resultset in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+      } catch (SQLException Sex) {
+        message = "SQL Exception closing resultset in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
         getPipeLog().error(message);
-        throw new ProcessingException(message,getSymbolicName());
+        throw new ProcessingException(message, getSymbolicName());
       }
     }
   }
 
- /**
-  * Commit stream performs the commit query to fix the data
-  *
-  * @param TransactionNumber The transaction number we are working on
-  * @throws ProcessingException
-  */
-  public void CommitStream(int TransactionNumber) throws ProcessingException
-  {
-    try
-    {
+  /**
+   * Commit stream performs the commit query to fix the data
+   *
+   * @param TransactionNumber The transaction number we are working on
+   * @throws ProcessingException
+   */
+  public void CommitStream(int TransactionNumber) throws ProcessingException {
+    try {
       // prepare the statement
       prepareCommitRollbackStatement();
 
       // deinit the records so that we don't have to read them ever again
-      if(stmtCommitQuery != null){
+      if (stmtCommitQuery != null) {
         perfomCommit();
       }
 
       // Close down the connection and return to the pool
       closeCommitRollbackStatement();
-    }
-    catch (SQLException Sex)
-    {
-      message = "Commit SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "Commit SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
+      throw new ProcessingException(message, getSymbolicName());
     }
   }
 
- /**
-  * Rollback stream performs the rollback query to remove the data
-  *
-  * @param TransactionNumber The transaction number we are working on
-  * @throws ProcessingException
-  */
-   public void RollbackStream(int TransactionNumber) throws ProcessingException
-   {
-     try
-     {
+  /**
+   * Rollback stream performs the rollback query to remove the data
+   *
+   * @param TransactionNumber The transaction number we are working on
+   * @throws ProcessingException
+   */
+  public void RollbackStream(int TransactionNumber) throws ProcessingException {
+    try {
       // prepare the statement
       prepareCommitRollbackStatement();
 
-       // deinit the records so that we don't have to read them ever again
-       if(stmtRollbackQuery != null){
-         perfomRollback();
-       }
+      // deinit the records so that we don't have to read them ever again
+      if (stmtRollbackQuery != null) {
+        perfomRollback();
+      }
 
       // Close down the connection and return to the pool
       closeCommitRollbackStatement();
-     }
-     catch (SQLException Sex)
-     {
-      message = "Rollback SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() +">";
+    } catch (SQLException Sex) {
+      message = "Rollback SQL Exception in <" + getSymbolicName() + ">. message = <" + Sex.getMessage() + ">";
       getPipeLog().error(message);
-      throw new ProcessingException(message,getSymbolicName());
-     }
-   }
+      throw new ProcessingException(message, getSymbolicName());
+    }
+  }
 
   /**
    * Overridable commit block for allowing the addition of parameters
    *
    * @throws SQLException
    */
-  public void perfomCommit() throws SQLException
-  {
+  public void perfomCommit() throws SQLException {
     stmtCommitQuery.execute();
   }
 
@@ -1276,189 +1088,175 @@ public abstract class JDBCInputAdapter
    *
    * @throws SQLException
    */
-  public void perfomRollback() throws SQLException
-  {
+  public void perfomRollback() throws SQLException {
     stmtRollbackQuery.execute();
   }
 
   // -----------------------------------------------------------------------------
   // --------------- Start of custom initialisation functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * The InitQuery is the query that will be executed at the beginning of a
-  * new stream of data. This is executed once, and should be used to prepare
-  * data for extraction
-  *
-  * @param PipelineName The pipeline name we are working in
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The InitQuery is the query that will be executed at the beginning of a new
+   * stream of data. This is executed once, and should be used to prepare data
+   * for extraction
+   *
+   * @param PipelineName The pipeline name we are working in
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initInitQuery(String PipelineName)
-                       throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
-                                                          INIT_QUERY_KEY,
-                                                          "None");
+            INIT_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
+    if ((query == null) || query.equalsIgnoreCase("None")) {
       message = "JDBCInputAdapter config error. " + INIT_QUERY_KEY + " property not found.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
-    }
-
-    return query;
-  }
-
- /**
-  * The SelectQuery is the query that will be executed to actually handle the
-  * data. This will deliver a data set that contains the records to be
-  * processed.
-  *
-  * @param PipelineName The pipeline name we are working in
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
-  public String initSelectQuery(String PipelineName)
-    throws InitializationException
-  {
-    String query;
-
-    // Get the init statement from the properties
-    query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
-                                                          SELECT_QUERY_KEY,
-                                                          "None");
-
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
-      message = "JDBCInputAdapter config error. " +
-                                        SELECT_QUERY_KEY +
-                                        " property not found.";
-      getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
   /**
-  * The CountQuery is the query that will be return the number of rows that
-  * will be extracted during the SelectQuery. This is used to see if there is
-  * work to be done. If the number of records is more than 0, then the Select
-  * will be performed or not.
+   * The SelectQuery is the query that will be executed to actually handle the
+   * data. This will deliver a data set that contains the records to be
+   * processed.
    *
-  * @param PipelineName The pipeline name we are working in
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+   * @param PipelineName The pipeline name we are working in
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
+  public String initSelectQuery(String PipelineName)
+          throws InitializationException {
+    String query;
+
+    // Get the init statement from the properties
+    query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
+            SELECT_QUERY_KEY,
+            "None");
+
+    if ((query == null) || query.equalsIgnoreCase("None")) {
+      message = "JDBCInputAdapter config error. "
+              + SELECT_QUERY_KEY
+              + " property not found.";
+      getPipeLog().error(message);
+      throw new InitializationException(message, getSymbolicName());
+    }
+
+    return query;
+  }
+
+  /**
+   * The CountQuery is the query that will be return the number of rows that
+   * will be extracted during the SelectQuery. This is used to see if there is
+   * work to be done. If the number of records is more than 0, then the Select
+   * will be performed or not.
+   *
+   * @param PipelineName The pipeline name we are working in
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initCountQuery(String PipelineName)
-    throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
-                                                          COUNT_QUERY_KEY,
-                                                          "None");
+            COUNT_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
-      message = "JDBCInputAdapter config error. " +
-                                        COUNT_QUERY_KEY +
-                                        " property not found.";
+    if ((query == null) || query.equalsIgnoreCase("None")) {
+      message = "JDBCInputAdapter config error. "
+              + COUNT_QUERY_KEY
+              + " property not found.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * The CommitQuery is used to undo any operations that were done during the
-  * InitQuery, or to tidy up after the work has been done.
-  *
-  * @param PipelineName The pipeline name we are working in
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The CommitQuery is used to undo any operations that were done during the
+   * InitQuery, or to tidy up after the work has been done.
+   *
+   * @param PipelineName The pipeline name we are working in
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initCommitQuery(String PipelineName)
-    throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
-                                                          COMMIT_QUERY_KEY,
-                                                          "None");
+            COMMIT_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
-      message = "JDBCInputAdapter config error. " +
-                                        COMMIT_QUERY_KEY +
-                                        " property not found.";
+    if ((query == null) || query.equalsIgnoreCase("None")) {
+      message = "JDBCInputAdapter config error. "
+              + COMMIT_QUERY_KEY
+              + " property not found.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * The RollbackQuery is used to undo any operations that were done during the
-  * InitQuery, or to tidy up after the work has been done.
-  *
-  * @param PipelineName The pipeline name we are working in
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The RollbackQuery is used to undo any operations that were done during the
+   * InitQuery, or to tidy up after the work has been done.
+   *
+   * @param PipelineName The pipeline name we are working in
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initRollbackQuery(String PipelineName)
-    throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
-                                                          ROLLBACK_QUERY_KEY,
-                                                          "None");
+            ROLLBACK_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
-      message = "JDBCInputAdapter config error. " +
-                                        ROLLBACK_QUERY_KEY +
-                                        " property not found.";
+    if ((query == null) || query.equalsIgnoreCase("None")) {
+      message = "JDBCInputAdapter config error. "
+              + ROLLBACK_QUERY_KEY
+              + " property not found.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * Get the data source name from the properties
-  *
-  * @param PipelineName The pipeline name we are working in
-  * @return The data source name
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Get the data source name from the properties
+   *
+   * @param PipelineName The pipeline name we are working in
+   * @return The data source name
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initDataSourceName(String PipelineName)
-    throws InitializationException
-  {
+          throws InitializationException {
     String DSN;
     DSN = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(PipelineName, getSymbolicName(),
-                                                        DATASOURCE_KEY,
-                                                        "None");
+            DATASOURCE_KEY,
+            "None");
 
-    if ((DSN == null) || DSN.equalsIgnoreCase("None"))
-    {
-      message = "JDBCInputAdapter config error. " +
-                                        DATASOURCE_KEY +
-                                        " property not found.";
+    if ((DSN == null) || DSN.equalsIgnoreCase("None")) {
+      message = "JDBCInputAdapter config error. "
+              + DATASOURCE_KEY
+              + " property not found.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return DSN;

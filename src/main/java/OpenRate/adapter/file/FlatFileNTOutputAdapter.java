@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.adapter.file;
 
 import OpenRate.CommonConfig;
@@ -79,30 +78,31 @@ import java.util.Iterator;
  * aware handling.
  */
 public abstract class FlatFileNTOutputAdapter
-  extends AbstractOutputAdapter
-  implements IEventInterface
-{
+        extends AbstractOutputAdapter
+        implements IEventInterface {
+
   // The buffer size is the size of the buffer in the buffered reader
+
   private static final int BUF_SIZE = 65536;
 
   // File writers
-  private BufferedWriter   validWriter;
-  private BufferedWriter   errorWriter;
+  private BufferedWriter validWriter;
+  private BufferedWriter errorWriter;
 
   // If we are using a single writer
-  private boolean          singleWriter     = false;
+  private boolean singleWriter = false;
 
-  private String           filePath;
-  private String           filePrefix;
-  private String           fileSuffix;
-  private String           errPath;
-  private String           errPrefix;
-  private String           errSuffix;
-  private String           OutputFileName;
-  private String           ErrFileName;
-  private String           IntBaseName;
-  private boolean          DelEmptyOutFile = false;
-  private boolean          DelEmptyErrFile = true;
+  private String filePath;
+  private String filePrefix;
+  private String fileSuffix;
+  private String errPath;
+  private String errPrefix;
+  private String errSuffix;
+  private String OutputFileName;
+  private String ErrFileName;
+  private String IntBaseName;
+  private boolean DelEmptyOutFile = false;
+  private boolean DelEmptyErrFile = true;
 
   // This is the prefix that will be added during processing
   private String ProcessingPrefix;
@@ -115,24 +115,22 @@ public abstract class FlatFileNTOutputAdapter
   private String fileBaseName = null;
 
   // List of Services that this Client supports
-  private final static String SERVICE_FILE_PATH          = "OutputFilePath";
-  private final static String SERVICE_FILE_PREFIX        = "OutputFilePrefix";
-  private final static String SERVICE_FILE_SUFFIX        = "OutputFileSuffix";
+  private final static String SERVICE_FILE_PATH = "OutputFilePath";
+  private final static String SERVICE_FILE_PREFIX = "OutputFilePrefix";
+  private final static String SERVICE_FILE_SUFFIX = "OutputFileSuffix";
   private final static String SERVICE_DEL_EMPTY_OUT_FILE = "DeleteEmptyOutputFile";
-  private final static String SERVICE_ERR_PATH           = "ErrFilePath";
-  private final static String SERVICE_ERR_PREFIX         = "ErrFilePrefix";
-  private final static String SERVICE_ERR_SUFFIX         = "ErrFileSuffix";
+  private final static String SERVICE_ERR_PATH = "ErrFilePath";
+  private final static String SERVICE_ERR_PREFIX = "ErrFilePrefix";
+  private final static String SERVICE_ERR_SUFFIX = "ErrFileSuffix";
   private final static String SERVICE_DEL_EMPTY_ERR_FILE = "DeleteEmptyErrorFile";
-  private static final String SERVICE_PROCPREFIX         = "ProcessingPrefix";
+  private static final String SERVICE_PROCPREFIX = "ProcessingPrefix";
 
   //final static String SERVICE_OUT_FILE_NAME = "OutputFileName";
   //final static String SERVICE_ERR_FILE_NAME = "ErrFileName";
-
   /**
-    * Default Constructor.
-    */
-  public FlatFileNTOutputAdapter()
-  {
+   * Default Constructor.
+   */
+  public FlatFileNTOutputAdapter() {
     super();
 
     this.validWriter = null;
@@ -144,8 +142,7 @@ public abstract class FlatFileNTOutputAdapter
    *
    * @return The writer for valid records
    */
-  public BufferedWriter getValidWriter()
-  {
+  public BufferedWriter getValidWriter() {
     return validWriter;
   }
 
@@ -154,24 +151,22 @@ public abstract class FlatFileNTOutputAdapter
    *
    * @return The writer for valid records
    */
-  public BufferedWriter getErrorWriter()
-  {
+  public BufferedWriter getErrorWriter() {
     return errorWriter;
   }
 
- /**
-  * Initialise the module. Called during pipeline creation.
-  * Initialize the output adapter with the configuraton that is to be used
-  * for this instance of the adapter.
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The module symbolic name of this module
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation. Initialize the
+   * output adapter with the configuraton that is to be used for this instance
+   * of the adapter.
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The module symbolic name of this module
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String ConfigHelper;
 
     super.init(PipelineName, ModuleName);
@@ -199,61 +194,28 @@ public abstract class FlatFileNTOutputAdapter
   }
 
   /**
-  * Write good records to the defined output stream.
-  */
+   * Write good records to the defined output stream.
+   *
+   * @return
+   * @throws OpenRate.exception.ProcessingException
+   */
   @Override
-  public IRecord prepValidRecord(IRecord r) throws ProcessingException
-  {
+  public IRecord prepValidRecord(IRecord r) throws ProcessingException {
     Collection<IRecord> OutRecCol;
-    FlatRecord          OutRec;
-    Iterator<IRecord>   OutRecIter;
+    FlatRecord OutRec;
+    Iterator<IRecord> OutRecIter;
 
     OutRecCol = procValidRecord(r);
     OutRecIter = OutRecCol.iterator();
 
-    while (OutRecIter.hasNext())
-    {
-      OutRec = (FlatRecord)OutRecIter.next();
+    while (OutRecIter.hasNext()) {
+      OutRec = (FlatRecord) OutRecIter.next();
 
-      try
-      {
+      try {
         validWriter.write(OutRec.getData());
         validWriter.newLine();
-      }
-      catch (IOException ioe)
-      {
-        this.getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
-      }
-    }
-
-    return r;
-  }
-
- /**
-  * Write bad records to the defined output stream.
-  */
-  @Override
-  public IRecord prepErrorRecord(IRecord r) throws ProcessingException
-  {
-    Collection<IRecord> OutRecCol;
-	  FlatRecord          OutRec;
-	  Iterator<IRecord>   OutRecIter;
-
-    OutRecCol = procErrorRecord(r);
-    OutRecIter = OutRecCol.iterator();
-
-    while (OutRecIter.hasNext())
-    {
-      OutRec = (FlatRecord)OutRecIter.next();
-
-      try
-      {
-        validWriter.write(OutRec.getData());
-        validWriter.newLine();
-      }
-      catch (IOException ioe)
-      {
-        this.getExceptionHandler().reportException(new ProcessingException(ioe,getSymbolicName()));
+      } catch (IOException ioe) {
+        this.getExceptionHandler().reportException(new ProcessingException(ioe, getSymbolicName()));
       }
     }
 
@@ -261,24 +223,53 @@ public abstract class FlatFileNTOutputAdapter
   }
 
   /**
-  * Stub to the header processing that opens the output file when we receive the
-  * header record
-  */
+   * Write bad records to the defined output stream.
+   *
+   * @return
+   * @throws OpenRate.exception.ProcessingException
+   */
   @Override
-  public IRecord procHeader(IRecord r)
-  {
+  public IRecord prepErrorRecord(IRecord r) throws ProcessingException {
+    Collection<IRecord> OutRecCol;
+    FlatRecord OutRec;
+    Iterator<IRecord> OutRecIter;
+
+    OutRecCol = procErrorRecord(r);
+    OutRecIter = OutRecCol.iterator();
+
+    while (OutRecIter.hasNext()) {
+      OutRec = (FlatRecord) OutRecIter.next();
+
+      try {
+        validWriter.write(OutRec.getData());
+        validWriter.newLine();
+      } catch (IOException ioe) {
+        this.getExceptionHandler().reportException(new ProcessingException(ioe, getSymbolicName()));
+      }
+    }
+
+    return r;
+  }
+
+  /**
+   * Stub to the header processing that opens the output file when we receive
+   * the header record
+   * @return 
+   */
+  @Override
+  public IRecord procHeader(IRecord r) {
     HeaderRecord tmpHeader;
-    tmpHeader = (HeaderRecord)r;
+    tmpHeader = (HeaderRecord) r;
     fileBaseName = tmpHeader.getStreamName();
     OutputStreamOpen = true;
 
     // Calculate the names and open the writers
-    OutputFileName = filePath + System.getProperty("file.separator") +
-                     ProcessingPrefix + filePrefix + fileBaseName +
-                     fileSuffix;
-    ErrFileName    = errPath + System.getProperty("file.separator") +
-                     ProcessingPrefix + errPrefix + fileBaseName +
-                     errSuffix;
+    OutputFileName = filePath + System.getProperty("file.separator")
+            + ProcessingPrefix + filePrefix + fileBaseName
+            + fileSuffix;
+    ErrFileName = errPath + System.getProperty("file.separator")
+            + ProcessingPrefix + errPrefix + fileBaseName
+            + errSuffix;
     openValidFile(OutputFileName);
     openErrFile(ErrFileName);
 
@@ -286,25 +277,22 @@ public abstract class FlatFileNTOutputAdapter
   }
 
   /**
-  * Stub to the trailer processing that closes the output file
-  */
+   * Stub to the trailer processing that closes the output file
+   * @return 
+   */
   @Override
-  public IRecord procTrailer(IRecord r)
-  {
+  public IRecord procTrailer(IRecord r) {
     int CloseResult;
 
     TrailerRecord tmpTrailer;
-    tmpTrailer = (TrailerRecord)r;
+    tmpTrailer = (TrailerRecord) r;
     fileBaseName = tmpTrailer.getStreamName();
     SetBaseName(fileBaseName);
     CloseResult = closeFiles();
-    if (CloseResult == 0)
-    {
+    if (CloseResult == 0) {
       // all OK
       closeOK();
-    }
-    else
-    {
+    } else {
       // There was an error
       closeErr();
     }
@@ -313,62 +301,49 @@ public abstract class FlatFileNTOutputAdapter
     return r;
   }
 
- /**
-  * Open the output file for writing good records to
-  *
-  * @param filename The name of the file to open
-  */
-  public void openValidFile(String filename)
-  {
+  /**
+   * Open the output file for writing good records to
+   *
+   * @param filename The name of the file to open
+   */
+  public void openValidFile(String filename) {
     FileWriter fwriter = null;
-    File       file;
+    File file;
     file = new File(filename);
 
-    try
-    {
-      if (file.createNewFile() == false)
-      {
+    try {
+      if (file.createNewFile() == false) {
         getPipeLog().error("output file already exists = " + filename);
       }
 
       fwriter = new FileWriter(file);
-    }
-    catch (IOException ex)
-    {
+    } catch (IOException ex) {
       getPipeLog().error("Error opening valid stream output for file " + filename);
     }
 
     validWriter = new BufferedWriter(fwriter, BUF_SIZE);
   }
 
- /**
-  * Open the output file for writing error records
-  *
-  * @param filename The name of the file to open
-  */
-  public void openErrFile(String filename)
-  {
+  /**
+   * Open the output file for writing error records
+   *
+   * @param filename The name of the file to open
+   */
+  public void openErrFile(String filename) {
     FileWriter fwriter = null;
-    File       file;
+    File file;
     file = new File(filename);
 
-    if (singleWriter)
-    {
+    if (singleWriter) {
       errorWriter = validWriter;
-    }
-    else
-    {
-      try
-      {
-        if (file.createNewFile() == false)
-        {
+    } else {
+      try {
+        if (file.createNewFile() == false) {
           getPipeLog().error("output file already exists = " + filename);
         }
 
         fwriter = new FileWriter(file);
-      }
-      catch (IOException ex)
-      {
+      } catch (IOException ex) {
         getPipeLog().error("Error opening error stream output for file " + filename);
       }
 
@@ -377,47 +352,35 @@ public abstract class FlatFileNTOutputAdapter
   }
 
   @Override
-  public void closeStream(int TransactionNumber)
-  {
+  public void closeStream(int TransactionNumber) {
     // Nothing for the moment
   }
 
   /**
-  * Close the files now that writing has been concluded.
+   * Close the files now that writing has been concluded.
    *
    * @return 0 if the file was closed OK, otherwise 1
    */
-  public int closeFiles()
-  {
+  public int closeFiles() {
     boolean ErrorFound = false;
     int ReturnCode = 0;
 
-    if (OutputStreamOpen)
-    {
-      try
-      {
-        if (validWriter != null)
-        {
+    if (OutputStreamOpen) {
+      try {
+        if (validWriter != null) {
           validWriter.close();
         }
-      }
-      catch (IOException ioe)
-      {
+      } catch (IOException ioe) {
         getPipeLog().error("Error closing output file", ioe);
         ErrorFound = true;
       }
 
-      if (singleWriter == false)
-      {
-        try
-        {
-          if (errorWriter != null)
-          {
+      if (singleWriter == false) {
+        try {
+          if (errorWriter != null) {
             errorWriter.close();
           }
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
           getPipeLog().error("Error closing output file", ioe);
           ErrorFound = true;
         }
@@ -425,12 +388,9 @@ public abstract class FlatFileNTOutputAdapter
 
       OutputStreamOpen = false;
 
-      if (ErrorFound)
-      {
+      if (ErrorFound) {
         ReturnCode = 1;
-      }
-      else
-      {
+      } else {
         ReturnCode = 0;
       }
     }
@@ -439,10 +399,9 @@ public abstract class FlatFileNTOutputAdapter
   }
 
   /**
-  * Close the files now that writing has been concluded.
-  */
-  public void closeOK()
-  {
+   * Close the files now that writing has been concluded.
+   */
+  public void closeOK() {
     String ValidFileProcName;
     String ValidFileDoneName;
     String ErrFileProcName;
@@ -452,41 +411,34 @@ public abstract class FlatFileNTOutputAdapter
     fileBaseName = GetBaseName();
 
     // Calculate the names for the writer rename
-    ValidFileProcName = filePath + System.getProperty("file.separator") +
-                        ProcessingPrefix + filePrefix + fileBaseName +
-                        fileSuffix;
-    ErrFileProcName = errPath + System.getProperty("file.separator") +
-                      ProcessingPrefix + errPrefix + fileBaseName +
-                      errSuffix;
-    ValidFileDoneName = filePath + System.getProperty("file.separator") +
-                        filePrefix + fileBaseName + fileSuffix;
-    ErrFileDoneName = errPath + System.getProperty("file.separator") +
-                      errPrefix + fileBaseName + errSuffix;
+    ValidFileProcName = filePath + System.getProperty("file.separator")
+            + ProcessingPrefix + filePrefix + fileBaseName
+            + fileSuffix;
+    ErrFileProcName = errPath + System.getProperty("file.separator")
+            + ProcessingPrefix + errPrefix + fileBaseName
+            + errSuffix;
+    ValidFileDoneName = filePath + System.getProperty("file.separator")
+            + filePrefix + fileBaseName + fileSuffix;
+    ErrFileDoneName = errPath + System.getProperty("file.separator")
+            + errPrefix + fileBaseName + errSuffix;
 
     // rename the file
     f = new File(ValidFileProcName);
-    if (DelEmptyOutFile && (f.length() == 0))
-    {
+    if (DelEmptyOutFile && (f.length() == 0)) {
       // Delete the empty file
       f.delete();
-    }
-    else
-    {
+    } else {
       // Rename the file
       f.renameTo(new File(ValidFileDoneName));
     }
 
-    if (singleWriter == false)
-    {
+    if (singleWriter == false) {
       // rename the file
       f = new File(ErrFileProcName);
-      if (DelEmptyErrFile && (f.length() == 0))
-      {
+      if (DelEmptyErrFile && (f.length() == 0)) {
         // Delete the empty file
         f.delete();
-      }
-      else
-      {
+      } else {
         // Rename the file
         f.renameTo(new File(ErrFileDoneName));
       }
@@ -494,10 +446,9 @@ public abstract class FlatFileNTOutputAdapter
   }
 
   /**
-  * Close the files now that writing has been concluded.
-  */
-  public void closeErr()
-  {
+   * Close the files now that writing has been concluded.
+   */
+  public void closeErr() {
     String ValidFileProcName;
     String ErrFileProcName;
     File f;
@@ -505,43 +456,39 @@ public abstract class FlatFileNTOutputAdapter
     fileBaseName = GetBaseName();
 
     // Calculate the names for the writer rename
-    ValidFileProcName = filePath + System.getProperty("file.separator") +
-                        ProcessingPrefix + filePrefix + fileBaseName +
-                        fileSuffix;
-    ErrFileProcName = errPath + System.getProperty("file.separator") +
-                      ProcessingPrefix + errPrefix + fileBaseName +
-                      errSuffix;
+    ValidFileProcName = filePath + System.getProperty("file.separator")
+            + ProcessingPrefix + filePrefix + fileBaseName
+            + fileSuffix;
+    ErrFileProcName = errPath + System.getProperty("file.separator")
+            + ProcessingPrefix + errPrefix + fileBaseName
+            + errSuffix;
 
     // rename the file
     f = new File(ValidFileProcName);
     f.delete();
 
-    if (singleWriter == false)
-    {
+    if (singleWriter == false) {
       // rename the file
       f = new File(ErrFileProcName);
       f.delete();
     }
   }
 
-  private void SetBaseName(String BaseName)
-  {
+  private void SetBaseName(String BaseName) {
     IntBaseName = BaseName;
   }
 
-  private String GetBaseName()
-  {
+  private String GetBaseName() {
     return IntBaseName;
   }
 
   // -----------------------------------------------------------------------------
   // --------------- Start of custom implementation functions --------------------
   // -----------------------------------------------------------------------------
-
   /**
    * Checks if the valid output file is empty. This method is intended to be
-   * overwritten in the case that you wish to modify the behaviour of the
-   * output file deletion.
+   * overwritten in the case that you wish to modify the behaviour of the output
+   * file deletion.
    *
    * The default behaviour is that we check to see if any bytes have been
    * written to the output file, but sometimes this is not the right way, for
@@ -550,23 +497,19 @@ public abstract class FlatFileNTOutputAdapter
    * @param validFileProcName The file to check
    * @return true if the file is empty, otherwise false
    */
-  public boolean getOutputFileEmpty(String validFileProcName)
-  {
+  public boolean getOutputFileEmpty(String validFileProcName) {
     File f = new File(validFileProcName);
-    if (f.length() == 0)
-    {
+    if (f.length() == 0) {
       return true;
-    }
-    else
-    {
+    } else {
       return false;
     }
   }
 
   /**
    * Checks if the error output file is empty. This method is intended to be
-   * overwritten in the case that you wish to modify the behaviour of the
-   * output file deletion.
+   * overwritten in the case that you wish to modify the behaviour of the output
+   * file deletion.
    *
    * The default behaviour is that we check to see if any bytes have been
    * written to the output file, but sometimes this is not the right way, for
@@ -578,15 +521,11 @@ public abstract class FlatFileNTOutputAdapter
    * @param errorFileProcName The file to check
    * @return true if the file is empty, otherwise false
    */
-  public boolean getErrorFileEmpty(String errorFileProcName)
-  {
+  public boolean getErrorFileEmpty(String errorFileProcName) {
     File f = new File(errorFileProcName);
-    if (f.length() == 0)
-    {
+    if (f.length() == 0) {
       return true;
-    }
-    else
-    {
+    } else {
       return false;
     }
   }
@@ -594,258 +533,180 @@ public abstract class FlatFileNTOutputAdapter
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
- /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world.
-  *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
-  * @return The result message of the operation
-  */
+  /**
+   * processControlEvent is the event processing hook for the External Control
+   * Interface (ECI). This allows interaction with the external world.
+   *
+   * @param Command The command that we are to work on
+   * @param Init True if the pipeline is currently being constructed
+   * @param Parameter The parameter value for the command
+   * @return The result message of the operation
+   */
   @Override
   public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
-  {
+          String Parameter) {
     int ResultCode = -1;
 
-    if (Command.equalsIgnoreCase(SERVICE_FILE_PATH))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_FILE_PATH)) {
+      if (Init) {
         filePath = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return filePath;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_FILE_PREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_FILE_PREFIX)) {
+      if (Init) {
         filePrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return filePrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_FILE_SUFFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_FILE_SUFFIX)) {
+      if (Init) {
         fileSuffix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return fileSuffix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ERR_PATH))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_ERR_PATH)) {
+      if (Init) {
         errPath = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return errPath;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ERR_PREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_ERR_PREFIX)) {
+      if (Init) {
         errPrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return errPrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ERR_SUFFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_ERR_SUFFIX)) {
+      if (Init) {
         errSuffix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return errSuffix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_DEL_EMPTY_OUT_FILE))
-    {
-      if (Init)
-      {
-        if (Parameter != null)
-        {
-          if (Parameter.equalsIgnoreCase("true"))
-          {
+    if (Command.equalsIgnoreCase(SERVICE_DEL_EMPTY_OUT_FILE)) {
+      if (Init) {
+        if (Parameter != null) {
+          if (Parameter.equalsIgnoreCase("true")) {
             DelEmptyOutFile = true;
             ResultCode = 0;
           }
 
-          if (Parameter.equalsIgnoreCase("false"))
-          {
+          if (Parameter.equalsIgnoreCase("false")) {
             DelEmptyOutFile = false;
             ResultCode = 0;
           }
         }
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
-          if (DelEmptyOutFile)
-          {
+      } else {
+        if (Parameter.equals("")) {
+          if (DelEmptyOutFile) {
             return "true";
-          }
-          else
-          {
+          } else {
             return "false";
           }
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_DEL_EMPTY_ERR_FILE))
-    {
-      if (Init)
-      {
-        if (Parameter.equalsIgnoreCase("true"))
-        {
+    if (Command.equalsIgnoreCase(SERVICE_DEL_EMPTY_ERR_FILE)) {
+      if (Init) {
+        if (Parameter.equalsIgnoreCase("true")) {
           DelEmptyErrFile = true;
           ResultCode = 0;
         }
 
-        if (Parameter.equalsIgnoreCase("false"))
-        {
+        if (Parameter.equalsIgnoreCase("false")) {
           DelEmptyErrFile = false;
           ResultCode = 0;
         }
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
-          if (DelEmptyErrFile)
-          {
+      } else {
+        if (Parameter.equals("")) {
+          if (DelEmptyErrFile) {
             return "true";
-          }
-          else
-          {
+          } else {
             return "false";
           }
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_PROCPREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_PROCPREFIX)) {
+      if (Init) {
         ProcessingPrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return ProcessingPrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (ResultCode == 0)
-    {
+    if (ResultCode == 0) {
       getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
-    }
-    else
-    {
+    } else {
       // This is not our event, pass it up the stack
       return super.processControlEvent(Command, Init, Parameter);
     }
   }
 
   /**
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
+   * registerClientManager registers this class as a client of the ECI listener
+   * and publishes the commands that the plug in understands. The listener is
+   * responsible for delivering only these commands to the plug in.
    *
+   * @throws OpenRate.exception.InitializationException
    */
   @Override
-  public void registerClientManager() throws InitializationException
-  {
+  public void registerClientManager() throws InitializationException {
     // Set the client reference and the base services first
     super.registerClientManager();
 
@@ -860,7 +721,6 @@ public abstract class FlatFileNTOutputAdapter
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DEL_EMPTY_ERR_FILE, ClientManager.PARAM_NONE);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_PROCPREFIX, ClientManager.PARAM_NONE);
 
-
     //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OUT_FILE_NAME, false, false);
     //ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ERR_FILE_NAME, false, false);
   }
@@ -868,186 +728,167 @@ public abstract class FlatFileNTOutputAdapter
   // -----------------------------------------------------------------------------
   // -------------------- Start of initialisation functions ----------------------
   // -----------------------------------------------------------------------------
-
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetFilePath()
-                          throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
-                                                  SERVICE_FILE_PATH);
+            SERVICE_FILE_PATH);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetOutFilePrefix()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
-                                                  SERVICE_FILE_PREFIX);
+            SERVICE_FILE_PREFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetOutFileSuffix()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
-                                                  SERVICE_FILE_SUFFIX);
+            SERVICE_FILE_SUFFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetErrFilePath()
-                             throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
-                                                  SERVICE_ERR_PATH);
+            SERVICE_ERR_PATH);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetErrFilePrefix()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
-                                                  SERVICE_ERR_PREFIX);
+            SERVICE_ERR_PREFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetErrFileSuffix()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValue(getPipeName(), getSymbolicName(),
-                                                  SERVICE_ERR_SUFFIX);
+            SERVICE_ERR_SUFFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetDelEmptyOutFile()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                     SERVICE_DEL_EMPTY_OUT_FILE,
-                                                     "");
+            SERVICE_DEL_EMPTY_OUT_FILE,
+            "");
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetDelEmptyErrFile()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
     tmpFile = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                     SERVICE_DEL_EMPTY_ERR_FILE,
-                                                     "");
+            SERVICE_DEL_EMPTY_ERR_FILE,
+            "");
 
     return tmpFile;
   }
 
- /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+  /**
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetProcPrefix()
-                                 throws InitializationException
-  {
+          throws InitializationException {
     String tmpProcPrefix;
     tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                                  SERVICE_PROCPREFIX,
-                                                                  "tmp");
+            SERVICE_PROCPREFIX,
+            "tmp");
 
     return tmpProcPrefix;
   }
 
- /**
-  * Checks the file name from the input parameters.
-  *
-  * The method checks for validity of the input parameters that have been
-  * configured, for example if the directory does not exist, an exception will
-  * be thrown.
-  */
-  private void initFileName() throws InitializationException
-  {
-    String message;
-    File   dir;
+  /**
+   * Checks the file name from the input parameters.
+   *
+   * The method checks for validity of the input parameters that have been
+   * configured, for example if the directory does not exist, an exception will
+   * be thrown.
+   */
+  private void initFileName() throws InitializationException {
+    File dir;
 
-    if (filePath == null)
-    {
+    if (filePath == null) {
       // we cannot do this, because we would open two files with the same name
       message = "Output adapter output file path has not been defined";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // if it is defined, is it valid?
     dir = new File(filePath);
-    if (!dir.isDirectory())
-    {
+    if (!dir.isDirectory()) {
       message = "Processed file path does not exist or is not a directory";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
-    if (errPath == null)
-    {
+    if (errPath == null) {
       // The path has not been defined
       message = "Using Single Output for Adapter <" + getSymbolicName() + ">";
       getPipeLog().info(message);
       singleWriter = true;
-    }
-    else
-    {
+    } else {
       // if it is defined, is it valid?
       dir = new File(errPath);
-      if (!dir.isDirectory())
-      {
+      if (!dir.isDirectory()) {
         message = "Output Adapter <" + getSymbolicName() + "> used an error file path <" + errPath + "> that does not exist or is not a directory";
         getPipeLog().fatal(message);
-        throw new InitializationException(message,getSymbolicName());
+        throw new InitializationException(message, getSymbolicName());
       }
 
       // Check that we do not have a collision
-      if (filePrefix.equals(errPrefix) && fileSuffix.equals(errSuffix))
-      {
+      if (filePrefix.equals(errPrefix) && fileSuffix.equals(errSuffix)) {
         // use a single output file
         message = "Using Single Output for Adapter <" + getSymbolicName() + ">";
         getPipeLog().info(message);

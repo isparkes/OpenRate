@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.adapter;
 
 import OpenRate.CommonConfig;
@@ -71,19 +70,18 @@ import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
 /**
- * The IInputAdapter is responsible for creating the work set
- * that the pipeline will execute on. Common implementations
- * will load records from either a file
+ * The IInputAdapter is responsible for creating the work set that the pipeline
+ * will execute on. Common implementations will load records from either a file
  * or from the database.
  */
 public abstract class AbstractInputAdapter
-  implements IInputAdapter,
-             IEventInterface
-{
+        implements IInputAdapter,
+        IEventInterface {
+
   // The symbolic name is used in the management of the pipeline (control and
   // thread monitoring) and logging.
+
   private String symbolicName;
 
   /**
@@ -92,10 +90,10 @@ public abstract class AbstractInputAdapter
    */
   protected int batchSize;
 
- /**
-  * This is the local variable that we use to determine the buffer high water
-  * mark.
-  */
+  /**
+   * This is the local variable that we use to determine the buffer high water
+   * mark.
+   */
   private int bufferSize;
 
   // This is the buffer we will be writing to
@@ -105,34 +103,33 @@ public abstract class AbstractInputAdapter
   private IPipeline pipeline;
 
   // List of Services that this Client supports
-  private final static String SERVICE_BATCHSIZE  = CommonConfig.BATCH_SIZE;
+  private final static String SERVICE_BATCHSIZE = CommonConfig.BATCH_SIZE;
   private final static String SERVICE_BUFFERSIZE = CommonConfig.BUFFER_SIZE;
-  private final static String DEFAULT_BATCHSIZE  = CommonConfig.DEFAULT_BATCH_SIZE;
+  private final static String DEFAULT_BATCHSIZE = CommonConfig.DEFAULT_BATCH_SIZE;
   private final static String DEFAULT_BUFFERSIZE = CommonConfig.DEFAULT_BUFFER_SIZE;
-  private final static String SERVICE_STATS      = CommonConfig.STATS;
+  private final static String SERVICE_STATS = CommonConfig.STATS;
   private final static String SERVICE_STATSRESET = CommonConfig.STATS_RESET;
 
   //performance counters
   private long processingTime = 0;
   private long recordsProcessed = 0;
   private long streamsProcessed = 0;
-  private int  outBufferCapacity = 0;
-  private int  bufferHits = 0;
+  private int outBufferCapacity = 0;
+  private int bufferHits = 0;
 
   // used to simplify logging and exception handling
   public String message;
-  
+
   /**
    * Default constructor
    */
-  public AbstractInputAdapter()
-  {
+  public AbstractInputAdapter() {
   }
 
   /**
    * Get the batch size for the input adapter. This determines the maximum
-   * number of records that will be read from the input stream before a batch
-   * is pushed into the processing stream.
+   * number of records that will be read from the input stream before a batch is
+   * pushed into the processing stream.
    *
    * @param PipelineName The name of the pipeline that is using this adapter
    * @param ModuleName The module name of this adapter
@@ -140,8 +137,7 @@ public abstract class AbstractInputAdapter
    */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String ConfigHelper;
     setSymbolicName(ModuleName);
 
@@ -162,8 +158,7 @@ public abstract class AbstractInputAdapter
    * No-op cleanup method. Meant to be overridden if necessary.
    */
   @Override
-  public void cleanup()
-  {
+  public void cleanup() {
     // no op
   }
 
@@ -175,20 +170,18 @@ public abstract class AbstractInputAdapter
    * @throws OpenRate.exception.ProcessingException
    */
   @Override
-  public int push(IConsumer validBuffer) throws ProcessingException
-  {
+  public int push(IConsumer validBuffer) throws ProcessingException {
     long startTime;
     long endTime;
     long BatchTime = 0;
-    int  size = 0;
+    int size = 0;
     Collection<IRecord> validRecords;
     Collection<IRecord> all;
 
     // load records
     startTime = System.currentTimeMillis();
 
-    try
-    {
+    try {
       // Get the batch of records from the implementation class
       validRecords = loadBatch();
 
@@ -200,8 +193,7 @@ public abstract class AbstractInputAdapter
 
       // see how many records we got
       size = all.size();
-      if (size > 0)
-      {
+      if (size > 0) {
         // push the records into the buffer if we had any
         validBuffer.push(validRecords);
       }
@@ -212,44 +204,37 @@ public abstract class AbstractInputAdapter
       recordsProcessed += size;
       outBufferCapacity = validBuffer.getEventCount();
 
-      while (outBufferCapacity > bufferSize)
-      {
+      while (outBufferCapacity > bufferSize) {
         bufferHits++;
         OpenRate.getOpenRateStatsLog().debug("Input  <" + getSymbolicName() + "> buffer high water mark! Buffer max = <" + bufferSize + "> current count = <" + outBufferCapacity + ">");
         try {
           Thread.sleep(100);
         } catch (InterruptedException ex) {
-         //
+          //
         }
 
         // refresh
         outBufferCapacity = validBuffer.getEventCount();
       }
-    }
-    catch (ProcessingException pe)
-    {
-      getPipeLog().error("Processing exception caught in Input Adapter <" +
-                getSymbolicName() + ">", pe);
+    } catch (ProcessingException pe) {
+      getPipeLog().error("Processing exception caught in Input Adapter <"
+              + getSymbolicName() + ">", pe);
       getExceptionHandler().reportException(pe);
-    }
-    catch (NullPointerException npe)
-    {
-            getPipeLog().error("Null Pointer exception caught in Input Adapter <" +
-                getSymbolicName() + ">", npe);
-      getExceptionHandler().reportException(new ProcessingException(npe,getSymbolicName()));
-    }
-    catch (Throwable t)
-    {
+    } catch (NullPointerException npe) {
+      getPipeLog().error("Null Pointer exception caught in Input Adapter <"
+              + getSymbolicName() + ">", npe);
+      getExceptionHandler().reportException(new ProcessingException(npe, getSymbolicName()));
+    } catch (Throwable t) {
       // ToDo: Force only allowed exception types up
-            getPipeLog().fatal("Unexpected exception caught in Input Adapter <" +
-                getSymbolicName() + ">", t);
-      getExceptionHandler().reportException(new ProcessingException(t,getSymbolicName()));
+      getPipeLog().fatal("Unexpected exception caught in Input Adapter <"
+              + getSymbolicName() + ">", t);
+      getExceptionHandler().reportException(new ProcessingException(t, getSymbolicName()));
     }
 
     OpenRate.getOpenRateStatsLog().debug(
-          "Input  <" + getSymbolicName() + "> pushed <" +
-          size + "> events into the valid buffer <" +
-            validBuffer.toString() + "> in <" + BatchTime + "> ms" );
+            "Input  <" + getSymbolicName() + "> pushed <"
+            + size + "> events into the valid buffer <"
+            + validBuffer.toString() + "> in <" + BatchTime + "> ms");
 
     return size;
   }
@@ -262,131 +247,124 @@ public abstract class AbstractInputAdapter
    */
   protected abstract Collection<IRecord> loadBatch() throws ProcessingException;
 
- /**
-  * Set the buffer that we will be writing to
-  *
-  * @param ch The buffer for valid records
-  */
+  /**
+   * Set the buffer that we will be writing to
+   *
+   * @param ch The buffer for valid records
+   */
   @Override
-  public void setBatchOutboundValidBuffer(IConsumer ch)
-  {
+  public void setBatchOutboundValidBuffer(IConsumer ch) {
     this.consumer = ch;
   }
 
- /**
-  * Get the buffer that we will be writing to
-  *
-  * @return The consumer buffer
-  */
+  /**
+   * Get the buffer that we will be writing to
+   *
+   * @return The consumer buffer
+   */
   @Override
-  public IConsumer getBatchOutboundValidBuffer()
-  {
+  public IConsumer getBatchOutboundValidBuffer() {
     return this.consumer;
   }
 
- /**
-  * return the symbolic name
-  *
-  * @return The symbolic name for this class stack
-  */
+  /**
+   * return the symbolic name
+   *
+   * @return The symbolic name for this class stack
+   */
   @Override
-  public String getSymbolicName()
-  {
+  public String getSymbolicName() {
     return symbolicName;
   }
 
   /**
-  * set the symbolic name
+   * set the symbolic name
    *
    * @param name The symbolic name for this class stack
    */
   @Override
-  public void setSymbolicName(String name)
-  {
+  public void setSymbolicName(String name) {
     symbolicName = name;
   }
 
- /**
-  * Increment the streams processed counter
-  */
-  public void incrementStreamCount()
-  {
+  /**
+   * Increment the streams processed counter
+   */
+  public void incrementStreamCount() {
     streamsProcessed++;
   }
 
   // -----------------------------------------------------------------------------
   // ----------------- Start of published hookable functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * This is called when the synthetic Header record is encountered, and has the
-  * meaning that the stream is starting. In this case we have to open a new
-  * dump file each time a stream starts.   *
-  *
-  * @param r The record we are working on
+  /**
+   * This is called when the synthetic Header record is encountered, and has the
+   * meaning that the stream is starting. In this case we have to open a new
+   * dump file each time a stream starts. *
+   *
+   * @param r The record we are working on
    * @return The processed record
    * @throws ProcessingException
-  */
+   */
   public abstract IRecord procHeader(IRecord r) throws ProcessingException;
 
- /**
-  * This is called when a data record is encountered. You should do any normal
-  * processing here.
-  *
-  * @param r The record we are working on
-  * @return The processed record
-  * @throws ProcessingException
-  */
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
   public abstract IRecord procValidRecord(IRecord r) throws ProcessingException;
 
- /**
-  * This is called when a data record with errors is encountered. You should do
-  * any processing here that you have to do for error records, e.g. statistics,
-  * special handling, even error correction!
-  *
-  * @param r The record we are working on
-  * @return The processed record
-  * @throws ProcessingException
-  */
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
   public abstract IRecord procErrorRecord(IRecord r) throws ProcessingException;
 
- /**
-  * This is called just before the trailer, and allows any pending record to
-  * be pushed into the pipe before the trailer. Note that this is useful when
-  * there is no trailer in a file, otherwise the file (not the synthetic trailer)
-  * trailer will normally be used for this.
-  *
-  * @return The possible pending record in the adapter at the moment
-  * @throws ProcessingException
-  */
+  /**
+   * This is called just before the trailer, and allows any pending record to be
+   * pushed into the pipe before the trailer. Note that this is useful when
+   * there is no trailer in a file, otherwise the file (not the synthetic
+   * trailer) trailer will normally be used for this.
+   *
+   * @return The possible pending record in the adapter at the moment
+   * @throws ProcessingException
+   */
   public abstract IRecord purgePendingRecord() throws ProcessingException;
 
- /**
-  * This is called when the synthetic trailer record is encountered, and has the
-  * meaning that the stream is now finished. In this example, all we do is
-  * pass the control back to the transactional layer.
-  *
-  * @param r The record we are working on
-  * @return The processed record
-  * @throws ProcessingException
-  */
+  /**
+   * This is called when the synthetic trailer record is encountered, and has
+   * the meaning that the stream is now finished. In this example, all we do is
+   * pass the control back to the transactional layer.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
   public abstract IRecord procTrailer(IRecord r) throws ProcessingException;
 
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
-  *
-  */
+  /**
+   * registerClientManager registers this class as a client of the ECI listener
+   * and publishes the commands that the plug in understands. The listener is
+   * responsible for delivering only these commands to the plug in.
+   *
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
-  public void registerClientManager() throws InitializationException
-  {
+  public void registerClientManager() throws InitializationException {
     // Set the client reference and the base services first
-    ClientManager.getClientManager().registerClient(getPipeName(),getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient(getPipeName(), getSymbolicName(), this);
 
     //Register services for this Client
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BATCHSIZE, ClientManager.PARAM_MANDATORY);
@@ -396,26 +374,23 @@ public abstract class AbstractInputAdapter
   }
 
   /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world.
+   * processControlEvent is the event processing hook for the External Control
+   * Interface (ECI). This allows interaction with the external world.
    *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
-  * @return The result message of the operation
+   * @param Command The command that we are to work on
+   * @param Init True if the pipeline is currently being constructed
+   * @param Parameter The parameter value for the command
+   * @return The result message of the operation
    */
   @Override
   public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
-  {
+          String Parameter) {
     int ResultCode = -1;
     double CDRsPerSec;
 
     // Reset the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_STATSRESET))
-    {
-      if (Parameter.equalsIgnoreCase("true"))
-      {
+    if (Command.equalsIgnoreCase(SERVICE_STATSRESET)) {
+      if (Parameter.equalsIgnoreCase("true")) {
         processingTime = 0;
         recordsProcessed = 0;
         streamsProcessed = 0;
@@ -425,79 +400,58 @@ public abstract class AbstractInputAdapter
     }
 
     // Return the Statistics
-    if (Command.equalsIgnoreCase(SERVICE_STATS))
-    {
-      if (processingTime == 0)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_STATS)) {
+      if (processingTime == 0) {
         CDRsPerSec = 0;
-      }
-      else
-      {
-        CDRsPerSec = (double)((recordsProcessed*1000)/processingTime);
+      } else {
+        CDRsPerSec = (double) ((recordsProcessed * 1000) / processingTime);
       }
 
-      return Long.toString(recordsProcessed) + ":" +
-             Long.toString(processingTime) + ":" +
-             Long.toString(streamsProcessed) + ":" +
-             Double.toString(CDRsPerSec) + ":" +
-             Long.toString(outBufferCapacity) + ":" +
-             Long.toString(bufferHits) + ":" +
-             Long.toString(getBatchOutboundValidBuffer().getEventCount());
+      return Long.toString(recordsProcessed) + ":"
+              + Long.toString(processingTime) + ":"
+              + Long.toString(streamsProcessed) + ":"
+              + Double.toString(CDRsPerSec) + ":"
+              + Long.toString(outBufferCapacity) + ":"
+              + Long.toString(bufferHits) + ":"
+              + Long.toString(getBatchOutboundValidBuffer().getEventCount());
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_BATCHSIZE))
-    {
-      if (Parameter.equals(""))
-      {
+    if (Command.equalsIgnoreCase(SERVICE_BATCHSIZE)) {
+      if (Parameter.equals("")) {
         return Integer.toString(batchSize);
-      }
-      else
-      {
-        try
-        {
+      } else {
+        try {
           batchSize = Integer.parseInt(Parameter);
-        }
-        catch (NumberFormatException nfe)
-        {
-                    getPipeLog().error("Invalid number for batch size. Passed value = <" +
-                Parameter + ">");
+        } catch (NumberFormatException nfe) {
+          getPipeLog().error("Invalid number for batch size. Passed value = <"
+                  + Parameter + ">");
         }
 
         ResultCode = 0;
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_BUFFERSIZE))
-    {
-      if (Parameter.equals(""))
-      {
+    if (Command.equalsIgnoreCase(SERVICE_BUFFERSIZE)) {
+      if (Parameter.equals("")) {
         return Integer.toString(bufferSize);
-      }
-      else
-      {
-        try
-        {
+      } else {
+        try {
           bufferSize = Integer.parseInt(Parameter);
-        }
-        catch (NumberFormatException nfe)
-        {
+        } catch (NumberFormatException nfe) {
           getPipeLog().error(
-                "Invalid number for buffer size. Passed value = <" +
-                Parameter + ">");
+                  "Invalid number for buffer size. Passed value = <"
+                  + Parameter + ">");
         }
 
         ResultCode = 0;
       }
     }
 
-    if (ResultCode == 0)
-    {
+    if (ResultCode == 0) {
       getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
-    }
-    else
-    {
+    } else {
       return "Command Not Understood";
     }
   }
@@ -505,31 +459,28 @@ public abstract class AbstractInputAdapter
   // -----------------------------------------------------------------------------
   // -------------------- Start of local utility functions -----------------------
   // -----------------------------------------------------------------------------
-
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetBatchSize()
-                           throws InitializationException
-  {
+          throws InitializationException {
     String tmpValue;
     tmpValue = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                   SERVICE_BATCHSIZE, DEFAULT_BATCHSIZE);
+            SERVICE_BATCHSIZE, DEFAULT_BATCHSIZE);
 
     return tmpValue;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetBufferSize()
-                           throws InitializationException
-  {
+          throws InitializationException {
     String tmpValue;
     tmpValue = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                   SERVICE_BUFFERSIZE, DEFAULT_BUFFERSIZE);
+            SERVICE_BUFFERSIZE, DEFAULT_BUFFERSIZE);
 
     return tmpValue;
   }
@@ -537,47 +488,46 @@ public abstract class AbstractInputAdapter
   // -----------------------------------------------------------------------------
   // -------------------- Standard getter/setter functions -----------------------
   // -----------------------------------------------------------------------------
+  /**
+   * @return the pipeName
+   */
+  public String getPipeName() {
+    return pipeline.getSymbolicName();
+  }
 
-    /**
-     * @return the pipeName
-     */
-    public String getPipeName() {
-      return pipeline.getSymbolicName();
-    }
-
-    /**
-     * @return the pipeline
-     */
-    public IPipeline getPipeline() {
-      return pipeline;
-    }
-
- /**
-  * Set the pipeline reference so the input adapter can control the scheduler
-  *
-  * @param pipeline the Pipeline to set
-  */
+  /**
+   * @return the pipeline
+   */
   @Override
-  public void setPipeline(IPipeline pipeline)
-  {
+  public IPipeline getPipeline() {
+    return pipeline;
+  }
+
+  /**
+   * Set the pipeline reference so the input adapter can control the scheduler
+   *
+   * @param pipeline the Pipeline to set
+   */
+  @Override
+  public void setPipeline(IPipeline pipeline) {
     this.pipeline = pipeline;
   }
 
-   /**
-    * Return the pipeline logger.
-    * 
-    * @return The logger
-    */
-    protected ILogger getPipeLog() {
-      return pipeline.getPipeLog();
-    }
+  /**
+   * Return the pipeline logger.
+   *
+   * @return The logger
+   */
+  protected ILogger getPipeLog() {
+    return pipeline.getPipeLog();
+  }
 
-   /**
-    * Return the exception handler.
-    * 
-    * @return The exception handler
-    */
-    protected ExceptionHandler getExceptionHandler() {
-      return pipeline.getPipelineExceptionHandler();
-    }
+  /**
+   * Return the exception handler.
+   *
+   * @return The exception handler
+   */
+  protected ExceptionHandler getExceptionHandler() {
+    return pipeline.getPipelineExceptionHandler();
+  }
 }

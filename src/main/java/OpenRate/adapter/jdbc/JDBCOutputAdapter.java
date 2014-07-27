@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.adapter.jdbc;
 
 import OpenRate.CommonConfig;
@@ -73,17 +72,20 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=JDBC_Output_Adapter'>click here</a> to go to wiki page.
+ * Please <a target='new'
+ * href='http://www.open-rate.com/wiki/index.php?title=JDBC_Output_Adapter'>click
+ * here</a> to go to wiki page.
  *
- * <p>JDBC Output Adapter.<br>
+ * <p>
+ * JDBC Output Adapter.<br>
  *
- * This module writes records into a table using JDBC.
- * The processing needs to be a little more complicated than is first obvious
- * to allow for the case that a transaction is rolled back. We therefore have
- * to mark the records we are inserting in some way to segregate them from
- * the records from previous transactions. Only when we reach the commit point
- * do we make the new records like all the others, and in the case that we
- * encounter a rollback, we have to remove the inserted records.<br>
+ * This module writes records into a table using JDBC. The processing needs to
+ * be a little more complicated than is first obvious to allow for the case that
+ * a transaction is rolled back. We therefore have to mark the records we are
+ * inserting in some way to segregate them from the records from previous
+ * transactions. Only when we reach the commit point do we make the new records
+ * like all the others, and in the case that we encounter a rollback, we have to
+ * remove the inserted records.<br>
  *
  * The management of the connection and statements is dynamic: When a connection
  * is needed, it is created out of the framework managed pool. When the
@@ -101,8 +103,8 @@ import java.util.Iterator;
  * performance tuning should be found.
  */
 public abstract class JDBCOutputAdapter
-  extends AbstractTransactionalOutputAdapter
-{
+        extends AbstractTransactionalOutputAdapter {
+
   /**
    * The query that is used to prepare the database for record insert
    */
@@ -177,31 +179,29 @@ public abstract class JDBCOutputAdapter
   // Extended validation of the columns we are going to insert - number
   private Integer insertQueryParamCount = null;
 
-/**
- * This is our connection object
- */
+  /**
+   * This is our connection object
+   */
   protected Connection JDBCcon;
 
   /**
    * Default constructor
    */
-  public JDBCOutputAdapter()
-  {
+  public JDBCOutputAdapter() {
     super();
   }
 
- /**
-  * Initialise the module. Called during pipeline creation.
-  * Initialise the Logger, and load the SQL statements.
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The module symbolic name of this module
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation. Initialise the
+   * Logger, and load the SQL statements.
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The module symbolic name of this module
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String ConfigHelper;
     super.init(PipelineName, ModuleName);
     registerClientManager();
@@ -238,69 +238,57 @@ public abstract class JDBCOutputAdapter
     processControlEvent(SERVICE_DATASOURCE_KEY, true, ConfigHelper);
 
     // prepare the data source - this does not open a connection
-    if(DBUtil.initDataSource(dataSourceName) == null)
-    {
+    if (DBUtil.initDataSource(dataSourceName) == null) {
       message = "Could not initialise DB connection <" + dataSourceName + "> to in module <" + getSymbolicName() + ">.";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Set up the optional statements
-    useInit     = ((initQuery == null || initQuery.isEmpty()) == false);
-    useCommit   = ((commitQuery == null || commitQuery.isEmpty()) == false);
+    useInit = ((initQuery == null || initQuery.isEmpty()) == false);
+    useCommit = ((commitQuery == null || commitQuery.isEmpty()) == false);
     useRollback = ((rollbackQuery == null || rollbackQuery.isEmpty()) == false);
   }
 
- /**
-  * Process the stream header. Get the file base name and open the transaction.
-  *
-  * @param r The record we are working on
-  * @return The processed record
-  * @throws ProcessingException
-  */
+  /**
+   * Process the stream header. Get the file base name and open the transaction.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
   @Override
-  public IRecord procHeader(IRecord r) throws ProcessingException
-  {
+  public IRecord procHeader(IRecord r) throws ProcessingException {
     // perform any parent processing first
     super.procHeader(r);
 
-    try
-    {
+    try {
       // get the connection we will be using for writing
       JDBCcon = DBUtil.getConnection(dataSourceName);
-    }
-    catch (InitializationException ex)
-    {
-      getExceptionHandler().reportException(new ProcessingException(ex,getSymbolicName()));
+    } catch (InitializationException ex) {
+      getExceptionHandler().reportException(new ProcessingException(ex, getSymbolicName()));
     }
 
     // prepare the statements used for writing
-    try
-    {
+    try {
       prepareStatements();
-    }
-    catch (SQLException Sex)
-    {
+    } catch (SQLException Sex) {
       // Not good. Abort the transaction
       message = "Error preparing statements. message <" + Sex.getMessage() + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
     // Get the count of the insert params we are going to use, but only once
-    if (insertQueryParamCount == null)
-    {
-      try
-      {
+    if (insertQueryParamCount == null) {
+      try {
         insertQueryParamCount = stmtInsertQuery.getParameterMetaData().getParameterCount();
-      }
-      catch (SQLException Sex)
-      {
+      } catch (SQLException Sex) {
         // Not good. Abort the transaction
         message = "Could not count the parameters for insert statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
         getPipeLog().fatal(message);
-        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+        getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
 
@@ -309,18 +297,14 @@ public abstract class JDBCOutputAdapter
     }
 
     // perform the Init (if defined)
-    if (useInit)
-    {
-      try
-      {
+    if (useInit) {
+      try {
         stmtInitQuery.execute();
-      }
-      catch (SQLException Sex)
-      {
+      } catch (SQLException Sex) {
         // Not good. Abort the transaction
         message = "Error executing init statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
         getPipeLog().fatal(message);
-        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+        getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
@@ -328,174 +312,136 @@ public abstract class JDBCOutputAdapter
     return r;
   }
 
- /**
-  * Prepare good records for writing to the defined output stream.
-  *
-  * @param r The current record we are working on
-  * @return The prepared record
-  * @throws ProcessingException
-  */
+  /**
+   * Prepare good records for writing to the defined output stream.
+   *
+   * @param r The current record we are working on
+   * @return The prepared record
+   * @throws ProcessingException
+   */
   @Override
-  public IRecord prepValidRecord(IRecord r) throws ProcessingException
-  {
+  public IRecord prepValidRecord(IRecord r) throws ProcessingException {
     int i;
     Collection<IRecord> outRecCol = null;
-    DBRecord            outRec;
-    Iterator<IRecord>   outRecIter;
+    DBRecord outRec;
+    Iterator<IRecord> outRecIter;
 
-    try
-    {
+    try {
       outRecCol = procValidRecord(r);
-    }
-    catch (ProcessingException pe)
-    {
+    } catch (ProcessingException pe) {
       // Pass the exception up
-      message = "Processing exception preparing valid record in module <" +
-                       getSymbolicName() + ">. message <" + pe.getMessage() +
-                       ">. Aborting transaction.";
+      message = "Processing exception preparing valid record in module <"
+              + getSymbolicName() + ">. message <" + pe.getMessage()
+              + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,pe,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, pe, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
-    }
-    catch (ArrayIndexOutOfBoundsException aiex)
-    {
+    } catch (ArrayIndexOutOfBoundsException aiex) {
       // Not good. Abort the transaction
-      message = "Column Index preparing valid record in module <" +
-                       getSymbolicName() + ">. message <" + aiex.getMessage() +
-                       ">. Aborting transaction.";
+      message = "Column Index preparing valid record in module <"
+              + getSymbolicName() + ">. message <" + aiex.getMessage()
+              + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, aiex, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       // Not good. Abort the transaction
-      message = "Unexpected Exception preparing valid record in module <" +
-                        getSymbolicName() + ">. message <" + ex.getMessage() +
-                        ">. Aborting transaction.";
+      message = "Unexpected Exception preparing valid record in module <"
+              + getSymbolicName() + ">. message <" + ex.getMessage()
+              + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, ex, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
     // Null return means "do not bother to process"
-    if (outRecCol != null && stmtInsertQuery != null)
-    {
+    if (outRecCol != null && stmtInsertQuery != null) {
       outRecIter = outRecCol.iterator();
 
-      while (outRecIter.hasNext())
-      {
-        outRec = (DBRecord)outRecIter.next();
+      while (outRecIter.hasNext()) {
+        outRec = (DBRecord) outRecIter.next();
 
-        if (outRec.getOutputColumnCount() != insertQueryParamCount)
-        {
+        if (outRec.getOutputColumnCount() != insertQueryParamCount) {
           // columns we go does not match the expected columns
-          message = "Column count in module <" +
-                          getSymbolicName() + "> does not match definition. Expected <" +
-                          insertQueryParamCount + ">, got <" + outRec.getOutputColumnCount() + ">";
+          message = "Column count in module <"
+                  + getSymbolicName() + "> does not match definition. Expected <"
+                  + insertQueryParamCount + ">, got <" + outRec.getOutputColumnCount() + ">";
           getPipeLog().error(message);
-        }
-        else
-        {
-          try
-          {
+        } else {
+          try {
             // Prepare the parameter values
             stmtInsertQuery.clearParameters();
 
-            for (i = 0; i < outRec.getOutputColumnCount(); i++)
-            {
-              if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_STRING)
-              {
+            for (i = 0; i < outRec.getOutputColumnCount(); i++) {
+              if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_STRING) {
                 // String value
                 stmtInsertQuery.setString(i + 1, outRec.getOutputColumnValueString(i));
-              }
-              else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_INTEGER)
-              {
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_INTEGER) {
                 // Integer value
                 stmtInsertQuery.setInt(i + 1, outRec.getOutputColumnValueInt(i));
-              }
-              else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DOUBLE)
-              {
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DOUBLE) {
                 // Double value
                 stmtInsertQuery.setDouble(i + 1, outRec.getOutputColumnValueDouble(i));
-              }
-              else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_LONG)
-              {
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_LONG) {
                 // Long value
                 stmtInsertQuery.setLong(i + 1, outRec.getOutputColumnValueLong(i));
-              }
-              else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DATE)
-              {
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DATE) {
                 // Date value
                 long DateValue = outRec.getOutputColumnValueLong(i);
                 java.sql.Date DateToSet;
                 DateToSet = new java.sql.Date(DateValue);
-                stmtInsertQuery.setDate(i + 1,DateToSet);
-              }
-              else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BOOL)
-              {
+                stmtInsertQuery.setDate(i + 1, DateToSet);
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BOOL) {
                 // Boolean value
                 boolean value;
                 value = outRec.getOutputColumnValueString(i).equals("1");
                 stmtInsertQuery.setBoolean(i + 1, value);
-              }
-              else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_TIME)
-              {
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_TIME) {
                 // Time value
                 long DateValue = outRec.getOutputColumnValueLong(i);
                 java.sql.Time TimeToSet;
                 TimeToSet = new java.sql.Time(DateValue);
-                stmtInsertQuery.setTime(i + 1,TimeToSet);
-              }
-              else if(outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BINARY)
-              {
+                stmtInsertQuery.setTime(i + 1, TimeToSet);
+              } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BINARY) {
                 // Binary value
                 byte[] byteArray = outRec.getOutputColumnValueBytes(i);
-                stmtInsertQuery.setBytes(i+1, byteArray );
+                stmtInsertQuery.setBytes(i + 1, byteArray);
               }
             }
 
             stmtInsertQuery.execute();
-          }
-          catch (SQLException Sex)
-          {
+          } catch (SQLException Sex) {
             // Not good. Abort the transaction
-            message = "SQL Exception inserting valid record in module <" +
-                            getSymbolicName() + ">. message <" + Sex.getMessage() +
-                            ">. Aborting transaction.";
+            message = "SQL Exception inserting valid record in module <"
+                    + getSymbolicName() + ">. message <" + Sex.getMessage()
+                    + ">. Aborting transaction.";
             getPipeLog().fatal(message);
-            getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+            getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
-          }
-          catch (ArrayIndexOutOfBoundsException aiex)
-          {
+          } catch (ArrayIndexOutOfBoundsException aiex) {
             // Not good. Abort the transaction
-            message = "Column Index inserting valid record in module <" +
-                            getSymbolicName() + ">. message <" + aiex.getMessage() +
-                            ">. Aborting transaction.";
+            message = "Column Index inserting valid record in module <"
+                    + getSymbolicName() + ">. message <" + aiex.getMessage()
+                    + ">. Aborting transaction.";
             getPipeLog().fatal(message);
-            getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
+            getExceptionHandler().reportException(new ProcessingException(message, aiex, getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
-          }
-          catch (NumberFormatException nfe)
-          {
+          } catch (NumberFormatException nfe) {
             // Not good. Abort the transaction
-            message = "Number format inserting valid record in module <" +
-                            getSymbolicName() + ">. message <" + nfe.getMessage() +
-                            ">. Aborting transaction.";
+            message = "Number format inserting valid record in module <"
+                    + getSymbolicName() + ">. message <" + nfe.getMessage()
+                    + ">. Aborting transaction.";
             getPipeLog().fatal(message);
-            getExceptionHandler().reportException(new ProcessingException(message,nfe,getSymbolicName()));
+            getExceptionHandler().reportException(new ProcessingException(message, nfe, getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
-          }
-          catch (Exception ex)
-          {
+          } catch (Exception ex) {
             // Not good. Abort the transaction
-            message = "Unknown Exception inserting valid record in module <" +
-                            getSymbolicName() + ">. message <" + ex.getMessage() +
-                            ">. Aborting transaction.";
+            message = "Unknown Exception inserting valid record in module <"
+                    + getSymbolicName() + ">. message <" + ex.getMessage()
+                    + ">. Aborting transaction.";
             getPipeLog().fatal(message);
 
-            getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
+            getExceptionHandler().reportException(new ProcessingException(message, ex, getSymbolicName()));
             setTransactionAbort(getTransactionNumber());
           }
         }
@@ -505,163 +451,128 @@ public abstract class JDBCOutputAdapter
     return r;
   }
 
- /**
-  * Prepare bad records for writing to the defined output stream.
-  *
-  * @param r The current record we are working on
-  * @return The prepared record
-  * @throws ProcessingException
-  */
+  /**
+   * Prepare bad records for writing to the defined output stream.
+   *
+   * @param r The current record we are working on
+   * @return The prepared record
+   * @throws ProcessingException
+   */
   @Override
-  public IRecord prepErrorRecord(IRecord r) throws ProcessingException
-  {
+  public IRecord prepErrorRecord(IRecord r) throws ProcessingException {
     int i;
     Collection<IRecord> outRecCol = null;
-    DBRecord            outRec;
-    Iterator<IRecord>   outRecIter;
+    DBRecord outRec;
+    Iterator<IRecord> outRecIter;
 
-    try
-    {
+    try {
       outRecCol = procErrorRecord(r);
-    }
-    catch (ProcessingException pe)
-    {
+    } catch (ProcessingException pe) {
       // Pass the exception up
-      message = "Processing exception preparing error record in module <" +
-                       getSymbolicName() + ">. message <" + pe.getMessage() +
-                       ">. Aborting transaction.";
+      message = "Processing exception preparing error record in module <"
+              + getSymbolicName() + ">. message <" + pe.getMessage()
+              + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,pe,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, pe, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
-    }
-    catch (ArrayIndexOutOfBoundsException aiex)
-    {
+    } catch (ArrayIndexOutOfBoundsException aiex) {
       // Not good. Abort the transaction
-      message = "Column Index preparing error record in module <" +
-                       getSymbolicName() + ">. message <" + aiex.getMessage() +
-                       ">. Aborting transaction.";
+      message = "Column Index preparing error record in module <"
+              + getSymbolicName() + ">. message <" + aiex.getMessage()
+              + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, aiex, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       // Not good. Abort the transaction
-      message = "Unknown Exception preparing error record in module <" +
-                        getSymbolicName() + ">. message <" + ex.getMessage() +
-                        ">. Aborting transaction.";
+      message = "Unknown Exception preparing error record in module <"
+              + getSymbolicName() + ">. message <" + ex.getMessage()
+              + ">. Aborting transaction.";
       getPipeLog().fatal(message);
-      getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
+      getExceptionHandler().reportException(new ProcessingException(message, ex, getSymbolicName()));
       setTransactionAbort(getTransactionNumber());
     }
 
     // Null return means "do not bother to process"
-    if (outRecCol != null && stmtInsertQuery != null)
-    {
+    if (outRecCol != null && stmtInsertQuery != null) {
       outRecIter = outRecCol.iterator();
 
-      while (outRecIter.hasNext())
-      {
-        outRec = (DBRecord)outRecIter.next();
+      while (outRecIter.hasNext()) {
+        outRec = (DBRecord) outRecIter.next();
 
-        try
-        {
+        try {
           // Prepare the parameter values
           stmtInsertQuery.clearParameters();
 
-          for (i = 0; i < outRec.getOutputColumnCount(); i++)
-          {
-            if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_STRING)
-            {
+          for (i = 0; i < outRec.getOutputColumnCount(); i++) {
+            if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_STRING) {
               // String value
               stmtInsertQuery.setString(i + 1, outRec.getOutputColumnValueString(i));
-            }
-            else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_INTEGER)
-            {
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_INTEGER) {
               // Integer value
               stmtInsertQuery.setInt(i + 1, outRec.getOutputColumnValueInt(i));
-            }
-            else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DOUBLE)
-            {
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DOUBLE) {
               // Double value
               stmtInsertQuery.setDouble(i + 1, outRec.getOutputColumnValueDouble(i));
-            }
-            else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_LONG)
-            {
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_LONG) {
               // Long value
               stmtInsertQuery.setLong(i + 1, outRec.getOutputColumnValueLong(i));
-            }
-            else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DATE)
-            {
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_DATE) {
               // Date value
               long DateValue = outRec.getOutputColumnValueLong(i);
               java.sql.Date DateToSet;
               DateToSet = new java.sql.Date(DateValue);
-              stmtInsertQuery.setDate(i + 1,DateToSet);
-            }
-            else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BOOL)
-            {
+              stmtInsertQuery.setDate(i + 1, DateToSet);
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BOOL) {
               // Boolean value
               boolean value;
               value = outRec.getOutputColumnValueString(i).equals("1");
               stmtInsertQuery.setBoolean(i + 1, value);
-            }
-            else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_TIME)
-            {
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_TIME) {
               // Time value
               long DateValue = outRec.getOutputColumnValueLong(i);
               java.sql.Time TimeToSet;
               TimeToSet = new java.sql.Time(DateValue);
-              stmtInsertQuery.setTime(i + 1,TimeToSet);
-            }
-            else if(outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BINARY)
-            {
+              stmtInsertQuery.setTime(i + 1, TimeToSet);
+            } else if (outRec.getOutputColumnType(i) == DBRecord.COL_TYPE_BINARY) {
               // Binary value
-            	byte[] byteArray = outRec.getOutputColumnValueBytes(i);
-            	stmtInsertQuery.setBytes(i+1, byteArray );
+              byte[] byteArray = outRec.getOutputColumnValueBytes(i);
+              stmtInsertQuery.setBytes(i + 1, byteArray);
             }
           }
 
           stmtInsertQuery.execute();
-        }
-        catch (SQLException Sex)
-        {
+        } catch (SQLException Sex) {
           // Not good. Abort the transaction
-          message = "SQL Exception inserting error record in module <" +
-                          getSymbolicName() + ">. message <" + Sex.getMessage() +
-                          ">. Aborting transaction.";
+          message = "SQL Exception inserting error record in module <"
+                  + getSymbolicName() + ">. message <" + Sex.getMessage()
+                  + ">. Aborting transaction.";
           getPipeLog().fatal(message);
-          getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+          getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
-        }
-        catch (ArrayIndexOutOfBoundsException aiex)
-        {
+        } catch (ArrayIndexOutOfBoundsException aiex) {
           // Not good. Abort the transaction
-          message = "Column Index inserting error record in module <" +
-                          getSymbolicName() + ">. message <" + aiex.getMessage() +
-                          ">. Aborting transaction.";
+          message = "Column Index inserting error record in module <"
+                  + getSymbolicName() + ">. message <" + aiex.getMessage()
+                  + ">. Aborting transaction.";
           getPipeLog().fatal(message);
-          getExceptionHandler().reportException(new ProcessingException(message,aiex,getSymbolicName()));
+          getExceptionHandler().reportException(new ProcessingException(message, aiex, getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
-        }
-        catch (NumberFormatException nfe)
-        {
+        } catch (NumberFormatException nfe) {
           // Not good. Abort the transaction
-          message = "Number format inserting error record in module <" +
-                          getSymbolicName() + ">. message <" + nfe.getMessage() +
-                          ">. Aborting transaction.";
+          message = "Number format inserting error record in module <"
+                  + getSymbolicName() + ">. message <" + nfe.getMessage()
+                  + ">. Aborting transaction.";
           getPipeLog().fatal(message);
-          getExceptionHandler().reportException(new ProcessingException(message,nfe,getSymbolicName()));
+          getExceptionHandler().reportException(new ProcessingException(message, nfe, getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
           // Not good. Abort the transaction
-          message = "Unknown Exception inserting error record in module <" +
-                          getSymbolicName() + ">. message <" + ex.getMessage() +
-                          ">. Aborting transaction.";
+          message = "Unknown Exception inserting error record in module <"
+                  + getSymbolicName() + ">. message <" + ex.getMessage()
+                  + ">. Aborting transaction.";
           getPipeLog().fatal(message);
-          getExceptionHandler().reportException(new ProcessingException(message,ex,getSymbolicName()));
+          getExceptionHandler().reportException(new ProcessingException(message, ex, getSymbolicName()));
           setTransactionAbort(getTransactionNumber());
         }
       }
@@ -673,47 +584,39 @@ public abstract class JDBCOutputAdapter
   // -----------------------------------------------------------------------------
   // ------------------ Custom connection management functions -------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * PrepareStatements creates the statements from the SQL expressions
-  * so that they can be run as needed.
-  */
-  private void prepareStatements() throws SQLException
-  {
+  /**
+   * PrepareStatements creates the statements from the SQL expressions so that
+   * they can be run as needed.
+   */
+  private void prepareStatements() throws SQLException {
     // prepare the SQL for the Insert statement
-    if(insertQuery == null || insertQuery.isEmpty())
-    {
+    if (insertQuery == null || insertQuery.isEmpty()) {
       stmtInsertQuery = null;
-    }
-    else
-    {
+    } else {
       stmtInsertQuery = JDBCcon.prepareStatement(insertQuery,
-                                                 ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                 ResultSet.CONCUR_READ_ONLY);
+              ResultSet.TYPE_SCROLL_INSENSITIVE,
+              ResultSet.CONCUR_READ_ONLY);
     }
 
     // prepare the SQL for the Commit Statement
-    if (useCommit)
-    {
+    if (useCommit) {
       stmtCommitQuery = JDBCcon.prepareStatement(commitQuery,
-                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                  ResultSet.CONCUR_READ_ONLY);
+              ResultSet.TYPE_SCROLL_INSENSITIVE,
+              ResultSet.CONCUR_READ_ONLY);
     }
 
-    if (useRollback)
-    {
+    if (useRollback) {
       // prepare the SQL for the Rollback Statement
       stmtRollbackQuery = JDBCcon.prepareStatement(rollbackQuery,
-                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                  ResultSet.CONCUR_READ_ONLY);
+              ResultSet.TYPE_SCROLL_INSENSITIVE,
+              ResultSet.CONCUR_READ_ONLY);
     }
 
-    if (useInit)
-    {
+    if (useInit) {
       // prepare the SQL for the Rollback Statement
-      stmtInitQuery    = JDBCcon.prepareStatement(initQuery,
-                                                  ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                  ResultSet.CONCUR_READ_ONLY);
+      stmtInitQuery = JDBCcon.prepareStatement(initQuery,
+              ResultSet.TYPE_SCROLL_INSENSITIVE,
+              ResultSet.CONCUR_READ_ONLY);
     }
   }
 
@@ -722,268 +625,212 @@ public abstract class JDBCOutputAdapter
    * down it. We must perform a transaction state change here to FLUSHED
    */
   @Override
-  public void closeStream(int TransactionNumber)
-  {
-    if (OutputStreamOpen)
-    {
+  public void closeStream(int TransactionNumber) {
+    if (OutputStreamOpen) {
       setTransactionFlushed(TransactionNumber);
       OutputStreamOpen = false;
     }
   }
 
- /**
-  * perform the final commit statement. This will only be performed if we
-  * have defined a commot statement. Not all types of procesing require a
-  * commit.
-  *
-  * @param TransactionNumber The transaction we are commiting for
-  */
-  public void finaliseOutputCommit(int TransactionNumber)
-  {
+  /**
+   * perform the final commit statement. This will only be performed if we have
+   * defined a commot statement. Not all types of procesing require a commit.
+   *
+   * @param TransactionNumber The transaction we are commiting for
+   */
+  public void finaliseOutputCommit(int TransactionNumber) {
     // commit the changes
-    if (useCommit)
-    {
-      try
-      {
+    if (useCommit) {
+      try {
         // Open the init statement
         getPipeLog().debug("Adapter <" + getSymbolicName() + "> performing commit.");
         stmtCommitQuery.execute();
-      }
-      catch (SQLException Sex)
-      {
+      } catch (SQLException Sex) {
         message = "JDBCOutputAdapter Error performing commit <" + Sex.getMessage() + ">";
         getPipeLog().fatal(message);
-        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+        getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
   }
 
- /**
-  * perform the rollback statement, optionally removing records
-  *
-  * @param TransactionNumber The transaction number that is rolling back
-  */
-  public void finaliseOutputRollback(int TransactionNumber)
-  {
-    if (useRollback)
-    {
+  /**
+   * perform the rollback statement, optionally removing records
+   *
+   * @param TransactionNumber The transaction number that is rolling back
+   */
+  public void finaliseOutputRollback(int TransactionNumber) {
+    if (useRollback) {
       // rollback the changes
-      try
-      {
+      try {
         // Open the init statement
         getPipeLog().debug("Adapter <" + getSymbolicName() + "> performing rollback.");
         stmtRollbackQuery.execute();
-      }
-      catch (SQLException Sex)
-      {
+      } catch (SQLException Sex) {
         message = "JDBCOutputAdapter Error performing rollback <" + Sex.getMessage() + ">";
         getPipeLog().fatal(message);
-        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+        getExceptionHandler().reportException(new ProcessingException(message, Sex, getSymbolicName()));
         setTransactionAbort(getTransactionNumber());
       }
     }
   }
 
- /**
-  * Used to skip to the end of the stream in the case that the transaction is
-  * aborted.
-  *
-  * @return True if the rest of the transaction was skipped otherwise false
-  */
+  /**
+   * Used to skip to the end of the stream in the case that the transaction is
+   * aborted.
+   *
+   * @return True if the rest of the transaction was skipped otherwise false
+   */
   @Override
-  public boolean SkipRestOfStream()
-  {
+  public boolean SkipRestOfStream() {
     return getTransactionAborted(getTransactionNumber());
   }
 
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world, for
-  * example turning the dumping on and off.
-  *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
-  * @return The result message of the operation
-  */
+  /**
+   * processControlEvent is the event processing hook for the External Control
+   * Interface (ECI). This allows interaction with the external world, for
+   * example turning the dumping on and off.
+   *
+   * @param Command The command that we are to work on
+   * @param Init True if the pipeline is currently being constructed
+   * @param Parameter The parameter value for the command
+   * @return The result message of the operation
+   */
   @Override
   public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
-  {
+          String Parameter) {
     int ResultCode = -1;
 
-    if (Command.equalsIgnoreCase(SERVICE_DATASOURCE_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_DATASOURCE_KEY)) {
+      if (Init) {
         dataSourceName = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return dataSourceName;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_INIT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_INIT_QUERY_KEY)) {
+      if (Init) {
         initQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return initQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_INSERT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_INSERT_QUERY_KEY)) {
+      if (Init) {
         insertQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return insertQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_COMMIT_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_COMMIT_QUERY_KEY)) {
+      if (Init) {
         commitQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return commitQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_ROLLBACK_QUERY_KEY))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_ROLLBACK_QUERY_KEY)) {
+      if (Init) {
         rollbackQuery = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return rollbackQuery;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_STATUS_KEY))
-    {
+    if (Command.equalsIgnoreCase(SERVICE_STATUS_KEY)) {
       return "OK";
     }
 
-    if (ResultCode == 0)
-    {
+    if (ResultCode == 0) {
       getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
-    }
-    else
-    {
+    } else {
       // This is not our event, pass it up the stack
       return super.processControlEvent(Command, Init, Parameter);
     }
   }
 
   /**
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
-  *
-  */
+   * registerClientManager registers this class as a client of the ECI listener
+   * and publishes the commands that the plug in understands. The listener is
+   * responsible for delivering only these commands to the plug in.
+   *
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
-  public void registerClientManager() throws InitializationException
-  {
+  public void registerClientManager() throws InitializationException {
     // Set the client reference and the base services first
     super.registerClientManager();
 
     //Register services for this Client
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_DATASOURCE_KEY, ClientManager.PARAM_MANDATORY);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INIT_QUERY_KEY, ClientManager.PARAM_NONE);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INSERT_QUERY_KEY,ClientManager.PARAM_MANDATORY);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY,ClientManager.PARAM_NONE);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY,ClientManager.PARAM_NONE);
-    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATUS_KEY,ClientManager.PARAM_DYNAMIC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_INSERT_QUERY_KEY, ClientManager.PARAM_MANDATORY);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_COMMIT_QUERY_KEY, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ROLLBACK_QUERY_KEY, ClientManager.PARAM_NONE);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STATUS_KEY, ClientManager.PARAM_DYNAMIC);
   }
 
   // -----------------------------------------------------------------------------
   // --------------- Start of transactional layer functions ----------------------
   // -----------------------------------------------------------------------------
-
   /**
-  * When a transaction is started, the transactional layer calls this method to
-  * see if we have any reson to stop the transaction being started, and to do
-  * any preparation work that may be necessary before we start.
-  *
-  * @param transactionNumber The transaction to start
-  */
+   * When a transaction is started, the transactional layer calls this method to
+   * see if we have any reson to stop the transaction being started, and to do
+   * any preparation work that may be necessary before we start.
+   *
+   * @param transactionNumber The transaction to start
+   * @return that we can start the transaction
+   */
   @Override
-  public int startTransaction(int transactionNumber)
-  {
+  public int startTransaction(int transactionNumber) {
     // We do not have any reason to inhibit the transaction start, so return
     // the OK flag
     return 0;
   }
 
- /**
-  * Perform any processing that needs to be done when we are flushing the
-  * transaction;
-  *
-  * @param transactionNumber The transaction to flush
-  */
+  /**
+   * Perform any processing that needs to be done when we are flushing the
+   * transaction;
+   *
+   * @param transactionNumber The transaction to flush
+   * @return that we can flush the transaction
+   */
   @Override
-  public int flushTransaction(int transactionNumber)
-  {
+  public int flushTransaction(int transactionNumber) {
     // close the input stream
     closeStream(transactionNumber);
 
@@ -991,54 +838,49 @@ public abstract class JDBCOutputAdapter
   }
 
   /**
-  * Perform any processing that needs to be done when we are committing the
-  * transaction;
-  *
-  * @param transactionNumber The transaction to commit
-  */
+   * Perform any processing that needs to be done when we are committing the
+   * transaction;
+   *
+   * @param transactionNumber The transaction to commit
+   */
   @Override
-  public void commitTransaction(int transactionNumber)
-  {
+  public void commitTransaction(int transactionNumber) {
     finaliseOutputCommit(transactionNumber);
   }
 
   /**
-  * Perform any processing that needs to be done when we are rolling back the
-  * transaction;
-  *
-  * @param transactionNumber The transaction to rollback
-  */
+   * Perform any processing that needs to be done when we are rolling back the
+   * transaction;
+   *
+   * @param transactionNumber The transaction to rollback
+   */
   @Override
-  public void rollbackTransaction(int transactionNumber)
-  {
+  public void rollbackTransaction(int transactionNumber) {
     finaliseOutputRollback(transactionNumber);
   }
 
- /**
-  * Close Transaction is the trigger to clean up transaction related information
-  * such as variables, status etc.
-  *
-  * Close down the statements we opened. Because the commit and rollback
-  * statements are optional, we check if they have been defined before we ry
-  * to close them.
-  *
-  * @param transactionNumber The transaction we are working on
-  */
+  /**
+   * Close Transaction is the trigger to clean up transaction related
+   * information such as variables, status etc.
+   *
+   * Close down the statements we opened. Because the commit and rollback
+   * statements are optional, we check if they have been defined before we ry to
+   * close them.
+   *
+   * @param transactionNumber The transaction we are working on
+   */
   @Override
-  public void closeTransaction(int transactionNumber)
-  {
+  public void closeTransaction(int transactionNumber) {
     // Close the insert statement
     DBUtil.close(stmtInsertQuery);
 
     // Close the commit statement
-    if(useCommit)
-    {
+    if (useCommit) {
       DBUtil.close(stmtCommitQuery);
     }
 
     // Close the rollback statement
-    if(useRollback)
-    {
+    if (useRollback) {
       DBUtil.close(stmtRollbackQuery);
     }
 
@@ -1049,135 +891,124 @@ public abstract class JDBCOutputAdapter
   // -----------------------------------------------------------------------------
   // --------------- Start of custom initialisation functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * The initQuery is the query that will be executed at the beginning of a
-  * new stream of data. This is executed once, and should be used to prepare
-  * data for extraction.
-  *
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The initQuery is the query that will be executed at the beginning of a new
+   * stream of data. This is executed once, and should be used to prepare data
+   * for extraction.
+   *
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initInitQuery()
-    throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                   INIT_QUERY_KEY,
-                                                   "None");
+            INIT_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
+    if ((query == null) || query.equalsIgnoreCase("None")) {
       message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INIT_QUERY_KEY + ">";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * The insertQuery is the query that will be executed to actually handle the
-  * data writing.
-  *
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The insertQuery is the query that will be executed to actually handle the
+   * data writing.
+   *
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initInsertQuery()
-                         throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                   INSERT_QUERY_KEY,
-                                                   "None");
+            INSERT_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
+    if ((query == null) || query.equalsIgnoreCase("None")) {
       message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + INSERT_QUERY_KEY + ">";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * The commitQuery is used to finally persist the records to the target table
-  * and "fix" them into the table.
-  *
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The commitQuery is used to finally persist the records to the target table
+   * and "fix" them into the table.
+   *
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initCommitQuery()
-                         throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                   COMMIT_QUERY_KEY,
-                                                   "None");
+            COMMIT_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
+    if ((query == null) || query.equalsIgnoreCase("None")) {
       message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + COMMIT_QUERY_KEY + ">";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * The rollbackQuery is used to remove any records that have been written to
-  * the target table, but which have not yet been "fixed".
-  *
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * The rollbackQuery is used to remove any records that have been written to
+   * the target table, but which have not yet been "fixed".
+   *
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initRollbackQuery()
-                           throws InitializationException
-  {
+          throws InitializationException {
     String query;
 
     // Get the init statement from the properties
     query = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                   ROLLBACK_QUERY_KEY,
-                                                   "None");
+            ROLLBACK_QUERY_KEY,
+            "None");
 
-    if ((query == null) || query.equalsIgnoreCase("None"))
-    {
+    if ((query == null) || query.equalsIgnoreCase("None")) {
       message = "Output <" + getSymbolicName() + "> - Initialisation statement not found from <" + ROLLBACK_QUERY_KEY + ">";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return query;
   }
 
- /**
-  * Get the data source name from the properties
-  *
-  * @return The query string
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Get the data source name from the properties
+   *
+   * @return The query string
+   * @throws OpenRate.exception.InitializationException
+   */
   public String initDataSourceName()
-                        throws InitializationException
-  {
+          throws InitializationException {
     String DSN;
     DSN = PropertyUtils.getPropertyUtils().getBatchOutputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                 DATASOURCE_KEY,
-                                                 "None");
+            DATASOURCE_KEY,
+            "None");
 
-    if ((DSN == null) || DSN.equalsIgnoreCase("None"))
-    {
+    if ((DSN == null) || DSN.equalsIgnoreCase("None")) {
       message = "Output <" + getSymbolicName() + "> - Datasource name not found from <" + DATASOURCE_KEY + ">";
       getPipeLog().error(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     return DSN;

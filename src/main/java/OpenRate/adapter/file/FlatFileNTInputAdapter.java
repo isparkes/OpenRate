@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.adapter.file;
 
 import java.io.BufferedReader;
@@ -81,50 +80,42 @@ import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
 
-
 /**
- * Generic Flat File InputAdapter (Non transactional Version)
- * The basic function of this flat file input adapter is to facilitate a reading of
- * a flat file in the batches, instead of reading a whole file in a single fetch.
+ * Generic Flat File InputAdapter (Non transactional Version) The basic function
+ * of this flat file input adapter is to facilitate a reading of a flat file in
+ * the batches, instead of reading a whole file in a single fetch.
  *
  * The file input adapter scans for files, and when found, opens them, reads
  * them and turns them into batches to maintain the load on the pipeline.
  *
- *   Scanning and Processing
- *   -----------------------
+ * Scanning and Processing -----------------------
  *
- * The basic scanning and processing loop looks like this:
- * - The loadBatch() method is called regularly by the execution model,
- *   regardless of if there is work in progress or not.
- * - If we are not processing a file, we are allowed to scan for a new file to
- *   process
- * - If we are allowed to look for a new file to process, we do this:
- *   - getInputAvailable() Scan to see if there is any work to do
- *   - assignInput() marks the file as being in processing if we find work to do
- *     open the input stream
- *   - Calculate the file names from the base name
- *   - Open the file reader
- *   - Inject the synthetic HeaderRecord into the stream as the first record
- *     to synchronise the processing down the pipe
+ * The basic scanning and processing loop looks like this: - The loadBatch()
+ * method is called regularly by the execution model, regardless of if there is
+ * work in progress or not. - If we are not processing a file, we are allowed to
+ * scan for a new file to process - If we are allowed to look for a new file to
+ * process, we do this: - getInputAvailable() Scan to see if there is any work
+ * to do - assignInput() marks the file as being in processing if we find work
+ * to do open the input stream - Calculate the file names from the base name -
+ * Open the file reader - Inject the synthetic HeaderRecord into the stream as
+ * the first record to synchronise the processing down the pipe
  *
- * - If we are processing a stream, we do:
- *   - Read the records in from the stream, creating a basic "FlatRecord" for
- *     each record we have read
- *   - When we have finished reading the batch (either because we have reached
- *     the batch limit or because there are no more records to read) call
- *     procValidRecord(), which allows the user to perform preparation of the
- *     record (for example, creating the user defined record from the generic
- *     FlatRecord, or performing record compression on the incoming stream)
- *   - See if the file reader has run out of records. It it has, this is the
- *     end of the stream. If it is the end of the stream, we do:
- *     - Inject a trailer record into the stream
- *     - close the input stream and reset the "file in processing" flag so that
- *       we can scan for more files
+ * - If we are processing a stream, we do: - Read the records in from the
+ * stream, creating a basic "FlatRecord" for each record we have read - When we
+ * have finished reading the batch (either because we have reached the batch
+ * limit or because there are no more records to read) call procValidRecord(),
+ * which allows the user to perform preparation of the record (for example,
+ * creating the user defined record from the generic FlatRecord, or performing
+ * record compression on the incoming stream) - See if the file reader has run
+ * out of records. It it has, this is the end of the stream. If it is the end of
+ * the stream, we do: - Inject a trailer record into the stream - close the
+ * input stream and reset the "file in processing" flag so that we can scan for
+ * more files
  */
 public abstract class FlatFileNTInputAdapter
-  extends AbstractInputAdapter
-  implements IEventInterface
-{
+        extends AbstractInputAdapter
+        implements IEventInterface {
+
   // The buffer size is the size of the buffer in the buffered reader
   private static final int BUF_SIZE = 65536;
 
@@ -177,28 +168,24 @@ public abstract class FlatFileNTInputAdapter
   /**
    * Default Constructor
    */
-  public FlatFileNTInputAdapter()
-  {
+  public FlatFileNTInputAdapter() {
     super();
   }
 
   // -----------------------------------------------------------------------------
   // --------------- Start of inherited Input Adapter functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Initialise the module. Called during pipeline creation.
-  * Initialise input adapter.
-  * sets the filename to use & initialises the file reader.
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The module symbolic name of this module
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation. Initialise input
+   * adapter. sets the filename to use & initialises the file reader.
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The module symbolic name of this module
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String ConfigHelper;
 
     // Register ourself with the client manager
@@ -234,41 +221,40 @@ public abstract class FlatFileNTInputAdapter
   }
 
   /**
-  * loadBatch() is called regularly by the framework to either process records
-  * or to scan for work to do, depending on whether we are already processing
-  * or not.
-  */
+   * loadBatch() is called regularly by the framework to either process records
+   * or to scan for work to do, depending on whether we are already processing
+   * or not.
+   *
+   * @return
+   * @throws OpenRate.exception.ProcessingException
+   */
   @Override
   protected Collection<IRecord> loadBatch()
-                          throws ProcessingException
-  {
-    String     tmpFileRecord;
-    String     procName = null;
-    String     baseName;
-    int        NumberOfInputFiles;
+          throws ProcessingException {
+    String tmpFileRecord;
+    String procName = null;
+    String baseName;
+    int NumberOfInputFiles;
     Collection<IRecord> Outbatch;
-    int        ThisBatchCounter = 0;
+    int ThisBatchCounter = 0;
 
     // The Record types we will have to deal with
-    HeaderRecord  tmpHeader;
+    HeaderRecord tmpHeader;
     TrailerRecord tmpTrailer;
-    FlatRecord    tmpDataRecord;
-    IRecord       batchRecord;
+    FlatRecord tmpDataRecord;
+    IRecord batchRecord;
     Outbatch = new ArrayList<>();
 
     // This layer deals with opening the stream if we need to
-    if (InputStreamOpen == false)
-    {
+    if (InputStreamOpen == false) {
       // There is a file available, so open it and rename it to
       // show that we are doing something
       NumberOfInputFiles = assignInput();
 
-      if (NumberOfInputFiles > 0)
-      {
+      if (NumberOfInputFiles > 0) {
         // Now that we have the file name, try to open it from
         // the renamed file provided by assignInput
-        try
-        {
+        try {
           // Start time for the statistics
           TransactionStart = System.currentTimeMillis();
 
@@ -288,34 +274,27 @@ public abstract class FlatFileNTInputAdapter
 
           // Pass the header to the user layer for any processing that
           // needs to be done
-          tmpHeader = (HeaderRecord)procHeader((IRecord)tmpHeader);
+          tmpHeader = (HeaderRecord) procHeader((IRecord) tmpHeader);
           Outbatch.add(tmpHeader);
           ThisBatchCounter++;
-        }
-        catch (FileNotFoundException exFileNotFound)
-        {
+        } catch (FileNotFoundException exFileNotFound) {
           getPipeLog().error(
-                "Application is not able to read file <" + procName + ">");
-          throw new ProcessingException("Application is not able to read file <" +
-                                        procName + ">", 
-                                        exFileNotFound,
-                                        getSymbolicName());
+                  "Application is not able to read file <" + procName + ">");
+          throw new ProcessingException("Application is not able to read file <"
+                  + procName + ">",
+                  exFileNotFound,
+                  getSymbolicName());
         }
-      }
-      else
-      {
+      } else {
         // No work to do - return the empty batch
         return Outbatch;
       }
     }
 
-    if (InputStreamOpen)
-    {
-      try
-      {
+    if (InputStreamOpen) {
+      try {
         // read from the file and prepare the batch
-        while ((reader.ready()) & (ThisBatchCounter < batchSize))
-        {
+        while ((reader.ready()) & (ThisBatchCounter < batchSize)) {
           ThisBatchCounter++;
           tmpFileRecord = reader.readLine();
           tmpDataRecord = new FlatRecord(tmpFileRecord, InputRecordNumber);
@@ -329,8 +308,7 @@ public abstract class FlatFileNTInputAdapter
         }
 
         // see the reason that we closed
-        if (reader.ready() == false)
-        {
+        if (reader.ready() == false) {
           // we have finished
           InputStreamOpen = false;
 
@@ -339,8 +317,7 @@ public abstract class FlatFileNTInputAdapter
 
           // Add the prepared record to the batch, because of record compression
           // we may receive a null here. If we do, don't bother adding it
-          if (batchRecord != null)
-          {
+          if (batchRecord != null) {
             InputRecordNumber++;
             Outbatch.add(batchRecord);
           }
@@ -355,7 +332,7 @@ public abstract class FlatFileNTInputAdapter
 
           // Pass the trailer to the user layer for any processing that
           // needs to be done
-          tmpTrailer = (TrailerRecord)procTrailer((IRecord)tmpTrailer);
+          tmpTrailer = (TrailerRecord) procTrailer((IRecord) tmpTrailer);
           Outbatch.add(tmpTrailer);
           ThisBatchCounter++;
 
@@ -364,16 +341,14 @@ public abstract class FlatFileNTInputAdapter
           OpenRate.getOpenRateStatsLog().info("Stream closed");
           OpenRate.getOpenRateStatsLog().info("Statistics: Records  <" + InputRecordNumber + ">");
           OpenRate.getOpenRateStatsLog().info(
-                "            Duration <" +
-                (TransactionEnd - TransactionStart) + "> ms");
+                  "            Duration <"
+                  + (TransactionEnd - TransactionStart) + "> ms");
           OpenRate.getOpenRateStatsLog().info(
-                "            Speed    <" +
-                ((InputRecordNumber * 1000) / (TransactionEnd - TransactionStart)) +
-                "> records /sec");
+                  "            Speed    <"
+                  + ((InputRecordNumber * 1000) / (TransactionEnd - TransactionStart))
+                  + "> records /sec");
         }
-      }
-      catch (IOException ex)
-      {
+      } catch (IOException ex) {
         getPipeLog().fatal("Error reading input file");
       }
     }
@@ -381,39 +356,34 @@ public abstract class FlatFileNTInputAdapter
     return Outbatch;
   }
 
- /**
-  * Closes down the input stream after all the input has been collected
-  *
-  * @throws OpenRate.exception.ProcessingException
-  */
+  /**
+   * Closes down the input stream after all the input has been collected
+   *
+   * @throws OpenRate.exception.ProcessingException
+   */
   public void closeStream()
-    throws ProcessingException
-  {
+          throws ProcessingException {
     String procName;
 
-    try
-    {
+    try {
       reader.close();
-    }
-    catch (IOException exFileNotFound)
-    {
+    } catch (IOException exFileNotFound) {
       procName = getProcFilePath(GetBaseName());
       getPipeLog().error("Application is not able to close file <" + procName + ">");
-      throw new ProcessingException("Application is not able to read file <" +
-                                    procName + ">", 
-                                    exFileNotFound,
-                                    getSymbolicName());
+      throw new ProcessingException("Application is not able to read file <"
+              + procName + ">",
+              exFileNotFound,
+              getSymbolicName());
     }
   }
 
- /**
-  * Allows any records to be purged at the end of a file
-  *
-  * @return The pending record
-  */
+  /**
+   * Allows any records to be purged at the end of a file
+   *
+   * @return The pending record
+   */
   @Override
-  public IRecord purgePendingRecord()
-  {
+  public IRecord purgePendingRecord() {
     // default - do nothing
     return null;
   }
@@ -421,244 +391,169 @@ public abstract class FlatFileNTInputAdapter
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world.
-  *
-  * @param Command The command that we are to work on
-  * @param Init True if the pipeline is currently being constructed
-  * @param Parameter The parameter value for the command
-  * @return The result message of the operation
-  */
+  /**
+   * processControlEvent is the event processing hook for the External Control
+   * Interface (ECI). This allows interaction with the external world.
+   *
+   * @param Command The command that we are to work on
+   * @param Init True if the pipeline is currently being constructed
+   * @param Parameter The parameter value for the command
+   * @return The result message of the operation
+   */
   @Override
   public String processControlEvent(String Command, boolean Init,
-                                    String Parameter)
-  {
+          String Parameter) {
     int ResultCode = -1;
 
-    if (Command.equalsIgnoreCase(SERVICE_I_PATH))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_I_PATH)) {
+      if (Init) {
         InputFilePath = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return InputFilePath;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_D_PATH))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_D_PATH)) {
+      if (Init) {
         DoneFilePath = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return DoneFilePath;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_E_PATH))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_E_PATH)) {
+      if (Init) {
         ErrFilePath = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return ErrFilePath;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_I_PREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_I_PREFIX)) {
+      if (Init) {
         InputFilePrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return InputFilePrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_D_PREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_D_PREFIX)) {
+      if (Init) {
         DoneFilePrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return DoneFilePrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_E_PREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_E_PREFIX)) {
+      if (Init) {
         ErrFilePrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return ErrFilePrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_I_SUFFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_I_SUFFIX)) {
+      if (Init) {
         InputFileSuffix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return InputFileSuffix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_D_SUFFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_D_SUFFIX)) {
+      if (Init) {
         DoneFileSuffix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return DoneFileSuffix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_E_SUFFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_E_SUFFIX)) {
+      if (Init) {
         ErrFileSuffix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return ErrFileSuffix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (Command.equalsIgnoreCase(SERVICE_PROCPREFIX))
-    {
-      if (Init)
-      {
+    if (Command.equalsIgnoreCase(SERVICE_PROCPREFIX)) {
+      if (Init) {
         ProcessingPrefix = Parameter;
         ResultCode = 0;
-      }
-      else
-      {
-        if (Parameter.equals(""))
-        {
+      } else {
+        if (Parameter.equals("")) {
           return ProcessingPrefix;
-        }
-        else
-        {
+        } else {
           return CommonConfig.NON_DYNAMIC_PARAM;
         }
       }
     }
 
-    if (ResultCode == 0)
-    {
+    if (ResultCode == 0) {
       getPipeLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getPipeName(), Command, Parameter));
 
       return "OK";
-    }
-    else
-    {
+    } else {
       // This is not our event, pass it up the stack
       return super.processControlEvent(Command, Init, Parameter);
     }
   }
 
- /**
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
-  *
-  */
+  /**
+   * registerClientManager registers this class as a client of the ECI listener
+   * and publishes the commands that the plug in understands. The listener is
+   * responsible for delivering only these commands to the plug in.
+   *
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
-  public void registerClientManager() throws InitializationException
-  {
+  public void registerClientManager() throws InitializationException {
     // Set the client reference and the base services first
     super.registerClientManager();
 
@@ -678,135 +573,124 @@ public abstract class FlatFileNTInputAdapter
   // -----------------------------------------------------------------------------
   // ------------------------ Start of custom functions --------------------------
   // -----------------------------------------------------------------------------
-
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetInputFilePath()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_I_PATH);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetDoneFilePath()
-                              throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_D_PATH);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetErrFilePath()
-                             throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PATH);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_E_PATH);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetInputFilePrefix()
-                                 throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_I_PREFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetDoneFilePrefix()
-                                throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_D_PREFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetErrFilePrefix()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_PREFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_E_PREFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetInputFileSuffix()
-                                 throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_I_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_I_SUFFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetDoneFileSuffix()
-                                throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_D_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_D_SUFFIX);
 
     return tmpFile;
   }
 
   /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetErrFileSuffix()
-                               throws InitializationException
-  {
+          throws InitializationException {
     String tmpFile;
-    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(),getSymbolicName(),SERVICE_E_SUFFIX);
+    tmpFile = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(getPipeName(), getSymbolicName(), SERVICE_E_SUFFIX);
 
     return tmpFile;
   }
 
- /**
-  * Temporary function to gather the information from the properties file. Will
-  * be removed with the introduction of the new configuration model.
-  */
+  /**
+   * Temporary function to gather the information from the properties file. Will
+   * be removed with the introduction of the new configuration model.
+   */
   private String initGetProcPrefix()
-                                 throws InitializationException
-  {
+          throws InitializationException {
     String tmpProcPrefix;
     tmpProcPrefix = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValueDef(getPipeName(), getSymbolicName(),
-                                                           SERVICE_PROCPREFIX,
-                                                           "tmp");
+            SERVICE_PROCPREFIX,
+            "tmp");
 
     return tmpProcPrefix;
   }
@@ -821,24 +705,21 @@ public abstract class FlatFileNTInputAdapter
    * configured, for example if the directory does not exist, an exception will
    * be thrown.
    *
-   * Two methods of finding the file are supported:
-   * 1) You can specify a file name and only that file will be read
-   * 2) You can specify a file path and a regex prefix and suffix
+   * Two methods of finding the file are supported: 1) You can specify a file
+   * name and only that file will be read 2) You can specify a file path and a
+   * regex prefix and suffix
    */
   private void initFileName()
-                     throws InitializationException
-  {
-    File    dir;
+          throws InitializationException {
+    File dir;
 
     /*
      * Validate the inputs we have received. We must end up with three
      * dustinct paths for input done and error files. We detect this by
      * checking the sum of the paramters.
      */
-
     // Set default values
-    if (InputFilePath == null)
-    {
+    if (InputFilePath == null) {
       InputFilePath = ".";
       message = "Input file path not set. Defaulting to <.>.";
       getPipeLog().warning(message);
@@ -846,15 +727,13 @@ public abstract class FlatFileNTInputAdapter
 
     // is the input file path valid?
     dir = new File(InputFilePath);
-    if (!dir.isDirectory())
-    {
+    if (!dir.isDirectory()) {
       message = "Input file path <" + InputFilePath + "> does not exist or is not a directory";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
-    if (DoneFilePath == null)
-    {
+    if (DoneFilePath == null) {
       DoneFilePath = ".";
       message = "Done file path not set. Defaulting to <.>.";
       getPipeLog().warning(message);
@@ -862,15 +741,13 @@ public abstract class FlatFileNTInputAdapter
 
     // is the input file path valid?
     dir = new File(DoneFilePath);
-    if (!dir.isDirectory())
-    {
+    if (!dir.isDirectory()) {
       message = "Done file path <" + DoneFilePath + "> does not exist or is not a directory";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
-    if (ErrFilePath == null)
-    {
+    if (ErrFilePath == null) {
       ErrFilePath = ".";
       message = "Error file path not set. Defaulting to <.>.";
       getPipeLog().warning(message);
@@ -878,64 +755,58 @@ public abstract class FlatFileNTInputAdapter
 
     // is the input file path valid?
     dir = new File(ErrFilePath);
-    if (!dir.isDirectory())
-    {
+    if (!dir.isDirectory()) {
       message = "Error file path <" + ErrFilePath + "> does not exist or is not a directory";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
-    if ((DoneFilePath + DoneFilePrefix + DoneFileSuffix).equals(ErrFilePath + ErrFilePrefix +
-          ErrFileSuffix))
-    {
+    if ((DoneFilePath + DoneFilePrefix + DoneFileSuffix).equals(ErrFilePath + ErrFilePrefix
+            + ErrFileSuffix)) {
       // These look suspiciously similar
       message = "Done file and Error file cannot be the same";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
-    if ((InputFilePath + InputFilePrefix + InputFileSuffix).equals(ErrFilePath + ErrFilePrefix +
-          ErrFileSuffix))
-    {
+    if ((InputFilePath + InputFilePrefix + InputFileSuffix).equals(ErrFilePath + ErrFilePrefix
+            + ErrFileSuffix)) {
       // These look suspiciously similar
       message = "Input file and Error file cannot be the same";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Check that there is some variance in what we have received
-    if ((DoneFilePath + DoneFilePrefix + DoneFileSuffix).equals(InputFilePath + InputFilePrefix +
-          InputFileSuffix))
-    {
+    if ((DoneFilePath + DoneFilePrefix + DoneFileSuffix).equals(InputFilePath + InputFilePrefix
+            + InputFileSuffix)) {
       // These look suspiciously similar
       message = "Input file and Input file cannot be the same";
       getPipeLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
   }
 
   // -----------------------------------------------------------------------------
   // ---------------------- Start stream handling functions ----------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Selects input from the pending list for processing and marks it as
-  * being in processing. Assign the FileReader object to the chosen file
-  * Rename the input to the temp name
-  *
-  * @return The number of files assigned
-  * @throws OpenRate.exception.ProcessingException
-  */
+  /**
+   * Selects input from the pending list for processing and marks it as being in
+   * processing. Assign the FileReader object to the chosen file Rename the
+   * input to the temp name
+   *
+   * @return The number of files assigned
+   * @throws OpenRate.exception.ProcessingException
+   */
   public int assignInput()
-    throws ProcessingException
-  {
-    String         procName;
-    String[]       FileNames;
-    File           dir;
+          throws ProcessingException {
+    String procName;
+    String[] FileNames;
+    File dir;
     FilenameFilter filter;
-    int            FilesAssigned = 0;
+    int FilesAssigned = 0;
 
     // This is the current filename we are working on
     String fileName;
@@ -943,14 +814,13 @@ public abstract class FlatFileNTInputAdapter
 
     // get the first file name from the directory that matches the
     dir = new File(InputFilePath);
-    filter = new GlobFilenameFilter(InputFilePrefix + "*" +
-                                    InputFileSuffix,
-                                    GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
+    filter = new GlobFilenameFilter(InputFilePrefix + "*"
+            + InputFileSuffix,
+            GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
     FileNames = dir.list(filter);
 
     // if we have a file, add it to the list of transaction files
-    if (FileNames.length > 0)
-    {
+    if (FileNames.length > 0) {
       // get the first file in the list
       fileName = FileNames[0];
       FilesAssigned = 1;
@@ -973,24 +843,23 @@ public abstract class FlatFileNTInputAdapter
   }
 
   /**
-   * shutdownStreamProcessOK closes down the processing and renames the input file
-   * to show that we have done with it. It then completes the transaction
+   * shutdownStreamProcessOK closes down the processing and renames the input
+   * file to show that we have done with it. It then completes the transaction
    * from the point of view of the Transaction Manager. This represents the
    * successful completion of the transaction.
    */
-  public void shutdownStreamProcessOK()
-  {
+  public void shutdownStreamProcessOK() {
     String procName;
     String doneName;
     String baseName;
 
-	// get the file information for the transaction
+    // get the file information for the transaction
     baseName = GetBaseName();
 
     // Calculate the part of the name that will be constant
     // during the processing
-    doneName = InputFilePath + System.getProperty("file.separator") +
-               DoneFilePrefix + baseName + DoneFileSuffix;
+    doneName = InputFilePath + System.getProperty("file.separator")
+            + DoneFilePrefix + baseName + DoneFileSuffix;
     procName = getProcFilePath(baseName);
 
     // rename the input file to show that it is no longer under the TMs control
@@ -999,14 +868,13 @@ public abstract class FlatFileNTInputAdapter
   }
 
   /**
-   * shutdownStreamProcessERR closes down the processing and renames the input file
-   * to show that we have done with it. It then completes the transaction
+   * shutdownStreamProcessERR closes down the processing and renames the input
+   * file to show that we have done with it. It then completes the transaction
    * from the point of view of the Transaction Manager. This represents the
-   * failed completion of the transaction, and should leave everything as it
-   * was before the transaction started.
+   * failed completion of the transaction, and should leave everything as it was
+   * before the transaction started.
    */
-  public void shutdownStreamProcessERR()
-  {
+  public void shutdownStreamProcessERR() {
     String procName;
     String origName;
     String baseName;
@@ -1016,8 +884,8 @@ public abstract class FlatFileNTInputAdapter
 
     // Calculate the part of the name that will be constant
     // during the processing
-    origName = InputFilePath + System.getProperty("file.separator") +
-               InputFilePrefix + baseName + InputFileSuffix;
+    origName = InputFilePath + System.getProperty("file.separator")
+            + InputFilePrefix + baseName + InputFileSuffix;
     procName = getProcFilePath(baseName);
 
     // rename the input file to show that it is no longer under the TMs control
@@ -1028,64 +896,57 @@ public abstract class FlatFileNTInputAdapter
   // -----------------------------------------------------------------------------
   // ------------------------ Start of utility functions -------------------------
   // -----------------------------------------------------------------------------
-
   /**
-  * Calculate and return the processing file path for the given base name. This
-  * is the name the file will have during the processing.
-  */
-  private String getProcFilePath(String baseName)
-  {
-    return InputFilePath + System.getProperty("file.separator") +
-           ProcessingPrefix + InputFilePrefix + baseName + InputFileSuffix;
+   * Calculate and return the processing file path for the given base name. This
+   * is the name the file will have during the processing.
+   */
+  private String getProcFilePath(String baseName) {
+    return InputFilePath + System.getProperty("file.separator")
+            + ProcessingPrefix + InputFilePrefix + baseName + InputFileSuffix;
   }
 
   /**
-  * Calculate and return the input file path for the given base name.
-  */
-  private String getInputFilePath(String baseName)
-  {
-    return InputFilePath + System.getProperty("file.separator") +
-           InputFilePrefix + baseName + InputFileSuffix;
+   * Calculate and return the input file path for the given base name.
+   */
+  private String getInputFilePath(String baseName) {
+    return InputFilePath + System.getProperty("file.separator")
+            + InputFilePrefix + baseName + InputFileSuffix;
   }
 
- /**
-  * Provides reader created during init()
-  *
-  * @return The buffered reader
-  */
-  public BufferedReader getFileReader()
-  {
+  /**
+   * Provides reader created during init()
+   *
+   * @return The buffered reader
+   */
+  public BufferedReader getFileReader() {
     return reader;
   }
 
- /**
-  * Get the internal cache of the base name that we are using.
-  */
-  private String GetBaseName()
-  {
+  /**
+   * Get the internal cache of the base name that we are using.
+   */
+  private String GetBaseName() {
     return IntBaseName;
   }
 
   /**
-  * Set the internal cache of the base name that we are using. Note that we
-  * will include this information in the Header *and* the trailer record, in
-  * order to save the processing or output adapters having to store this state
-  * information.
-  */
-  private void SetBaseName(String baseName)
-  {
+   * Set the internal cache of the base name that we are using. Note that we
+   * will include this information in the Header *and* the trailer record, in
+   * order to save the processing or output adapters having to store this state
+   * information.
+   */
+  private void SetBaseName(String baseName) {
     IntBaseName = baseName;
   }
 
   /**
-   * Provides a second level file name filter for files - may be overridden
-   * by the implementation class
+   * Provides a second level file name filter for files - may be overridden by
+   * the implementation class
    *
    * @param fileNameToFilter The name of the file to filter
    * @return true if the file is to be processed, otherwise false
    */
-  public boolean filterFileName(String fileNameToFilter)
-  {
+  public boolean filterFileName(String fileNameToFilter) {
     // Filter out files that already have the processing prefix
     return (fileNameToFilter.startsWith(ProcessingPrefix) == false);
   }
