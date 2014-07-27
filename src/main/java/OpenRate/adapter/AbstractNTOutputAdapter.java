@@ -148,7 +148,7 @@ public abstract class AbstractNTOutputAdapter
     setSymbolicName(ModuleName);
 
     // store the pipe we are in
-    setPipeline(OpenRate.getPipeline(PipelineName));
+    setPipeline(OpenRate.getPipelineFromMap(PipelineName));
 
     RegisterClientManager();
 

@@ -87,7 +87,7 @@ public class FrameworkUtils {
     Pipeline testpipe = new Pipeline();
     testpipe.setPipeLog(LogUtil.getLogUtil().getLogger("DBTestPipePipeline"));
     testpipe.setSymbolicName("DBTestPipe");
-    OpenRate.setPipeline("DBTestPipe",testpipe);    
+    OpenRate.addPipelineToMap("DBTestPipe",testpipe);    
         
     // Check for exceptions
     if (OpenRate.getFrameworkExceptionHandler().hasError())

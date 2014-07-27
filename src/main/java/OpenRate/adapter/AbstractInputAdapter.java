@@ -146,7 +146,7 @@ public abstract class AbstractInputAdapter
     setSymbolicName(ModuleName);
 
     // store the pipe we are in
-    setPipeline(OpenRate.getPipeline(PipelineName));
+    setPipeline(OpenRate.getPipelineFromMap(PipelineName));
 
     // Register the events that we can process with the event manager
     registerClientManager();

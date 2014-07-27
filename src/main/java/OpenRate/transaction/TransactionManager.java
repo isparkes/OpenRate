@@ -173,7 +173,7 @@ public class TransactionManager implements ITransactionManager, IEventInterface
                pipelineName + ">");
 
     // store the pipe we are in - used for pipeline level logging and exception handling
-    setPipeline(OpenRate.getPipeline(pipelineName));
+    setPipeline(OpenRate.getPipelineFromMap(pipelineName));
 
     // The list of current transactions
     transactionList   = new ConcurrentHashMap<>(50);

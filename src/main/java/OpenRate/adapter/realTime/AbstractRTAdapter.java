@@ -148,7 +148,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
     setSymbolicName(moduleName);
 
     // store the pipe we are in
-    setPipeline(OpenRate.getPipeline(pipelineName));
+    setPipeline(OpenRate.getPipelineFromMap(pipelineName));
 
     // Get the debug status
     String ConfigHelper = PropertyUtils.getPropertyUtils().getRTAdapterPropertyValueDef(pipelineName, moduleName, "Debug", "false");

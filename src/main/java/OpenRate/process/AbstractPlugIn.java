@@ -170,7 +170,7 @@ public abstract class AbstractPlugIn
     setSymbolicName(ModuleName);
 
     // Get the pipeline reference
-    setPipeline(OpenRate.getPipeline(PipelineName));
+    setPipeline(OpenRate.getPipelineFromMap(PipelineName));
             
     // Get the batch size we should be working on
     ConfigHelper = initGetBatchSize();
