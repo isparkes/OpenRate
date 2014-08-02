@@ -74,7 +74,7 @@
 					<timestampPropertyName>build.custtimestamp</timestampPropertyName>
 					<timestampFormat>{0,date,yyyyMMdd}</timestampFormat>
 					<providerImplementations>
-						<svn>javasvn</svn>
+						<svn>git</svn>
 					</providerImplementations>
 				</configuration>
         

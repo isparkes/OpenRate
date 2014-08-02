@@ -82,9 +82,6 @@ public class OpenRateTest {
   // The revision number has to be changed to match the current revision
   String OpenRateVersion = "V1.5.2.1";
 
-  // This has to match the current SVN revision tag
-  String revisionNumber = "001";
-
   // By default we check that the build date is created on each build
   SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
   String revisionDate = sdf.format(new Date());
@@ -168,18 +165,14 @@ public class OpenRateTest {
     System.out.println("--> checkVersionString");
 
     // get the date portion of the version string
-    String result = null;
+    String result;
 
     // get the application instance
     appl = OpenRate.getApplicationInstance();
 
-    try {
-      result = appl.getApplicationVersion();
-    } catch (InitializationException ex) {
-      Assert.fail(ex.getMessage());
-    }
+    result = appl.getApplicationVersion();
 
-    String expResult = "OpenRate " + OpenRateVersion + ", Build " + revisionNumber + " (" + revisionDate + ")";
+    String expResult = "OpenRate " + OpenRateVersion + " (" + revisionDate + ")";
     Assert.assertEquals(expResult, result);
 
     appl.cleanup();
