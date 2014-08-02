@@ -66,15 +66,12 @@
 					</execution>
 				</executions>
 				<configuration>
-					<!--doCheck>true</doCheck>
-					<username>tgdspia1</username>
-					<password>T1gger123</password-->
 					<revisionOnScmFailure>001</revisionOnScmFailure>
 					<buildNumberPropertyName>sources.version</buildNumberPropertyName>
 					<timestampPropertyName>build.custtimestamp</timestampPropertyName>
 					<timestampFormat>{0,date,yyyyMMdd}</timestampFormat>
 					<providerImplementations>
-						<svn>javasvn</svn>
+						<svn>git</svn>
 					</providerImplementations>
 				</configuration>
         

@@ -340,12 +340,11 @@ public class OpenRate
   }
 
   /**
-   * Get the global version from the version file.
+   * Get the global version from the version file. 
    *
    * @return the application version
-   * @throws OpenRate.exception.InitializationException
    */
-  public String getApplicationVersion() throws InitializationException {
+  public String getApplicationVersion() {
     boolean foundVersion = false;
     boolean foundBuild = false;
     boolean foundDate = true;
@@ -357,8 +356,7 @@ public class OpenRate
     URL versionResourceFile = getClass().getResource("/VersionFile.txt");
 
     if (versionResourceFile == null) {
-      message = "Version Information not found";
-      throw new InitializationException(message, getSymbolicName());
+      return null;
     }
 
     input = getClass().getResourceAsStream("/VersionFile.txt");
@@ -383,7 +381,55 @@ public class OpenRate
     }
 
     if (foundVersion && foundBuild && foundDate) {
-      return "OpenRate V" + versionID + ", Build " + buildVer + " (" + buildDate + ")";
+      return "OpenRate V" + versionID + " (" + buildDate + ")";
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get the GIT hash from the version file. This is logged but not displayed.
+   *
+   * @return the Git hash
+   */
+  public String getBuildHash() {
+    boolean foundVersion = false;
+    boolean foundBuild = false;
+    boolean foundDate = true;
+    String versionID = null;
+    String buildVer = null;
+    String buildDate = null;
+    InputStream input;
+
+    URL versionResourceFile = getClass().getResource("/VersionFile.txt");
+
+    if (versionResourceFile == null) {
+      return null;
+    }
+
+    input = getClass().getResourceAsStream("/VersionFile.txt");
+    java.util.Scanner s = new java.util.Scanner(input).useDelimiter("\\A");
+
+    while (s.hasNext()) {
+      String result = s.nextLine();
+      if (result.startsWith("OPENRATE_VERSION:")) {
+        foundVersion = true;
+        versionID = result.replaceAll("OPENRATE_VERSION:", "").trim();
+      }
+
+      if (result.startsWith("BUILD_VERSION:")) {
+        foundBuild = true;
+        buildVer = result.replaceAll("BUILD_VERSION:", "").trim();
+      }
+
+      if (result.startsWith("BUILD_DATE:")) {
+        foundDate = true;
+        buildDate = result.replaceAll("BUILD_DATE:", "").trim();
+      }
+    }
+
+    if (foundVersion && foundBuild && foundDate) {
+      return "OpenRate Build " + buildVer;
     } else {
       return null;
     }
@@ -404,13 +450,7 @@ public class OpenRate
 
     // *********************** Initialization Block ****************************
     // Set the version string
-    try {
-      // Get the global SVN version info
-      applicationVersionString = getApplicationVersion();
-    } catch (InitializationException ex) {
-      System.err.println("Could not locate version file. Aborting.");
-      return VERSION_FILE_NOT_FOUND;
-    }
+    applicationVersionString = getApplicationVersion();
 
     // Check that the parameters we got are formally correct
     status = checkParameters(args);
@@ -559,6 +599,9 @@ public class OpenRate
       setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
       getFwLog().info(":::: OpenRate Started ::::");
 
+      // Log the version information
+      getFwLog().info("OpenRate version: " + getApplicationVersion() + " (" + getBuildHash() + ")");
+      
       // Initalise the error log - this is intended to log all stack trace
       // type events, keeping the main output as clean and businesslike as possible.
       setErrorLog(LogUtil.getLogUtil().getLogger("ErrorLog"));
@@ -566,9 +609,6 @@ public class OpenRate
       // Initalise the stats log - this is intended to log all statistics
       // information, dealing with performance and profiling
       setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
-
-      // Log our version
-      getFwLog().info("OpenRate Build " + getApplicationVersionString());
 
       // Get the sequential loading flag
       sequentialLoading = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_SEQUENTIAL_LOADING, "true"));
