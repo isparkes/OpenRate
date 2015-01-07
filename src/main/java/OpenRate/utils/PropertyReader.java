@@ -7,7 +7,7 @@
  *
  * The exclusive owner of this work is the OpenRate project..
  * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2014.
+ * is Copyright of the OpenRate project 2006-2015.
  *
  * The following restrictions apply unless they are expressly relaxed in a
  * contractual agreement between the license holder or one of its officially
