@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.process;
 
 import OpenRate.cache.ICacheManager;
@@ -68,24 +67,25 @@ import java.util.ArrayList;
  * The implementation class should not have to do much more than call the
  * "PerformRating", after having set the appropriate RUM values.
  *
- * The rating is performed on the Charge Packets that should already be
- * and should have the "priceGroup" field filled with an appropriate value.
- * Usually the priceGroup value is retrieved using the zoning and timing
- * results. Note that the number of Charge Packets can (and often will) increase
- * during the rating, because we may have to impact multiple resources (a
- * charge packet will be created for each of these resource impacts (in the case
- * that multiple resources have been impacted.
+ * The rating is performed on the Charge Packets that should already be and
+ * should have the "priceGroup" field filled with an appropriate value. Usually
+ * the priceGroup value is retrieved using the zoning and timing results. Note
+ * that the number of Charge Packets can (and often will) increase during the
+ * rating, because we may have to impact multiple resources (a charge packet
+ * will be created for each of these resource impacts (in the case that multiple
+ * resources have been impacted.
  *
  * No roll-up of charges is performed in this module. You can use the module
  * "GatherRUMImpacts" to collect and create a summary of the CP impacts.
  *
  * You can obtain a rating breakdown (which provides exact details of the steps
- * and tiers used to calculate the charge) by enabling the standard rating record
- * field "CreateBreakdown" boolean value to true.
+ * and tiers used to calculate the charge) by enabling the standard rating
+ * record field "CreateBreakdown" boolean value to true.
  */
-public abstract class AbstractRUMMap extends AbstractPlugIn
-{
+public abstract class AbstractRUMMap extends AbstractPlugIn {
+
   // This is the object will be using the find the cache manager
+
   private ICacheManager CMRM = null;
 
   // The zone model object
@@ -94,176 +94,61 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Initialise the module. Called during pipeline creation to initialise:
-  *  - Configuration properties that are defined in the properties file.
-  *  - The references to any cache objects that are used in the processing
-  *  - The symbolic name of the module
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The name of this module in the pipeline
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation to initialise: -
+   * Configuration properties that are defined in the properties file. - The
+   * references to any cache objects that are used in the processing - The
+   * symbolic name of the module
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The name of this module in the pipeline
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String CacheObjectName;
 
     // Do the inherited work, e.g. setting the symbolic name etc
-    super.init(PipelineName,ModuleName);
+    super.init(PipelineName, ModuleName);
 
     // Get the cache object reference
     CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(PipelineName,
-                                                           ModuleName,
-                                                           "DataCache");
+            ModuleName,
+            "DataCache");
     CMRM = CacheFactory.getGlobalManager(CacheObjectName);
 
-    if (CMRM == null)
-    {
+    if (CMRM == null) {
       message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Load up the mapping arrays, but only if we are the right type. This
     // allows us to build up ever more complex rating models, matching the
     // right model to the right cache
-    if (CMRM.get(CacheObjectName) instanceof RUMMapCache)
-    {
-      RMC = (RUMMapCache)CMRM.get(CacheObjectName);
+    if (CMRM.get(CacheObjectName) instanceof RUMMapCache) {
+      RMC = (RUMMapCache) CMRM.get(CacheObjectName);
 
-      if (RMC == null)
-      {
+      if (RMC == null) {
         message = "Could not find cache entry for <" + CacheObjectName + ">";
-        throw new InitializationException(message,getSymbolicName());
+        throw new InitializationException(message, getSymbolicName());
       }
     }
   }
 
   @Override
-  public IRecord procHeader(IRecord r)
-  {
+  public IRecord procHeader(IRecord r) {
     return r;
   }
 
   @Override
-  public IRecord procTrailer(IRecord r)
-  {
+  public IRecord procTrailer(IRecord r) {
     return r;
   }
 
 // -----------------------------------------------------------------------------
 // ---------------------- Start of exposed functions ---------------------------
 // -----------------------------------------------------------------------------
-
-  /**
-   * Create new charge packets in preparation for rating, given a price group
-   * to work on. This method assumes that no charge packets have been created
-   * before, but will also work if called multiple times. It performs the
-   * rating operations on a record of type "RatingRecord".
-   *
-   * The price group can contain multiple price models, and this method
-   * creates a charge packet for each priceModel/RUM/Resource in the RUM Map, so
-   * that rating can work on each of the charge packets individually.
-   *
-   * This method will only work on records of a "RatingRecord" inheritance.
-   *
-   * This method sets all of the RUM, price group, price model and resource
-   * elements of a charge packet, as well as creating the charge packet itself,
-   * and is intended for fairly simple scenarios where the price group is
-   * available before other elements of the rating. The results of this method
-   * can be rated directly with the RUMCPRateCalc:PerformRating method.
-   *
-   * In the case of error, the error is added directly to the record.
-   *
-   * @param CurrentRecord The record we are working on
-   * @param PriceGroup The price group to create charge packets for
-   * @return true if the processing was performed without error, otherwise false
-   */
-  public boolean CreateRUMChargePackets(RatingRecord CurrentRecord, String PriceGroup)
-  {
-    int PMIndex;
-    ChargePacket tmpCPNew;
-    RecordError tmpError;
-    ArrayList<RUMMapCache.RUMMapEntry> tmpRUMMap;
-    RUMMapCache.RUMMapEntry tmpRUMMapEntry;
-
-    // create a charge packet for each RUM/Resource/price model tuple as located
-    // in the RUM Map
-    tmpRUMMap = RMC.getRUMMap(PriceGroup);
-
-    if (tmpRUMMap == null)
-    {
-      tmpError = new RecordError("ERR_PRICE_GROUP_MAP_NOT_FOUND",ErrorType.DATA_NOT_FOUND, getSymbolicName());
-      CurrentRecord.addError(tmpError);
-
-      // found an error - get out
-      return false;
-    }
-
-    // Calculate the price of the charge packet
-    for (PMIndex = 0 ; PMIndex < tmpRUMMap.size() ; PMIndex++)
-    {
-      tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
-
-      // Create a new CP for each model in the group. We do this because we
-      // will be performing rating on each of them later
-      tmpCPNew = CurrentRecord.newChargePacket();
-      tmpCPNew.priceGroup = PriceGroup;
-
-      // Get the value of the RUM
-      tmpCPNew.priceModel  = tmpRUMMapEntry.PriceModel;
-      tmpCPNew.rumName     = tmpRUMMapEntry.RUM;
-
-      // deal with the time splitting flag
-      if (tmpCPNew.timeSplitting == AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING)
-      {
-        tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCPNew.rumName) * tmpCPNew.splittingFactor;
-      }
-      else
-      {
-        tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCPNew.rumName);
-      }
-
-      tmpCPNew.resource    = tmpRUMMapEntry.Resource;
-      tmpCPNew.resCounter  = tmpRUMMapEntry.ResourceCounter;
-      tmpCPNew.ratingType  = tmpRUMMapEntry.RUMType;
-
-      // get the rating type description
-      switch (tmpRUMMapEntry.RUMType)
-      {
-        case 1:
-          {
-            tmpCPNew.ratingTypeDesc = "FLAT";
-            break;
-          }
-        case 2:
-          {
-            // Tiered Rating
-            tmpCPNew.ratingTypeDesc = "TIERED";
-            break;
-          }
-        case 3:
-          {
-            tmpCPNew.ratingTypeDesc = "THRESHOLD";
-            break;
-          }
-        case 4:
-          {
-            // Event Rating
-            tmpCPNew.ratingTypeDesc = "EVENT";
-            break;
-          }
-      }
-
-      // add the CP
-      CurrentRecord.addChargePacket(tmpCPNew);
-    }
-
-    return true;
-  }
-
   /**
    * Evaluate the price group of existing charge packets, completing the
    * priceModel/RUM/Resource information in each of the packets found. Note that
@@ -275,183 +160,142 @@ public abstract class AbstractRUMMap extends AbstractPlugIn
    *
    * This method sets all of the RUM, price group, price model and resource
    * elements of a charge packet, working on a charge packet that has already
-   * been created, and which has a priceGroup already defined in it.
-   * Thus, this method is intended for moderaltely simple scenarios where the
-   * price group is available before other elements of the rating, but where
-   * the work has been performed on a charge packet. The results of this method
-   * can be rated directly with the RUMCPRateCalc:PerformRating method.
+   * been created, and which has a priceGroup already defined in it. Thus, this
+   * method is intended for moderately simple scenarios where the price group is
+   * available before other elements of the rating, but where the work has been
+   * performed on a charge packet. The results of this method can be rated
+   * directly with the RUMCPRateCalc:PerformRating method.
    *
    * In the case of error, the error is added directly to the record.
    *
    * @param CurrentRecord The record we are working on
    * @return true if the processing was performed without error, otherwise false
    */
-  public boolean EvaluateRUMPriceGroup(RatingRecord CurrentRecord)
-  {
+  public boolean evaluateRUMPriceGroup(RatingRecord CurrentRecord) {
     int PMIndex;
-    int CPIndex;
-    ChargePacket tmpCP;
     ChargePacket tmpCPNew = null;
     RecordError tmpError;
     ArrayList<RUMMapCache.RUMMapEntry> tmpRUMMap;
     RUMMapCache.RUMMapEntry tmpRUMMapEntry;
-    String PriceGroup;
+    String priceGroup;
     ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
-    boolean Replace = false;
+    boolean replace = false;
 
     // Loop over the charge packets
-    for (CPIndex = 0 ; CPIndex < CurrentRecord.getChargePacketCount() ; CPIndex++)
-    {
+    for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
       // Get the price group for this charge packet
-      tmpCP = CurrentRecord.getChargePacket(CPIndex);
-
-      if (tmpCP.Valid)
-      {
-        PriceGroup = tmpCP.priceGroup;
+      if (tmpCP.Valid) {
+        for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
+          priceGroup = tmpTZ.priceGroup;
 
         // create a charge packet for each RUM/Resource/price model tuple as located
-        // in the RUM Map
-        tmpRUMMap = RMC.getRUMMap(PriceGroup);
+          // in the RUM Map
+          tmpRUMMap = RMC.getRUMMap(priceGroup);
 
-        if (tmpRUMMap == null)
-        {
-          tmpError = new RecordError("ERR_PRICE_GROUP_MAP_NOT_FOUND",ErrorType.DATA_NOT_FOUND, getSymbolicName());
-          CurrentRecord.addError(tmpError);
+          if (tmpRUMMap == null) {
+            tmpError = new RecordError("ERR_PRICE_GROUP_MAP_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+            CurrentRecord.addError(tmpError);
 
-          // found an error - get out
-          return false;
-        }
+            // found an error - get out
+            return false;
+          }
 
         // if we are doing 1:1 price group:price model, we'll use the existing
-        // charge packet, otherwise we have to do some cloning. Normally, we'll
-        // be using 1:1
-        if (tmpRUMMap.size() == 1)
-        {
-          // ************************** 1:1 case *********************************
-          tmpRUMMapEntry = tmpRUMMap.get(0);
+          // charge packet, otherwise we have to do some cloning. Normally, we'll
+          // be using 1:1
+          if (tmpRUMMap.size() == 1) {
+            // ************************** 1:1 case *********************************
+            tmpRUMMapEntry = tmpRUMMap.get(0);
 
-          // Get the value of the RUM
-          tmpCP.priceModel  = tmpRUMMapEntry.PriceModel;
-          tmpCP.rumName     = tmpRUMMapEntry.RUM;
-          tmpCP.resource    = tmpRUMMapEntry.Resource;
-          tmpCP.resCounter  = tmpRUMMapEntry.ResourceCounter;
-          tmpCP.ratingType  = tmpRUMMapEntry.RUMType;
-
-          // deal with the time splitting flag
-          if (tmpCP.timeSplitting == AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING)
-          {
-            tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName) * tmpCP.splittingFactor;
-          }
-          else
-          {
+            // Get the value of the RUM
+            tmpTZ.priceModel = tmpRUMMapEntry.PriceModel;
+            tmpCP.rumName = tmpRUMMapEntry.RUM;
             tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
-          }
 
-          // get the rating type
-          switch (tmpRUMMapEntry.RUMType)
-          {
-            case 1:
-              {
+            tmpCP.resource = tmpRUMMapEntry.Resource;
+            tmpCP.resCounter = tmpRUMMapEntry.ResourceCounter;
+            tmpCP.ratingType = tmpRUMMapEntry.RUMType;
+
+          // Fill the RUM value
+            // get the rating type
+            switch (tmpRUMMapEntry.RUMType) {
+              case 1: {
                 tmpCP.ratingTypeDesc = "FLAT";
                 break;
               }
-            case 2:
-              {
+              case 2: {
                 // Tiered Rating
                 tmpCP.ratingTypeDesc = "TIERED";
                 break;
               }
-            case 3:
-              {
+              case 3: {
                 tmpCP.ratingTypeDesc = "THRESHOLD";
                 break;
               }
-            case 4:
-              {
+              case 4: {
                 // Event Rating
                 tmpCP.ratingTypeDesc = "EVENT";
                 break;
               }
-          }
+            }
 
-          // Add to the list of processed CPs
-          tmpCPList.add(tmpCP);
-        }
-        else
-        {
-          // ************************ 1:many case ******************************
-          for (PMIndex = 0 ; PMIndex < tmpRUMMap.size() ; PMIndex++)
-          {
-            tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
+            // Add to the list of processed CPs
+            tmpCPList.add(tmpCP);
+          } else {
+            // ************************ 1:many case ******************************
+            for (PMIndex = 0; PMIndex < tmpRUMMap.size(); PMIndex++) {
+              tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
 
             // Copy the CP over - we do this for each model in the group
-            // as we will be performing rating on each of them
-            // Note that we create a new list of cloned charge packets, and
-            // don't try to re-use the original ones. This saves a loop of
-            // preparation and then rating. I think that it's quicker this
-            // way, but there's the potential to do some timing/tuning here
-            Replace = true;
-            tmpCPNew = tmpCP.Clone();
-            tmpCPNew.priceGroup = PriceGroup;
+              // as we will be performing rating on each of them
+              // Note that we create a new list of cloned charge packets, and
+              // don't try to re-use the original ones. This saves a loop of
+              // preparation and then rating. I think that it's quicker this
+              // way, but there's the potential to do some timing/tuning here
+              replace = true;
+              tmpCPNew = tmpCP.Clone();
 
-            // Get the value of the RUM
-            tmpCPNew.priceModel  = tmpRUMMapEntry.PriceModel;
-            tmpCPNew.rumName     = tmpRUMMapEntry.RUM;
-            tmpCPNew.resource    = tmpRUMMapEntry.Resource;
-            tmpCPNew.resCounter  = tmpRUMMapEntry.ResourceCounter;
-            tmpCPNew.ratingType  = tmpRUMMapEntry.RUMType;
+              // Get the value of the RUM
+              tmpCPNew.rumName = tmpRUMMapEntry.RUM;
+              tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
+              tmpCPNew.resource = tmpRUMMapEntry.Resource;
+              tmpCPNew.resCounter = tmpRUMMapEntry.ResourceCounter;
+              tmpCPNew.ratingType = tmpRUMMapEntry.RUMType;
 
-            // deal with the time splitting flag
-            if (tmpCP.timeSplitting == AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING)
-            {
-              tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName) * tmpCP.splittingFactor;
-            }
-            else
-            {
-              tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
-            }
-
-            // get the rating type
-            switch (tmpRUMMapEntry.RUMType)
-            {
-              case 1:
-                {
+              // get the rating type
+              switch (tmpRUMMapEntry.RUMType) {
+                case 1: {
                   tmpCPNew.ratingTypeDesc = "FLAT";
                   break;
                 }
-              case 2:
-                {
+                case 2: {
                   // Tiered Rating
                   tmpCPNew.ratingTypeDesc = "TIERED";
                   break;
                 }
-              case 3:
-                {
+                case 3: {
                   tmpCPNew.ratingTypeDesc = "THRESHOLD";
                   break;
                 }
-              case 4:
-                {
+                case 4: {
                   // Event Rating
                   tmpCPNew.ratingTypeDesc = "EVENT";
                   break;
                 }
+              }
             }
-          }
 
-          tmpCPList.add(tmpCPNew);
+            tmpCPList.add(tmpCPNew);
+          }
         }
-      }
-      else
-      {
+      } else {
         // skip the packet
         tmpCPList.add(tmpCP);
       }
     }
 
     // replace the list of unprepared packets with the prepared ones
-    if (Replace)
-    {
+    if (replace) {
       CurrentRecord.replaceChargePackets(tmpCPList);
     }
 

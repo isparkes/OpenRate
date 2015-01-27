@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.process;
 
 import OpenRate.CommonConfig;
@@ -69,15 +68,17 @@ import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
 /**
- * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Rate_Calculation'>click here</a> to go to wiki page.
+ * Please
+ * <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Rate_Calculation'>click
+ * here</a> to go to wiki page.
  * <br>
  * <p>
- * This class provides the abstract base for a rating plug in. A raw rate
- * object is retrieved from the RateCache object, and this class provides the
+ * This class provides the abstract base for a rating plug in. A raw rate object
+ * is retrieved from the RateCache object, and this class provides the
  * primitives required for performing rating.
  */
-public abstract class AbstractRateCalc extends AbstractPlugIn
-{
+public abstract class AbstractRateCalc extends AbstractPlugIn {
+
   // This is the object will be using the find the cache manager
   private ICacheManager CMR = null;
 
@@ -87,49 +88,44 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Initialise the module. Called during pipeline creation to initialise:
-  *  - Configuration properties that are defined in the properties file.
-  *  - The references to any cache objects that are used in the processing
-  *  - The symbolic name of the module
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The name of this module in the pipeline
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation to initialise: -
+   * Configuration properties that are defined in the properties file. - The
+   * references to any cache objects that are used in the processing - The
+   * symbolic name of the module
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The name of this module in the pipeline
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String CacheObjectName;
 
     // Do the inherited work, e.g. setting the symbolic name etc
-    super.init(PipelineName,ModuleName);
+    super.init(PipelineName, ModuleName);
 
     // Get the cache object reference
     CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(PipelineName,
-                                                           ModuleName,
-                                                           "DataCache");
+            ModuleName,
+            "DataCache");
     CMR = CacheFactory.getGlobalManager(CacheObjectName);
 
-    if (CMR == null)
-    {
+    if (CMR == null) {
       message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Load up the mapping arrays, but only if we are the right type. This
     // allows us to build up ever more complex rating models, matching the
     // right model to the right cache
-    if (CMR.get(CacheObjectName) instanceof RateCache)
-    {
-      RC = (RateCache)CMR.get(CacheObjectName);
+    if (CMR.get(CacheObjectName) instanceof RateCache) {
+      RC = (RateCache) CMR.get(CacheObjectName);
 
-      if (RC == null)
-      {
+      if (RC == null) {
         message = "Could not find cache entry for <" + CacheObjectName + ">";
-        throw new InitializationException(message,getSymbolicName());
+        throw new InitializationException(message, getSymbolicName());
       }
     }
   }
@@ -137,106 +133,104 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * This is called when the synthetic Header record is encountered, and has the
-  * meaning that the stream is starting.
-  */
+  /**
+   * This is called when the synthetic Header record is encountered, and has the
+   * meaning that the stream is starting.
+   *
+   * @return
+   */
   @Override
-  public IRecord procHeader(IRecord r)
-  {
+  public IRecord procHeader(IRecord r) {
     return r;
   }
 
- /**
-  * This is called when the synthetic trailer record is encountered, and has the
-  * meaning that the stream is now finished.
-  */
+  /**
+   * This is called when the synthetic trailer record is encountered, and has
+   * the meaning that the stream is now finished.
+   *
+   * @return
+   */
   @Override
-  public IRecord procTrailer(IRecord r)
-  {
+  public IRecord procTrailer(IRecord r) {
     return r;
   }
 
   // -----------------------------------------------------------------------------
   // ------------------------ Start of utiity functions --------------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. The model processes all of the tiers
-  * up to the value of the RUM, calculating the cost for each tier and summing
-  * the tier costs. This is different to the "threshold" mode where all of the
-  * RUM is used from the tier that is reached.
-  *
-  * @param  priceModel The price model to use
-  * @param  valueToRate the duration that should be rated in seconds
-  * @param CDRDate The date to use for price model version selection
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
-  public double rateCalculateTiered(String priceModel, double valueToRate, long CDRDate)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. The model processes all of the tiers up to
+   * the value of the RUM, calculating the cost for each tier and summing the
+   * tier costs. This is different to the "threshold" mode where all of the RUM
+   * is used from the tier that is reached.
+   *
+   * @param priceModel The price model to use
+   * @param valueToRate The value to rate
+   * @param valueOffset The offset for the start of the tier, if there is one
+   * @param cdrDate The date to use for price model version selection
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
+  public double rateCalculateTiered(String priceModel, double valueToRate, double valueOffset, long cdrDate)
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
     tmpRateModel = RC.getPriceModel(priceModel);
 
     // perform the rating using the selected rate model
-    tmpRatingResult = performRateEvaluationTiered(priceModel, tmpRateModel, valueToRate, CDRDate, false);
+    tmpRatingResult = performRateEvaluationTiered(priceModel, tmpRateModel, valueToRate, valueOffset, cdrDate, false);
 
     // return the rated value
     return tmpRatingResult.RatedValue;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. The model locates the correct tier to
-  * use and then rates all of the RUM according to that tier. This is different
-  * to the "tiered" mode, where the individual contributing tier costs are
-  * calculated and then summed.
-  *
-  * @param  priceModel The price model to use
-  * @param  valueToRate the duration that should be rated in seconds
-  * @param CDRDate The date to use for price model version selection
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
-  public double rateCalculateThreshold(String priceModel, double valueToRate, long CDRDate)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. The model locates the correct tier to use
+   * and then rates all of the RUM according to that tier. This is different to
+   * the "tiered" mode, where the individual contributing tier costs are
+   * calculated and then summed.
+   *
+   * @param priceModel The price model to use
+   * @param valueToRate The value to rate
+   * @param valueOffset The offset for the start of the tier, if there is one
+   * @param CDRDate The date to use for price model version selection
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
+  public double rateCalculateThreshold(String priceModel, double valueToRate, double valueOffset, long CDRDate)
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
     tmpRateModel = RC.getPriceModel(priceModel);
 
     // perform the rating using the selected rate model
-    tmpRatingResult = performRateEvaluationThreshold(priceModel, tmpRateModel, valueToRate, CDRDate, false);
+    tmpRatingResult = performRateEvaluationThreshold(priceModel, tmpRateModel, valueToRate, valueOffset, CDRDate, false);
 
     // return the rated value
     return tmpRatingResult.RatedValue;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. It is a simplified version of the
-  * "tiered" model that just does a multiplication of valueToRate*Rate,
-  * without having to calculate tiers. This of course does not support
-  * singularity rating.
-  *
-  * @param  priceModel The price model to use
-  * @param  valueToRate the duration that should be rated in seconds
-  * @param CDRDate The date to use for price model version selection
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. It is a simplified version of the "tiered"
+   * model that just does a multiplication of valueToRate*Rate, without having
+   * to calculate tiers. This of course does not support singularity rating.
+   *
+   * @param priceModel The price model to use
+   * @param valueToRate the duration that should be rated in seconds
+   * @param CDRDate The date to use for price model version selection
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
   public double rateCalculateFlat(String priceModel, double valueToRate, long CDRDate)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
@@ -249,21 +243,20 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpRatingResult.RatedValue;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. It is a simplified version of the
-  * "tiered" model that just does returns the event price.
-  *
-  * @param  priceModel The price model to use
-  * @param CDRDate The date to use for price model version selection
-  * @param valueToRate The value to rate for
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. It is a simplified version of the "tiered"
+   * model that just does returns the event price.
+   *
+   * @param priceModel The price model to use
+   * @param CDRDate The date to use for price model version selection
+   * @param valueToRate The value to rate for
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
   public double rateCalculateEvent(String priceModel, long valueToRate, long CDRDate)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
@@ -276,37 +269,38 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpRatingResult.RatedValue;
   }
 
- /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the TIERED rating model.
-  *
-  * @param priceModel The price model to use
-  * @param availableBalance The current balance the user has available to them, positive
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
+  /**
+   * This method is used to calculate the number of RUM units (e.g. seconds)
+   * which can be purchased for the available credit. The credit is calculated
+   * from the difference between the current balance and the credit limit. In
+   * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+   * limit will tend to be 0. In post paid scenarios, both values will tend to
+   * be negative.
+   *
+   * The clever thing about this method is the fact that it uses the standard
+   * rating price model in order to arrive at the value, simplifying greatly the
+   * management of pre-paid balances.
+   *
+   * This method uses the TIERED rating model.
+   *
+   * @param priceModel The price model to use
+   * @param availableBalance The current balance the user has available to them,
+   * positive
+   * @param CDRDate The date to rate at
+   * @return The number of RUM units that can be purchased for the available
+   * balance
+   * @throws ProcessingException
+   */
   public double authCalculateTiered(String priceModel, double availableBalance, long CDRDate)
-    throws ProcessingException
-  {
+          throws ProcessingException {
 
-    if(availableBalance <= 0){
-       return 0;
+    if (availableBalance <= 0) {
+      return 0;
     }
 
-      ArrayList<RateMapEntry>  tmpRateModel;
+    ArrayList<RateMapEntry> tmpRateModel;
 
-      double tmpcalculationResult;
+    double tmpcalculationResult;
 
     // Look up the rate model to use
     tmpRateModel = RC.getPriceModel(priceModel);
@@ -317,36 +311,37 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpcalculationResult;
   }
 
- /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the THRESHOLD rating model.
-  *
-  * @param priceModel The price model to use
-  * @param availableBalance The current balance the user has available to them, positive
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
+  /**
+   * This method is used to calculate the number of RUM units (e.g. seconds)
+   * which can be purchased for the available credit. The credit is calculated
+   * from the difference between the current balance and the credit limit. In
+   * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+   * limit will tend to be 0. In post paid scenarios, both values will tend to
+   * be negative.
+   *
+   * The clever thing about this method is the fact that it uses the standard
+   * rating price model in order to arrive at the value, simplifying greatly the
+   * management of pre-paid balances.
+   *
+   * This method uses the THRESHOLD rating model.
+   *
+   * @param priceModel The price model to use
+   * @param availableBalance The current balance the user has available to them,
+   * positive
+   * @param CDRDate The date to rate at
+   * @return The number of RUM units that can be purchased for the available
+   * balance
+   * @throws ProcessingException
+   */
   public double authCalculateThreshold(String priceModel, double availableBalance, long CDRDate)
-    throws ProcessingException
-  {
-    if(availableBalance <= 0){
-       return 0;
+          throws ProcessingException {
+    if (availableBalance <= 0) {
+      return 0;
     }
 
-      ArrayList<RateMapEntry>  tmpRateModel;
+    ArrayList<RateMapEntry> tmpRateModel;
 
-      double tmpcalculationResult;
+    double tmpcalculationResult;
 
     // Look up the rate model to use
     tmpRateModel = RC.getPriceModel(priceModel);
@@ -357,35 +352,36 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpcalculationResult;
   }
 
- /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the FLAT rating model.
-  *
-  * @param priceModel The price model to use
-  * @param availableBalance The current balance the user has available to them, positive
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
+  /**
+   * This method is used to calculate the number of RUM units (e.g. seconds)
+   * which can be purchased for the available credit. The credit is calculated
+   * from the difference between the current balance and the credit limit. In
+   * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+   * limit will tend to be 0. In post paid scenarios, both values will tend to
+   * be negative.
+   *
+   * The clever thing about this method is the fact that it uses the standard
+   * rating price model in order to arrive at the value, simplifying greatly the
+   * management of pre-paid balances.
+   *
+   * This method uses the FLAT rating model.
+   *
+   * @param priceModel The price model to use
+   * @param availableBalance The current balance the user has available to them,
+   * positive
+   * @param CDRDate The date to rate at
+   * @return The number of RUM units that can be purchased for the available
+   * balance
+   * @throws ProcessingException
+   */
   public double authCalculateFlat(String priceModel, double availableBalance, long CDRDate)
-    throws ProcessingException
-  {
-    if(availableBalance <= 0){
-       return 0;
+          throws ProcessingException {
+    if (availableBalance <= 0) {
+      return 0;
     }
 
-      ArrayList<RateMapEntry>  tmpRateModel;
-      double tmpcalculationResult;
+    ArrayList<RateMapEntry> tmpRateModel;
+    double tmpcalculationResult;
 
     // Look up the rate model to use
     tmpRateModel = RC.getPriceModel(priceModel);
@@ -396,33 +392,34 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpcalculationResult;
   }
 
- /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the EVENT rating model.
-  *
-  * @param priceModel The price model to use
-  * @param availableBalance The current balance the user has available to them, positive
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
+  /**
+   * This method is used to calculate the number of RUM units (e.g. seconds)
+   * which can be purchased for the available credit. The credit is calculated
+   * from the difference between the current balance and the credit limit. In
+   * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+   * limit will tend to be 0. In post paid scenarios, both values will tend to
+   * be negative.
+   *
+   * The clever thing about this method is the fact that it uses the standard
+   * rating price model in order to arrive at the value, simplifying greatly the
+   * management of pre-paid balances.
+   *
+   * This method uses the EVENT rating model.
+   *
+   * @param priceModel The price model to use
+   * @param availableBalance The current balance the user has available to them,
+   * positive
+   * @param CDRDate The date to rate at
+   * @return The number of RUM units that can be purchased for the available
+   * balance
+   * @throws ProcessingException
+   */
   public double authCalculateEvent(String priceModel, double availableBalance, long CDRDate)
-    throws ProcessingException
-  {
-    if(availableBalance <= 0){
-       return 0;
+          throws ProcessingException {
+    if (availableBalance <= 0) {
+      return 0;
     }
-    ArrayList<RateMapEntry>  tmpRateModel;
+    ArrayList<RateMapEntry> tmpRateModel;
     double tmpRatingResult;
 
     // Look up the rate model to use
@@ -434,407 +431,368 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpRatingResult;
   }
 
- /**
-  * Performs the rating calculation of the value given at the CDR date
-  * using the given rating model. Tiered splits the value to be rated up into
-  * segments according to the steps defined and rates each step individually,
-  * summing up the charges from all steps.
-  *
-  * TIERED       Calculation
-  * SINGULARITY  Yes
-  * BEAT BASED   Yes
-  * CHARGE BASE  Yes
-  * STEP FROM-TO Yes
-  * RATING       beatCount * factor * beat / chargeBase;
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param valueToRate The value to rate
-  * @param CDRDate The date to rate at
-  * @param BreakDown Produce a charge breakdown or not
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected RatingResult performRateEvaluationTiered(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double valueToRate, long CDRDate, boolean BreakDown) throws ProcessingException
-  {
+  /**
+   * Performs the rating calculation of the value given at the CDR date using
+   * the given rating model. Tiered splits the value to be rated up into
+   * segments according to the steps defined and rates each step individually,
+   * summing up the charges from all steps.
+   *
+   * TIERED Calculation SINGULARITY Yes BEAT BASED Yes CHARGE BASE Yes STEP
+   * FROM-TO Yes RATING beatCount * factor * beat / chargeBase;
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param valueToRate The value to rate
+   * @param valueOffset The offset for the start of the tier, if there is one
+   * @param CDRDate The date to rate at
+   * @param BreakDown Produce a charge breakdown or not
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected RatingResult performRateEvaluationTiered(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double valueToRate, double valueOffset, long CDRDate, boolean BreakDown) throws ProcessingException {
     RatingResult tmpRatingResult = new RatingResult();
-    int     Index = 0;
-    double  ThisTierValue;
-    double  ThisTierRUMUsed;
-    long    ThisTierBeatCount;
-    double  AllTiersValue = 0;
-    RateMapEntry tmpEntry;
-    double  RUMValueUsed = 0;
+    int index = 0;
+    double AllTiersValue = 0;
     RatingBreakdown tmpBreakdown;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
+    // For multi-packet rating, we have to apply the offset
+    double effectiveValueToRate = valueToRate + valueOffset;
+
     // set the default value
+    double rumValueUsed = 0;
+    double rumValueUsedOffset = 0;
+    double roundedRUMUsed = 0;
+
     tmpRatingResult.RatedValue = 0;
     tmpRatingResult.RUMUsed = 0;
 
     // We need to loop through all the tiers until we have finshed
     // consuming all the rateable input
-    while (Index < tmpRateModel.size())
-    {
-      tmpEntry = tmpRateModel.get(Index);
+    while (index < tmpRateModel.size()) {
 
-      ThisTierValue = 0;
+      // Get the root price model
+      RateMapEntry tmpEntry = tmpRateModel.get(index);
 
+      // Get the validty for this cdr
+      tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
+
+      // Validate that we have something we can work with
+      if (tmpEntry == null) {
+        message = "CDR with <" + CDRDate + "> date not rated by model <"
+                + PriceModel + "> because of missing validity coverage";
+        throw new ProcessingException(message, getSymbolicName());
+      }
+
+      // For positive rating cases
+      double thisTierValue;
+      double thisTierRUMUsed = 0;
+      long thisTierBeatCount = 0;
+      double thisTierRoundedRUM = 0;
+
+      // For offset rating cases
+      double thisTierOffsetRUMUsed = 0;
+      long thisTierOffsetBeatCount = 0;
+
+      // ********************* Deal with the rating value **********************
       // See if this event crosses the lower tier threshold
-      if (valueToRate > tmpEntry.getFrom())
-      {
+      if (effectiveValueToRate > tmpEntry.getFrom()) {
         // see if we use all of the tier
-        if (valueToRate >= tmpEntry.getTo())
-        {
-          // Get the validty for this cdr
-          tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-          if (tmpEntry == null)
-          {
-            message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                             PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(message,getSymbolicName());
-          }
-
+        if (effectiveValueToRate >= tmpEntry.getTo()) {
           // Calculate the amount in this tier
-          ThisTierRUMUsed = (tmpEntry.getTo() - tmpEntry.getFrom());
-          RUMValueUsed = RUMValueUsed + ThisTierRUMUsed;
+          thisTierRUMUsed = (tmpEntry.getTo() - tmpEntry.getFrom());
+          rumValueUsed += thisTierRUMUsed;
 
           // Get the number of beats in this tier
-          ThisTierBeatCount = Math.round(ThisTierRUMUsed / tmpEntry.getBeat());
+          thisTierBeatCount = Math.round(thisTierRUMUsed / tmpEntry.getBeat());
 
           // Deal with unfinished beats
-          if ((ThisTierRUMUsed - ThisTierBeatCount*tmpEntry.getBeat()) > 0)
-          {
-            ThisTierBeatCount++;
+          if ((thisTierRUMUsed - thisTierBeatCount * tmpEntry.getBeat()) > 0) {
+            thisTierBeatCount++;
           }
 
           // Deal with the empty beat
-          if (ThisTierBeatCount == 0)
-          {
-            ThisTierBeatCount = 1;
+          if (thisTierBeatCount == 0) {
+            thisTierBeatCount += 1;
           }
-
-          // Calculate the value of the tier
-          ThisTierValue = (ThisTierBeatCount * tmpEntry.getFactor()) * tmpEntry.getBeat() / tmpEntry.getChargeBase();
-
-          // provide the rating breakdown if it is required
-          if (BreakDown)
-          {
-            // initialise the breakdown if necessary
-            if (tmpRatingResult.breakdown == null)
-            {
-              tmpRatingResult.breakdown = new ArrayList<>();
-            }
-
-            // provide the charging breakdown
-            tmpBreakdown = new RatingBreakdown();
-            tmpBreakdown.beat = tmpEntry.getBeat();
-            tmpBreakdown.beatCount = ThisTierBeatCount;
-            tmpBreakdown.factor = tmpEntry.getFactor();
-            tmpBreakdown.chargeBase = tmpEntry.getChargeBase();
-            tmpBreakdown.ratedAmount = ThisTierValue;
-            tmpBreakdown.RUMRated = ThisTierRUMUsed;
-            tmpBreakdown.stepUsed = Index;
-            tmpBreakdown.tierFrom = tmpEntry.getFrom();
-            tmpBreakdown.tierTo = tmpEntry.getTo();
-            tmpBreakdown.validFrom = tmpEntry.getStartTime();
-            tmpBreakdown.validTo = tmpEntry.getEndTime();
-
-            // Store the breakdown
-            tmpRatingResult.breakdown.add(tmpBreakdown);
-          }
-        }
-        else
-        {
-          // Get the validty for this cdr
-          tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-          if (tmpEntry == null)
-          {
-            message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                      PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(message,getSymbolicName());
-          }
-
+        } else {
           // Partial tier to do, and then we have finished
-          ThisTierRUMUsed = (valueToRate - tmpEntry.getFrom());
-          RUMValueUsed = RUMValueUsed + ThisTierRUMUsed;
+          thisTierRUMUsed = (effectiveValueToRate - tmpEntry.getFrom());
+          rumValueUsed += thisTierRUMUsed;
 
-          ThisTierBeatCount = Math.round(ThisTierRUMUsed / tmpEntry.getBeat());
+          thisTierBeatCount = Math.round(thisTierRUMUsed / tmpEntry.getBeat());
 
           // Deal with unfinished beats
-          if ((ThisTierRUMUsed - ThisTierBeatCount*tmpEntry.getBeat()) > 0)
-          {
-            ThisTierBeatCount++;
+          if ((thisTierRUMUsed - thisTierBeatCount * tmpEntry.getBeat()) > 0) {
+            thisTierBeatCount++;
           }
 
           // Deal with the empty beat
-          if (ThisTierBeatCount == 0)
-          {
-            ThisTierBeatCount = 1;
-          }
-
-          ThisTierValue = (ThisTierBeatCount * tmpEntry.getFactor()) * tmpEntry.getBeat() / tmpEntry.getChargeBase();
-
-          // provide the rating breakdown if it is required
-          if (BreakDown)
-          {
-            // initialise the breakdown if necessary
-            if (tmpRatingResult.breakdown == null)
-            {
-              tmpRatingResult.breakdown = new ArrayList<>();
-            }
-
-            // provide the charging breakdown
-            tmpBreakdown = new RatingBreakdown();
-            tmpBreakdown.beat = tmpEntry.getBeat();
-            tmpBreakdown.beatCount = ThisTierBeatCount;
-            tmpBreakdown.factor = tmpEntry.getFactor();
-            tmpBreakdown.chargeBase = tmpEntry.getChargeBase();
-            tmpBreakdown.ratedAmount = ThisTierValue;
-            tmpBreakdown.RUMRated = ThisTierRUMUsed;
-            tmpBreakdown.stepUsed = Index;
-            tmpBreakdown.tierFrom = tmpEntry.getFrom();
-            tmpBreakdown.tierTo = tmpEntry.getTo();
-            tmpBreakdown.validFrom = tmpEntry.getStartTime();
-            tmpBreakdown.validTo = tmpEntry.getEndTime();
-
-            // Store the breakdown
-            tmpRatingResult.breakdown.add(tmpBreakdown);
+          if (thisTierBeatCount == 0) {
+            thisTierBeatCount = 1;
           }
         }
+      }
+
+      // *********************** Deal with the offset ************************
+      if (valueOffset != 0) {
+        // See if this event crosses the lower tier threshold
+        if (valueOffset > tmpEntry.getFrom()) {
+          // see if we use all of the tier
+          if (valueOffset >= tmpEntry.getTo()) {
+            // Calculate the amount in this tier
+            thisTierOffsetRUMUsed = (tmpEntry.getTo() - tmpEntry.getFrom());
+            rumValueUsedOffset += thisTierOffsetRUMUsed;
+
+            // Get the number of beats in this tier
+            thisTierOffsetBeatCount = Math.round(thisTierOffsetRUMUsed / tmpEntry.getBeat());
+
+            // Deal with unfinished beats
+            if ((thisTierOffsetRUMUsed - thisTierOffsetBeatCount * tmpEntry.getBeat()) > 0) {
+              thisTierOffsetBeatCount++;
+            }
+
+            // Deal with the empty beat
+            if (thisTierOffsetBeatCount == 0) {
+              thisTierOffsetBeatCount = 1;
+            }
+          } else {
+            // Partial tier to do, and then we have finished
+            thisTierOffsetRUMUsed = (effectiveValueToRate - tmpEntry.getFrom());
+            rumValueUsedOffset += thisTierOffsetRUMUsed;
+
+            thisTierOffsetBeatCount = Math.round(thisTierOffsetRUMUsed / tmpEntry.getBeat());
+
+            // Deal with unfinished beats
+            if ((thisTierOffsetRUMUsed - thisTierOffsetBeatCount * tmpEntry.getBeat()) > 0) {
+              thisTierOffsetBeatCount++;
+            }
+
+            // Deal with the empty beat
+            if (thisTierOffsetBeatCount == 0) {
+              thisTierOffsetBeatCount = 1;
+            }
+          }
+        }
+      }
+
+      // Now roll up the rating values
+      thisTierRoundedRUM = (thisTierBeatCount - thisTierOffsetBeatCount) * tmpEntry.getBeat();
+      thisTierValue = (thisTierRoundedRUM * tmpEntry.getFactor()) / tmpEntry.getChargeBase();
+      roundedRUMUsed += thisTierRoundedRUM;
+
+      // provide the rating breakdown if it is required
+      if (BreakDown) {
+        // initialise the breakdown if necessary
+        if (tmpRatingResult.breakdown == null) {
+          tmpRatingResult.breakdown = new ArrayList<>();
+        }
+
+        // provide the charging breakdown
+        tmpBreakdown = new RatingBreakdown();
+        tmpBreakdown.beat = tmpEntry.getBeat();
+        tmpBreakdown.beatCount = thisTierBeatCount - thisTierOffsetBeatCount;
+        tmpBreakdown.factor = tmpEntry.getFactor();
+        tmpBreakdown.chargeBase = tmpEntry.getChargeBase();
+        tmpBreakdown.ratedAmount = thisTierValue;
+        tmpBreakdown.RUMRated = thisTierRUMUsed - thisTierOffsetRUMUsed;
+        tmpBreakdown.stepUsed = index;
+        tmpBreakdown.tierFrom = tmpEntry.getFrom();
+        tmpBreakdown.tierTo = tmpEntry.getTo();
+        tmpBreakdown.validFrom = tmpEntry.getStartTime();
+        tmpBreakdown.validTo = tmpEntry.getEndTime();
+
+        // Store the breakdown
+        tmpRatingResult.breakdown.add(tmpBreakdown);
       }
 
       // Increment the tier counter
-      Index++;
+      index++;
 
       // Accumulate the tier value
-      AllTiersValue = AllTiersValue + ThisTierValue;
+      AllTiersValue += thisTierValue;
     }
 
-    // return OK
+    // Roll up the final values 
     tmpRatingResult.RatedValue = AllTiersValue;
-    tmpRatingResult.RUMUsed = RUMValueUsed;
+    tmpRatingResult.RUMUsed = rumValueUsed - rumValueUsedOffset;
+    tmpRatingResult.RUMUsedRounded = roundedRUMUsed;
+
+    // return OK
     return tmpRatingResult;
   }
 
- /**
-  * Performs the rating calculation of the value given at the CDR date
-  * using the given rating model. Threshold calculation locates the step
-  * that covers the maximum value to be rated and calculates the whole value
-  * to be rated using that step.
-  *
-  * THRESHOLD    Calculation
-  * SINGULARITY  Yes
-  * BEAT BASED   Yes
-  * CHARGE BASE  Yes
-  * STEP FROM-TO Yes
-  * RATING       beatCount * factor * beat / chargeBase;
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param valueToRate The value to rate
-  * @param CDRDate The date to rate at
-  * @param BreakDown Produce a charge breakdown or not
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected RatingResult performRateEvaluationThreshold(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double valueToRate, long CDRDate, boolean BreakDown) throws ProcessingException
-  {
-    int     Index = 0;
-    double  ThisTierValue;
-    double  ThisTierRUMUsed;
-    long    ThisTierBeatCount;
-    double  AllTiersValue = 0;
-    RateMapEntry tmpEntry;
-    double  RUMValueUsed = 0;
+  /**
+   * Performs the rating calculation of the value given at the CDR date using
+   * the given rating model. Threshold calculation locates the step that covers
+   * the maximum value to be rated and calculates the whole value to be rated
+   * using that step.
+   *
+   * THRESHOLD Calculation SINGULARITY Yes BEAT BASED Yes CHARGE BASE Yes STEP
+   * FROM-TO Yes RATING beatCount * factor * beat / chargeBase;
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param valueToRate The value to rate
+   * @param valueOffset The offset for the start of the tier, if there is one
+   * @param CDRDate The date to rate at
+   * @param BreakDown Produce a charge breakdown or not
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected RatingResult performRateEvaluationThreshold(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double valueToRate, double valueOffset, long CDRDate, boolean BreakDown) throws ProcessingException {
+    int index = 0;
+    double AllTiersValue = 0;
     RatingResult tmpRatingResult = new RatingResult();
     RatingBreakdown tmpBreakdown;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
+
+    // For multi-packet rating, we have to apply the offset
+    double effectiveValueToRate = valueToRate + valueOffset;
+
+    // set the default value
+    double rumValueUsed = 0;
+    double rumValueUsedOffset = 0;
 
     // We need to loop through all the tiers until we have finshed
     // consuming all the rateable input
-    while (Index < tmpRateModel.size())
-    {
-      tmpEntry = tmpRateModel.get(Index);
-      Index++;
-      ThisTierValue = 0;
+    while (index < tmpRateModel.size()) {
 
+      // Get the root price model
+      RateMapEntry tmpEntry = tmpRateModel.get(index);
+
+      // Get the validty for this cdr
+      tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
+
+      // Validate that we have something we can work with
+      if (tmpEntry == null) {
+        message = "CDR with <" + CDRDate + "> date not rated by model <"
+                + PriceModel + "> because of missing validity coverage";
+        throw new ProcessingException(message, getSymbolicName());
+      }
+
+      // For positive rating cases
+      double thisTierValue;
+      double thisTierRUMUsed = 0;
+      long thisTierBeatCount = 0;
+
+      // ********************* Deal with the rating value **********************
       // See if this event crosses the lower tier threshold
-      if (valueToRate > tmpEntry.getFrom())
-      {
+      if (effectiveValueToRate > tmpEntry.getFrom()) {
         // see if we are in this tier
-        if (valueToRate < tmpEntry.getTo())
-        {
-          // Get the validty for this cdr
-          tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-          if (tmpEntry == null)
-          {
-            message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                      PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(message,getSymbolicName());
-          }
-
-          // Calculate the amount in this tier
-          ThisTierRUMUsed = valueToRate;
-          RUMValueUsed = RUMValueUsed + ThisTierRUMUsed;
+        if (effectiveValueToRate <= tmpEntry.getTo()) {
+          // Calculate the amount in this tier - we use the offset to locate the
+          // tier to use, but rate the original amount
+          thisTierRUMUsed = valueToRate;
+          rumValueUsed += thisTierRUMUsed;
 
           // Get the number of beats in this tier
-          ThisTierBeatCount = Math.round(ThisTierRUMUsed / tmpEntry.getBeat());
+          thisTierBeatCount = Math.round(thisTierRUMUsed / tmpEntry.getBeat());
 
           // Deal with unfinished beats
-          if ((ThisTierRUMUsed - ThisTierBeatCount*tmpEntry.getBeat()) > 0)
-          {
-            ThisTierBeatCount++;
+          if ((thisTierRUMUsed - thisTierBeatCount * tmpEntry.getBeat()) > 0) {
+            thisTierBeatCount++;
           }
 
           // Deal with the empty beat
-          if (ThisTierBeatCount == 0)
-          {
-            ThisTierBeatCount = 1;
+          if (thisTierBeatCount == 0) {
+            thisTierBeatCount = 1;
           }
-
-          // Calculate the value of the tier
-          ThisTierValue = (ThisTierBeatCount * tmpEntry.getFactor()) * tmpEntry.getBeat() / tmpEntry.getChargeBase();
-
-          // provide the rating breakdown if it is required
-          if (BreakDown)
-          {
-            // initialise the breakdown if necessary
-            if (tmpRatingResult.breakdown == null)
-            {
-              tmpRatingResult.breakdown = new ArrayList<>();
-            }
-
-            // provide the charging breakdown
-            tmpBreakdown = new RatingBreakdown();
-            tmpBreakdown.beat = tmpEntry.getBeat();
-            tmpBreakdown.beatCount = ThisTierBeatCount;
-            tmpBreakdown.factor = tmpEntry.getFactor();
-            tmpBreakdown.chargeBase = tmpEntry.getChargeBase();
-            tmpBreakdown.ratedAmount = ThisTierValue;
-            tmpBreakdown.RUMRated = ThisTierRUMUsed;
-            tmpBreakdown.stepUsed = Index;
-            tmpBreakdown.tierFrom = tmpEntry.getFrom();
-            tmpBreakdown.tierTo = tmpEntry.getTo();
-            tmpBreakdown.validFrom = tmpEntry.getStartTime();
-            tmpBreakdown.validTo = tmpEntry.getEndTime();
-
-            // Store the breakdown
-            tmpRatingResult.breakdown.add(tmpBreakdown);
-          }
-        }
-        else if (tmpEntry.getFrom() == tmpEntry.getTo())
-        {
+        } else if (tmpEntry.getFrom() == tmpEntry.getTo()) {
           // Singularity rate
-
-          // Get the validty for this cdr
-          tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-          if (tmpEntry == null)
-          {
-            message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                      PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(message,getSymbolicName());
-          }
-
           // Get the number of beats in this tier
-          ThisTierBeatCount = 1;
-
-          // Calculate the value of the tier
-          ThisTierValue = (ThisTierBeatCount * tmpEntry.getFactor()) * tmpEntry.getBeat() / tmpEntry.getChargeBase();
-
-          // provide the rating breakdown if it is required
-          if (BreakDown)
-          {
-            // initialise the breakdown if necessary
-            if (tmpRatingResult.breakdown == null)
-            {
-              tmpRatingResult.breakdown = new ArrayList<>();
-            }
-
-            // provide the charging breakdown
-            tmpBreakdown = new RatingBreakdown();
-            tmpBreakdown.beat = tmpEntry.getBeat();
-            tmpBreakdown.beatCount = ThisTierBeatCount;
-            tmpBreakdown.factor = tmpEntry.getFactor();
-            tmpBreakdown.chargeBase = tmpEntry.getChargeBase();
-            tmpBreakdown.ratedAmount = ThisTierValue;
-            tmpBreakdown.RUMRated = 1;
-            tmpBreakdown.stepUsed = Index;
-            tmpBreakdown.tierFrom = tmpEntry.getFrom();
-            tmpBreakdown.tierTo = tmpEntry.getTo();
-            tmpBreakdown.validFrom = tmpEntry.getStartTime();
-            tmpBreakdown.validTo = tmpEntry.getEndTime();
-
-            // Store the breakdown
-            tmpRatingResult.breakdown.add(tmpBreakdown);
-          }
+          thisTierBeatCount = 1;
         }
       }
 
+      // Calculate the value of the tier
+      thisTierValue = (thisTierBeatCount * tmpEntry.getFactor()) * tmpEntry.getBeat() / tmpEntry.getChargeBase();
+
+      // provide the rating breakdown if it is required
+      if (BreakDown) {
+        // initialise the breakdown if necessary
+        if (tmpRatingResult.breakdown == null) {
+          tmpRatingResult.breakdown = new ArrayList<>();
+        }
+
+        // provide the charging breakdown
+        tmpBreakdown = new RatingBreakdown();
+        tmpBreakdown.beat = tmpEntry.getBeat();
+        tmpBreakdown.beatCount = thisTierBeatCount;
+        tmpBreakdown.factor = tmpEntry.getFactor();
+        tmpBreakdown.chargeBase = tmpEntry.getChargeBase();
+        tmpBreakdown.ratedAmount = thisTierValue;
+        tmpBreakdown.RUMRated = thisTierRUMUsed;
+        tmpBreakdown.stepUsed = index;
+        tmpBreakdown.tierFrom = tmpEntry.getFrom();
+        tmpBreakdown.tierTo = tmpEntry.getTo();
+        tmpBreakdown.validFrom = tmpEntry.getStartTime();
+        tmpBreakdown.validTo = tmpEntry.getEndTime();
+
+        // Store the breakdown
+        tmpRatingResult.breakdown.add(tmpBreakdown);
+      }
+
+      // Increment the tier counter
+      index++;
+
       // Accumulate the tier value
-      AllTiersValue = AllTiersValue + ThisTierValue;
+      AllTiersValue += thisTierValue;
     }
 
-    // return OK
+    // Roll up the final values 
     tmpRatingResult.RatedValue = AllTiersValue;
-    tmpRatingResult.RUMUsed = RUMValueUsed;
+    tmpRatingResult.RUMUsed = rumValueUsed - rumValueUsedOffset;
+
+    // return OK
     return tmpRatingResult;
   }
 
- /**
-  * Performs the rating calculation of the value given at the CDR date
-  * using the given rating model. Does *NOT* take into account the step FROM
-  * and TO values.
-  *
-  * FLAT         Calculation
-  * SINGULARITY  No
-  * BEAT BASED   No
-  * CHARGE BASE  Yes
-  * STEP FROM-TO No
-  * RATING       valueToRate * factor / chargeBase
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param valueToRate The value to rate
-  * @param CDRDate The date to rate at
-  * @param BreakDown Produce a charge breakdown or not
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected RatingResult performRateEvaluationFlat(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double valueToRate, long CDRDate, boolean BreakDown) throws ProcessingException
-  {
-    double  AllTiersValue;
+  /**
+   * Performs the rating calculation of the value given at the CDR date using
+   * the given rating model. Does *NOT* take into account the step FROM and TO
+   * values.
+   *
+   * FLAT Calculation SINGULARITY No BEAT BASED No CHARGE BASE Yes STEP FROM-TO
+   * No RATING valueToRate * factor / chargeBase
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param valueToRate The value to rate
+   * @param CDRDate The date to rate at
+   * @param BreakDown Produce a charge breakdown or not
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected RatingResult performRateEvaluationFlat(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double valueToRate, long CDRDate, boolean BreakDown) throws ProcessingException {
+    double AllTiersValue;
     RateMapEntry tmpEntry;
-    double  RUMValueUsed;
+    double RUMValueUsed;
     RatingResult tmpRatingResult = new RatingResult();
     RatingBreakdown tmpBreakdown;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
     // Get just the first tier
     tmpEntry = tmpRateModel.get(0);
 
     // Get the validty for this cdr
-    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-    if (tmpEntry == null)
-    {
-      message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                PriceModel + "> because of missing validity coverage";
-      throw new ProcessingException(message,getSymbolicName());
+    tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
+    if (tmpEntry == null) {
+      message = "CDR with <" + CDRDate + "> date not rated by model <"
+              + PriceModel + "> because of missing validity coverage";
+      throw new ProcessingException(message, getSymbolicName());
     }
 
     // Calculate the value of the entry - there should be no others
@@ -842,11 +800,9 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     RUMValueUsed = valueToRate;
 
     // provide the rating breakdown if it is required
-    if (BreakDown)
-    {
+    if (BreakDown) {
       // initialise the breakdown if necessary
-      if (tmpRatingResult.breakdown == null)
-      {
+      if (tmpRatingResult.breakdown == null) {
         tmpRatingResult.breakdown = new ArrayList<>();
       }
 
@@ -874,41 +830,35 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpRatingResult;
   }
 
- /**
-  * Performs the rating calculation of the value given at the CDR date
-  * using the given rating model. It does take into account the step FROM
-  * and TO values. Step from and step to values are integers in this case.
-  *
-  * EVENT        Calculation
-  * SINGULARITY  No
-  * BEAT BASED   No
-  * CHARGE BASE  No
-  * STEP FROM-TO Yes
-  * RATING       valueToRate * factor
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param valueToRate The value to rate for
-  * @param CDRDate The date to rate at
-  * @param BreakDown Produce a charge breakdown or not
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected RatingResult performRateEvaluationEvent(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, long valueToRate, long CDRDate, boolean BreakDown) throws ProcessingException
-  {
+  /**
+   * Performs the rating calculation of the value given at the CDR date using
+   * the given rating model. It does take into account the step FROM and TO
+   * values. Step from and step to values are integers in this case.
+   *
+   * EVENT Calculation SINGULARITY No BEAT BASED No CHARGE BASE No STEP FROM-TO
+   * Yes RATING valueToRate * factor
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param valueToRate The value to rate for
+   * @param CDRDate The date to rate at
+   * @param BreakDown Produce a charge breakdown or not
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected RatingResult performRateEvaluationEvent(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, long valueToRate, long CDRDate, boolean BreakDown) throws ProcessingException {
     RatingResult tmpRatingResult = new RatingResult();
-    int     Index = 0;
-    double  ThisTierValue;
-    double  ThisTierRUMUsed;
-    double  AllTiersValue = 0;
+    int Index = 0;
+    double ThisTierValue;
+    double ThisTierRUMUsed;
+    double AllTiersValue = 0;
     RateMapEntry tmpEntry;
-    double  RUMValueUsed = 0;
+    double RUMValueUsed = 0;
     RatingBreakdown tmpBreakdown;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
     // set the default value
@@ -917,47 +867,40 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
 
     // We need to loop through all the tiers until we have finshed
     // consuming all the rateable input
-    while (Index < tmpRateModel.size())
-    {
+    while (Index < tmpRateModel.size()) {
       tmpEntry = tmpRateModel.get(Index);
 
       ThisTierValue = 0;
 
       // See if this event crosses the lower tier threshold
-      if (valueToRate > tmpEntry.getFrom())
-      {
+      if (valueToRate > tmpEntry.getFrom()) {
         // see if we use all of the tier
-        if (valueToRate >= tmpEntry.getTo())
-        {
+        if (valueToRate >= tmpEntry.getTo()) {
           // Get the validty for this cdr
-          tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-          if (tmpEntry == null)
-          {
-            message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                             PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(message,getSymbolicName());
+          tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
+          if (tmpEntry == null) {
+            message = "CDR with <" + CDRDate + "> date not rated by model <"
+                    + PriceModel + "> because of missing validity coverage";
+            throw new ProcessingException(message, getSymbolicName());
           }
 
           // Calculate the amount in this tier
           ThisTierRUMUsed = (tmpEntry.getTo() - tmpEntry.getFrom());
 
           // Deal with the case that we have the empty beat
-          if (ThisTierRUMUsed == 0)
-          {
+          if (ThisTierRUMUsed == 0) {
             ThisTierRUMUsed++;
           }
 
-          RUMValueUsed = RUMValueUsed + ThisTierRUMUsed;
+          RUMValueUsed += ThisTierRUMUsed;
 
           // Calculate the value of the tier
           ThisTierValue = ThisTierRUMUsed * tmpEntry.getFactor();
 
           // provide the rating breakdown if it is required
-          if (BreakDown)
-          {
+          if (BreakDown) {
             // initialise the breakdown if necessary
-            if (tmpRatingResult.breakdown == null)
-            {
+            if (tmpRatingResult.breakdown == null) {
               tmpRatingResult.breakdown = new ArrayList<>();
             }
 
@@ -978,37 +921,31 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
             // Store the breakdown
             tmpRatingResult.breakdown.add(tmpBreakdown);
           }
-        }
-        else
-        {
+        } else {
           // Get the validty for this cdr
-          tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-          if (tmpEntry == null)
-          {
-            message = "CDR with <" + CDRDate + "> date not rated by model <" +
-                      PriceModel + "> because of missing validity coverage";
-            throw new ProcessingException(message,getSymbolicName());
+          tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
+          if (tmpEntry == null) {
+            message = "CDR with <" + CDRDate + "> date not rated by model <"
+                    + PriceModel + "> because of missing validity coverage";
+            throw new ProcessingException(message, getSymbolicName());
           }
 
           // Partial tier to do, and then we have finished
           ThisTierRUMUsed = (valueToRate - tmpEntry.getFrom());
 
           // Deal with the case that we have the empty beat
-          if (ThisTierRUMUsed == 0)
-          {
+          if (ThisTierRUMUsed == 0) {
             ThisTierRUMUsed++;
           }
 
-          RUMValueUsed = RUMValueUsed + ThisTierRUMUsed;
+          RUMValueUsed += ThisTierRUMUsed;
 
-          ThisTierValue = ThisTierRUMUsed  * tmpEntry.getFactor();
+          ThisTierValue = ThisTierRUMUsed * tmpEntry.getFactor();
 
           // provide the rating breakdown if it is required
-          if (BreakDown)
-          {
+          if (BreakDown) {
             // initialise the breakdown if necessary
-            if (tmpRatingResult.breakdown == null)
-            {
+            if (tmpRatingResult.breakdown == null) {
               tmpRatingResult.breakdown = new ArrayList<>();
             }
 
@@ -1036,7 +973,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
       Index++;
 
       // Accumulate the tier value
-      AllTiersValue = AllTiersValue + ThisTierValue;
+      AllTiersValue += ThisTierValue;
     }
 
     // return OK
@@ -1045,54 +982,49 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpRatingResult;
   }
 
- /**
-  * Performs the authorisation calculation of the value given at the CDR date.
-  * Evaluates all the tiers in the model one at a time, and accumulates the
-  * contribution from the tier into the final result.
-  *
-  * Matches the rating in performRateEvaluationTiered
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param availableBalance The balance available
-  * @param CDRDate The date to rate at
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected double performAuthEvaluationTiered(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
-  {
-    int     Index = 0;
-    double  ThisTierValue;
-    double  ThisTierRUMUsed;
-    long    ThisTierBeatCount;
-    double  AllTiersValue = 0;
+  /**
+   * Performs the authorisation calculation of the value given at the CDR date.
+   * Evaluates all the tiers in the model one at a time, and accumulates the
+   * contribution from the tier into the final result.
+   *
+   * Matches the rating in performRateEvaluationTiered
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param availableBalance The balance available
+   * @param CDRDate The date to rate at
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected double performAuthEvaluationTiered(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException {
+    int Index = 0;
+    double ThisTierValue;
+    double ThisTierRUMUsed;
+    long ThisTierBeatCount;
+    double AllTiersValue = 0;
     RateMapEntry tmpEntry;
-    double  RUMValueUsed = 0;
+    double RUMValueUsed = 0;
     boolean breakFlag = false;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
     // We need to loop through all the tiers until we have finished
     // consuming all the rateable input
-    while (Index < tmpRateModel.size())
-    {
+    while (Index < tmpRateModel.size()) {
       tmpEntry = tmpRateModel.get(Index);
-      tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
+      tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
 
-      if (tmpEntry == null)
-      {
-        message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
-            PriceModel + ">";
-        throw new ProcessingException(message,getSymbolicName());
+      if (tmpEntry == null) {
+        message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <"
+                + PriceModel + ">";
+        throw new ProcessingException(message, getSymbolicName());
       }
 
       // Deal with the case that we have a tier without cost
-      if (tmpEntry.getFactor() == 0)
-      {
+      if (tmpEntry.getFactor() == 0) {
         // we just skip over - nothing we can do with 0 priced tiers
         continue;
       }
@@ -1104,33 +1036,30 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
       ThisTierBeatCount = Math.round(ThisTierRUMUsed / tmpEntry.getBeat());
 
       // Deal with unfinished beats
-      if ((ThisTierRUMUsed - ThisTierBeatCount*tmpEntry.getBeat()) > 0)
-      {
+      if ((ThisTierRUMUsed - ThisTierBeatCount * tmpEntry.getBeat()) > 0) {
         ThisTierBeatCount++;
       }
 
       // Deal with the empty beat
-      if (ThisTierBeatCount == 0)
-      {
+      if (ThisTierBeatCount == 0) {
         ThisTierBeatCount = 1;
       }
 
       // Calculate the value of the tier
       ThisTierValue = (ThisTierBeatCount * tmpEntry.getFactor()) * tmpEntry.getBeat() / tmpEntry.getChargeBase();
 
-      if(AllTiersValue + ThisTierValue > availableBalance)
-      {
+      if (AllTiersValue + ThisTierValue > availableBalance) {
         ThisTierValue = availableBalance - AllTiersValue;
-        ThisTierBeatCount = Math.round( (ThisTierValue * tmpEntry.getChargeBase()) / (tmpEntry.getFactor() * tmpEntry.getBeat()));
+        ThisTierBeatCount = Math.round((ThisTierValue * tmpEntry.getChargeBase()) / (tmpEntry.getFactor() * tmpEntry.getBeat()));
         ThisTierRUMUsed = tmpEntry.getBeat() * ThisTierBeatCount;
         breakFlag = true;
       }
 
       // Accumulate the tier value
-      AllTiersValue = AllTiersValue + ThisTierValue;
-      RUMValueUsed = RUMValueUsed + ThisTierRUMUsed;
-      if(breakFlag == true){
-          break;
+      AllTiersValue += ThisTierValue;
+      RUMValueUsed += ThisTierRUMUsed;
+      if (breakFlag == true) {
+        break;
       }
 
       // Increment the tier counter
@@ -1144,93 +1073,88 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return RUMValueUsed;
   }
 
- /**
-  * Performs the authorisation calculation of the value given at the CDR date.
-  * We have to perform an evaluation for each of the threshold steps in the
-  * model and find the lowest non-zero result. When the authorisation runs out,
-  * the same process can happen again with less available balance. Not very
-  * beautiful, but functional given the non-linear nature of the model.
-  *
-  * Matches the rating in performRateEvaluationThreshold
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param availableBalance The balance available
-  * @param CDRDate The date to rate at
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected double performAuthEvaluationThreshold(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
-  {
-    int     Index = 0;
-    double  ThisTierRUMUsed;
-    long    ThisTierBeatCount;
+  /**
+   * Performs the authorisation calculation of the value given at the CDR date.
+   * We have to perform an evaluation for each of the threshold steps in the
+   * model and find the lowest non-zero result. When the authorisation runs out,
+   * the same process can happen again with less available balance. Not very
+   * beautiful, but functional given the non-linear nature of the model.
+   *
+   * Matches the rating in performRateEvaluationThreshold
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param availableBalance The balance available
+   * @param CDRDate The date to rate at
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected double performAuthEvaluationThreshold(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException {
+    int Index = 0;
+    double ThisTierRUMUsed;
+    long ThisTierBeatCount;
     RateMapEntry tmpEntry;
     double RUMValueUsed = 0;
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
     // We need to loop through all the tiers and evaluate them, then return the
     // shortest.
-    while (Index < tmpRateModel.size())
-    {
+    while (Index < tmpRateModel.size()) {
       tmpEntry = tmpRateModel.get(Index);
       Index++;
-      tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
+      tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
 
-      ThisTierBeatCount = Math.round( (availableBalance * tmpEntry.getChargeBase()) / (tmpEntry.getFactor() * tmpEntry.getBeat()));
+      ThisTierBeatCount = Math.round((availableBalance * tmpEntry.getChargeBase()) / (tmpEntry.getFactor() * tmpEntry.getBeat()));
       ThisTierRUMUsed = tmpEntry.getBeat() * ThisTierBeatCount;
 
       // is this a better non-zero result
-      if( RUMValueUsed == 0){
-          RUMValueUsed = ThisTierRUMUsed;
-      }else if(RUMValueUsed > 0 && ThisTierRUMUsed > 0
+      if (RUMValueUsed == 0) {
+        RUMValueUsed = ThisTierRUMUsed;
+      } else if (RUMValueUsed > 0 && ThisTierRUMUsed > 0
               && RUMValueUsed > ThisTierRUMUsed
-              && ThisTierRUMUsed < tmpEntry.getTo()){
+              && ThisTierRUMUsed < tmpEntry.getTo()) {
 
-              RUMValueUsed = ThisTierRUMUsed;
+        RUMValueUsed = ThisTierRUMUsed;
       }
     }
 
     return RUMValueUsed;
   }
 
- /**
-  * Performs the authorisation calculation of the value given at the CDR date.
-  *
-  * Matches the rating in performRateEvaluationFlat
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param availableBalance The balance available
-  * @param CDRDate The date to rate at
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected double performAuthEvaluationFlat(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
-  {
+  /**
+   * Performs the authorisation calculation of the value given at the CDR date.
+   *
+   * Matches the rating in performRateEvaluationFlat
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param availableBalance The balance available
+   * @param CDRDate The date to rate at
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected double performAuthEvaluationFlat(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException {
     RateMapEntry tmpEntry;
     double tmpcalculationResult;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
-    // Get just the first tier
-    tmpEntry = tmpRateModel.get(0);
-
     // Get the validty for this cdr
-    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-    if (tmpEntry == null || tmpEntry.getFactor() == 0 || tmpEntry.getChargeBase() == 0)
-    {
-      message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
-                PriceModel + ">, factor <"+tmpEntry.getFactor()+"and charge base <"+tmpEntry.getChargeBase()+">";
-      throw new ProcessingException(message,getSymbolicName());
+    tmpEntry = getRateModelEntryForTime(tmpRateModel.get(0), CDRDate);
+    if (tmpEntry == null) {
+      message = "Rate Model entry not found for CDR with <" + CDRDate + "> date, model <"
+              + PriceModel + ">";
+      throw new ProcessingException(message, getSymbolicName());
+    } else if (tmpEntry.getFactor() == 0 || tmpEntry.getChargeBase() == 0) {
+      message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <"
+              + PriceModel + ">, factor <" + tmpEntry.getFactor() + "and charge base <" + tmpEntry.getChargeBase() + ">";
+      throw new ProcessingException(message, getSymbolicName());
     }
 
     // Calculate the value of the entry - there should be no others
@@ -1239,39 +1163,36 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpcalculationResult;
   }
 
- /**
-  * Performs the authorisation calculation of the value given at the CDR date.
-  *
-  * Matches the rating in performRateEvaluationEvent
-  *
-  * @param PriceModel The price model name we are using
-  * @param tmpRateModel The price model definition
-  * @param availableBalance The balance available
-  * @param CDRDate The date to rate at
-  * @return The rating result
-  * @throws OpenRate.exception.ProcessingException
-  */
-  protected double performAuthEvaluationEvent(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException
-  {
+  /**
+   * Performs the authorisation calculation of the value given at the CDR date.
+   *
+   * Matches the rating in performRateEvaluationEvent
+   *
+   * @param PriceModel The price model name we are using
+   * @param tmpRateModel The price model definition
+   * @param availableBalance The balance available
+   * @param CDRDate The date to rate at
+   * @return The rating result
+   * @throws OpenRate.exception.ProcessingException
+   */
+  protected double performAuthEvaluationEvent(String PriceModel, ArrayList<RateMapEntry> tmpRateModel, double availableBalance, long CDRDate) throws ProcessingException {
     double tmpcalculationResult;
     RateMapEntry tmpEntry;
 
     // check that we have something to work on
-    if (tmpRateModel == null)
-    {
-      throw new ProcessingException("Price Model <" + PriceModel + "> not defined",getSymbolicName());
+    if (tmpRateModel == null) {
+      throw new ProcessingException("Price Model <" + PriceModel + "> not defined", getSymbolicName());
     }
 
     // Get just the first tier
     tmpEntry = tmpRateModel.get(0);
 
     // Get the validity for this cdr
-    tmpEntry = getRateModelEntryForTime(tmpEntry,CDRDate);
-    if (tmpEntry == null)
-    {
-      message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <" +
-                PriceModel + ">";
-      throw new ProcessingException(message,getSymbolicName());
+    tmpEntry = getRateModelEntryForTime(tmpEntry, CDRDate);
+    if (tmpEntry == null) {
+      message = "Rate Model entry not valid for CDR with <" + CDRDate + "> date, model <"
+              + PriceModel + ">";
+      throw new ProcessingException(message, getSymbolicName());
     }
 
     tmpcalculationResult = availableBalance / tmpEntry.getFactor();
@@ -1279,53 +1200,46 @@ public abstract class AbstractRateCalc extends AbstractPlugIn
     return tmpcalculationResult;
   }
 
- /**
-  * Runs through the validity periods in a rate map, and returns the one
-  * valid for a given date, or null if no match
-  *
-  * @param tmpEntry The rate map object to search
-  * @param CDRDate The long UTC date to search for
-  * @return The relevant rate map entry, or null if there was no match at the time
-  */
-  protected RateMapEntry getRateModelEntryForTime(RateMapEntry tmpEntry, long CDRDate)
-  {
+  /**
+   * Runs through the validity periods in a rate map, and returns the one valid
+   * for a given date, or null if no match
+   *
+   * @param tmpEntry The rate map object to search
+   * @param CDRDate The long UTC date to search for
+   * @return The relevant rate map entry, or null if there was no match at the
+   * time
+   */
+  protected RateMapEntry getRateModelEntryForTime(RateMapEntry tmpEntry, long CDRDate) {
     // get to the right validity segment - we know that if the first one has
     // high date, it is likely to be the only one
-    if (tmpEntry.getEndTime() < CommonConfig.HIGH_DATE)
-    {
+    if (tmpEntry.getEndTime() < CommonConfig.HIGH_DATE) {
       // this is a time based model, need to work with validities
       // check for uncovered start
-      if (tmpEntry.getStartTime() > CDRDate)
-      {
+      if (tmpEntry.getStartTime() > CDRDate) {
         return null;
       }
 
       // get the segment in the middle - we should never get to the end
       // as the last bit is always valid until HIGH DATE
-      while (!((tmpEntry.getStartTime() <= CDRDate) & (tmpEntry.getEndTime() > CDRDate)))
-      {
+      RateMapEntry result = tmpEntry;
+      while (!((tmpEntry.getStartTime() <= CDRDate) & (tmpEntry.getEndTime() > CDRDate))) {
         // try to move down the list
-        if (tmpEntry.getChild() == null)
-        {
+        if (tmpEntry.getChild() == null) {
           // no more, so we can't rate this
           return null;
-        }
-        {
+        } else {
           // move down the list
-          tmpEntry = tmpEntry.getChild();
+          result = result.getChild();
         }
+
+        return result;
       }
-    }
-    else
-    {
+    } else {
       // see if the validity start is OK too
-      if (tmpEntry.getStartTime() <= CDRDate)
-      {
+      if (tmpEntry.getStartTime() <= CDRDate) {
         // matched
         return tmpEntry;
-      }
-      else
-      {
+      } else {
         return null;
       }
     }

@@ -163,19 +163,19 @@ public class TimeModelCache
    /**
     * This holds all of the configurations that make up a time model.
     */
-    private HashMap<String, TimeMap> TimeModelCache;
+    private final HashMap<String, TimeMap> TimeModelCache;
 
    /**
-    * This is the cache for the model definitions - we enter with an indetifier
+    * This is the cache for the model definitions - we enter with an identifier
     * and this returns the time model to use
     */
-    private HashMap<String, String> ModelCache;
+    private final HashMap<String, String> ModelCache;
 
    /**
-    * This is the cache for the model definitions - we enter with an indetifier
+    * This is the cache for the model definitions - we enter with an identifier
     * and this returns the time model to use
     */
-    private HashMap<String, String> DayCache;
+    private final HashMap<String, String> DayCache;
 
     /**
      * The default return when there is no match
@@ -206,13 +206,13 @@ public class TimeModelCache
     // Adding Default Days
     private void addDefaultDays()
     {
-      addDay("0", "0");
-      addDay("1", "1");
-      addDay("2", "2");
-      addDay("3", "3");
-      addDay("4", "4");
-      addDay("5", "5");
-      addDay("6", "6");
+      addDay("0", "0"); // Sunday
+      addDay("1", "1"); // Monday
+      addDay("2", "2"); // Tuesday
+      addDay("3", "3"); // Wednesday
+      addDay("4", "4"); // Thursday
+      addDay("5", "5"); // Friday
+      addDay("6", "6"); // Saturday
     }
 
    /**

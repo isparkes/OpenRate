@@ -96,7 +96,7 @@ public class ConversionUtils
   private boolean stringFormat = true;
 
   // used for general date manipulation
-  private Calendar cal;
+  private final Calendar cal;
 
   // Used to cache access to the conversion objects
   private static ConversionCache tmpConvCache = null;
@@ -789,4 +789,14 @@ public class ConversionUtils
     BigDecimal tmpValue = new BigDecimal(valueToRound);
     return tmpValue.setScale(decimalPlaces,BigDecimal.ROUND_HALF_EVEN).doubleValue();
   }
+
+  /**
+   * For handling different time zone conversions.
+   * 
+   * @param newTimeZone The tome zone to set
+   */
+  public void setTimeZone(TimeZone newTimeZone) {
+    cal.setTimeZone(newTimeZone);
+  }
+  
 }

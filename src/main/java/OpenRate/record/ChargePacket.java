@@ -52,164 +52,149 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.record;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
- * A Charge Packet holds the rating information to drive the zoning and rating. Each time a
- * change in the rating happens, a new charge packet is needed.
+ * A Charge Packet holds the rating information to drive the zoning and rating.
+ * Each time a change in the rating happens, a new charge packet is needed.
  *
  * @author ian
  */
-public class ChargePacket
-{
- /**
-  * Identifier for Flat Rating
-  */
+public class ChargePacket {
+
+  /**
+   * Identifier for Flat Rating
+   */
   public static final int RATING_TYPE_FLAT = 1;
 
- /**
-  * Identifier for Tiered Rating
-  */
+  /**
+   * Identifier for Tiered Rating
+   */
   public static final int RATING_TYPE_TIERED = 2;
 
- /**
-  * Identifier for Threshold Rating
-  */
+  /**
+   * Identifier for Threshold Rating
+   */
   public static final int RATING_TYPE_THRESHOLD = 3;
 
   /**
-  * Identifier for Event Rating
-  */
+   * Identifier for Event Rating
+   */
   public static final int RATING_TYPE_EVENT = 4;
 
- /**
-  * The packet is valid until it is invalidated
-  */
+  /**
+   * The packet is valid until it is invalidated
+   */
   public boolean Valid = true;
 
- /**
-  * Type of packet, value depends on scenario
-  */
-  public String  packetType = null;
+  /**
+   * Type of packet, value depends on scenario
+   */
+  public String packetType = null;
 
- /**
-  * Name of the rate plan we are rating
-  */
-  public String  ratePlanName = null;
+  /**
+   * Name of the rate plan we are rating
+   */
+  public String ratePlanName = null;
 
- /**
-  * The zone model that we are using
-  */
-  public String  zoneModel = null;
+  /**
+   * The zone model that we are using
+   */
+  public String zoneModel = null;
 
- /**
-  * The time model we are using
-  */
-  public String  timeModel = null;
+  /**
+   * The time model we are using
+   */
+  public String timeModel = null;
 
- /**
-  * The name of the service
-  */
-  public String  service = null;
+  /**
+   * The name of the service
+   */
+  public String service = null;
 
- /**
-  * The selected price model group
-  */
-  public String  priceGroup = null;
+  /**
+   * The name of the RUM used in this charge packet
+   */
+  public String rumName;
 
- /**
-  * The selected price model
-  */
-  public String  priceModel = null;
+  /**
+   * The amount of RUM rated in this packet
+   */
+  public double rumQuantity = 0;
 
- /**
-  * The name of the RUM used in this charge packet
-  */
-  public String  rumName;
+  /**
+   * The name of the resource to impact
+   */
+  public String resource = null;
 
- /**
-  * The amount of RUM rated in this packet
-  */
-  public double  rumQuantity = 0;
+  /**
+   * The counter ID of the resource to impact
+   */
+  public int resCounter = 0;
 
- /**
-  * The name of the resource to impact
-  */
-  public String  resource = null;
+  /**
+   * The calculated value for this packet
+   */
+  public double chargedValue = 0;
 
- /**
-  * The counter ID of the resource to impact
-  */
-  public int     resCounter = 0;
+  /**
+   * 0 are base products, > 0 are override products
+   */
+  public int priority = 0;
 
- /**
-  * The calculated value for this packet
-  */
-  public double  chargedValue = 0;
+  /**
+   * The result of the zoning
+   */
+  public String zoneResult = null;
 
- /**
-  * 0 are base products, > 0 are override products
-  */
-  public int     priority = 0;
+  /**
+   * Description of the zone result
+   */
+  public String zoneInfo;
 
- /**
-  * The result of the time check
-  */
-  public String  timeResult = null;
+  /**
+   * The ID of the subscription used
+   */
+  public String subscriptionID;
 
- /**
-  * The result of the zoning
-  */
-  public String  zoneResult = null;
+  /**
+   * The rating type to apply for this packet
+   */
+  public int ratingType;
 
- /**
-  * Description of the zone result
-  */
-  public String  zoneInfo;
+  /**
+   * Human readable rating type
+   */
+  public String ratingTypeDesc;
 
- /**
-  * The ID of the subscription used
-  */
-  public String  subscriptionID;
+  /**
+   * tiemSplitting is used to control whether the time zoning module splits up
+   * charge on the basis of the duration of an event.
+   *
+   * 0 = no splitting (Default) 1 = splitting
+   */
+  public int timeSplitting = 0;
 
- /**
-  * The rating type to apply for this packet
-  */
-  public int     ratingType;
-
- /**
-  * Human readable rating type
-  */
-  public String  ratingTypeDesc;
-
- /**
-  * tiemSplitting is used to control whether the time zoning module splits up
-  * charge on the basis of the duration of an event.
-  *
-  * 0 = no splitting (Default)
-  * 1 = splitting
-  */
-  public int     timeSplitting = 0;
-
- /**
-  * The amount of split rum in this packet, valid if timeSplitting != 0
-  */
-  public double  splittingFactor = 1;
-
- /**
-  * The rating breakdown tells us about calculation that we performed at each
-  * step of the rating.
-  */
+  /**
+   * The rating breakdown tells us about calculation that we performed at each
+   * step of the rating.
+   */
   public ArrayList<RatingBreakdown> breakDown;
 
-  /** Creates a new instance of ChargePacket */
-  public ChargePacket()
-  {
-    // Nop
+  // Time zones that we are using
+  private ArrayList<TimePacket> TimeZones;
+  
+  // Whether we are to consume the RUM or not
+  public boolean consumeRUM;
+
+  /**
+   * Creates a new instance of ChargePacket
+   */
+  public ChargePacket() {
   }
 
   /**
@@ -217,62 +202,74 @@ public class ChargePacket
    *
    * @param toClone
    */
-  public ChargePacket(ChargePacket toClone)
-  {
-    this.packetType           = toClone.packetType;
-    this.ratePlanName         = toClone.ratePlanName;
-    this.zoneModel            = toClone.zoneModel;
-    this.timeModel            = toClone.timeModel;
-    this.service              = toClone.service;
-    this.priceGroup           = toClone.priceGroup;
-    this.priceModel           = toClone.priceModel;
-    this.rumName              = toClone.rumName;
-    this.rumQuantity          = toClone.rumQuantity;
-    this.resource             = toClone.resource;
-    this.chargedValue         = toClone.chargedValue;
-    this.priority             = toClone.priority;
-    this.timeResult           = toClone.timeResult;
-    this.zoneResult           = toClone.zoneResult;
-    this.zoneInfo             = toClone.zoneInfo;
-    this.subscriptionID       = toClone.subscriptionID;
-    this.ratingType           = toClone.ratingType;
-    this.ratingTypeDesc       = toClone.ratingTypeDesc;
-    this.timeSplitting        = toClone.timeSplitting;
-    this.splittingFactor      = toClone.splittingFactor;
+  public ChargePacket(ChargePacket toClone) {
+    this.packetType = toClone.packetType;
+    this.ratePlanName = toClone.ratePlanName;
+    this.zoneModel = toClone.zoneModel;
+    this.timeModel = toClone.timeModel;
+    this.service = toClone.service;
+    this.rumName = toClone.rumName;
+    this.rumQuantity = toClone.rumQuantity;
+    this.resource = toClone.resource;
+    this.chargedValue = toClone.chargedValue;
+    this.priority = toClone.priority;
+    this.zoneResult = toClone.zoneResult;
+    this.zoneInfo = toClone.zoneInfo;
+    this.subscriptionID = toClone.subscriptionID;
+    this.ratingType = toClone.ratingType;
+    this.ratingTypeDesc = toClone.ratingTypeDesc;
+    this.timeSplitting = toClone.timeSplitting;
+    this.consumeRUM = toClone.consumeRUM;
+    this.TimeZones = toClone.TimeZones;
+
+    if (toClone.TimeZones != null) {
+      this.TimeZones = new ArrayList<>();
+      Iterator<TimePacket> tpIter = toClone.TimeZones.iterator();
+      while (tpIter.hasNext()) {
+        TimePacket toCloneTP = tpIter.next();
+        this.TimeZones.add(new TimePacket(toCloneTP));
+      }
+    }
 
     // in the case that we have a rating breakdown, clone that too
-    if (toClone.breakDown != null)
-    {
+    if (toClone.breakDown != null) {
       this.breakDown = new ArrayList<>();
-
       Iterator<RatingBreakdown> bdIter = toClone.breakDown.iterator();
-
-      while (bdIter.hasNext())
-      {
-        RatingBreakdown toCloneRB = (RatingBreakdown) bdIter.next();
-        RatingBreakdown tmpRB = new RatingBreakdown();
-        tmpRB.beat            = toCloneRB.beat;
-        tmpRB.beatCount       = toCloneRB.beatCount;
-        tmpRB.chargeBase      = toCloneRB.chargeBase;
-        tmpRB.factor          = toCloneRB.factor;
-        tmpRB.ratedAmount     = toCloneRB.ratedAmount;
-        tmpRB.RUMRated        = toCloneRB.RUMRated;
-        tmpRB.stepUsed        = toCloneRB.stepUsed;
-        tmpRB.tierFrom        = toCloneRB.tierFrom;
-        tmpRB.tierTo          = toCloneRB.tierTo;
-        tmpRB.validFrom       = toCloneRB.validFrom;
-        tmpRB.validTo         = toCloneRB.validTo;
+      while (bdIter.hasNext()) {
+        RatingBreakdown toCloneRB = bdIter.next();
+        this.breakDown.add(new RatingBreakdown(toCloneRB));
       }
     }
   }
 
- /**
-  * Create a clone of this charge packet
-  *
-  * @return The cloned Charge Packet
-  */
-  public ChargePacket Clone()
-  {
+  /**
+   * Create a clone of this charge packet
+   *
+   * @return The cloned Charge Packet
+   */
+  public ChargePacket Clone() {
     return new ChargePacket(this);
+  }
+
+  /**
+   * @return the TimeZones
+   */
+  public ArrayList<TimePacket> getTimeZones() {
+    return TimeZones;
+  }
+
+  /**
+   * @param TimeZones the TimeZones to set
+   */
+  public void setTimeZones(ArrayList<TimePacket> TimeZones) {
+    this.TimeZones = TimeZones;
+  }
+  
+  public void addBreakdown(ArrayList<RatingBreakdown> newBreakdownList) {
+    if (breakDown == null) {
+      breakDown = newBreakdownList;
+    } else {
+      breakDown.addAll(newBreakdownList);
+    }
   }
 }

@@ -69,7 +69,7 @@ public abstract class AbstractRUMHolidayMatch
   extends AbstractRegexMatch
 {
   // this is used to check the dates
-  private String[] searchParameters = new String[3];
+  private final String[] searchParameters = new String[3];
   Calendar calendar = Calendar.getInstance();
 
  /**
@@ -104,9 +104,6 @@ public abstract class AbstractRUMHolidayMatch
       {
         // set the flag to skip the time match
         tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_HOLIDAY;
-
-        // Set the time zone for this record
-        tmpCP.timeResult = timeResult;
       }
     }
   }
@@ -144,9 +141,6 @@ public abstract class AbstractRUMHolidayMatch
 
         // set the flag to skip the time match
         tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_HOLIDAY;
-
-        // Set the time zone for this record
-        tmpCP.timeResult = timeResult;
       }
     }
   }

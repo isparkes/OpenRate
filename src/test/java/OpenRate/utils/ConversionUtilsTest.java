@@ -83,7 +83,7 @@ public class ConversionUtilsTest
   public static void setUpClass() throws Exception
   {
     tz = TimeZone.getDefault();
-    TimeZone.setDefault(TimeZone.getTimeZone("CET"));
+    //TimeZone.setDefault(TimeZone.getTimeZone());
 
     // Get an initialise the cache
     FQConfigFileName = new URL("File:src/test/resources/TestUtils.properties.xml");
@@ -158,7 +158,7 @@ public class ConversionUtilsTest
 
     System.out.println("convertInputDateToUTC");
 
-    // Test the standard date formats
+    // Test the standard date formatsTimeZone
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
     expResult = 1325372400;

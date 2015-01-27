@@ -122,10 +122,10 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   public ArrayList<CustProductInfo> RatePlans = new ArrayList<>();
 
   // Rating information for performing internal calculations
-  private ArrayList<ChargePacket> ChargePackets = new ArrayList<>();
+  private final ArrayList<ChargePacket> ChargePackets = new ArrayList<>();
 
   // Rating information for updating the DB
-  private ArrayList<BalanceImpact> BalanceImpacts = new ArrayList<>();
+  private final ArrayList<BalanceImpact> BalanceImpacts = new ArrayList<>();
 
   /**
    * RUM information - holds the list of RUMs and their values
@@ -168,6 +168,8 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
  /**
   * Overloaded Constructor for RateRecord, creating the empty record container
   * and initialising the input data.
+  * 
+   * @param originalData
   */
   public RatingRecord(String originalData)
   {
@@ -603,8 +605,12 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     ArrayList<String> tmpDumpList = new ArrayList<>();
 
     // set up the padding
-    if (padding < 19) padding = 19;
-    String pad = "                                                  ".substring(1, padding - 18);
+    String pad;
+    if (padding < 19) {
+      pad = "                                                  ".substring(1, 1);
+    } else {
+      pad = "                                                  ".substring(1, padding - 18);
+    }
 
     int tmpChargePacketCount = this.getChargePacketCount();
     tmpDumpList.add("  Charge Packets   " + pad + "= <" + tmpChargePacketCount + ">");
@@ -628,21 +634,33 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
           tmpDumpList.add("    Resource       " + pad + "= <" + tmpCP.resource + ">");
           tmpDumpList.add("    Resource ID    " + pad + "= <" + tmpCP.resCounter + ">");
           tmpDumpList.add("    Time Model     " + pad + "= <" + tmpCP.timeModel + ">");
-          tmpDumpList.add("    Time Result    " + pad + "= <" + tmpCP.timeResult + ">");
           tmpDumpList.add("    Zone Model     " + pad + "= <" + tmpCP.zoneModel + ">");
           tmpDumpList.add("    Zone Result    " + pad + "= <" + tmpCP.zoneResult + ">");
-          tmpDumpList.add("    Price Group    " + pad + "= <" + tmpCP.priceGroup + ">");
-          tmpDumpList.add("    Price Model    " + pad + "= <" + tmpCP.priceModel + ">");
           tmpDumpList.add("    Rating Type    " + pad + "= <" + tmpCP.ratingType + ">");
           tmpDumpList.add("    Rating Desc    " + pad + "= <" + tmpCP.ratingTypeDesc + ">");
           tmpDumpList.add("    Rated Value    " + pad + "= <" + tmpCP.chargedValue + ">");
+          tmpDumpList.add("    Splitting      " + pad + "= <" + tmpCP.timeSplitting + ">");
           tmpDumpList.add("    ----------------");
             
+          if (tmpCP.getTimeZones() != null)
+          {
+            for (TimePacket tmpTz : tmpCP.getTimeZones()) {
+              tmpDumpList.add("      Time Result  " + pad + "= <" + tmpTz.TimeResult + ">");              
+              tmpDumpList.add("      Duration     " + pad + "= <" + tmpTz.Duration + ">");
+              tmpDumpList.add("      Total Dur    " + pad + "= <" + tmpTz.TotalDuration + ">");
+              tmpDumpList.add("      Price Group  " + pad + "= <" + tmpTz.priceGroup + ">");
+              tmpDumpList.add("      Price Model  " + pad + "= <" + tmpTz.priceModel + ">");
+              tmpDumpList.add("      ----------------");
+            }
+            tmpDumpList.add("    ----------------");
+          } else {
+            tmpDumpList.add("	----- NO TZ -----");
+          }
+
+              
           if (tmpCP.breakDown != null)
           {
-            for (int j = 0 ; j < tmpCP.breakDown.size() ; j++)
-            {
-              RatingBreakdown tmpRB = tmpCP.breakDown.get(j);
+            for (RatingBreakdown tmpRB : tmpCP.breakDown) {
               tmpDumpList.add("      Step number  " + pad + "= <" + tmpRB.stepUsed + ">");
               tmpDumpList.add("      Tier from    " + pad + "= <" + tmpRB.tierFrom + ">");
               tmpDumpList.add("      Tier to      " + pad + "= <" + tmpRB.tierTo + ">");
@@ -656,9 +674,8 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
               tmpDumpList.add("      Valid To     " + pad + "= <" + tmpRB.validTo + ">");
               tmpDumpList.add("      ----------------");
             }
-          }
-          else
-          {
+            tmpDumpList.add("    ----------------");
+          } else {
             tmpDumpList.add("	----- NO RB -----");
           }
         }
@@ -690,8 +707,12 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     BalanceImpact tmpBalImp;
 
     // set up the padding
-    if (padding < 19) padding = 19;
-    String pad = "                                                  ".substring(1, padding - 18);
+    String pad;
+    if (padding < 19) {
+      pad = "                                                  ".substring(1, 1);
+    } else {
+      pad = "                                                  ".substring(1, padding - 18);
+    }
 
     ArrayList<String> tmpDumpList = new ArrayList<>();
     int tmpBalImpCount = this.getBalanceImpactCount();

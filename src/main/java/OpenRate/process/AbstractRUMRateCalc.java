@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.process;
 
 import OpenRate.cache.ICacheManager;
@@ -65,30 +64,32 @@ import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 
 /**
- * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=RUM_Rate_Calculation'>click here</a> to go to wiki page.
+ * Please
+ * <a target='new' href='http://www.open-rate.com/wiki/index.php?title=RUM_Rate_Calculation'>click
+ * here</a> to go to wiki page.
  * <br>
  * <p>
  * This class provides the abstract base for the more complex rating plug in.
  * The implementation class should not have to do much more than call the
- * "PerformRating", after having set the appropriate RUM values.
+ * "performRating", after having set the appropriate RUM values.
  *
- * The rating is performed on the Charge Packets that should already be
- * and should have the "priceGroup" field filled with an appropriate value.
- * Usually the priceGroup value is retrieved using the zoning and timing
- * results. Note that the number of Charge Packets can (and often will) increase
- * during the rating, because we may have to impact multiple resources (a
- * charge packet will be created for each of these resource impacts (in the case
- * that multiple resources have been impacted.
+ * The rating is performed on the Charge Packets that should already be and
+ * should have the "priceGroup" field filled with an appropriate value. Usually
+ * the priceGroup value is retrieved using the zoning and timing results. Note
+ * that the number of Charge Packets can (and often will) increase during the
+ * rating, because we may have to impact multiple resources (a charge packet
+ * will be created for each of these resource impacts (in the case that multiple
+ * resources have been impacted.
  *
  * No roll-up of charges is performed in this module. You can use the module
  * "GatherRUMImpacts" to collect and create a summary of the CP impacts.
  *
  * You can obtain a rating breakdown (which provides exact details of the steps
- * and tiers used to calculate the charge) by enabling the standard rating record
- * field "CreateBreakdown" boolean value to true.
+ * and tiers used to calculate the charge) by enabling the standard rating
+ * record field "CreateBreakdown" boolean value to true.
  */
-public abstract class AbstractRUMRateCalc extends AbstractRateCalc
-{
+public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
+
   // This is the object will be using the find the cache manager
   private ICacheManager CMRR = null;
 
@@ -102,76 +103,66 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
   // -----------------------------------------------------------------------------
   // ------------------ Start of inherited Plug In functions ---------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * Initialise the module. Called during pipeline creation to initialise:
-  *  - Configuration properties that are defined in the properties file.
-  *  - The references to any cache objects that are used in the processing
-  *  - The symbolic name of the module
-  *
-  * @param PipelineName The name of the pipeline this module is in
-  * @param ModuleName The name of this module in the pipeline
-  * @throws OpenRate.exception.InitializationException
-  */
+  /**
+   * Initialise the module. Called during pipeline creation to initialise: -
+   * Configuration properties that are defined in the properties file. - The
+   * references to any cache objects that are used in the processing - The
+   * symbolic name of the module
+   *
+   * @param PipelineName The name of the pipeline this module is in
+   * @param ModuleName The name of this module in the pipeline
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
   public void init(String PipelineName, String ModuleName)
-            throws InitializationException
-  {
+          throws InitializationException {
     String CacheObjectName;
 
     // Do the inherited work, e.g. setting the symbolic name etc
-    super.init(PipelineName,ModuleName);
+    super.init(PipelineName, ModuleName);
 
     // Get the cache object reference
     CacheObjectName = PropertyUtils.getPropertyUtils().getPluginPropertyValue(PipelineName,
-                                                           ModuleName,
-                                                           "DataCache");
+            ModuleName,
+            "DataCache");
     CMRR = CacheFactory.getGlobalManager(CacheObjectName);
 
-    if (CMRR == null)
-    {
+    if (CMRR == null) {
       message = "Could not find cache entry for <" + CacheObjectName + ">";
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
 
     // Load up the mapping arrays, but only if we are the right type. This
     // allows us to build up ever more complex rating models, matching the
     // right model to the right cache
-    if (CMRR.get(CacheObjectName) instanceof RUMRateCache)
-    {
-      RRC = (RUMRateCache)CMRR.get(CacheObjectName);
+    if (CMRR.get(CacheObjectName) instanceof RUMRateCache) {
+      RRC = (RUMRateCache) CMRR.get(CacheObjectName);
 
-      if (RRC == null)
-      {
+      if (RRC == null) {
         message = "Could not find cache entry for <" + CacheObjectName + ">";
-        throw new InitializationException(message,getSymbolicName());
+        throw new InitializationException(message, getSymbolicName());
       }
-    }
-    else
-    {
+    } else {
       message = "<" + CacheObjectName + "> is not an instance of RUMRateCache. Aborting.";
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message, getSymbolicName());
     }
   }
 
   @Override
-  public IRecord procHeader(IRecord r)
-  {
+  public IRecord procHeader(IRecord r) {
     return r;
   }
 
   @Override
-  public IRecord procTrailer(IRecord r)
-  {
+  public IRecord procTrailer(IRecord r) {
     return r;
   }
 
 // -----------------------------------------------------------------------------
 // ---------------------- Start of exposed functions ---------------------------
 // -----------------------------------------------------------------------------
-
   /**
-   * PerformRating is the main call for the RUM based rating. It performs the
+   * performRating is the main call for the RUM based rating. It performs the
    * rating operations on a record of type "RatingRecord".
    *
    * For each charge packet in the record, the price group is inspected, and
@@ -180,192 +171,236 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
    * case that a single price group is mapped to multiple price models, these
    * are expanded (by creating additional charge packets) before rating.
    *
-   * Rating is then performed on the charge packets, treating each charge
-   * packet individually.
+   * Rating is then performed on the charge packets, treating each charge packet
+   * individually.
    *
    * @param CurrentRecord The record to rate
    * @return True if rating was performed without errors, otherwise false
    * @throws ProcessingException
    */
-  public boolean PerformRating(RatingRecord CurrentRecord) throws ProcessingException
-  {
+  public boolean performRating(RatingRecord CurrentRecord) throws ProcessingException {
     int PMIndex;
-    int Index;
-    ChargePacket tmpCP;
-    ChargePacket tmpCPNew;
+    ChargePacket tmpCPNew = null;
     RecordError tmpError;
     ArrayList<RUMRateCache.RUMMapEntry> tmpRUMMap;
     RUMRateCache.RUMMapEntry tmpRUMMapEntry;
-    double RUMValue;
     ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
-    boolean CPUpdated = false;
-    RatingResult tmpRatingResult;
+    boolean replace = false;
 
-    // Rate all of the charge packets that are to be rated - loop through the
-    // charge packets and apply the time zone results
-    for (Index = 0 ; Index < CurrentRecord.getChargePacketCount() ; Index++)
-    {
-      tmpCP = CurrentRecord.getChargePacket(Index);
+    // ****************************** RUM Expansion ****************************
+    // Loop over the charge packets
+    for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
+      // Get the price group for this charge packet
+      if (tmpCP.Valid) {
+        for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
 
-      if (tmpCP.Valid)
-      {
-        try
-        {
-           //Use the rateCalculateDuration method defined in AbstractRateCalc to
-           //calculate the price
-          if (tmpCP.priceGroup != null)
-          {
-            if (!(tmpCP.priceGroup.equals("NOMATCH")))
-            {
-              // Get the price models for this RUM group
-              tmpRUMMap = RRC.getRUMMap(tmpCP.priceGroup);
+          if (tmpTZ.priceGroup == null) {
+            tmpError = new RecordError("ERR_PRICE_GROUP_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+            CurrentRecord.addError(tmpError);
 
-              if (tmpRUMMap == null)
-              {
-                if (reportExceptions == false)
-                {
-                  tmpError = new RecordError("ERR_PRICE_GROUP_MAP_NOT_FOUND",ErrorType.DATA_NOT_FOUND, getSymbolicName());
-                  CurrentRecord.addError(tmpError);
+            // found an error - get out
+            return false;
+          }
+          // create a charge packet for each RUM/Resource/price model tuple as located
+          // in the RUM Map
+          tmpRUMMap = RRC.getRUMMap(tmpTZ.priceGroup);
 
-                  return false;
-                }
-                else
-                {
-                  throw new ProcessingException ("Price group map not found for <"+tmpCP.priceGroup+">",getSymbolicName());
-                }
+          if (tmpRUMMap == null) {
+            tmpError = new RecordError("ERR_PRICE_GROUP_MAP_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+            CurrentRecord.addError(tmpError);
+
+            // found an error - get out
+            return false;
+          }
+
+          // if we are doing 1:1 price group:price model, we'll use the existing
+          // charge packet, otherwise we have to do some cloning. Normally, we'll
+          // be using 1:1
+          if (tmpRUMMap.size() == 1) {
+            // ************************** 1:1 case *********************************
+            tmpRUMMapEntry = tmpRUMMap.get(0);
+
+            // Get the value of the RUM
+            tmpTZ.priceModel = tmpRUMMapEntry.PriceModel;
+            tmpCP.rumName = tmpRUMMapEntry.RUM;
+            tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
+
+            tmpCP.resource = tmpRUMMapEntry.Resource;
+            tmpCP.resCounter = tmpRUMMapEntry.ResourceCounter;
+            tmpCP.ratingType = tmpRUMMapEntry.RUMType;
+            tmpCP.consumeRUM = tmpRUMMapEntry.ConsumeRUM;
+
+            // Fill the RUM value
+            // get the rating type
+            switch (tmpRUMMapEntry.RUMType) {
+              case 1: {
+                tmpCP.ratingTypeDesc = "FLAT";
+                break;
               }
+              case 2: {
+                // Tiered Rating
+                tmpCP.ratingTypeDesc = "TIERED";
+                break;
+              }
+              case 3: {
+                tmpCP.ratingTypeDesc = "THRESHOLD";
+                break;
+              }
+              case 4: {
+                // Event Rating
+                tmpCP.ratingTypeDesc = "EVENT";
+                break;
+              }
+            }
 
-              // Calculate the price of the charge packet
-              for (PMIndex = 0 ; PMIndex < tmpRUMMap.size() ; PMIndex++)
-              {
-                tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
+            // Add to the list of processed CPs
+            tmpCPList.add(tmpCP);
+          } else {
+            // ************************ 1:many case ******************************
+            for (PMIndex = 0; PMIndex < tmpRUMMap.size(); PMIndex++) {
+              tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
 
-                // Copy the CP over - we do this for each model in the group
-                // as we will be performing rating on each of them
-                // Note that we create a new list of cloned charge packets, and
-                // don't try to re-use the original ones. This saves a loop of
-                // preparation and then rating. I think that it's quicker this
-                // way, but there's the potential to do some timing/tuning here
-                tmpCPNew = tmpCP.Clone();
-                tmpCPList.add(tmpCPNew);
-                CPUpdated = true;
+              // Copy the CP over - we do this for each model in the group
+              // as we will be performing rating on each of them
+              // Note that we create a new list of cloned charge packets, and
+              // don't try to re-use the original ones. This saves a loop of
+              // preparation and then rating. I think that it's quicker this
+              // way, but there's the potential to do some timing/tuning here
+              replace = true;
+              tmpCPNew = tmpCP.Clone();
 
-                // Get the value of the RUM
-                RUMValue = CurrentRecord.getRUMValue(tmpRUMMapEntry.RUM);
-                tmpCPNew.priceModel = tmpRUMMapEntry.PriceModel;
-                tmpCPNew.rumQuantity = RUMValue;
-                tmpCPNew.rumName = tmpRUMMapEntry.RUM;
-                tmpCPNew.resource = tmpRUMMapEntry.Resource;
-                tmpCPNew.resCounter = tmpRUMMapEntry.ResourceCounter;
-                tmpCPNew.ratingType  = tmpRUMMapEntry.RUMType;
+              // Get the value of the RUM
+              tmpCPNew.rumName = tmpRUMMapEntry.RUM;
+              tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
+              tmpCPNew.resource = tmpRUMMapEntry.Resource;
+              tmpCPNew.resCounter = tmpRUMMapEntry.ResourceCounter;
+              tmpCPNew.ratingType = tmpRUMMapEntry.RUMType;
 
-
-                // perform the rating
-                switch (tmpRUMMapEntry.RUMType)
-                {
-                  case ChargePacket.RATING_TYPE_FLAT:
-                    {
-                      // Flat Rating
-                      tmpRatingResult = rateCalculateFlat(tmpRUMMapEntry.PriceModel, RUMValue, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                      tmpCPNew.chargedValue += tmpRatingResult.RatedValue;
-                      tmpCPNew.breakDown = tmpRatingResult.breakdown;
-                      tmpCPNew.ratingTypeDesc = "FLAT";
-                      if (tmpRUMMapEntry.ConsumeRUM)
-                      {
-                        CurrentRecord.updateRUMValue(tmpRUMMapEntry.RUM,-tmpRatingResult.RUMUsed);
-                      }
-                      break;
-                    }
-                  case ChargePacket.RATING_TYPE_TIERED:
-                    {
-                      // Tiered Rating
-                      tmpRatingResult = rateCalculateTiered(tmpRUMMapEntry.PriceModel, RUMValue, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                      tmpCPNew.chargedValue += tmpRatingResult.RatedValue;
-                      tmpCPNew.breakDown = tmpRatingResult.breakdown;
-                      tmpCPNew.ratingTypeDesc = "TIERED";
-                      if (tmpRUMMapEntry.ConsumeRUM)
-                      {
-                        CurrentRecord.updateRUMValue(tmpRUMMapEntry.RUM,-tmpRatingResult.RUMUsed);
-                      }
-                      break;
-                    }
-                  case ChargePacket.RATING_TYPE_THRESHOLD:
-                    {
-                      // Threshold Rating
-                      tmpRatingResult = rateCalculateThreshold(tmpRUMMapEntry.PriceModel, RUMValue, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                      tmpCPNew.chargedValue += tmpRatingResult.RatedValue;
-                      tmpCPNew.breakDown = tmpRatingResult.breakdown;
-                      tmpCPNew.ratingTypeDesc = "THRESHOLD";
-                      if (tmpRUMMapEntry.ConsumeRUM)
-                      {
-                        CurrentRecord.updateRUMValue(tmpRUMMapEntry.RUM,-tmpRatingResult.RUMUsed);
-                      }
-                      break;
-                    }
-                  case ChargePacket.RATING_TYPE_EVENT:
-                    {
-                      // Event Rating
-                      tmpRatingResult = rateCalculateEvent(tmpRUMMapEntry.PriceModel, RUMValue, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                      tmpCPNew.chargedValue += tmpRatingResult.RatedValue;
-                      tmpCPNew.breakDown = tmpRatingResult.breakdown;
-                      tmpCPNew.ratingTypeDesc = "EVENT";
-                      if (tmpRUMMapEntry.ConsumeRUM)
-                      {
-                        CurrentRecord.updateRUMValue(tmpRUMMapEntry.RUM,-tmpRatingResult.RUMUsed);
-                      }
-                      break;
-                    }
+              // get the rating type
+              switch (tmpRUMMapEntry.RUMType) {
+                case 1: {
+                  tmpCPNew.ratingTypeDesc = "FLAT";
+                  break;
+                }
+                case 2: {
+                  // Tiered Rating
+                  tmpCPNew.ratingTypeDesc = "TIERED";
+                  break;
+                }
+                case 3: {
+                  tmpCPNew.ratingTypeDesc = "THRESHOLD";
+                  break;
+                }
+                case 4: {
+                  // Event Rating
+                  tmpCPNew.ratingTypeDesc = "EVENT";
+                  break;
                 }
               }
             }
-            else
-            {
-              // Fill the default fields in the CP
-              tmpCP.rumName = "";
-              tmpCP.priceModel = "";
-              tmpCP.resource = "";
-              tmpCP.Valid = false;
-            }
-          }
-          else
-          {
-            // we do not have a price group, set the cp invalid
-            tmpCP.Valid = false;
+
+            tmpCPList.add(tmpCPNew);
           }
         }
-        catch (ProcessingException pe)
-        {
-          // Log the error
-          getPipeLog().error("RUM Rating exception <" + pe.getMessage() + ">");
-
-          if (reportExceptions == false)
-          {
-            // Only error if this is a base packet
-            if (tmpCP.priority == 0)
-            {
-              tmpError = new RecordError("ERR_RUM_RATING",ErrorType.DATA_NOT_FOUND, getSymbolicName());
-              CurrentRecord.addError(tmpError);
-
-              return false;
-            }
-          }
-          else
-          {
-            throw new ProcessingException (pe,getSymbolicName());
-          }
-        }
-      }
-      else
-      {
-        // just add the packet
+      } else {
+        // skip the packet
         tmpCPList.add(tmpCP);
       }
     }
 
-    // write back the results if we have changed the CPs
-    if (CPUpdated)
-    {
+    // replace the list of unprepared packets with the prepared ones
+    if (replace) {
       CurrentRecord.replaceChargePackets(tmpCPList);
+    }
+
+    // ***************************** Rating Evaluation**************************
+    // Rate all of the charge packets that are to be rated - loop through the
+    // charge packets and apply the time zone results
+    for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
+      if (tmpCP.Valid) {
+        
+        // get the RUM quantity
+        double RUMValue = CurrentRecord.getRUMValue(tmpCP.rumName);
+
+        // valiables that we use to be able to manage beat rollover between time packets
+        double rumExpectedCumulative = 0;
+        double rumRoundedCumulative = 0;
+        for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
+          RatingResult tmpRatingResult = null;
+          try {
+            //Use the rateCalculateDuration method defined in AbstractRateCalc to
+            //calculate the price
+            if (tmpTZ.priceGroup != null) {
+
+              // perform the rating
+              switch (tmpCP.ratingType) {
+                case ChargePacket.RATING_TYPE_FLAT: {
+                  // Flat Rating
+                  tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
+                case ChargePacket.RATING_TYPE_TIERED: {
+                  // Tiered Rating
+                  if (tmpCP.timeSplitting == 1) {
+                    double thisZoneRUM = RUMValue * ((tmpTZ.Duration - rumRoundedCumulative + rumExpectedCumulative) / (double) tmpTZ.TotalDuration);
+                    if (thisZoneRUM < 0) {
+                      thisZoneRUM = 0;
+                    }
+                    rumExpectedCumulative += tmpTZ.Duration;
+                    tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                    tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                    tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                    rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
+                  } else {
+                    tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, tmpCP.rumQuantity, 0, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                    tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                    tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  }
+                  break;
+                }
+                case ChargePacket.RATING_TYPE_THRESHOLD: {
+                  // Threshold Rating
+                  tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, tmpCP.rumQuantity, 0, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
+                case ChargePacket.RATING_TYPE_EVENT: {
+                  // Event Rating
+                  tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
+              }
+
+              if ((tmpCP.consumeRUM) && (tmpRatingResult != null)) {
+                CurrentRecord.updateRUMValue(tmpCP.rumName, -tmpRatingResult.RUMUsed);
+              }
+            } else {
+              // we do not have a price group, set the cp invalid
+              tmpCP.Valid = false;
+            }
+          } catch (ProcessingException pe) {
+            // Log the error
+            getPipeLog().error("RUM Rating exception <" + pe.getMessage() + ">");
+
+            if (reportExceptions == false) {
+              // Only error if this is a base packet
+              if (tmpCP.priority == 0) {
+                tmpError = new RecordError("ERR_RUM_RATING", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+                CurrentRecord.addError(tmpError);
+
+                return false;
+              }
+            } else {
+              throw new ProcessingException(pe, getSymbolicName());
+            }
+          }
+        }
+      }
     }
 
     return true;
@@ -374,89 +409,84 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
 // -----------------------------------------------------------------------------
 // ----------------------- Start of utility functions --------------------------
 // -----------------------------------------------------------------------------
-
- /**
-  * Set the state of the exception reporting. True means that we let the parent
-  * module deal with it, false means that we deal with it ourselves.
-  *
-  * @param NewValue
-  */
-  public void setExceptionReporting(boolean NewValue)
-  {
+  /**
+   * Set the state of the exception reporting. True means that we let the parent
+   * module deal with it, false means that we deal with it ourselves.
+   *
+   * @param NewValue
+   */
+  public void setExceptionReporting(boolean NewValue) {
     reportExceptions = NewValue;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. The model processes all of the tiers
-  * up to the value of the RUM, calculating the cost for each tier and summing
-  * the tier costs. This is different to the "threshold" mode where all of the
-  * RUM is used from the tier that is reached.
-  *
-  * @param  priceModel The price model to use
-  * @param  valueToRate the duration that should be rated in seconds
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
-  RatingResult rateCalculateTiered(String priceModel, double valueToRate, long CDRDate, boolean BreakDown)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. The model processes all of the tiers up to
+   * the value of the RUM, calculating the cost for each tier and summing the
+   * tier costs. This is different to the "threshold" mode where all of the RUM
+   * is used from the tier that is reached.
+   *
+   * @param priceModel The price model to use
+   * @param valueToRate the duration that should be rated in seconds
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
+  RatingResult rateCalculateTiered(String priceModel, double valueToRate, double valueOffset, long CDRDate, boolean BreakDown)
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
     tmpRateModel = RRC.getPriceModel(priceModel);
 
     // perform the rating using the selected rate model
-    tmpRatingResult = performRateEvaluationTiered(priceModel, tmpRateModel, valueToRate, CDRDate, BreakDown);
+    tmpRatingResult = performRateEvaluationTiered(priceModel, tmpRateModel, valueToRate, valueOffset, CDRDate, BreakDown);
 
     // return the rating result
     return tmpRatingResult;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. The model locates the correct tier to
-  * use and then rates all of the RUM according to that tier. This is different
-  * to the "tiered" mode, where the individual contributing tier costs are
-  * calculated and then summed.
-  *
-  * @param  priceModel The price model to use
-  * @param  valueToRate the duration that should be rated in seconds
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
-  RatingResult rateCalculateThreshold(String priceModel, double valueToRate, long CDRDate, boolean BreakDown)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. The model locates the correct tier to use
+   * and then rates all of the RUM according to that tier. This is different to
+   * the "tiered" mode, where the individual contributing tier costs are
+   * calculated and then summed.
+   *
+   * @param priceModel The price model to use
+   * @param valueToRate the duration that should be rated in seconds
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
+  RatingResult rateCalculateThreshold(String priceModel, double valueToRate, double valueOffset, long CDRDate, boolean BreakDown)
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
     tmpRateModel = RRC.getPriceModel(priceModel);
 
     // perform the rating using the selected rate model
-    tmpRatingResult = performRateEvaluationThreshold(priceModel, tmpRateModel, valueToRate, CDRDate, BreakDown);
+    tmpRatingResult = performRateEvaluationThreshold(priceModel, tmpRateModel, valueToRate, valueOffset, CDRDate, BreakDown);
 
     // return the rating result
     return tmpRatingResult;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. It is a simplified version of the
-  * "tiered" model that just does a multiplication of valueToRate*Rate,
-  * without having to calculate tiers and beats.
-  *
-  * @param  priceModel The price model to use
-  * @param valueToRate the value that we are rating
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. It is a simplified version of the "tiered"
+   * model that just does a multiplication of valueToRate*Rate, without having
+   * to calculate tiers and beats.
+   *
+   * @param priceModel The price model to use
+   * @param valueToRate the value that we are rating
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
   RatingResult rateCalculateFlat(String priceModel, double valueToRate, long CDRDate, boolean BreakDown)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
@@ -469,19 +499,18 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
     return tmpRatingResult;
   }
 
- /**
-  * This function does the rating based on the chosen price model and the
-  * RUM (Rateable Usage Metric) value. It is a simplified version of the
-  * "tiered" model that just returns the event price.
-  *
-  * @param  priceModel The price model to use
-  * @return the price for the rated record
-  * @throws OpenRate.exception.ProcessingException
-  */
+  /**
+   * This function does the rating based on the chosen price model and the RUM
+   * (Rateable Usage Metric) value. It is a simplified version of the "tiered"
+   * model that just returns the event price.
+   *
+   * @param priceModel The price model to use
+   * @return the price for the rated record
+   * @throws OpenRate.exception.ProcessingException
+   */
   RatingResult rateCalculateEvent(String priceModel, double valueToRate, long CDRDate, boolean BreakDown)
-    throws ProcessingException
-  {
-    ArrayList<RateMapEntry>  tmpRateModel;
+          throws ProcessingException {
+    ArrayList<RateMapEntry> tmpRateModel;
     RatingResult tmpRatingResult;
 
     // Look up the rate model to use
@@ -495,36 +524,37 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
   }
 
   /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the TIERED rating model.
-  *
-  * @param priceModel The price model to use
-  * @param availableBalance The current balance the user has available to them, positive
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
-    @Override
+   * This method is used to calculate the number of RUM units (e.g. seconds)
+   * which can be purchased for the available credit. The credit is calculated
+   * from the difference between the current balance and the credit limit. In
+   * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+   * limit will tend to be 0. In post paid scenarios, both values will tend to
+   * be negative.
+   *
+   * The clever thing about this method is the fact that it uses the standard
+   * rating price model in order to arrive at the value, simplifying greatly the
+   * management of pre-paid balances.
+   *
+   * This method uses the TIERED rating model.
+   *
+   * @param priceModel The price model to use
+   * @param availableBalance The current balance the user has available to them,
+   * positive
+   * @param CDRDate The date to rate at
+   * @return The number of RUM units that can be purchased for the available
+   * balance
+   * @throws ProcessingException
+   */
+  @Override
   public double authCalculateTiered(String priceModel, double availableBalance, long CDRDate)
-    throws ProcessingException
-  {
-    if(availableBalance <= 0){
-       return 0;
+          throws ProcessingException {
+    if (availableBalance <= 0) {
+      return 0;
     }
 
-      ArrayList<RateMapEntry>  tmpRateModel;
+    ArrayList<RateMapEntry> tmpRateModel;
 
-      double tmpcalculationResult;
+    double tmpcalculationResult;
 
     // Look up the rate model to use
     tmpRateModel = RRC.getPriceModel(priceModel);
@@ -536,36 +566,37 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc
   }
 
   /**
-  * This method is used to calculate the number of RUM units (e.g. seconds)
-  * which can be purchased for the available credit. The credit is calculated
-  * from the difference between the current balance and the credit limit. In
-  * pre-paid scenarios, the current balance will tend to be > 0 and the credit
-  * limit will tend to be 0. In post paid scenarios, both values will tend to
-  * be negative.
-  *
-  * The clever thing about this method is the fact that it uses the standard
-  * rating price model in order to arrive at the value, simplifying greatly the
-  * management of pre-paid balances.
-  *
-  * This method uses the THRESHOLD rating model.
-  *
-  * @param priceModel The price model to use
-  * @param availableBalance The current balance the user has available to them, positive
-  * @param CDRDate The date to rate at
-  * @return The number of RUM units that can be purchased for the available balance
-  * @throws ProcessingException
-  */
+   * This method is used to calculate the number of RUM units (e.g. seconds)
+   * which can be purchased for the available credit. The credit is calculated
+   * from the difference between the current balance and the credit limit. In
+   * pre-paid scenarios, the current balance will tend to be > 0 and the credit
+   * limit will tend to be 0. In post paid scenarios, both values will tend to
+   * be negative.
+   *
+   * The clever thing about this method is the fact that it uses the standard
+   * rating price model in order to arrive at the value, simplifying greatly the
+   * management of pre-paid balances.
+   *
+   * This method uses the THRESHOLD rating model.
+   *
+   * @param priceModel The price model to use
+   * @param availableBalance The current balance the user has available to them,
+   * positive
+   * @param CDRDate The date to rate at
+   * @return The number of RUM units that can be purchased for the available
+   * balance
+   * @throws ProcessingException
+   */
   @Override
   public double authCalculateThreshold(String priceModel, double availableBalance, long CDRDate)
-    throws ProcessingException
-  {
-    if(availableBalance <= 0){
-       return 0;
+          throws ProcessingException {
+    if (availableBalance <= 0) {
+      return 0;
     }
 
-      ArrayList<RateMapEntry>  tmpRateModel;
+    ArrayList<RateMapEntry> tmpRateModel;
 
-      double tmpcalculationResult;
+    double tmpcalculationResult;
 
     // Look up the rate model to use
     tmpRateModel = RRC.getPriceModel(priceModel);

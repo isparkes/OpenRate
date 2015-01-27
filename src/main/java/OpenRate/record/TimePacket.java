@@ -63,13 +63,6 @@ package OpenRate.record;
  */
 public class TimePacket
 {
-  /**
-   * CVS version info - Automatically captured and written to the Framework
-   * Version Audit log at Framework startup. For more information
-   * please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Framework_Version_Map'>click here</a> to go to wiki page.
-   */
-  public static String CVS_MODULE_INFO = "OpenRate, $RCSfile: TimePacket.java,v $, $Revision: 1.12 $, $Date: 2013-05-13 18:12:11 $";
-
  /**
   * The day of week of the segment
   */
@@ -114,4 +107,40 @@ public class TimePacket
   * The time result found for the segment
   */
   public String TimeResult;
+  
+ /**
+  * The selected price model group
+  */
+  public String  priceGroup = null;
+
+ /**
+  * The selected price model
+  */
+  public String  priceModel = null;
+
+  public TimePacket(TimePacket toClone) {
+    this.DayofWeek = toClone.DayofWeek;
+    this.Duration = toClone.Duration;
+    this.EndSecond = toClone.EndSecond;
+    this.StartSecond = toClone.StartSecond;
+    this.StartTime = toClone.StartTime;
+    this.TimeModel = toClone.TimeModel;
+    this.TimeResult = toClone.TimeResult;
+    this.TotalDuration = toClone.TotalDuration;
+    this.priceGroup = toClone.priceGroup;
+    this.priceModel = toClone.priceModel;
+  }
+  
+  public TimePacket() {
+  }
+  
+  /**
+   * Create a clone of this charge packet
+   *
+   * @return The cloned Charge Packet
+   */
+  public TimePacket Clone() {
+    return new TimePacket(this);
+  }
+
 }

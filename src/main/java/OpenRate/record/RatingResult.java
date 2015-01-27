@@ -76,6 +76,11 @@ public class RatingResult
   public double RUMUsed = 0;
 
  /**
+  * the amount of RUM consumed rounded to the next beat
+  */
+  public double RUMUsedRounded = 0;
+
+ /**
   * the breakdown of the individual rating steps
   */
   public  ArrayList<RatingBreakdown> breakdown;

@@ -117,4 +117,31 @@ package OpenRate.record;
     * Validity to of the step
     */
     public long   validTo;
+    
+    public RatingBreakdown(RatingBreakdown toCloneRB) {
+        this.beat = toCloneRB.beat;
+        this.beatCount = toCloneRB.beatCount;
+        this.chargeBase = toCloneRB.chargeBase;
+        this.factor = toCloneRB.factor;
+        this.ratedAmount = toCloneRB.ratedAmount;
+        this.RUMRated = toCloneRB.RUMRated;
+        this.stepUsed = toCloneRB.stepUsed;
+        this.tierFrom = toCloneRB.tierFrom;
+        this.tierTo = toCloneRB.tierTo;
+        this.validFrom = toCloneRB.validFrom;
+        this.validTo = toCloneRB.validTo;
+    }
+    
+    public RatingBreakdown() {
+    }
+    
+  /**
+   * Create a clone of this charge packet
+   *
+   * @return The cloned Charge Packet
+   */
+  public RatingBreakdown Clone() {
+    return new RatingBreakdown(this);
+  }
+
   }
