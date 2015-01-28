@@ -80,8 +80,8 @@ import java.util.ArrayList;
  *
  * This module can create many charge packets out of each 'seed' charge packet,
  * one for each zone that has been impacted. Zones of a similar type (e.g.
- * 'peak' or 'off-peak' are not aggregted, but instead are presented as
- * individual segements of validity, and should be rolled-up if necessary after
+ * 'peak' or 'off-peak' are not aggregated, but instead are presented as
+ * individual segments of validity, and should be rolled-up if necessary after
  * rating.
  *
  * Fields Read: - Charge Packet:timeModel - Charge Packet:Valid - Charge
@@ -102,6 +102,11 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
    * Perform splitting
    */
   public static final int TIME_SPLITTING_CHECK_SPLITTING = 1;
+
+  /**
+   * Perform splitting and take into account beats
+   */
+  public static final int TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING = 2;
 
   /**
    * Perform no splitting - we are in a holiday
@@ -133,7 +138,6 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
    */
   protected void performRUMTimeMatch(RatingRecord RecordToMatch) throws ProcessingException {
     int Index;
-    String TimeZone;
     RecordError tmpError;
     ChargePacket tmpCP;
     boolean Errored = false;
@@ -171,10 +175,10 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
             case TIME_SPLITTING_NO_CHECK: {
               try {
                 // Use the time zoning from AbstractTimeMatch on this charge packet
-                TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.EventStartDate,CurrentRecord.EventStartDate);
+                TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.EventStartDate, CurrentRecord.EventStartDate);
                 tmpCP.setTimeZones(TimeZones);
-                
-                if (TimeZones.size() == 1) {                  
+
+                if (TimeZones.size() == 1) {
                   // Reset the time splitting flag
                   tmpCP.timeSplitting = 0;
                 } else if (TimeZones.isEmpty()) {
@@ -203,7 +207,8 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
               }
               break;
             }
-            case TIME_SPLITTING_CHECK_SPLITTING: {
+            case TIME_SPLITTING_CHECK_SPLITTING:
+            case TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING: {
               try {
                 // Check the end date, only if we need it for splitting
                 if (CurrentRecord.EventEndDate == null) {
@@ -221,8 +226,8 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
                 // Use the time zoning from AbstractTimeMatch on this charge packet
                 TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.EventStartDate, CurrentRecord.EventEndDate);
                 tmpCP.setTimeZones(TimeZones);
-                
-                if (TimeZones.size() == 1) {                  
+
+                if (TimeZones.size() == 1) {
                   // Reset the time splitting flag
                   tmpCP.timeSplitting = 0;
                 } else if (TimeZones.isEmpty()) {

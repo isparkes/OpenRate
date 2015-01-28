@@ -326,59 +326,55 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
         double rumExpectedCumulative = 0;
         double rumRoundedCumulative = 0;
         for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
-          RatingResult tmpRatingResult = null;
           try {
             //Use the rateCalculateDuration method defined in AbstractRateCalc to
             //calculate the price
             if (tmpTZ.priceGroup != null) {
+              RatingResult tmpRatingResult;
 
+              // Get the rum value for the time zone according to the rounding rules
+              double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, tmpCP.timeSplitting, tmpTZ.Duration, tmpTZ.TotalDuration);
+              rumExpectedCumulative += tmpTZ.Duration;
+                    
               // perform the rating
               switch (tmpCP.ratingType) {
                 case ChargePacket.RATING_TYPE_FLAT: {
                   // Flat Rating
-                  tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                   tmpCP.chargedValue += tmpRatingResult.RatedValue;
                   tmpCP.addBreakdown(tmpRatingResult.breakdown);
                   break;
                 }
-                case ChargePacket.RATING_TYPE_TIERED: {
+                case ChargePacket.RATING_TYPE_TIERED:
+                default: {
                   // Tiered Rating
-                  if (tmpCP.timeSplitting == 1) {
-                    double thisZoneRUM = RUMValue * ((tmpTZ.Duration - rumRoundedCumulative + rumExpectedCumulative) / (double) tmpTZ.TotalDuration);
-                    if (thisZoneRUM < 0) {
-                      thisZoneRUM = 0;
-                    }
-                    rumExpectedCumulative += tmpTZ.Duration;
                     tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                     tmpCP.chargedValue += tmpRatingResult.RatedValue;
                     tmpCP.addBreakdown(tmpRatingResult.breakdown);
-                    rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
-                  } else {
-                    tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, tmpCP.rumQuantity, 0, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                    tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                    tmpCP.addBreakdown(tmpRatingResult.breakdown);
-                  }
                   break;
                 }
                 case ChargePacket.RATING_TYPE_THRESHOLD: {
                   // Threshold Rating
-                  tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, tmpCP.rumQuantity, 0, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                   tmpCP.chargedValue += tmpRatingResult.RatedValue;
                   tmpCP.addBreakdown(tmpRatingResult.breakdown);
                   break;
                 }
                 case ChargePacket.RATING_TYPE_EVENT: {
                   // Event Rating
-                  tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
                   tmpCP.chargedValue += tmpRatingResult.RatedValue;
                   tmpCP.addBreakdown(tmpRatingResult.breakdown);
                   break;
                 }
               }
 
-              if ((tmpCP.consumeRUM) && (tmpRatingResult != null)) {
+              if (tmpCP.consumeRUM) {
                 CurrentRecord.updateRUMValue(tmpCP.rumName, -tmpRatingResult.RUMUsed);
               }
+              
+              // Maintain a track of what we 
+              rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
             } else {
               // we do not have a price group, set the cp invalid
               tmpCP.Valid = false;
@@ -404,6 +400,45 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
     }
 
     return true;
+  }
+
+  /**
+   * Apply beat rounding to the RUM value if required by the time splitting.
+   *
+   * @param rawRUMAmount
+   * @param rumRoundedCumulative
+   * @param rumExpectedCumulative
+   * @param timeSplittingMode
+   * @param duration
+   * @param totalDuration
+   * @return
+   */
+  private double getRUMForTimeZone(double rawRUMAmount, double rumRoundedCumulative, double rumExpectedCumulative, int timeSplittingMode, int duration, int totalDuration) {
+    switch (timeSplittingMode) {
+      case AbstractRUMTimeMatch.TIME_SPLITTING_NO_CHECK:
+      case AbstractRUMTimeMatch.TIME_SPLITTING_HOLIDAY: {
+        // No processing needed
+        return rawRUMAmount;
+      }
+      case AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING: {
+        // we accept the raw RUM value simply divided proportionally to the time
+        return rawRUMAmount * (duration / (double) totalDuration);
+      }
+      case AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING: {
+        // Adjust the RUM for this zone to align to beat rounding
+        double roundedRUMAmount = rawRUMAmount * ((duration - rumRoundedCumulative + rumExpectedCumulative) / (double) totalDuration);
+
+        if (roundedRUMAmount < 0) {
+          return 0;
+        } else {
+          return roundedRUMAmount;
+        }
+      }
+      default: {
+        // not expecting this, just accept the raw RUM value
+        return rawRUMAmount;
+      }
+    }
   }
 
 // -----------------------------------------------------------------------------

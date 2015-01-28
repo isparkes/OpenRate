@@ -66,7 +66,7 @@ import java.util.ArrayList;
 /**
  * This class provides the abstract base for the more complex rating plug in.
  * The implementation class should not have to do much more than call the
- * "PerformRating", after having set the appropriate RUM values.
+ * "performRating", after having set the appropriate RUM values.
  *
  * The rating is performed on the Charge Packets that should already be and
  * should have the "priceGroup" field filled with an appropriate value. Usually
@@ -86,7 +86,6 @@ import java.util.ArrayList;
 public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc {
 
   // This is the object will be using the find the cache manager
-
   private ICacheManager CMRR = null;
 
   // The zone model object
@@ -155,69 +154,95 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc {
 // ---------------------- Start of exposed functions ---------------------------
 // -----------------------------------------------------------------------------
   /**
-   * PerformRating is the main call for the RUM basd rating. It performs the
+   * performRating is the main call for the RUM basd rating. It performs the
    * rating operations on a record of type "RatingRecord".
    *
    * @param CurrentRecord
    * @return True if rating was performed without errors, otherwise false
    * @throws ProcessingException
    */
-  public boolean PerformRating(RatingRecord CurrentRecord)
+  public boolean performRating(RatingRecord CurrentRecord)
           throws ProcessingException {
-    int Index;
-    ChargePacket tmpCP;
-    RatingResult tmpRatingResult;
     RecordError tmpError;
 
+    // ***************************** Rating Evaluation**************************
     // Rate all of the charge packets that are to be rated - loop through the
     // charge packets and apply the time zone results
-    for (Index = 0; Index < CurrentRecord.getChargePacketCount(); Index++) {
-      tmpCP = CurrentRecord.getChargePacket(Index);
-
-      // if the packet is invalid, skip it
+    for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
       if (tmpCP.Valid) {
+
+        // get the RUM quantity
+        double RUMValue = CurrentRecord.getRUMValue(tmpCP.rumName);
+
+        // valiables that we use to be able to manage beat rollover between time packets
+        double rumExpectedCumulative = 0;
+        double rumRoundedCumulative = 0;
         for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
           try {
-            // perform the rating
-            switch (tmpCP.ratingType) {
-              case ChargePacket.RATING_TYPE_FLAT: {
-                // Flat Rating
-                tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                tmpCP.breakDown = tmpRatingResult.breakdown;
-                break;
+            //Use the rateCalculateDuration method defined in AbstractRateCalc to
+            //calculate the price
+            if (tmpTZ.priceGroup != null) {
+              RatingResult tmpRatingResult;
+
+              // Get the rum value for the time zone according to the rounding rules
+              double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, tmpCP.timeSplitting, tmpTZ.Duration, tmpTZ.TotalDuration);
+              rumExpectedCumulative += tmpTZ.Duration;
+
+              // perform the rating
+              switch (tmpCP.ratingType) {
+                case ChargePacket.RATING_TYPE_FLAT: {
+                  // Flat Rating
+                  tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
+                case ChargePacket.RATING_TYPE_TIERED:
+                default: {
+                  // Tiered Rating
+                  tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
+                case ChargePacket.RATING_TYPE_THRESHOLD: {
+                  // Threshold Rating
+                  tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
+                case ChargePacket.RATING_TYPE_EVENT: {
+                  // Event Rating
+                  tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  break;
+                }
               }
-              case ChargePacket.RATING_TYPE_TIERED: {
-                // Tiered Rating
-                tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, tmpCP.rumQuantity, 0, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                tmpCP.breakDown = tmpRatingResult.breakdown;
-                break;
+
+              if (tmpCP.consumeRUM) {
+                CurrentRecord.updateRUMValue(tmpCP.rumName, -tmpRatingResult.RUMUsed);
               }
-              case ChargePacket.RATING_TYPE_THRESHOLD: {
-                // Threshold Rating
-                tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, tmpCP.rumQuantity, 0, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                tmpCP.breakDown = tmpRatingResult.breakdown;
-                break;
-              }
-              case ChargePacket.RATING_TYPE_EVENT: {
-                // Event Rating
-                tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, tmpCP.rumQuantity, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                tmpCP.breakDown = tmpRatingResult.breakdown;
-                break;
-              }
+
+              // Maintain a track of what we 
+              rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
+            } else {
+              // we do not have a price group, set the cp invalid
+              tmpCP.Valid = false;
             }
           } catch (ProcessingException pe) {
             // Log the error
             getPipeLog().error("RUM Rating exception <" + pe.getMessage() + ">");
 
             if (reportExceptions == false) {
-              // we deal with it
-              tmpError = new RecordError("ERR_RUM_RATING", ErrorType.SPECIAL, getSymbolicName());
-              CurrentRecord.addError(tmpError);
-              return false;
+              // Only error if this is a base packet
+              if (tmpCP.priority == 0) {
+                tmpError = new RecordError("ERR_RUM_RATING", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+                CurrentRecord.addError(tmpError);
+
+                return false;
+              }
             } else {
               throw new ProcessingException(pe, getSymbolicName());
             }
@@ -232,6 +257,45 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc {
 // -----------------------------------------------------------------------------
 // ----------------------- Start of utility functions --------------------------
 // -----------------------------------------------------------------------------
+  /**
+   * Apply beat rounding to the RUM value if required by the time splitting.
+   *
+   * @param rawRUMAmount
+   * @param rumRoundedCumulative
+   * @param rumExpectedCumulative
+   * @param timeSplittingMode
+   * @param duration
+   * @param totalDuration
+   * @return
+   */
+  private double getRUMForTimeZone(double rawRUMAmount, double rumRoundedCumulative, double rumExpectedCumulative, int timeSplittingMode, int duration, int totalDuration) {
+    switch (timeSplittingMode) {
+      case AbstractRUMTimeMatch.TIME_SPLITTING_NO_CHECK:
+      case AbstractRUMTimeMatch.TIME_SPLITTING_HOLIDAY: {
+        // No processing needed
+        return rawRUMAmount;
+      }
+      case AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING: {
+        // we accept the raw RUM value
+        return rawRUMAmount;
+      }
+      case AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING: {
+        // Adjust the RUM for this zone to align to beat rounding
+        double roundedRUMAmount = rawRUMAmount * ((duration - rumRoundedCumulative + rumExpectedCumulative) / (double) totalDuration);
+
+        if (roundedRUMAmount < 0) {
+          return 0;
+        } else {
+          return roundedRUMAmount;
+        }
+      }
+      default: {
+        // not expecting this, just accept the raw RUM value
+        return rawRUMAmount;
+      }
+    }
+  }
+
   /**
    * Set the state of the exception reporting. True means that we let the parent
    * module deal with it, false means that we deal with it ourselves.

@@ -85,7 +85,6 @@ import java.util.ArrayList;
 public abstract class AbstractRUMMap extends AbstractPlugIn {
 
   // This is the object will be using the find the cache manager
-
   private ICacheManager CMRM = null;
 
   // The zone model object
@@ -177,20 +176,26 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
     RecordError tmpError;
     ArrayList<RUMMapCache.RUMMapEntry> tmpRUMMap;
     RUMMapCache.RUMMapEntry tmpRUMMapEntry;
-    String priceGroup;
     ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
     boolean replace = false;
 
+    // ****************************** RUM Expansion ****************************
     // Loop over the charge packets
     for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
       // Get the price group for this charge packet
       if (tmpCP.Valid) {
         for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
-          priceGroup = tmpTZ.priceGroup;
 
-        // create a charge packet for each RUM/Resource/price model tuple as located
+          if (tmpTZ.priceGroup == null) {
+            tmpError = new RecordError("ERR_PRICE_GROUP_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+            CurrentRecord.addError(tmpError);
+
+            // found an error - get out
+            return false;
+          }
+          // create a charge packet for each RUM/Resource/price model tuple as located
           // in the RUM Map
-          tmpRUMMap = RMC.getRUMMap(priceGroup);
+          tmpRUMMap = RMC.getRUMMap(tmpTZ.priceGroup);
 
           if (tmpRUMMap == null) {
             tmpError = new RecordError("ERR_PRICE_GROUP_MAP_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
@@ -200,7 +205,7 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
             return false;
           }
 
-        // if we are doing 1:1 price group:price model, we'll use the existing
+          // if we are doing 1:1 price group:price model, we'll use the existing
           // charge packet, otherwise we have to do some cloning. Normally, we'll
           // be using 1:1
           if (tmpRUMMap.size() == 1) {
@@ -215,8 +220,9 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
             tmpCP.resource = tmpRUMMapEntry.Resource;
             tmpCP.resCounter = tmpRUMMapEntry.ResourceCounter;
             tmpCP.ratingType = tmpRUMMapEntry.RUMType;
+            tmpCP.consumeRUM = tmpRUMMapEntry.ConsumeRUM;
 
-          // Fill the RUM value
+            // Fill the RUM value
             // get the rating type
             switch (tmpRUMMapEntry.RUMType) {
               case 1: {
@@ -246,7 +252,7 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
             for (PMIndex = 0; PMIndex < tmpRUMMap.size(); PMIndex++) {
               tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
 
-            // Copy the CP over - we do this for each model in the group
+              // Copy the CP over - we do this for each model in the group
               // as we will be performing rating on each of them
               // Note that we create a new list of cloned charge packets, and
               // don't try to re-use the original ones. This saves a loop of

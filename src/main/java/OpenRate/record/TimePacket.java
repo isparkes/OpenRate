@@ -63,6 +63,11 @@ package OpenRate.record;
  */
 public class TimePacket
 {
+  /**
+   * Used for numbering the packets
+   */
+  public int packetNumber;
+  
  /**
   * The day of week of the segment
   */

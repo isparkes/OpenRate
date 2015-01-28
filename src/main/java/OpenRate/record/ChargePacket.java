@@ -56,7 +56,6 @@ package OpenRate.record;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * A Charge Packet holds the rating information to drive the zoning and rating.
