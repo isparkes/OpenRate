@@ -264,6 +264,19 @@ public class ChargePacket {
     this.TimeZones = TimeZones;
   }
   
+  /**
+   * Add a TimePacket to the TimePacket list. If the list is not yet set up,
+   * set it up.
+   * 
+   * @param tmpTZ 
+   */
+  public void addTimeZone(TimePacket tmpTZ) {
+    if (this.TimeZones == null) {
+      this.TimeZones = new ArrayList<>();
+    }
+    this.TimeZones.add(tmpTZ);
+  }
+  
   public void addBreakdown(ArrayList<RatingBreakdown> newBreakdownList) {
     if (breakDown == null) {
       breakDown = newBreakdownList;
