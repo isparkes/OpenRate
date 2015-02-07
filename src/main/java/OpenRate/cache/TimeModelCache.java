@@ -75,26 +75,26 @@ import java.util.*;
  * This class implements the time model that can evaluate the
  * date and time of the CDR to find the corresponding time segment
  * that the call was made in (peak/off-peak etc). The CDR lookup
- * enters the lookup with the name of the Logic to search the model, and then
- * use the date and time of the CDR to locate the time segment to be used.
- *
- * The day range used in this is the "Calendar" object, minus 1
- * i.e. 0 = Sunday
- * ...
- *      6 = Saturday
- *
- * The format of the data to be loaded into the cache is:
- *
- * Model:
- *   Model      The identifier of the model
- *   Day        The idenitifier of the day, mapped if necessary through the "day
- *              map"
- *   StartTime  The start time of the period, in the format HH:MM
- *   EndTime    The end time of the period, in the format HH:MM
- *   TimeResult The result of the mapping
- *
- * NOTE: that the end times should be defined EXCLUSIVE so that the last minute
- * of the day is 23:59 NOT 00:00
+ enters the lookup with the name of the Logic to search the model, and then
+ use the date and time of the CDR to locate the time segment to be used.
+
+ The day range used in this is the "Calendar" object, minus 1
+ i.e. 0 = Sunday
+ ...
+      6 = Saturday
+
+ The format of the data to be loaded into the cache is:
+
+ Model:
+   Model      The identifier of the model
+   Day        The idenitifier of the day, mapped if necessary through the "day
+              map"
+   startTime  The start time of the period, in the format HH:MM
+   endTime    The end time of the period, in the format HH:MM
+   timeResult The result of the mapping
+
+ NOTE: that the end times should be defined EXCLUSIVE so that the last minute
+ of the day is 23:59 NOT 00:00
  *
  * @author i.sparkes
  */
@@ -587,17 +587,17 @@ public class TimeModelCache
     TimePacket tmpPacket;
 
     tmpPacket = new TimePacket();
-    tmpPacket.DayofWeek = Day;
-    tmpPacket.StartTime = StartTime;
-    tmpPacket.StartSecond = StartSecond;
-    tmpPacket.EndTime = EndTime;
-    tmpPacket.EndSecond = EndSecond;
-    tmpPacket.TimeModel = TimeModel;
-    tmpPacket.TimeResult = TimeResult;
-    tmpPacket.TotalDuration = TotalDuration;
+    tmpPacket.dayofWeek = Day;
+    tmpPacket.startTime = StartTime;
+    tmpPacket.startSecond = StartSecond;
+    tmpPacket.endTime = EndTime;
+    tmpPacket.endSecond = EndSecond;
+    tmpPacket.timeModel = TimeModel;
+    tmpPacket.timeResult = TimeResult;
+    tmpPacket.totalDuration = TotalDuration;
 
     // calculate the duration
-    tmpPacket.Duration = (EndTime - StartTime)*60 - StartSecond + EndSecond;
+    tmpPacket.duration = (EndTime - StartTime)*60 - StartSecond + EndSecond;
 
     packetList.add(tmpPacket);
   }

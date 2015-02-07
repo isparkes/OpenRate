@@ -71,47 +71,47 @@ public class TimePacket
  /**
   * The day of week of the segment
   */
-  public int DayofWeek;
+  public int dayofWeek;
 
  /**
   * The start time (hours * 60 + minutes) of the segment
   */
-  public int StartTime;
+  public int startTime;
 
  /**
   * The start second of the segment
   */
-  public int StartSecond;
+  public int startSecond;
 
  /**
   * The end time (hours * 60 + minutes) of the segment
   */
-  public int EndTime;
+  public int endTime;
 
  /**
   * The end second of the segment
   */
-  public int EndSecond;
+  public int endSecond;
 
  /**
   * The duration (seconds) second of the segment
   */
-  public int Duration;
+  public int duration;
 
  /**
   * The total original duration of the event
   */
-  public int TotalDuration;
+  public int totalDuration;
 
  /**
   * The time model applied to the segment
   */
-  public String TimeModel;
+  public String timeModel;
 
  /**
   * The time result found for the segment
   */
-  public String TimeResult;
+  public String timeResult;
   
  /**
   * The selected price model group
@@ -124,14 +124,14 @@ public class TimePacket
   public String  priceModel = null;
 
   public TimePacket(TimePacket toClone) {
-    this.DayofWeek = toClone.DayofWeek;
-    this.Duration = toClone.Duration;
-    this.EndSecond = toClone.EndSecond;
-    this.StartSecond = toClone.StartSecond;
-    this.StartTime = toClone.StartTime;
-    this.TimeModel = toClone.TimeModel;
-    this.TimeResult = toClone.TimeResult;
-    this.TotalDuration = toClone.TotalDuration;
+    this.dayofWeek = toClone.dayofWeek;
+    this.duration = toClone.duration;
+    this.endSecond = toClone.endSecond;
+    this.startSecond = toClone.startSecond;
+    this.startTime = toClone.startTime;
+    this.timeModel = toClone.timeModel;
+    this.timeResult = toClone.timeResult;
+    this.totalDuration = toClone.totalDuration;
     this.priceGroup = toClone.priceGroup;
     this.priceModel = toClone.priceModel;
   }

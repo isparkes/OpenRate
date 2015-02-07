@@ -645,9 +645,9 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
           if (tmpCP.getTimeZones() != null)
           {
             for (TimePacket tmpTz : tmpCP.getTimeZones()) {
-              tmpDumpList.add("      Time Result  " + pad + "= <" + tmpTz.TimeResult + ">");              
-              tmpDumpList.add("      Duration     " + pad + "= <" + tmpTz.Duration + ">");
-              tmpDumpList.add("      Total Dur    " + pad + "= <" + tmpTz.TotalDuration + ">");
+              tmpDumpList.add("      Time Result  " + pad + "= <" + tmpTz.timeResult + ">");              
+              tmpDumpList.add("      Duration     " + pad + "= <" + tmpTz.duration + ">");
+              tmpDumpList.add("      Total Dur    " + pad + "= <" + tmpTz.totalDuration + ">");
               tmpDumpList.add("      Price Group  " + pad + "= <" + tmpTz.priceGroup + ">");
               tmpDumpList.add("      Price Model  " + pad + "= <" + tmpTz.priceModel + ">");
               tmpDumpList.add("      ----------------");

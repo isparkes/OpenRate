@@ -185,8 +185,8 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc {
               RatingResult tmpRatingResult;
 
               // Get the rum value for the time zone according to the rounding rules
-              double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, tmpCP.timeSplitting, tmpTZ.Duration, tmpTZ.TotalDuration);
-              rumExpectedCumulative += tmpTZ.Duration;
+              double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, tmpCP.timeSplitting, tmpTZ.duration, tmpTZ.totalDuration);
+              rumExpectedCumulative += tmpTZ.duration;
 
               // perform the rating
               switch (tmpCP.ratingType) {
