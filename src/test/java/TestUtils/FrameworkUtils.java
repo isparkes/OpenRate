@@ -128,19 +128,28 @@ public class FrameworkUtils {
     Class<?>          ResourceClass;
     IResource         Resource;
     
-    // Get a cache factory
-    System.out.println("  Initialising Cache Factory Resource...");
-    resourceName         = "CacheFactory";
-    tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
-    ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
-    Resource.init(resourceName);
-    ctx.register(resourceName, Resource);
+    // Get a cache factory - we do the catch here, because we want to see the
+    // diagnostic message from the Framework exception handler. If we don't catch,
+    // we won't see it.
+    try {
+      System.out.println("  Initialising Cache Factory Resource...");
+      resourceName         = "CacheFactory";
+      tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
+      ResourceClass        = Class.forName(tmpResourceClassName);
+      Resource             = (IResource)ResourceClass.newInstance();
+      Resource.init(resourceName);
+      ctx.register(resourceName, Resource);
+    } catch (InitializationException ex) {
+      System.out.println("Exception starting up Cache Factory: " + ex.getMessage());
+    }
 
     // Check for exceptions
     if (OpenRate.getFrameworkExceptionHandler().hasError())
     {
-      Assert.fail("Exception: " + OpenRate.getFrameworkExceptionHandler().getExceptionList().get(0).getLocalizedMessage());
+      for (Exception exception : OpenRate.getFrameworkExceptionHandler().getExceptionList()) {
+        System.err.println("Exception: " + exception.getMessage());
+      }
+      Assert.fail("Exception szatzing up the cache factory");
     }
   }
   
@@ -188,6 +197,7 @@ public class FrameworkUtils {
  /**
   * Gets the DB connection for a given cache.
   * 
+   * @param cacheName
   * @return
   * @throws InitializationException
   * @throws ClassNotFoundException

@@ -181,7 +181,7 @@ public class OpenRateTest {
    * Test of application startup. This test builds a real (but very simple)
    * processing pipeline using the standard framework startup procedure.
    */
-  @Test
+  @Test(timeout = 10000)
   public void testApplicationStartup() {
     System.out.println("--> OpenRate startup");
 
@@ -233,7 +233,7 @@ public class OpenRateTest {
    * Test of application startup. This test builds a real (but very simple)
    * processing pipeline using the standard framework startup procedure.
    */
-  @Test
+  @Test(timeout = 10000)
   public void testApplicationStartupFail() {
     System.out.println("--> OpenRate startup failure: Properties not found");
 
@@ -260,7 +260,7 @@ public class OpenRateTest {
    * Test of application startup. This test builds a real (but very simple)
    * processing pipeline using the standard framework startup procedure.
    */
-  @Test
+  @Test(timeout = 10000)
   public void testApplicationCloseViaSemaphore() {
     System.out.println("--> OpenRate shutdown on Semaphore");
 
@@ -310,7 +310,7 @@ public class OpenRateTest {
    * Test of application console. This test builds a real (but very simple)
    * processing pipeline using the standard framework startup procedure.
    */
-  @Test
+  @Test(timeout = 10000)
   public void testApplicationConsole() {
     System.out.println("--> OpenRate console");
 
