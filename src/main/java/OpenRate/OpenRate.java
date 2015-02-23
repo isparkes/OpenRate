@@ -340,7 +340,7 @@ public class OpenRate
   }
 
   /**
-   * Get the global version from the version file. 
+   * Get the global version from the version file.
    *
    * @return the application version
    */
@@ -486,7 +486,7 @@ public class OpenRate
     System.out.println("");
     System.out.println("--------------------------------------------------------");
     System.out.println("  " + getApplicationVersionString());
-    System.out.println("  Copyright The OpenRate Project, 2005-2014");
+    System.out.println("  Copyright The OpenRate Project, 2005-2015");
     System.out.println("--------------------------------------------------------");
 
     // Start up the framework and load the resources etc
@@ -601,7 +601,7 @@ public class OpenRate
 
       // Log the version information
       getFwLog().info("OpenRate version: " + getApplicationVersion() + " (" + getBuildHash() + ")");
-      
+
       // Initalise the error log - this is intended to log all stack trace
       // type events, keeping the main output as clean and businesslike as possible.
       setErrorLog(LogUtil.getLogUtil().getLogger("ErrorLog"));
@@ -1071,7 +1071,7 @@ public class OpenRate
       @Override
       public void run() {
         if (shutdownHookCalls == 0) {
-                    // Hook triggered, starting shutdown process
+          // Hook triggered, starting shutdown process
           // Stop all pipes
           stopAllPipelines();
 
@@ -1227,7 +1227,7 @@ public class OpenRate
     } catch (OutOfMemoryError ex) {
       frameworkExceptionHandler.reportException(new InitializationException("Out of memory creating <" + tmpResourceName + ">", getSymbolicName(), true, true, ex));
     } catch (InterruptedException ex) {
-      frameworkExceptionHandler.reportException(new InitializationException("Unexpected exception creating Resource <"
+      frameworkExceptionHandler.reportException(new InitializationException("Interrupted exception creating Resource <"
               + tmpResourceName + ">", ex, getSymbolicName()));
     } catch (Throwable th) {
       frameworkExceptionHandler.reportException(new InitializationException("Unexpected exception creating Resource <"
