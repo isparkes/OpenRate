@@ -70,19 +70,7 @@
 					<buildNumberPropertyName>sources.version</buildNumberPropertyName>
 					<timestampPropertyName>build.custtimestamp</timestampPropertyName>
 					<timestampFormat>{0,date,yyyyMMdd}</timestampFormat>
-					<providerImplementations>
-						<svn>git</svn>
-					</providerImplementations>
 				</configuration>
-        
-        <!-- SVN Version 1.7 -->
-				<dependencies>
-					<dependency>
-						<groupId>org.tmatesoft.svnkit</groupId>
-						<artifactId>svnkit</artifactId>
-						<version>1.7.5</version>
-					</dependency>
-				</dependencies>
 			</plugin>
       
       <!-- Update version file -->
@@ -328,13 +316,13 @@
 		</plugins>
 	</reporting>
 	
-  <!-- link to our subversion repository -->
+  <!-- link to our git repository -->
 	<scm>
-		<developerConnection>scm:svn:http://tsm-consulting.de/svn/OpenRate</developerConnection>
+		<connection>scm:git:git://github.com/isparkes/OpenRate.git</connection>
 	</scm>
   
   <!-- link to our Jenkins -->
 	<ciManagement>
-		<url>http://obrm:8888/job/snocsFaces/</url>
+		<url>http://obrm:8888/job/openrate/</url>
 	</ciManagement>
 </project>

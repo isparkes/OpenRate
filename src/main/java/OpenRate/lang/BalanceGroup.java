@@ -56,6 +56,7 @@
 package OpenRate.lang;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -72,7 +73,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BalanceGroup
 {
   // Used to hold the counters
-  private ConcurrentHashMap<Integer, CounterGroup> counterList;
+  private final Map<Integer, CounterGroup> counterList;
 
   // Used for keeping track of balances to purge
   private boolean balanceDirty = false;
@@ -109,12 +110,14 @@ public class BalanceGroup
       // Create the new counter list
       tmpCounterGroup = new CounterGroup();
       counterList.put(counterId,tmpCounterGroup);
-      return tmpCounterGroup.addCounter(++currentRecId,validFrom,validTo,currentBal);
+      ++currentRecId;
+      return tmpCounterGroup.addCounter(currentRecId,validFrom,validTo,currentBal);
     }
     else
     {
       tmpCounterGroup = counterList.get(counterId);
-      return tmpCounterGroup.addCounter(++currentRecId,validFrom,validTo,currentBal);
+      ++currentRecId;
+      return tmpCounterGroup.addCounter(currentRecId,validFrom,validTo,currentBal);
     }
   }
 
@@ -195,7 +198,7 @@ public class BalanceGroup
   */
   public void markDirty()
   {
-    balanceDirty = true;
+    setBalanceDirty(true);
   }
 
  /**
@@ -216,5 +219,19 @@ public class BalanceGroup
   public long getRecId()
   {
     return currentRecId;
+  }
+
+  /**
+   * @return the balanceDirty
+   */
+  public boolean isBalanceDirty() {
+    return balanceDirty;
+  }
+
+  /**
+   * @param balanceDirty the balanceDirty to set
+   */
+  public void setBalanceDirty(boolean balanceDirty) {
+    this.balanceDirty = balanceDirty;
   }
 }

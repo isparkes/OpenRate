@@ -75,6 +75,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -132,7 +133,7 @@ public class BalanceCache extends AbstractCache
    /**
     * The internal cache is very simply a huge array. No black magic here
     */
-   protected ConcurrentHashMap<Long, BalanceGroup> balanceCache;
+   protected Map<Long, BalanceGroup> balanceCache;
 
    // used for handling date conversions
    private static ConversionUtils conv;
