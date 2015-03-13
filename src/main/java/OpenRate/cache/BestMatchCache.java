@@ -113,7 +113,7 @@ public class BestMatchCache
   private final static String SERVICE_DUMP_MAP = "DumpMap";
 
   // This is the null result
-  private ArrayList<String>     noResult = new ArrayList<>();
+  private final ArrayList<String> noResult = new ArrayList<>();
 
  /** Constructor
   * Creates a new instance of the Group Cache. The group Cache
