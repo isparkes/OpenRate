@@ -79,7 +79,7 @@ import org.junit.*;
 public class OpenRateTest {
 
   // The revision number has to be changed to match the current revision
-  String OpenRateVersion = "V1.5.2.2";
+  String OpenRateVersion = "V1.5.2.3";
 
   // By default we check that the build date is created on each build
   SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -382,7 +382,8 @@ public class OpenRateTest {
     try {
       while ((responseLine = inputReader.readLine()) != null) {
         // Check that we got the right response
-        Assert.assertEquals(headerResponse[index++], responseLine);
+        Assert.assertEquals(headerResponse[index], responseLine);
+        index++;
         System.out.println("Server: " + responseLine);
         if (index == 7) {
           break;
@@ -398,9 +399,10 @@ public class OpenRateTest {
       // Now see if we got the promt (this is not a full line)
       while ((responseVal = (char) inputReader.read()) != -1) {
         System.out.print(responseVal);
-        if (index++ == 10) {
+        if (index == 10) {
           break;
         }
+        index++;
       }
     } catch (IOException ex) {
       Logger.getLogger(OpenRateTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -435,7 +437,8 @@ public class OpenRateTest {
       try {
         while ((responseLine = inputReader.readLine()) != null) {
           // Check that we got the right response
-          Assert.assertEquals(moduleResponse[index++], responseLine);
+          Assert.assertEquals(moduleResponse[index], responseLine);
+          index++;
           System.out.println("Server: " + responseLine);
           if (index == 11) {
             break;

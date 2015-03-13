@@ -652,7 +652,6 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
               tmpDumpList.add("      Price Model  " + pad + "= <" + tmpTz.priceModel + ">");
               tmpDumpList.add("      ----------------");
             }
-            tmpDumpList.add("    ----------------");
           } else {
             tmpDumpList.add("	----- NO TZ -----");
           }
@@ -674,7 +673,6 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
               tmpDumpList.add("      Valid To     " + pad + "= <" + tmpRB.validTo + ">");
               tmpDumpList.add("      ----------------");
             }
-            tmpDumpList.add("    ----------------");
           } else {
             tmpDumpList.add("	----- NO RB -----");
           }

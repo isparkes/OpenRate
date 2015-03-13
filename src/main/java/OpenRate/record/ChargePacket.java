@@ -56,6 +56,7 @@ package OpenRate.record;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A Charge Packet holds the rating information to drive the zoning and rating.
@@ -182,10 +183,10 @@ public class ChargePacket {
    * The rating breakdown tells us about calculation that we performed at each
    * step of the rating.
    */
-  public ArrayList<RatingBreakdown> breakDown;
+  public List<RatingBreakdown> breakDown;
 
   // Time zones that we are using
-  private ArrayList<TimePacket> TimeZones;
+  private List<TimePacket> TimeZones;
   
   // Whether we are to consume the RUM or not
   public boolean consumeRUM;
@@ -200,8 +201,9 @@ public class ChargePacket {
    * Create a clone of a charge packet
    *
    * @param toClone
+   * @param deep
    */
-  public ChargePacket(ChargePacket toClone) {
+  public ChargePacket(ChargePacket toClone,boolean deep) {
     this.packetType = toClone.packetType;
     this.ratePlanName = toClone.ratePlanName;
     this.zoneModel = toClone.zoneModel;
@@ -219,41 +221,54 @@ public class ChargePacket {
     this.ratingTypeDesc = toClone.ratingTypeDesc;
     this.timeSplitting = toClone.timeSplitting;
     this.consumeRUM = toClone.consumeRUM;
-    this.TimeZones = toClone.TimeZones;
+    this.TimeZones = new ArrayList<>();
+    this.breakDown = new ArrayList<>();
 
-    if (toClone.TimeZones != null) {
-      this.TimeZones = new ArrayList<>();
-      Iterator<TimePacket> tpIter = toClone.TimeZones.iterator();
-      while (tpIter.hasNext()) {
-        TimePacket toCloneTP = tpIter.next();
-        this.TimeZones.add(new TimePacket(toCloneTP));
+    if (deep) {
+      if (toClone.TimeZones != null) {
+        Iterator<TimePacket> tpIter = toClone.TimeZones.iterator();
+        while (tpIter.hasNext()) {
+          TimePacket toCloneTP = tpIter.next();
+          this.TimeZones.add(new TimePacket(toCloneTP));
+        }
       }
-    }
 
-    // in the case that we have a rating breakdown, clone that too
-    if (toClone.breakDown != null) {
-      this.breakDown = new ArrayList<>();
-      Iterator<RatingBreakdown> bdIter = toClone.breakDown.iterator();
-      while (bdIter.hasNext()) {
-        RatingBreakdown toCloneRB = bdIter.next();
-        this.breakDown.add(new RatingBreakdown(toCloneRB));
+      // in the case that we have a rating breakdown, clone that too
+      if (toClone.breakDown != null) {
+        Iterator<RatingBreakdown> bdIter = toClone.breakDown.iterator();
+        while (bdIter.hasNext()) {
+          RatingBreakdown toCloneRB = bdIter.next();
+          this.breakDown.add(new RatingBreakdown(toCloneRB));
+        }
       }
+    } else {
     }
   }
 
   /**
-   * Create a clone of this charge packet
+   * Create a clone of this charge packet, copying all Time Packet and 
+   * Rating Breakdown information.
    *
    * @return The cloned Charge Packet
    */
-  public ChargePacket Clone() {
-    return new ChargePacket(this);
+  public ChargePacket deepClone() {
+    return new ChargePacket(this,true);
+  }
+
+  /**
+   * Create a clone of this charge packet, excluding all Time Packet and 
+   * Rating Breakdown information.
+   *
+   * @return The cloned Charge Packet
+   */
+  public ChargePacket shallowClone() {
+    return new ChargePacket(this,false);
   }
 
   /**
    * @return the TimeZones
    */
-  public ArrayList<TimePacket> getTimeZones() {
+  public List<TimePacket> getTimeZones() {
     return TimeZones;
   }
 
@@ -278,6 +293,11 @@ public class ChargePacket {
   }
   
   public void addBreakdown(ArrayList<RatingBreakdown> newBreakdownList) {
+    if (newBreakdownList == null) {
+      // well, we're not going to add nothing to the list, so just get out
+      return;
+    }
+    
     if (breakDown == null) {
       breakDown = newBreakdownList;
     } else {

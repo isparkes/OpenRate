@@ -179,11 +179,8 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
    * @throws ProcessingException
    */
   public boolean performRating(RatingRecord CurrentRecord) throws ProcessingException {
-    int PMIndex;
-    ChargePacket tmpCPNew = null;
     RecordError tmpError;
     ArrayList<RUMRateCache.RUMMapEntry> tmpRUMMap;
-    RUMRateCache.RUMMapEntry tmpRUMMapEntry;
     ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
     boolean replace = false;
 
@@ -218,7 +215,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
           // be using 1:1
           if (tmpRUMMap.size() == 1) {
             // ************************** 1:1 case *********************************
-            tmpRUMMapEntry = tmpRUMMap.get(0);
+            RUMRateCache.RUMMapEntry tmpRUMMapEntry = tmpRUMMap.get(0);
 
             // Get the value of the RUM
             tmpTZ.priceModel = tmpRUMMapEntry.PriceModel;
@@ -253,12 +250,12 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
               }
             }
 
-            // Add to the list of processed CPs
+            // Add to the list of processed CPs (in case we switch to a replace 
+            // mode in a later CP/TZ)
             tmpCPList.add(tmpCP);
           } else {
             // ************************ 1:many case ******************************
-            for (PMIndex = 0; PMIndex < tmpRUMMap.size(); PMIndex++) {
-              tmpRUMMapEntry = tmpRUMMap.get(PMIndex);
+            for (RUMRateCache.RUMMapEntry tmpRUMMapEntry : tmpRUMMap) {
 
               // Copy the CP over - we do this for each model in the group
               // as we will be performing rating on each of them
@@ -267,14 +264,19 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
               // preparation and then rating. I think that it's quicker this
               // way, but there's the potential to do some timing/tuning here
               replace = true;
-              tmpCPNew = tmpCP.Clone();
-
+              ChargePacket tmpCPNew = tmpCP.shallowClone();
+              
+              // clone the TZ packet we are working on
+              TimePacket tmpTZNew = tmpTZ.Clone();
+              
               // Get the value of the RUM
+              tmpTZNew.priceModel = tmpRUMMapEntry.PriceModel;
               tmpCPNew.rumName = tmpRUMMapEntry.RUM;
               tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
               tmpCPNew.resource = tmpRUMMapEntry.Resource;
               tmpCPNew.resCounter = tmpRUMMapEntry.ResourceCounter;
               tmpCPNew.ratingType = tmpRUMMapEntry.RUMType;
+              tmpCPNew.addTimeZone(tmpTZNew);
 
               // get the rating type
               switch (tmpRUMMapEntry.RUMType) {
@@ -297,13 +299,12 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
                   break;
                 }
               }
+              tmpCPList.add(tmpCPNew);
             }
-
-            tmpCPList.add(tmpCPNew);
           }
         }
       } else {
-        // skip the packet
+        // skip the packet - just add it
         tmpCPList.add(tmpCP);
       }
     }
