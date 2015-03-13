@@ -137,6 +137,9 @@ public class BalanceCache extends AbstractCache
 
    // used for handling date conversions
    private static ConversionUtils conv;
+   
+   // if we have to save a snapshot even when in DB mode
+   private boolean saveSnapshot = false;
 
   // List of Services that this Client supports
   private final static String SERVICE_DUMP_BALGROUP = "DumpBalGroup";
@@ -474,8 +477,15 @@ public class BalanceCache extends AbstractCache
         throw new InitializationException(message,getSymbolicName());
       }
 
+      // See if we save snapshots on shutdown
+      saveSnapshot = Boolean.valueOf(PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef(ResourceName,
+              CacheName,
+              "SaveSnapshotToFile",
+              "false"));
+
       loadDataFromDB();
     }
+    
   }
 
  /**
@@ -846,6 +856,8 @@ public class BalanceCache extends AbstractCache
   * This saves the cache back to the location on framework shutdown. Note that
   * this information is not used on startup again, but serves only as a snapshot
   * of the status that there was at the given time.
+  * 
+  * For the balance cache, we save a snapshot of the balances, 
   */
   @Override
   public void saveCache()
@@ -861,62 +873,72 @@ public class BalanceCache extends AbstractCache
     ArrayList<Counter> counters;
     int i;
     Counter tmpCounter;
+    String fileName = null;
 
-    // Log that we are starting the saving
-    OpenRate.getOpenRateFrameworkLog().info("Starting Balance Cache Saving to File");
+    if (cacheDataSourceType.equalsIgnoreCase("File")) {
+      // Use the defined name
+      fileName = cacheDataSourceName;
+    } else if (cacheDataSourceType.equalsIgnoreCase("DB") && saveSnapshot) {
+      // Set the timestamp
+      long timestamp = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
 
-    // Set the timestamp
-    long timestamp = ConversionUtils.getConversionUtilsObject().getCurrentUTCms();
+      fileName = "BalCache_" + getSymbolicName() + "_" + timestamp + ".dump";
+    }
+      
+    if (fileName != null) {
+      // Log that we are starting the saving
+      OpenRate.getOpenRateFrameworkLog().info("Starting Balance Cache Saving to File: " + fileName);
 
-    // Try to open the file
-    try
-    {
-      outFile = new BufferedWriter(new FileWriter("BalCache_" + cacheDataSourceName + "_" + timestamp + ".dump"));
-      outFile.write("# Balance data storage file");
-      outFile.newLine();
-      outFile.newLine();
-
-      // get a list of all the balance groups
-      balGrpIter = balanceCache.keySet().iterator();
-
-      while (balGrpIter.hasNext())
+      // Try to open the file
+      try
       {
-        tmpBalGrpKey = balGrpIter.next();
-        tmpBalGrp = balanceCache.get(tmpBalGrpKey);
+        outFile = new BufferedWriter(new FileWriter(fileName));
+        outFile.write("# Balance data storage file");
+        outFile.newLine();
+        outFile.newLine();
 
-        // Get a list of all the counter groups in the balance group
-        counterIter = tmpBalGrp.getCounterIterator();
+        // get a list of all the balance groups
+        balGrpIter = balanceCache.keySet().iterator();
 
-        while (counterIter.hasNext())
+        while (balGrpIter.hasNext())
         {
-          // get a list of all the counters in the group
-          tmpCounterId = counterIter.next();
-          tmpCounterGroup = tmpBalGrp.getCounterGroup(tmpCounterId);
-          counters = tmpCounterGroup.getCounters();
+          tmpBalGrpKey = balGrpIter.next();
+          tmpBalGrp = balanceCache.get(tmpBalGrpKey);
 
-          for (i = 0 ; i < counters.size() ; i++)
+          // Get a list of all the counter groups in the balance group
+          counterIter = tmpBalGrp.getCounterIterator();
+
+          while (counterIter.hasNext())
           {
-            tmpCounter = counters.get(i);
-            stringToWrite = tmpBalGrpKey + ";" + tmpCounterId + ";" +
-                            tmpCounter.RecId + ";" + tmpCounter.validFrom +  ";" +
-                            tmpCounter.validTo + ";" + tmpCounter.CurrentBalance;
-            outFile.write(stringToWrite);
-            outFile.newLine();
+            // get a list of all the counters in the group
+            tmpCounterId = counterIter.next();
+            tmpCounterGroup = tmpBalGrp.getCounterGroup(tmpCounterId);
+            counters = tmpCounterGroup.getCounters();
+
+            for (i = 0 ; i < counters.size() ; i++)
+            {
+              tmpCounter = counters.get(i);
+              stringToWrite = tmpBalGrpKey + ";" + tmpCounterId + ";" +
+                              tmpCounter.RecId + ";" + tmpCounter.validFrom +  ";" +
+                              tmpCounter.validTo + ";" + tmpCounter.CurrentBalance;
+              outFile.write(stringToWrite);
+              outFile.newLine();
+            }
           }
         }
+        outFile.flush();
+        outFile.close();
       }
-      outFile.flush();
-      outFile.close();
-    }
-    catch (IOException IOex)
-    {
-      OpenRate.getOpenRateFrameworkLog().error(
-            "Application is not able to write file : <" +
-            cacheDataSourceName + ">");
-    }
+      catch (IOException IOex)
+      {
+        OpenRate.getOpenRateFrameworkLog().error(
+              "Application is not able to write file : <" +
+              cacheDataSourceName + ">");
+      }
 
-    // Log that we have finished the saving
-    OpenRate.getOpenRateFrameworkLog().info("Finished Balance Cache Saving to File");
+      // Log that we have finished the saving
+      OpenRate.getOpenRateFrameworkLog().info("Finished Balance Cache Saving to File");
+    }
   }
 
 // -----------------------------------------------------------------------------
