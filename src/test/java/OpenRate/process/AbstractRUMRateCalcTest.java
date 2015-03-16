@@ -62,6 +62,7 @@ import OpenRate.record.IRecord;
 import OpenRate.record.TimePacket;
 import OpenRate.utils.ConversionUtils;
 import TestUtils.FrameworkUtils;
+import TestUtils.TestRatingRecord;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
