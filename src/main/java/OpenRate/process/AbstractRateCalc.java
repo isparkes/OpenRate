@@ -54,7 +54,6 @@
  */
 package OpenRate.process;
 
-import OpenRate.CommonConfig;
 import OpenRate.cache.ICacheManager;
 import OpenRate.cache.RateCache;
 import OpenRate.exception.InitializationException;
@@ -492,7 +491,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
       double thisTierValue;
       double thisTierRUMUsed = 0;
       long thisTierBeatCount = 0;
-      double thisTierRoundedRUM = 0;
+      double thisTierRoundedRUM;
 
       // For offset rating cases
       double thisTierOffsetRUMUsed = 0;
@@ -604,7 +603,6 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
         tmpBreakdown.tierFrom = tmpEntry.getFrom();
         tmpBreakdown.tierTo = tmpEntry.getTo();
         tmpBreakdown.validFrom = tmpEntry.getStartTime();
-        tmpBreakdown.validTo = tmpEntry.getEndTime();
 
         // Store the breakdown
         tmpRatingResult.breakdown.add(tmpBreakdown);
@@ -735,7 +733,6 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
         tmpBreakdown.tierFrom = tmpEntry.getFrom();
         tmpBreakdown.tierTo = tmpEntry.getTo();
         tmpBreakdown.validFrom = tmpEntry.getStartTime();
-        tmpBreakdown.validTo = tmpEntry.getEndTime();
 
         // Store the breakdown
         tmpRatingResult.breakdown.add(tmpBreakdown);
@@ -818,7 +815,6 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
       tmpBreakdown.tierFrom = tmpEntry.getFrom();
       tmpBreakdown.tierTo = tmpEntry.getTo();
       tmpBreakdown.validFrom = tmpEntry.getStartTime();
-      tmpBreakdown.validTo = tmpEntry.getEndTime();
 
       // Store the breakdown
       tmpRatingResult.breakdown.add(tmpBreakdown);
@@ -916,7 +912,6 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
             tmpBreakdown.tierFrom = tmpEntry.getFrom();
             tmpBreakdown.tierTo = tmpEntry.getTo();
             tmpBreakdown.validFrom = tmpEntry.getStartTime();
-            tmpBreakdown.validTo = tmpEntry.getEndTime();
 
             // Store the breakdown
             tmpRatingResult.breakdown.add(tmpBreakdown);
@@ -961,7 +956,6 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
             tmpBreakdown.tierFrom = tmpEntry.getFrom();
             tmpBreakdown.tierTo = tmpEntry.getTo();
             tmpBreakdown.validFrom = tmpEntry.getStartTime();
-            tmpBreakdown.validTo = tmpEntry.getEndTime();
 
             // Store the breakdown
             tmpRatingResult.breakdown.add(tmpBreakdown);
@@ -1210,38 +1204,18 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
    * time
    */
   protected RateMapEntry getRateModelEntryForTime(RateMapEntry tmpEntry, long CDRDate) {
-    // get to the right validity segment - we know that if the first one has
-    // high date, it is likely to be the only one
-    if (tmpEntry.getEndTime() < CommonConfig.HIGH_DATE) {
-      // this is a time based model, need to work with validities
-      // check for uncovered start
-      if (tmpEntry.getStartTime() > CDRDate) {
+    RateMapEntry result = tmpEntry;
+    while (tmpEntry.getStartTime() > CDRDate) {
+      // try to move down the list
+      if (tmpEntry.getChild() == null) {
+        // no more children, so we can't rate this
         return null;
-      }
-
-      // get the segment in the middle - we should never get to the end
-      // as the last bit is always valid until HIGH DATE
-      RateMapEntry result = tmpEntry;
-      while (!((tmpEntry.getStartTime() <= CDRDate) & (tmpEntry.getEndTime() > CDRDate))) {
-        // try to move down the list
-        if (tmpEntry.getChild() == null) {
-          // no more, so we can't rate this
-          return null;
-        } else {
-          // move down the list
-          result = result.getChild();
-        }
-
-        return result;
-      }
-    } else {
-      // see if the validity start is OK too
-      if (tmpEntry.getStartTime() <= CDRDate) {
-        // matched
-        return tmpEntry;
       } else {
-        return null;
+        // move down the list
+        result = result.getChild();
       }
+
+      return result;
     }
 
     // return the right bit

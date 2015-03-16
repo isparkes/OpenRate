@@ -56,6 +56,7 @@
 package OpenRate.record;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * IRatingRecord type used for data being passed through the Pipeline. The
@@ -73,24 +74,29 @@ public interface IRatingRecord extends Serializable
   public double getRUMValue(String RUM);
 
  /**
-  * Set the value of a RUM, return true if OK, false if not OK (e.g. overwrite
-  * existing value)
+  * Get the existing RUM values
+  *
+  * @return The current RUM list
+  */
+  public List<RUMInfo> getRUMs();
+
+ /**
+  * Set the value of a RUM overwriting any existing value.
   *
   * @param RUM The RUM value to set
-  * @param NewValue The new value to set
-  * @return true if the value was set, false if it already exists
+  * @param newValue The new value to set
   */
-  public boolean setRUMValue(String RUM, double NewValue);
+  public void setRUMValue(String RUM, double newValue);
 
  /**
   * Set the value of a RUM, return true if OK, false if not OK (e.g. overwrite
   * existing value)
   *
   * @param RUM The RUM value to set
-  * @param ValueDelta The delta to apply to the RUM value
+  * @param valueDelta The delta to apply to the RUM value
   * @return true if the delta was applied, otherwise false
   */
-  public boolean updateRUMValue(String RUM, double ValueDelta);
+  public boolean updateRUMValue(String RUM, double valueDelta);
 
  /**
   * Get the UTC event date of the rating record
@@ -110,11 +116,17 @@ public interface IRatingRecord extends Serializable
  /**
   * This returns the balance impact at the given index.
   *
-  * @param Index The index to use for the retreival
+  * @param index The index to use for the retrieval
   * @return The requested balance impact
   */
-  public BalanceImpact getBalanceImpact(int Index);
+  public BalanceImpact getBalanceImpact(int index);
 
+  /* This returns all balance impacts.
+  *
+  * @return The requested balance impacts
+  */
+  public List<BalanceImpact> getBalanceImpacts();
+  
  /**
   * Adds a balance impact
   *

@@ -60,131 +60,118 @@ package OpenRate.record;
  * individual entries is a linked list with a validity period. During the
  * loading, the list is ordered by start date, and traversed during the
  * rating phase to find the right validity segment for rating.
+ * 
+ * Each step in the plan is valid from the start time until the next start time
  *
  * @author ian
  */
 public class RateMapEntry
 {
-  private int    Step;       // used for storing various time segments
-  private double From;
-  private double To;
-  private double Beat;
-  private double Factor;
-  private double ChargeBase;
-  private long  StartTime;
-  private long  EndTime;
+  private int    step;
+  private double from;
+  private double to;
+  private double beat;
+  private double factor;
+  private double chargeBase;
+  private long  startTime;
   private RateMapEntry child = null;
 
   /**
-   * @return the Step
+   * @return the step
    */
   public int getStep() {
-    return Step;
+    return step;
   }
 
   /**
-   * @param Step the Step to set
+   * @param Step the step to set
    */
   public void setStep(int Step) {
-    this.Step = Step;
+    this.step = Step;
   }
 
   /**
-   * @return the From
+   * @return the from
    */
   public double getFrom() {
-    return From;
+    return from;
   }
 
   /**
-   * @param From the From to set
+   * @param From the from to set
    */
   public void setFrom(double From) {
-    this.From = From;
+    this.from = From;
   }
 
   /**
-   * @return the To
+   * @return the to
    */
   public double getTo() {
-    return To;
+    return to;
   }
 
   /**
-   * @param To the To to set
+   * @param To the to to set
    */
   public void setTo(double To) {
-    this.To = To;
+    this.to = To;
   }
 
   /**
-   * @return the Beat
+   * @return the beat
    */
   public double getBeat() {
-    return Beat;
+    return beat;
   }
 
   /**
-   * @param Beat the Beat to set
+   * @param Beat the beat to set
    */
   public void setBeat(double Beat) {
-    this.Beat = Beat;
+    this.beat = Beat;
   }
 
   /**
-   * @return the Factor
+   * @return the factor
    */
   public double getFactor() {
-    return Factor;
+    return factor;
   }
 
   /**
-   * @param Factor the Factor to set
+   * @param Factor the factor to set
    */
   public void setFactor(double Factor) {
-    this.Factor = Factor;
+    this.factor = Factor;
   }
 
   /**
-   * @return the ChargeBase
+   * @return the chargeBase
    */
   public double getChargeBase() {
-    return ChargeBase;
+    return chargeBase;
   }
 
   /**
-   * @param ChargeBase the ChargeBase to set
+   * @param ChargeBase the chargeBase to set
    */
   public void setChargeBase(double ChargeBase) {
-    this.ChargeBase = ChargeBase;
+    this.chargeBase = ChargeBase;
   }
 
   /**
-   * @return the StartTime
+   * @return the startTime
    */
   public long getStartTime() {
-    return StartTime;
+    return startTime;
   }
 
   /**
-   * @param StartTime the StartTime to set
+   * @param StartTime the startTime to set
    */
   public void setStartTime(long StartTime) {
-    this.StartTime = StartTime;
-  }
-
-  /**
-   * @return the EndTime
-   */
-  public long getEndTime() {
-    return EndTime;
-  }
-
-  /**
-   * @param EndTime the EndTime to set
-   */
-  public void setEndTime(long EndTime) {
-    this.EndTime = EndTime;
+    this.startTime = StartTime;
   }
 
   /**

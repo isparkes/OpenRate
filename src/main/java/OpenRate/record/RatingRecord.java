@@ -59,6 +59,7 @@ import OpenRate.lang.CustProductInfo;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A Record corresponds to a unit of work that is being processed by the
@@ -267,6 +268,15 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     return this.BalanceImpacts.get(Index);
   }
 
+  /* This returns all balance impacts.
+  *
+  * @return The requested balance impacts
+  */
+  @Override
+  public List<BalanceImpact> getBalanceImpacts() {
+    return this.BalanceImpacts;
+  }
+  
  /**
   * Adds a balance impact
   *
@@ -369,6 +379,16 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   }
 
  /**
+  * Get the existing RUM values
+  *
+  * @return The current RUM list
+  */
+  @Override
+  public List<RUMInfo> getRUMs() {
+    return RUMs;
+  }
+
+ /**
   * Get the original value of an existing RUM, or 0 if not found
   *
   * @param RUM The RUM value to get
@@ -397,11 +417,10 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   * existing value)
   *
   * @param RUM The RUM value to set
-  * @param NewValue The new value to set
-  * @return true if the value was set, false if it already exists
+  * @param newValue The new value to set
   */
   @Override
-  public boolean setRUMValue(String RUM, double NewValue)
+  public void setRUMValue(String RUM, double newValue)
   {
     RUMInfo tmpRUM;
     int Index;
@@ -412,15 +431,14 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
 
       if (tmpRUM.RUMName.equals(RUM))
       {
-        return false;
+        tmpRUM.RUMQuantity = newValue;
+        return;
       }
     }
 
-    tmpRUM = new RUMInfo(RUM,NewValue);
+    tmpRUM = new RUMInfo(RUM,newValue);
 
     RUMs.add(tmpRUM);
-
-    return true;
   }
 
  /**
@@ -670,7 +688,6 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
               tmpDumpList.add("      RUM Rated    " + pad + "= <" + tmpRB.RUMRated + ">");
               tmpDumpList.add("      Rated Value  " + pad + "= <" + tmpRB.ratedAmount + ">");
               tmpDumpList.add("      Valid From   " + pad + "= <" + tmpRB.validFrom + ">");
-              tmpDumpList.add("      Valid To     " + pad + "= <" + tmpRB.validTo + ">");
               tmpDumpList.add("      ----------------");
             }
           } else {
@@ -763,5 +780,5 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     }
 
     return tmpDumpList;
-  }
+  }  
 }

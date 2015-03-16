@@ -67,7 +67,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.*;
 
 /**
- * This test runs in a cut down processing environment. Jut enough framework is
+ * This test runs in a cut down processing environment. Just enough framework is
  * made to allow the processing module to run, and to set up the test data.
  *
  * @author TGDSPIA1
@@ -118,22 +118,22 @@ public class AbstractRateCalcTest {
     }
 
     // Create the test table
-    JDBCChcon.prepareStatement("CREATE TABLE TEST_PRICE_MODEL (ID int,PRICE_MODEL varchar(64) NOT NULL,STEP int DEFAULT 0 NOT NULL,TIER_FROM int,TIER_TO int,BEAT int,FACTOR double,CHARGE_BASE int,VALID_FROM DATE, VALID_TO DATE);").execute();
+    JDBCChcon.prepareStatement("CREATE TABLE TEST_PRICE_MODEL (ID int,PRICE_MODEL varchar(64) NOT NULL,STEP int DEFAULT 0 NOT NULL,TIER_FROM int,TIER_TO int,BEAT int,FACTOR double,CHARGE_BASE int,VALID_FROM DATE)").execute();
 
     // Simplest price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating"
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (1,'TestModel1',1,0,999999,60,1,60,'2000-01-01','2020-12-31');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel1',1,0,999999,60,1,60,'2000-01-01')").execute();
 
     // Simplest tiered price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" for the first min, therefore 0.1 per min
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (2,'TestModel2',1,0,60,60,1,60,'2000-01-01','2020-12-31');").execute();
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (3,'TestModel2',2,60,999999,60,0.1,60,'2000-01-01','2020-12-31');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (2,'TestModel2',1,0,60,60,1,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (3,'TestModel2',2,60,999999,60,0.1,60,'2000-01-01')").execute();
 
-    // Time Bound tiered price model - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" up until Jan 1 2013, thereafter 0.5
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (4,'TestModel3',1,0,999999,60,1,60,'2000-01-01','2012-12-31');").execute();
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (5,'TestModel3',1,0,999999,60,0.5,60,'2013-01-01','2020-12-31');").execute();
+    // Time Bound tiered price model - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating" up until Jan 1 2013, thereafter 2 (doubled)
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (4,'TestModel3',1,0,999999,60,1,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (5,'TestModel3',1,0,999999,60,2,60,'2013-01-01')").execute();
 
     // "Non-linear" price model - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 60 (BEAT) = "per minute rating" for the first min, thereafter 30 second rating
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (6,'TestModel4',1,0,60,60,1,60,'2000-01-01','2020-12-31');").execute();
-    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM,VALID_TO) values (7,'TestModel4',2,60,999999,30,1,60,'2000-01-01','2020-12-31');").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (6,'TestModel4',1,0,60,60,1,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (7,'TestModel4',2,60,999999,30,1,60,'2000-01-01')").execute();
 
     // Get the caches that we are using
     FrameworkUtils.startupCaches();
@@ -277,6 +277,112 @@ public class AbstractRateCalcTest {
     // run off the end of the rating some more
     valueToRate = 1500000;
     expResult = 1667.60;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+  }
+
+  /**
+   * Test of rateCalculateTiered method, of class AbstractRateCalc. This test
+   * uses a simple tiered model, with no time bounding.
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testRateCalculateTieredTimeBoundTiered() throws Exception {
+    System.out.println("testRateCalculateTieredTimeBoundTiered");
+
+    // Simple test using time bound non-tiered model
+    String priceModel = "TestModel3";
+    double valueToRate = 0.0;
+    double valueOffset = 0.0;
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // ******************* Before Price change ******************* 
+    // zero value to rate
+    double expResult = 0.0;
+    double result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // intra-beat 1st beat - try all integer values
+    for (int seconds = 1; seconds < 60; seconds++) {
+      valueToRate = seconds;
+      expResult = 1.0;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+    }
+
+    // intra-beat 2, non integer value
+    valueToRate = 2.654;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // intra-beat 2 beats - try all integer values
+    for (int seconds = 61; seconds < 120; seconds++) {
+      valueToRate = seconds;
+      expResult = 2;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+    }
+
+    // run some large values through
+    valueToRate = 999999;
+    expResult = 16667.0;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // run off the end of the rating
+    valueToRate = 1000000;
+    expResult = 16667.0;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // run off the end of the rating some more
+    valueToRate = 1500000;
+    expResult = 16667.0;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+    
+    // ******************* Aftrer Price change ******************* 
+    CDRDate = conv.convertInputDateToUTC("2014-01-23 00:00:00");
+    
+    // intra-beat 1st beat - try all integer values
+    for (int seconds = 1; seconds < 60; seconds++) {
+      valueToRate = seconds;
+      expResult = 2.0;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+    }
+
+    // intra-beat 2, non integer value
+    valueToRate = 2.654;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // intra-beat 2 beats - try all integer values
+    for (int seconds = 61; seconds < 120; seconds++) {
+      valueToRate = seconds;
+      expResult = 4;
+      result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+      assertEquals(expResult, result, 0.00001);
+    }
+
+    // run some large values through
+    valueToRate = 999999;
+    expResult = 33334.0;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // run off the end of the rating
+    valueToRate = 1000000;
+    expResult = 33334.0;
+    result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
+    assertEquals(expResult, result, 0.00001);
+
+    // run off the end of the rating some more
+    valueToRate = 1500000;
+    expResult = 33334.0;
     result = instance.rateCalculateTiered(priceModel, valueToRate, valueOffset, CDRDate);
     assertEquals(expResult, result, 0.00001);
   }
@@ -490,7 +596,6 @@ public class AbstractRateCalcTest {
     assertEquals(expResult, result, 0.00001);
   }
 
-  
   /**
    * Test of rateCalculateThreshold method, of class AbstractRateCalc. This test
    * uses a simple tiered threshold model, with no time bounding.
@@ -774,7 +879,7 @@ public class AbstractRateCalcTest {
     result = instance.authCalculateEvent(priceModel, availableBalance, CDRDate);
     assertEquals(expResult, result, 0.0);
   }
-
+  
   public class AbstractRateCalcImpl extends AbstractRateCalc {
 
     /**

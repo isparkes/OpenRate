@@ -213,7 +213,6 @@ public class RUMCPRateCache
       tmpRMEntry.setFactor(Factor);
       tmpRMEntry.setChargeBase(ChargeBase);
       tmpRMEntry.setStartTime(StartTime);
-      tmpRMEntry.setEndTime(CommonConfig.HIGH_DATE);
 
       // so add the entry to the new map. No need to order it, it is the first
       tmpRateCache.add(tmpRMEntry);
@@ -232,7 +231,6 @@ public class RUMCPRateCache
       tmpRMEntry.setFactor(Factor);
       tmpRMEntry.setChargeBase(ChargeBase);
       tmpRMEntry.setStartTime(StartTime);
-      tmpRMEntry.setEndTime(CommonConfig.HIGH_DATE);
 
       // Add the object to the vector
       for (i = 0 ; i < tmpRateCache.size() ; i++)
@@ -255,14 +253,12 @@ public class RUMCPRateCache
             // inserting
             helperRMEntry = tmpRateCache.get(i);
             tmpRMEntry.setChild(helperRMEntry);
-            tmpRMEntry.setEndTime(helperRMEntry.getStartTime() - 1);
             tmpRateCache.set(i, tmpRMEntry);
           }
           else if (tmpRateCache.get(i).getStartTime() < StartTime)
           {
             // appending
             tmpRateCache.get(i).setChild(tmpRMEntry);
-            tmpRateCache.get(i).setEndTime(tmpRMEntry.getStartTime() - 1);
           }
           else
           {

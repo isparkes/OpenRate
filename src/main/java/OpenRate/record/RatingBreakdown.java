@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.record;
 
 /**
@@ -61,80 +60,74 @@ package OpenRate.record;
  *
  * @author ian
  */
-  public class RatingBreakdown
-  {
-   /**
-    * Price model step that was used to rate this
-    */
-    public int    stepUsed;
+public class RatingBreakdown {
 
-   /**
-    * Start of step tier
-    */
-    public double tierFrom;
+  /**
+   * Price model step that was used to rate this
+   */
+  public int stepUsed;
 
-   /**
-    * End of step tier
-    */
-    public double tierTo;
+  /**
+   * Start of step tier
+   */
+  public double tierFrom;
 
-   /**
-    * How many of the RUM that was rated with this
-    */
-    public double RUMRated;
+  /**
+   * End of step tier
+   */
+  public double tierTo;
 
-   /**
-    * The price factor for this step
-    */
-    public double factor;
+  /**
+   * How many of the RUM that was rated with this
+   */
+  public double RUMRated;
 
-   /**
-    * The beat of this step
-    */
-    public double beat;
+  /**
+   * The price factor for this step
+   */
+  public double factor;
 
-   /**
-    * The charge base of this step
-    */
-    public double chargeBase;
+  /**
+   * The beat of this step
+   */
+  public double beat;
 
-   /**
-    * The rated value of this step
-    */
-    public double ratedAmount;
+  /**
+   * The charge base of this step
+   */
+  public double chargeBase;
 
-   /**
-    * How many beats were rated in this step
-    */
-    public long   beatCount;
+  /**
+   * The rated value of this step
+   */
+  public double ratedAmount;
 
-   /**
-    * Validity from of the step
-    */
-    public long   validFrom;
+  /**
+   * How many beats were rated in this step
+   */
+  public long beatCount;
 
-   /**
-    * Validity to of the step
-    */
-    public long   validTo;
-    
-    public RatingBreakdown(RatingBreakdown toCloneRB) {
-        this.beat = toCloneRB.beat;
-        this.beatCount = toCloneRB.beatCount;
-        this.chargeBase = toCloneRB.chargeBase;
-        this.factor = toCloneRB.factor;
-        this.ratedAmount = toCloneRB.ratedAmount;
-        this.RUMRated = toCloneRB.RUMRated;
-        this.stepUsed = toCloneRB.stepUsed;
-        this.tierFrom = toCloneRB.tierFrom;
-        this.tierTo = toCloneRB.tierTo;
-        this.validFrom = toCloneRB.validFrom;
-        this.validTo = toCloneRB.validTo;
-    }
-    
-    public RatingBreakdown() {
-    }
-    
+  /**
+   * Validity from of the step
+   */
+  public long validFrom;
+
+  public RatingBreakdown(RatingBreakdown toCloneRB) {
+    this.beat = toCloneRB.beat;
+    this.beatCount = toCloneRB.beatCount;
+    this.chargeBase = toCloneRB.chargeBase;
+    this.factor = toCloneRB.factor;
+    this.ratedAmount = toCloneRB.ratedAmount;
+    this.RUMRated = toCloneRB.RUMRated;
+    this.stepUsed = toCloneRB.stepUsed;
+    this.tierFrom = toCloneRB.tierFrom;
+    this.tierTo = toCloneRB.tierTo;
+    this.validFrom = toCloneRB.validFrom;
+  }
+
+  public RatingBreakdown() {
+  }
+
   /**
    * Create a clone of this charge packet
    *
@@ -144,4 +137,4 @@ package OpenRate.record;
     return new RatingBreakdown(this);
   }
 
-  }
+}

@@ -22,10 +22,10 @@
     </InputAdapter>
         
     <Process>
-      <AbstractRateCalcTest>
-        <DataCache>RateTestCache</DataCache>
+      <AbstractRUMRateCalcTest>
+        <DataCache>RUMRateTestCache</DataCache>
         <BatchSize>5000</BatchSize>
-      </AbstractRateCalcTest>
+      </AbstractRUMRateCalcTest>
     </Process>
     
     <OutputAdapter>
@@ -86,13 +86,14 @@
     <CacheFactory>
       <ClassName>OpenRate.resource.CacheFactory</ClassName>
       <CacheableClass>
-        <RateTestCache>
-          <ClassName>OpenRate.cache.RateCache</ClassName>
+        <RUMRateTestCache>
+          <ClassName>OpenRate.cache.RUMRateCache</ClassName>
           <DataSourceType>DB</DataSourceType>
           <DataSource>TestDB</DataSource>
           <DateFormat>yyyy-MM-dd</DateFormat>
-          <SelectStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM from TEST_PRICE_MODEL</SelectStatement>
-        </RateTestCache>
+          <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM from TEST_PRICE_MODEL</PriceModelStatement>
+          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,CONSUME_FLAG from TEST_RUM_MAP</RUMMapStatement>
+        </RUMRateTestCache>
       </CacheableClass>
     </CacheFactory>
   </Resource>

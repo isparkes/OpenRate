@@ -535,7 +535,7 @@ public class CacheFactory
    *
    * @param className The class name to get the manager for
    * @return The manager for the class
-   * @throws ConfigurationException
+   * @throws InitializationException
    */
   public static ICacheManager getGlobalManager(String className) throws InitializationException
   {
@@ -666,6 +666,7 @@ public class CacheFactory
   * and publishes the commands that the plug in understands. The listener is
   * responsible for delivering only these commands to the plug in.
   *
+   * @throws OpenRate.exception.InitializationException
   */
   @Override
   public void registerClientManager() throws InitializationException
@@ -738,7 +739,7 @@ public class CacheFactory
         // try to set the new value
         try
         {
-          autoReloadPeriod = Long.valueOf(autoReloadPeriod);
+          autoReloadPeriod = Long.valueOf(Parameter);
           ResultCode = 0;
         }
         catch (Exception e)

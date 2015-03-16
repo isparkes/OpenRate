@@ -275,7 +275,7 @@ public class ChargePacket {
   /**
    * @param TimeZones the TimeZones to set
    */
-  public void setTimeZones(ArrayList<TimePacket> TimeZones) {
+  public void setTimeZones(List<TimePacket> TimeZones) {
     this.TimeZones = TimeZones;
   }
   

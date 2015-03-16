@@ -258,19 +258,25 @@ public class RUMRateCache
    * should be returned in the case of a match. A PriceModel is therefore
    * defined as a group of RateMapEntries, that make up a whole rate map.
    *
-   * @param PriceModel The price model name to add
-   * @param Step The tier number (starting from 1) to enable multiple tiers
-   * @param From The start of the tier
-   * @param To The end of the tier
-   * @param Beat The charging granularity
-   * @param Factor The value to charge for each beat
-   * @param ChargeBase The base amount to charge the factor for
-   * @param StartTime The start time of the validity
+   * @param priceModel The price model name to add
+   * @param step The tier number (starting from 1) to enable multiple tiers
+   * @param from The start of the tier
+   * @param to The end of the tier
+   * @param beat The charging granularity
+   * @param factor The value to charge for each beat
+   * @param chargeBase The base amount to charge the factor for
+   * @param startTime The start time of the validity
    * @throws InitializationException
    */
-  public void addPriceModel(String PriceModel, int Step, double From, double To,
-          double Beat, double Factor, double ChargeBase,
-          long StartTime)
+  public void addPriceModel(
+          String priceModel,
+          int step,
+          double from,
+          double to,
+          double beat,
+          double factor,
+          double chargeBase,
+          long startTime)
           throws InitializationException {
 
     ArrayList<RateMapEntry> tmpRateCache;
@@ -280,73 +286,69 @@ public class RUMRateCache
     boolean inserted = false;
 
     // Validate the beat
-    if (Beat <= 0) {
-      message = "Beat in model <" + PriceModel + "> and step number <"
-              + Step + "> is invalid <" + Beat + "> in module <"
+    if (beat <= 0) {
+      message = "Beat in model <" + priceModel + "> and step number <"
+              + step + "> is invalid <" + beat + "> in module <"
               + getSymbolicName() + ">";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message, getSymbolicName());
     }
 
     // See if we already have the cache object for this price
-    if (!PriceModelCache.containsKey(PriceModel)) {
+    if (!PriceModelCache.containsKey(priceModel)) {
       // Create the new PriceModel object
       tmpRateCache = new ArrayList<>();
-      PriceModelCache.put(PriceModel, tmpRateCache);
+      PriceModelCache.put(priceModel, tmpRateCache);
 
       // Add it as the first element in the ArrayList
       tmpRMEntry = new RateMapEntry();
-      tmpRMEntry.setStep(Step);
-      tmpRMEntry.setFrom(From);
-      tmpRMEntry.setTo(To);
-      tmpRMEntry.setBeat(Beat);
-      tmpRMEntry.setFactor(Factor);
-      tmpRMEntry.setChargeBase(ChargeBase);
-      tmpRMEntry.setStartTime(StartTime);
-      tmpRMEntry.setEndTime(CommonConfig.HIGH_DATE);
+      tmpRMEntry.setStep(step);
+      tmpRMEntry.setFrom(from);
+      tmpRMEntry.setTo(to);
+      tmpRMEntry.setBeat(beat);
+      tmpRMEntry.setFactor(factor);
+      tmpRMEntry.setChargeBase(chargeBase);
+      tmpRMEntry.setStartTime(startTime);
 
       // so add the entry to the new map. No need to order it, it is the first
       tmpRateCache.add(tmpRMEntry);
     } else {
       // Otherwise just add it to the existing rate model
-      tmpRateCache = PriceModelCache.get(PriceModel);
+      tmpRateCache = PriceModelCache.get(priceModel);
 
       // Add the new entry
       tmpRMEntry = new RateMapEntry();
-      tmpRMEntry.setStep(Step);
-      tmpRMEntry.setFrom(From);
-      tmpRMEntry.setTo(To);
-      tmpRMEntry.setBeat(Beat);
-      tmpRMEntry.setFactor(Factor);
-      tmpRMEntry.setChargeBase(ChargeBase);
-      tmpRMEntry.setStartTime(StartTime);
-      tmpRMEntry.setEndTime(CommonConfig.HIGH_DATE);
+      tmpRMEntry.setStep(step);
+      tmpRMEntry.setFrom(from);
+      tmpRMEntry.setTo(to);
+      tmpRMEntry.setBeat(beat);
+      tmpRMEntry.setFactor(factor);
+      tmpRMEntry.setChargeBase(chargeBase);
+      tmpRMEntry.setStartTime(startTime);
 
       // Add the object to the ArrayList
       for (i = 0; i < tmpRateCache.size(); i++) {
         // if it is a later step
-        if (tmpRateCache.get(i).getStep() > Step) {
+        if (tmpRateCache.get(i).getStep() > step) {
           // add a null element
           tmpRateCache = insertElementAt(tmpRateCache, tmpRMEntry, i);
           inserted = true;
           break;
-        } // if it is a later time version of the same step
-        else if (tmpRateCache.get(i).getStep() == Step) {
+        } else if (tmpRateCache.get(i).getStep() == step) {
+          // if it is a later time version of the same step
           // see if it goes before or after the current one
-          if (tmpRateCache.get(i).getStartTime() > StartTime) {
+          if (tmpRateCache.get(i).getStartTime() > startTime) {
             // inserting
             helperRMEntry = tmpRateCache.get(i);
             tmpRMEntry.setChild(helperRMEntry);
-            tmpRMEntry.setEndTime(helperRMEntry.getStartTime() - 1);
             tmpRateCache.set(i, tmpRMEntry);
-          } else if (tmpRateCache.get(i).getStartTime() < StartTime) {
+          } else if (tmpRateCache.get(i).getStartTime() < startTime) {
             // appending
             tmpRateCache.get(i).setChild(tmpRMEntry);
-            tmpRateCache.get(i).setEndTime(tmpRMEntry.getStartTime() - 1);
           } else {
             // cannot have two steps with the same start date
-            message = "Two steps in model <" + PriceModel + "> and step number <"
-                    + Step + "> have the same start date <" + StartTime + "> in module <"
+            message = "Two steps in model <" + priceModel + "> and step number <"
+                    + step + "> have the same start date <" + startTime + "> in module <"
                     + getSymbolicName() + ">";
             OpenRate.getOpenRateFrameworkLog().error(message);
             throw new InitializationException(message, getSymbolicName());
@@ -505,8 +507,8 @@ public class RUMRateCache
     String tmpResource;
     String tmpRUMType;
     String tmpResCtr;
-    long tmpStartTime = CommonConfig.LOW_DATE; // default = low date
     String tmpStringStartTime = null;
+    long tmpStartTime = CommonConfig.LOW_DATE; // default = low date
 
     // ****** perform the loading of the raw price models ******
     // Find the location of the configuration file
@@ -690,7 +692,7 @@ public class RUMRateCache
   @Override
   public void loadDataFromDB()
           throws InitializationException {
-    int MapsLoaded = 0;
+    int mapsLoaded = 0;
     String tmpGroup = null;
     String tmpModel = null;
     String tmpRUM = null;
@@ -698,9 +700,9 @@ public class RUMRateCache
     String tmpRUMType = null;
     String tmpResCtr = null;
 
-    int RatesLoaded = 0;
-    int Columns;
-    String PriceModel;
+    int ratesLoaded = 0;
+    int columns;
+    String priceModel;
     double tmpFrom;
     double tmpTo;
     double tmpBeat;
@@ -726,7 +728,7 @@ public class RUMRateCache
     // Execute the query
     try {
       mrs = StmtPriceModelDataSelectQuery.executeQuery();
-      Columns = mrs.getMetaData().getColumnCount();
+      columns = mrs.getMetaData().getColumnCount();
     } catch (SQLException ex) {
       message = "Error performing SQL for retieving Price Model Data for <"
               + getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
@@ -736,14 +738,14 @@ public class RUMRateCache
 
     // check we have something we can use - either we expect 7 fields (no
     // date defined) or 8 fields (date defined). Everything else is BAD
-    if ((Columns == 7) | (Columns == 8)) {
+    if ((columns == 7) | (columns == 8)) {
       // loop through the results for the price model
       try {
         mrs.beforeFirst();
 
         while (mrs.next()) {
-          RatesLoaded++;
-          PriceModel = mrs.getString(1);
+          ratesLoaded++;
+          priceModel = mrs.getString(1);
           tmpTier = mrs.getInt(2);
           tmpFrom = mrs.getDouble(3);
           tmpTo = mrs.getDouble(4);
@@ -752,14 +754,14 @@ public class RUMRateCache
           tmpChargeBase = mrs.getDouble(7);
 
           // if we have the date, load it, otherwise use the default
-          if (Columns == 8) {
+          if (columns == 8) {
             tmpStringStartTime = mrs.getString(8);
             tmpStartTime = fieldInterpreter.convertInputDateToUTC(tmpStringStartTime);
           }
 
           if (tmpChargeBase == 0) {
             // cannot have a 0 charge base - exception
-            message = "Error in price model <" + PriceModel
+            message = "Error in price model <" + priceModel
                     + "> in module <" + getSymbolicName()
                     + ">. Charge base cannot be 0.";
             OpenRate.getOpenRateFrameworkLog().fatal(message);
@@ -767,7 +769,7 @@ public class RUMRateCache
           }
 
           // Add the map
-          addPriceModel(PriceModel, tmpTier, tmpFrom, tmpTo, tmpBeat, tmpFactor, tmpChargeBase, tmpStartTime);
+          addPriceModel(priceModel, tmpTier, tmpFrom, tmpTo, tmpBeat, tmpFactor, tmpChargeBase, tmpStartTime);
         }
       } catch (SQLException ex) {
         message = "Error opening Price Model Data for <" + getSymbolicName()
@@ -777,31 +779,24 @@ public class RUMRateCache
       } catch (ParseException pe) {
         message
                 = "Error converting date from <" + getSymbolicName() + "> in record <"
-                + RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
+                + ratesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
         OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message, getSymbolicName());
       }
     } else {
       // Not a valid number of fields
       message = "Invalid number of fields in price map loading for module <"
-              + getSymbolicName() + ">. Expecting <7> or <8>, but got <" + Columns + ">.";
+              + getSymbolicName() + ">. Expecting <7> or <8>, but got <" + columns + ">.";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message, getSymbolicName());
     }
 
     // Close down stuff
-    try {
-      mrs.close();
-      StmtPriceModelDataSelectQuery.close();
-    } catch (SQLException ex) {
-      message = "Error closing Price Model Data connection for <"
-              + getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      OpenRate.getOpenRateFrameworkLog().fatal(message);
-      throw new InitializationException(message, getSymbolicName());
-    }
+    DBUtil.close(mrs);
+    DBUtil.close(StmtPriceModelDataSelectQuery);
 
     OpenRate.getOpenRateFrameworkLog().info(
-            "Price Model Data Loading completed. " + RatesLoaded
+            "Price Model Data Loading completed. " + ratesLoaded
             + " configuration lines loaded from <" + getSymbolicName()
             + ">");
 
@@ -812,6 +807,7 @@ public class RUMRateCache
     // Execute the query
     try {
       mrs = StmtRUMMapDataSelectQuery.executeQuery();
+      columns = mrs.getMetaData().getColumnCount();
     } catch (SQLException ex) {
       message = "Error performing SQL for retieving Price Group Data for <"
               + getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
@@ -821,13 +817,13 @@ public class RUMRateCache
 
     // check we have something we can use - we expect 7 fields. Everything
     // else is BAD
-    if (Columns == 7) {
+    if (columns == 6) {
       // loop through the results for the price model
       try {
         mrs.beforeFirst();
 
         while (mrs.next()) {
-          MapsLoaded++;
+          mapsLoaded++;
           tmpGroup = mrs.getString(1);
           tmpModel = mrs.getString(2);
           tmpRUM = mrs.getString(3);
@@ -855,25 +851,18 @@ public class RUMRateCache
     } else {
       // Not a valid number of fields
       message = "Invalid number of fields in rum map loading for module <"
-              + getSymbolicName() + ">. Expecting <7>, but got <" + Columns + ">.";
+              + getSymbolicName() + ">. Expecting <6>, but got <" + columns + ">.";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message, getSymbolicName());
     }
 
     // Close down stuff
-    try {
-      mrs.close();
-      StmtRUMMapDataSelectQuery.close();
-      JDBCcon.close();
-    } catch (SQLException ex) {
-      message = "Error closing Price Group Data connection for <"
-              + getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
-      OpenRate.getOpenRateFrameworkLog().fatal(message);
-      throw new InitializationException(message, getSymbolicName());
-    }
+    DBUtil.close(mrs);
+    DBUtil.close(StmtPriceModelDataSelectQuery);
+    DBUtil.close(JDBCcon);
 
     OpenRate.getOpenRateFrameworkLog().info(
-            "Price Group Data Loading completed. " + MapsLoaded
+            "Price Group Data Loading completed. " + mapsLoaded
             + " configuration lines loaded from <" + getSymbolicName()
             + ">");
   }

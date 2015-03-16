@@ -489,8 +489,13 @@ public abstract class AbstractRecord implements IRecord
     ArrayList<String> tmpDumpList = new ArrayList<>();
 
     // set up the padding
-    if (padding < 19) padding = 19;
-    String pad = "                                                  ".substring(1, padding - 18);
+    int tmpPadding;
+    if (padding < 19) {
+      tmpPadding = 19;
+    } else {
+      tmpPadding = padding;
+    }
+    String pad = "                                                  ".substring(1, tmpPadding - 18);
 
     int tmpErrorCount = this.getErrors().size();
     tmpDumpList.add("  Errors           " + pad + "= <" + tmpErrorCount + ">");

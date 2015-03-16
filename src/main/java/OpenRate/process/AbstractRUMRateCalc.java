@@ -265,10 +265,10 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
               // way, but there's the potential to do some timing/tuning here
               replace = true;
               ChargePacket tmpCPNew = tmpCP.shallowClone();
-              
+
               // clone the TZ packet we are working on
               TimePacket tmpTZNew = tmpTZ.Clone();
-              
+
               // Get the value of the RUM
               tmpTZNew.priceModel = tmpRUMMapEntry.PriceModel;
               tmpCPNew.rumName = tmpRUMMapEntry.RUM;
@@ -319,7 +319,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
     // charge packets and apply the time zone results
     for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
       if (tmpCP.Valid) {
-        
+
         // get the RUM quantity
         double RUMValue = CurrentRecord.getRUMValue(tmpCP.rumName);
 
@@ -336,7 +336,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
               // Get the rum value for the time zone according to the rounding rules
               double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, tmpCP.timeSplitting, tmpTZ.duration, tmpTZ.totalDuration);
               rumExpectedCumulative += tmpTZ.duration;
-                    
+
               // perform the rating
               switch (tmpCP.ratingType) {
                 case ChargePacket.RATING_TYPE_FLAT: {
@@ -349,9 +349,9 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
                 case ChargePacket.RATING_TYPE_TIERED:
                 default: {
                   // Tiered Rating
-                    tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                    tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                    tmpCP.addBreakdown(tmpRatingResult.breakdown);
+                  tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
+                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
                   break;
                 }
                 case ChargePacket.RATING_TYPE_THRESHOLD: {
@@ -373,7 +373,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
               if (tmpCP.consumeRUM) {
                 CurrentRecord.updateRUMValue(tmpCP.rumName, -tmpRatingResult.RUMUsed);
               }
-              
+
               // Maintain a track of what we 
               rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
             } else {
