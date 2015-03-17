@@ -66,7 +66,6 @@ import TestUtils.TestRatingRecord;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
