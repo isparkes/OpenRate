@@ -174,12 +174,12 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
     RecordError tmpError;
     ArrayList<RUMMapCache.RUMMapEntry> tmpRUMMap;
     ArrayList<ChargePacket> tmpCPList = new ArrayList<>();
-    boolean replace = false;
 
     // ****************************** RUM Expansion ****************************
-    // Loop over the charge packets
     for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
-      // Get the price group for this charge packet
+      // Used for building rating chains
+      ChargePacket lastCP = null;
+
       if (tmpCP.Valid) {
         for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
 
@@ -190,6 +190,7 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
             // found an error - get out
             return false;
           }
+
           // create a charge packet for each RUM/Resource/price model tuple as located
           // in the RUM Map
           tmpRUMMap = RMC.getRUMMap(tmpTZ.priceGroup);
@@ -203,47 +204,69 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
           }
 
           // if we are doing 1:1 price group:price model, we'll use the existing
-          // charge packet, otherwise we have to do some cloning. Normally, we'll
+          // charge packet, otherwise we have to do some clSetLicense.groovyoning. Normally, we'll
           // be using 1:1
           if (tmpRUMMap.size() == 1) {
             // ************************** 1:1 case *********************************
             RUMMapCache.RUMMapEntry tmpRUMMapEntry = tmpRUMMap.get(0);
 
-            // Get the value of the RUM
-            tmpTZ.priceModel = tmpRUMMapEntry.PriceModel;
-            tmpCP.rumName = tmpRUMMapEntry.RUM;
-            tmpCP.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
+            // Copy the CP over - we do this for each model in the group
+            // as we will be performing rating on each of them
+            // Note that we create a new list of cloned charge packets, and
+            // don't try to re-use the original ones. This saves a loop of
+            // preparation and then rating. I think that it's quicker this
+            // way, but there's the potential to do some timing/tuning here
+            ChargePacket tmpCPNew = tmpCP.shallowClone();
 
-            tmpCP.resource = tmpRUMMapEntry.Resource;
-            tmpCP.resCounter = tmpRUMMapEntry.ResourceCounter;
-            tmpCP.ratingType = tmpRUMMapEntry.RUMType;
-            tmpCP.consumeRUM = tmpRUMMapEntry.ConsumeRUM;
+            // Set up the rating chain
+            if (lastCP != null) {
+              lastCP.nextChargePacket = tmpCPNew;
+              tmpCPNew.previousChargePacket = lastCP;
+            }
+
+            // clone the TZ packet we are working on
+            TimePacket tmpTZNew = tmpTZ.Clone();
+
+            // Get the value of the RUM
+            tmpTZNew.priceModel = tmpRUMMapEntry.PriceModel;
+            tmpCPNew.rumName = tmpRUMMapEntry.RUM;
+            tmpCPNew.rumQuantity = CurrentRecord.getRUMValue(tmpCP.rumName);
+
+            tmpCPNew.resource = tmpRUMMapEntry.Resource;
+            tmpCPNew.resCounter = tmpRUMMapEntry.ResourceCounter;
+            tmpCPNew.ratingType = tmpRUMMapEntry.RUMType;
+            tmpCPNew.consumeRUM = tmpRUMMapEntry.ConsumeRUM;
+            tmpCPNew.addTimeZone(tmpTZNew);
 
             // Fill the RUM value
             // get the rating type
             switch (tmpRUMMapEntry.RUMType) {
               case 1: {
-                tmpCP.ratingTypeDesc = "FLAT";
+                tmpCPNew.ratingTypeDesc = "FLAT";
                 break;
               }
               case 2: {
                 // Tiered Rating
-                tmpCP.ratingTypeDesc = "TIERED";
+                tmpCPNew.ratingTypeDesc = "TIERED";
                 break;
               }
               case 3: {
-                tmpCP.ratingTypeDesc = "THRESHOLD";
+                tmpCPNew.ratingTypeDesc = "THRESHOLD";
                 break;
               }
               case 4: {
                 // Event Rating
-                tmpCP.ratingTypeDesc = "EVENT";
+                tmpCPNew.ratingTypeDesc = "EVENT";
                 break;
               }
             }
 
-            // Add to the list of processed CPs
-            tmpCPList.add(tmpCP);
+            // Add to the list of processed CPs (in case we switch to a replace 
+            // mode in a later CP/TZ)
+            tmpCPList.add(tmpCPNew);
+
+            // Set the rating chain up for this packet
+            lastCP = tmpCPNew;
           } else {
             // ************************ 1:many case ******************************
             for (RUMMapCache.RUMMapEntry tmpRUMMapEntry : tmpRUMMap) {
@@ -254,12 +277,11 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
               // don't try to re-use the original ones. This saves a loop of
               // preparation and then rating. I think that it's quicker this
               // way, but there's the potential to do some timing/tuning here
-              replace = true;
               ChargePacket tmpCPNew = tmpCP.shallowClone();
 
               // clone the TZ packet we are working on
               TimePacket tmpTZNew = tmpTZ.Clone();
-              
+
               // Get the value of the RUM
               tmpTZNew.priceModel = tmpRUMMapEntry.PriceModel;
               tmpCPNew.rumName = tmpRUMMapEntry.RUM;
@@ -295,15 +317,13 @@ public abstract class AbstractRUMMap extends AbstractPlugIn {
           }
         }
       } else {
-        // skip the packet
+        // skip the packet - just add it
         tmpCPList.add(tmpCP);
       }
     }
 
     // replace the list of unprepared packets with the prepared ones
-    if (replace) {
-      CurrentRecord.replaceChargePackets(tmpCPList);
-    }
+    CurrentRecord.replaceChargePackets(tmpCPList);
 
     return true;
   }

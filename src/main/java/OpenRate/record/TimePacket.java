@@ -124,11 +124,13 @@ public class TimePacket
   public String  priceModel = null;
 
   public TimePacket(TimePacket toClone) {
+    this.packetNumber = toClone.packetNumber;
     this.dayofWeek = toClone.dayofWeek;
     this.duration = toClone.duration;
-    this.endSecond = toClone.endSecond;
-    this.startSecond = toClone.startSecond;
     this.startTime = toClone.startTime;
+    this.startSecond = toClone.startSecond;
+    this.endTime = toClone.endTime;
+    this.endSecond = toClone.endSecond;
     this.timeModel = toClone.timeModel;
     this.timeResult = toClone.timeResult;
     this.totalDuration = toClone.totalDuration;

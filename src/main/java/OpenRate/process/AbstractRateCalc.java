@@ -561,7 +561,7 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
             }
           } else {
             // Partial tier to do, and then we have finished
-            thisTierOffsetRUMUsed = (effectiveValueToRate - tmpEntry.getFrom());
+            thisTierOffsetRUMUsed = (valueOffset - tmpEntry.getFrom());
             rumValueUsedOffset += thisTierOffsetRUMUsed;
 
             thisTierOffsetBeatCount = Math.round(thisTierOffsetRUMUsed / tmpEntry.getBeat());

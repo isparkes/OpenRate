@@ -66,8 +66,11 @@ import TestUtils.TestRatingRecord;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This test runs in a cut down processing environment. Just enough framework is
@@ -133,16 +136,40 @@ public class AbstractRUMRateCalcTest {
       }
     }
 
+    // ******************************* PRICE MODEL *****************************
     // Create the test table
     JDBCChcon.prepareStatement("CREATE TABLE TEST_PRICE_MODEL (ID int,PRICE_MODEL varchar(64) NOT NULL,STEP int DEFAULT 0 NOT NULL,TIER_FROM int,TIER_TO int,BEAT int,FACTOR double,CHARGE_BASE int,VALID_FROM DATE)").execute();
 
-    // Simplest price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating"
+    // Simplest linear price model possible - 1 (FACTOR) per minute (CHARGE_BASE), with a charge increment of 1 (BEAT) = "per second rating"
     JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel1',1,0,999999,60,1,60,'2000-01-01')").execute();
 
     // Two model RUM group - one with a setup price model and one with a scaled price model
     JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel2a',1,0,0,60,1,60,'2000-01-01')").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel2b',1,0,999999,60,1,60,'2000-01-01')").execute();
 
+    // Event price model - charges 1 per event
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel3',1,0,999999,60,1,60,'2000-01-01')").execute();
+
+    // Threshold model, charges 1 per minute for charges under 60 seconds, otherwise 0.1 per minute
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel4',1,0,60,60,1,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel4',2,60,999999,60,0.1,60,'2000-01-01')").execute();
+
+    // Super nasty model. This causes a non-obvious charge packet expansion when rating over a time zone
+    // change. There is a RUM expansion into 2 price models for the off-peak portion, but none in the
+    // peak portion.
+    // Tiered model, charges 1 per minute for charges under 60 seconds, otherwise 0.1 per minute PEAK
+    // charges 0.5 per minute for charges under 60 seconds, otherwise 0.05 per minute OFF-PEAK
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel5a1',1,0,60,60,1,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel5a1',2,60,999999,60,0.1,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel5b1',1,0,60,60,0.5,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel5b1',2,60,999999,60,0.05,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel5b2',1,0,0,60,1,60,'2000-01-01')").execute();
+
+    // Tiered beat rounding model. Changes beat between first and second step
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel6a',1,0,999999,60,2,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel6b',1,0,999999,30,1,60,'2000-01-01')").execute();
+
+    // ********************************** RUM MAP ******************************
     // Create the test table
     JDBCChcon.prepareStatement("CREATE TABLE TEST_RUM_MAP (ID int, PRICE_GROUP varchar(24), STEP int, PRICE_MODEL varchar(24), RUM varchar(24), RESOURCE varchar(24), RESOURCE_ID int, RUM_TYPE varchar(24), CONSUME_FLAG int)").execute();
 
@@ -152,6 +179,21 @@ public class AbstractRUMRateCalcTest {
     // Two model RUM group - one with a setup price model and one with a scaled price model
     JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel2',1,'TestModel2a','DUR','EUR',978,'TIERED',0)").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel2',1,'TestModel2b','DUR','EUR',978,'TIERED',0)").execute();
+
+    // Event price model
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel3',1,'TestModel3','EVT','EUR',978,'EVENT',0)").execute();
+
+    // Threshold model
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel4',1,'TestModel4','DUR','EUR',978,'THRESHOLD',0)").execute();
+
+    // Super nasty model
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel5a',1,'TestModel5a1','DUR','EUR',978,'TIERED',0)").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel5b',1,'TestModel5b1','DUR','EUR',978,'TIERED',0)").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel5b',1,'TestModel5b2','DUR','EUR',978,'TIERED',0)").execute();
+
+    // Tiered beat rounding model. Changes beat between first and second step
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel6a',1,'TestModel6a','DUR','EUR',978,'TIERED',0)").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel6b',1,'TestModel6b','DUR','EUR',978,'TIERED',0)").execute();
 
     // Get the caches that we are using
     FrameworkUtils.startupCaches();
@@ -175,7 +217,8 @@ public class AbstractRUMRateCalcTest {
 
   /**
    * Test of the main performRating method, of class AbstractRUMRateCalc. Uses a
-   * simple linear price model.
+   * simple linear price model. For each non-zero rated value we expect a beat
+   * rounded per minute cost of 1.
    *
    * @throws java.lang.Exception
    */
@@ -190,7 +233,7 @@ public class AbstractRUMRateCalcTest {
     long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
     // zero value to rate
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", 0);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", 0);
     instance.performRating(ratingRecord);
     assertEquals(1, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
@@ -198,42 +241,42 @@ public class AbstractRUMRateCalcTest {
     // intra-beat 1st beat - try all integer values
     expResult = 1.0;
     for (int seconds = 1; seconds < 60; seconds++) {
-      ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", seconds);
+      ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", seconds);
       instance.performRating(ratingRecord);
       assertEquals(1, ratingRecord.getChargePacketCount());
       assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
     }
 
     // intra-beat 2, non integer value
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", 2.654);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", 2.654);
     instance.performRating(ratingRecord);
     assertEquals(1, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
 
-    // intra-beat 1st beat - try all integer values
+    // intra-beat 2nd beat - try all integer values
     expResult = 2.0;
     for (int seconds = 61; seconds < 120; seconds++) {
-      ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", seconds);
+      ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", seconds);
       instance.performRating(ratingRecord);
       assertEquals(1, ratingRecord.getChargePacketCount());
       assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
     }
 
-    // intra-beat 2, non integer value
+    // maximum value (according to price model)
     expResult = 16667.0;
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", 999999);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", 999999);
     instance.performRating(ratingRecord);
     assertEquals(1, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
 
     // run off the end of the rating
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", 1000000);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", 1000000);
     instance.performRating(ratingRecord);
     assertEquals(1, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
 
     // run off the end of the rating some more
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel1", 1500000);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel1", 1500000);
     instance.performRating(ratingRecord);
     assertEquals(1, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
@@ -241,7 +284,9 @@ public class AbstractRUMRateCalcTest {
 
   /**
    * Test of the main performRating method, of class AbstractRUMRateCalc. Uses a
-   * simple linear price model.
+   * simple linear price model, but with a RUM expansion. For each non-zero
+   * rated value we expect a setup cost of 1, plus a beat rounded per minute
+   * cost of 1.
    *
    * @throws java.lang.Exception
    */
@@ -256,7 +301,7 @@ public class AbstractRUMRateCalcTest {
     long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
     // zero value to rate
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", 0);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", 0);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
@@ -264,47 +309,378 @@ public class AbstractRUMRateCalcTest {
     // intra-beat 1st beat - try all integer values
     expResult = 2.0;
     for (int seconds = 1; seconds < 60; seconds++) {
-      ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", seconds);
+      ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", seconds);
       instance.performRating(ratingRecord);
       assertEquals(2, ratingRecord.getChargePacketCount());
       assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
     }
 
     // intra-beat 2, non integer value
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", 2.654);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", 2.654);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
 
-    // intra-beat 1st beat - try all integer values
+    // intra-beat 2nd beat - try all integer values
     expResult = 3.0;
     for (int seconds = 61; seconds < 120; seconds++) {
-      ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", seconds);
+      ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", seconds);
       instance.performRating(ratingRecord);
       assertEquals(2, ratingRecord.getChargePacketCount());
       assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
     }
 
-    // intra-beat 2, non integer value
+    // maximum value (according to price model)
     expResult = 16668.0;
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", 999999);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", 999999);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
 
     // run off the end of the rating
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", 1000000);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", 1000000);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
 
     // run off the end of the rating some more
-    ratingRecord = getNewRatingRecord(CDRDate, "TestModel2", 1500000);
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel2", 1500000);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
   }
 
+  /**
+   * Test of the main performRating method, of class AbstractRUMRateCalc. Uses a
+   * simple linear price model. For each non-zero rated value we expect a beat
+   * rounded per minute cost of 1.
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingEvent() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult = 0.0;
+    System.out.println("testPerformRatingEvent");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // zero value to rate
+    ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", 0);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // intra-beat 1st beat - try all integer values
+    for (int seconds = 1; seconds < 60; seconds++) {
+      ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", seconds);
+      instance.performRating(ratingRecord);
+      assertEquals(1, ratingRecord.getChargePacketCount());
+      assertEquals(seconds, getRollUp(ratingRecord), 0.00001);
+    }
+
+    // intra-beat 2, non integer value
+    expResult = 2.0;
+    ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", 2.654);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // intra-beat 1st beat - try all integer values
+    for (int seconds = 61; seconds < 120; seconds++) {
+      ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", seconds);
+      instance.performRating(ratingRecord);
+      assertEquals(1, ratingRecord.getChargePacketCount());
+      assertEquals(seconds, getRollUp(ratingRecord), 0.00001);
+    }
+
+    // maximum value (according to price model)
+    expResult = 999999.0;
+    ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", 999999);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // run off the end of the rating
+    ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", 1000000);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // run off the end of the rating some more
+    ratingRecord = getNewRatingRecordEVT(CDRDate, "TestModel3", 1500000);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+  }
+
+  /**
+   * Test of the main performRating method, of class AbstractRUMRateCalc. Uses a
+   * simple linear price model. For each non-zero rated value we expect a beat
+   * rounded per minute cost of 1.
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingThresholdNonTimeBoundNonTiered() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult = 0.0;
+    System.out.println("testPerformRatingThresholdNonTimeBoundNonTiered");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // zero value to rate
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", 0);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // intra-beat 1st beat - try all integer values
+    expResult = 1.0;
+    for (int seconds = 1; seconds < 60; seconds++) {
+      ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", seconds);
+      instance.performRating(ratingRecord);
+      assertEquals(1, ratingRecord.getChargePacketCount());
+      assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+    }
+
+    // intra-beat 2, non integer value
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", 2.654);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // intra-beat 2nd beat - try all integer values
+    expResult = 0.2;
+    for (int seconds = 61; seconds < 120; seconds++) {
+      ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", seconds);
+      instance.performRating(ratingRecord);
+      assertEquals(1, ratingRecord.getChargePacketCount());
+      assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+    }
+
+    // maximum value (according to price model)
+    expResult = 1666.7;
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", 999999);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // run off the end of the rating
+    expResult = 0.0;
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", 1000000);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // run off the end of the rating some more
+    ratingRecord = getNewRatingRecordDUR(CDRDate, "TestModel4", 1500000);
+    instance.performRating(ratingRecord);
+    assertEquals(1, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+  }
+
+  /**
+   * Test of the main performRating method, of class AbstractRUMRateCalc. Uses a
+   * more complex linear price model. There is a RUM expansion in the second
+   * part of the model, but not in the first.
+   *
+   * The rating model here is:
+   *
+   * Time Packet 1 1 per minute in the first minute 0.1 per minute for other
+   * minutes Time Packet 2 1 set up 0.5 per minute in the first minute 0.05 per
+   * minute for other minutes
+   *
+   * Example: A 70 second call will be: Time packet 1 = 1 (first minute) + 0.1
+   * (second minute) Time packet 2 = 1 (set up) + 0.5 (first minute) + 0.05
+   * (second minute)
+   *
+   * --> 2.65
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingTieredAsymmetricRUMExpansion() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult = 0.0;
+    System.out.println("testPerformRatingTieredAsymmetricRUMExpansion");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // zero value to rate
+    ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 0);
+    instance.performRating(ratingRecord);
+    assertEquals(3, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // intra-beat 1st beat - try all integer values
+    for (int seconds = 1; seconds < 60; seconds++) {
+      expResult = 2.5;
+      ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", seconds);
+      instance.performRating(ratingRecord);
+      assertEquals(3, ratingRecord.getChargePacketCount());
+      assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+    }
+
+    // intra-beat 2, non integer value
+    ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 2.654);
+    instance.performRating(ratingRecord);
+    assertEquals(3, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // intra-beat 2nd beat - try all integer values
+    expResult = 2.65;
+    for (int seconds = 61; seconds < 120; seconds++) {
+      ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", seconds);
+      instance.performRating(ratingRecord);
+      assertEquals(3, ratingRecord.getChargePacketCount());
+      assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+    }
+
+    // maximum value (according to price model)
+    expResult = 2502.4;
+    ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 999999);
+    instance.performRating(ratingRecord);
+    assertEquals(3, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // run off the end of the rating
+    ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 1000000);
+    instance.performRating(ratingRecord);
+    assertEquals(3, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    // run off the end of the rating some more
+    ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 1500000);
+    instance.performRating(ratingRecord);
+    assertEquals(3, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+  }
+
+  /**
+   * Test the performance of the main performRating method. Uses a complex price
+   * model with a RUM expansion. We expect way more than 10,000 per second.
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingTieredAsymmetricRUMExpansionPerfomance() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult;
+    System.out.println("testPerformRatingTieredAsymmetricRUMExpansionPerfomance");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // Check that we get the right answer
+    expResult = 2.65;
+    ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 78.4);
+    instance.performRating(ratingRecord);
+    assertEquals(3, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+
+    long startMs = Calendar.getInstance().getTimeInMillis();
+
+    // intra-beat 1st beat - try all integer values
+    for (int i = 1; i < 10000; i++) {
+      ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 78.4);
+      instance.performRating(ratingRecord);
+    }
+
+    long duration = Calendar.getInstance().getTimeInMillis() - startMs;
+
+    System.out.println("10000 took " + duration + "mS");
+    assertTrue(duration < 1000);
+
+  }
+
+  /**
+   * Test of the main performRating method, of class AbstractRUMRateCalc. Test
+   * the beat rounding time splitting algorithm. This should apportion as much
+   * of the RUM necessary to each packet to respect the beat rounding of that
+   * model.
+   *
+   * For example, if a 62 second call has 1 second in off-peak, but a 60 second
+   * beat, then 60 seconds should be charged in off peak, and the remaining 2
+   * seconds in peak.
+   *
+   * Without this splitting algorithm, we would charge 60 seconds in off-peak
+   * (from the 1 second in off-peak), then 120 seconds in peak (61 seconds
+   * rounded up).
+   *
+   * With the example we have we expect the result to be:
+   *
+   * 1 minute at 2 per minute = 2, .5 minutes at 1 per minute = 0.5
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingTieredBeatRounding() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult = 2.5;
+    System.out.println("testPerformRatingTieredBeatRounding");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // zero value to rate
+    ratingRecord = getNewRatingRecordDURTimeSplitBeatRounding(CDRDate, "TestModel6a", "TestModel6b", 1, 61);
+    instance.performRating(ratingRecord);
+    assertEquals(2, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+  }
+
+  /**
+   * Test of the main performRating method, of class AbstractRUMRateCalc. Test
+   * the beat rounding time splitting algorithm. This should apportion as much
+   * of the RUM necessary to each packet to respect the beat rounding of that
+   * model.
+   *
+   * For example, if a 62 second call has 1 second in off-peak, but a 60 second
+   * beat, then 60 seconds should be charged in off peak, and the remaining 2
+   * seconds in peak.
+   *
+   * Without this splitting algorithm, we would charge 60 seconds in off-peak
+   * (from the 1 second in off-peak), then 120 seconds in peak (61 seconds
+   * rounded up).
+   *
+   * With the example we have we expect the result to be:
+   *
+   * 1 minute at 2 per minute = 2, 1.5 minutes at 1 per minute = 1.5
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingTieredNoBeatRounding() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult = 3.5;
+    System.out.println("testPerformRatingTieredNoBeatRounding");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    // zero value to rate
+    ratingRecord = getNewRatingRecordDURTimeSplitNoBeatRounding(CDRDate, "TestModel6a", "TestModel6b", 1, 61);
+    instance.performRating(ratingRecord);
+    assertEquals(2, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+  }
+
+  /**
+   * Roll up the charged values from each of the charge packets.
+   *
+   * @param ratingRecord The record to check
+   * @return The rolled up rated amount
+   */
   private double getRollUp(TestRatingRecord ratingRecord) {
     double actualResult = 0;
     for (ChargePacket resCP : ratingRecord.getChargePackets()) {
@@ -370,7 +746,16 @@ public class AbstractRUMRateCalcTest {
     instance = null;
   }
 
-  private TestRatingRecord getNewRatingRecord(long CDRDate, String newPriceGroup, double durationValue) {
+  /**
+   * Create a rating record initialised with the information necessary for
+   * performing a rating.
+   *
+   * @param CDRDate Date of the CDR
+   * @param newPriceGroup The price group to use
+   * @param durationValue The duration value to use
+   * @return The record, ready to go
+   */
+  private TestRatingRecord getNewRatingRecordDUR(long CDRDate, String newPriceGroup, double durationValue) {
     TestRatingRecord ratingRecord = new TestRatingRecord();
     ratingRecord.UTCEventDate = CDRDate;
 
@@ -380,6 +765,120 @@ public class AbstractRUMRateCalcTest {
     tmpCP.addTimeZone(tmpTZ);
     ratingRecord.addChargePacket(tmpCP);
     ratingRecord.setRUMValue("DUR", durationValue);
+
+    return ratingRecord;
+  }
+
+  /**
+   * Create a rating record initialised with the information necessary for
+   * performing a rating.
+   *
+   * @param CDRDate Date of the CDR
+   * @param newPriceGroup The price group to use
+   * @param durationValue The duration value to use
+   * @return The record, ready to go
+   */
+  private TestRatingRecord getNewRatingRecordEVT(long CDRDate, String newPriceGroup, double durationValue) {
+    TestRatingRecord ratingRecord = new TestRatingRecord();
+    ratingRecord.UTCEventDate = CDRDate;
+
+    ChargePacket tmpCP = new ChargePacket();
+    TimePacket tmpTZ = new TimePacket();
+    tmpTZ.priceGroup = newPriceGroup;
+    tmpCP.addTimeZone(tmpTZ);
+    ratingRecord.addChargePacket(tmpCP);
+    ratingRecord.setRUMValue("EVT", durationValue);
+
+    return ratingRecord;
+  }
+
+  /**
+   * Create a rating record initialised with the information necessary for
+   * performing a rating. This simulates a record that has undergone time
+   * splitting.
+   *
+   * @param CDRDate Date of the CDR
+   * @param newPriceGroup1 The price group to use
+   * @param durationValue The duration value to use
+   * @return The record, ready to go
+   */
+  private TestRatingRecord getNewRatingRecordDURTimeSplit(long CDRDate, String newPriceGroup1, String newPriceGroup2, double durationValue) {
+    TestRatingRecord ratingRecord = new TestRatingRecord();
+    ratingRecord.UTCEventDate = CDRDate;
+
+    ChargePacket tmpCP = new ChargePacket();
+    TimePacket tmpTZ1 = new TimePacket();
+    tmpTZ1.priceGroup = newPriceGroup1;
+    tmpCP.addTimeZone(tmpTZ1);
+    TimePacket tmpTZ2 = new TimePacket();
+    tmpTZ2.priceGroup = newPriceGroup2;
+    tmpCP.addTimeZone(tmpTZ2);
+    ratingRecord.addChargePacket(tmpCP);
+    ratingRecord.setRUMValue("DUR", durationValue);
+
+    return ratingRecord;
+  }
+
+  /**
+   * Create a rating record initialised with the information necessary for
+   * performing a rating. This simulates a record that has undergone time
+   * splitting.
+   *
+   * @param CDRDate Date of the CDR
+   * @param newPriceGroup1 The price group to use
+   * @param durationValue The duration value to use
+   * @return The record, ready to go
+   */
+  private TestRatingRecord getNewRatingRecordDURTimeSplitBeatRounding(long CDRDate, String newPriceGroup1, String newPriceGroup2, int durationValue1, int durationValue2) {
+    TestRatingRecord ratingRecord = new TestRatingRecord();
+    ratingRecord.UTCEventDate = CDRDate;
+
+    ChargePacket tmpCP = new ChargePacket();
+    tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING;
+    TimePacket tmpTZ1 = new TimePacket();
+    tmpTZ1.priceGroup = newPriceGroup1;
+    tmpTZ1.duration = durationValue1;
+    tmpTZ1.totalDuration = durationValue1 + durationValue2;
+    tmpCP.addTimeZone(tmpTZ1);
+    TimePacket tmpTZ2 = new TimePacket();
+    tmpTZ2.priceGroup = newPriceGroup2;
+    tmpTZ2.duration = durationValue2;
+    tmpTZ2.totalDuration = durationValue1 + durationValue2;
+    tmpCP.addTimeZone(tmpTZ2);
+    ratingRecord.addChargePacket(tmpCP);
+    ratingRecord.setRUMValue("DUR", durationValue1 + durationValue2);
+
+    return ratingRecord;
+  }
+  
+  /**
+   * Create a rating record initialised with the information necessary for
+   * performing a rating. This simulates a record that has undergone time
+   * splitting.
+   *
+   * @param CDRDate Date of the CDR
+   * @param newPriceGroup1 The price group to use
+   * @param durationValue The duration value to use
+   * @return The record, ready to go
+   */
+  private TestRatingRecord getNewRatingRecordDURTimeSplitNoBeatRounding(long CDRDate, String newPriceGroup1, String newPriceGroup2, int durationValue1, int durationValue2) {
+    TestRatingRecord ratingRecord = new TestRatingRecord();
+    ratingRecord.UTCEventDate = CDRDate;
+
+    ChargePacket tmpCP = new ChargePacket();
+    tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING;
+    TimePacket tmpTZ1 = new TimePacket();
+    tmpTZ1.priceGroup = newPriceGroup1;
+    tmpTZ1.duration = durationValue1;
+    tmpTZ1.totalDuration = durationValue1 + durationValue2;
+    tmpCP.addTimeZone(tmpTZ1);
+    TimePacket tmpTZ2 = new TimePacket();
+    tmpTZ2.priceGroup = newPriceGroup2;
+    tmpTZ2.duration = durationValue2;
+    tmpTZ2.totalDuration = durationValue1 + durationValue2;
+    tmpCP.addTimeZone(tmpTZ2);
+    ratingRecord.addChargePacket(tmpCP);
+    ratingRecord.setRUMValue("DUR", durationValue1 + durationValue2);
 
     return ratingRecord;
   }

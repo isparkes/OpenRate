@@ -166,86 +166,95 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc {
     RecordError tmpError;
 
     // ***************************** Rating Evaluation**************************
-    // Rate all of the charge packets that are to be rated - loop through the
-    // charge packets and apply the time zone results
     for (ChargePacket tmpCP : CurrentRecord.getChargePackets()) {
       if (tmpCP.Valid) {
 
-        // get the RUM quantity
-        double RUMValue = CurrentRecord.getRUMValue(tmpCP.rumName);
+        // Don't do Charge packets that are part of a chain
+        if (tmpCP.previousChargePacket == null) {
 
-        // valiables that we use to be able to manage beat rollover between time packets
-        double rumExpectedCumulative = 0;
-        double rumRoundedCumulative = 0;
-        for (TimePacket tmpTZ : tmpCP.getTimeZones()) {
-          try {
-            //Use the rateCalculateDuration method defined in AbstractRateCalc to
-            //calculate the price
-            if (tmpTZ.priceGroup != null) {
-              RatingResult tmpRatingResult;
+          // get the RUM quantity
+          double RUMValue = CurrentRecord.getRUMValue(tmpCP.rumName);
 
-              // Get the rum value for the time zone according to the rounding rules
-              double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, tmpCP.timeSplitting, tmpTZ.duration, tmpTZ.totalDuration);
-              rumExpectedCumulative += tmpTZ.duration;
+          // variables that we use to be able to manage beat rollover between time packets
+          double rumExpectedCumulative = 0;
+          double rumRoundedCumulative = 0;
 
-              // perform the rating
-              switch (tmpCP.ratingType) {
-                case ChargePacket.RATING_TYPE_FLAT: {
-                  // Flat Rating
-                  tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
-                  break;
+          ChargePacket cpToRate = tmpCP;
+          while (cpToRate != null) {
+            for (TimePacket tmpTZ : cpToRate.getTimeZones()) {
+              try {
+                //Use the rateCalculateDuration method defined in AbstractRateCalc to
+                //calculate the price
+                if (tmpTZ.priceGroup != null) {
+                  RatingResult tmpRatingResult;
+
+                  // Get the rum value for the time zone according to the rounding rules
+                  double thisZoneRUM = getRUMForTimeZone(RUMValue, rumRoundedCumulative, rumExpectedCumulative, cpToRate.timeSplitting, tmpTZ.duration, tmpTZ.totalDuration);
+                  rumExpectedCumulative += tmpTZ.duration;
+
+                  // perform the rating
+                  switch (cpToRate.ratingType) {
+                    case ChargePacket.RATING_TYPE_FLAT: {
+                      // Flat Rating
+                      tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      cpToRate.chargedValue += tmpRatingResult.RatedValue;
+                      cpToRate.addBreakdown(tmpRatingResult.breakdown);
+                      break;
+                    }
+                    case ChargePacket.RATING_TYPE_TIERED:
+                    default: {
+                      // Tiered Rating
+                      tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      cpToRate.chargedValue += tmpRatingResult.RatedValue;
+                      cpToRate.addBreakdown(tmpRatingResult.breakdown);
+                      break;
+                    }
+                    case ChargePacket.RATING_TYPE_THRESHOLD: {
+                      // Threshold Rating
+                      tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      cpToRate.chargedValue += tmpRatingResult.RatedValue;
+                      cpToRate.addBreakdown(tmpRatingResult.breakdown);
+                      break;
+                    }
+                    case ChargePacket.RATING_TYPE_EVENT: {
+                      // Event Rating
+                      tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      cpToRate.chargedValue += tmpRatingResult.RatedValue;
+                      cpToRate.addBreakdown(tmpRatingResult.breakdown);
+                      break;
+                    }
+                  }
+
+                  if (cpToRate.consumeRUM) {
+                    CurrentRecord.updateRUMValue(cpToRate.rumName, -tmpRatingResult.RUMUsed);
+                  }
+
+                  // Maintain a track of what we 
+                  rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
+                } else {
+                  // we do not have a price group, set the cp invalid
+                  cpToRate.Valid = false;
                 }
-                case ChargePacket.RATING_TYPE_TIERED:
-                default: {
-                  // Tiered Rating
-                  tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
-                  break;
-                }
-                case ChargePacket.RATING_TYPE_THRESHOLD: {
-                  // Threshold Rating
-                  tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
-                  break;
-                }
-                case ChargePacket.RATING_TYPE_EVENT: {
-                  // Event Rating
-                  tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
-                  tmpCP.chargedValue += tmpRatingResult.RatedValue;
-                  tmpCP.addBreakdown(tmpRatingResult.breakdown);
-                  break;
+              } catch (ProcessingException pe) {
+                // Log the error
+                getPipeLog().error("RUM Rating exception <" + pe.getMessage() + ">");
+
+                if (reportExceptions == false) {
+                  // Only error if this is a base packet
+                  if (cpToRate.priority == 0) {
+                    tmpError = new RecordError("ERR_RUM_RATING", ErrorType.DATA_NOT_FOUND, getSymbolicName());
+                    CurrentRecord.addError(tmpError);
+
+                    return false;
+                  }
+                } else {
+                  throw new ProcessingException(pe, getSymbolicName());
                 }
               }
-
-              if (tmpCP.consumeRUM) {
-                CurrentRecord.updateRUMValue(tmpCP.rumName, -tmpRatingResult.RUMUsed);
-              }
-
-              // Maintain a track of what we 
-              rumRoundedCumulative += tmpRatingResult.RUMUsedRounded;
-            } else {
-              // we do not have a price group, set the cp invalid
-              tmpCP.Valid = false;
             }
-          } catch (ProcessingException pe) {
-            // Log the error
-            getPipeLog().error("RUM Rating exception <" + pe.getMessage() + ">");
 
-            if (reportExceptions == false) {
-              // Only error if this is a base packet
-              if (tmpCP.priority == 0) {
-                tmpError = new RecordError("ERR_RUM_RATING", ErrorType.DATA_NOT_FOUND, getSymbolicName());
-                CurrentRecord.addError(tmpError);
-
-                return false;
-              }
-            } else {
-              throw new ProcessingException(pe, getSymbolicName());
-            }
+            // get next packet in the chain
+            cpToRate = cpToRate.nextChargePacket;
           }
         }
       }

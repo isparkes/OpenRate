@@ -642,6 +642,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
         // Add the breakdowns
         if (tmpCP != null)
         {
+          tmpDumpList.add("    Packet ID      " + pad + "= <" + tmpCP + ">");
           tmpDumpList.add("    Rate Plan Name " + pad + "= <" + tmpCP.ratePlanName + ">");
           tmpDumpList.add("    Packet Type    " + pad + "= <" + tmpCP.packetType + ">");
           tmpDumpList.add("    Service        " + pad + "= <" + tmpCP.service + ">");
@@ -658,6 +659,9 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
           tmpDumpList.add("    Rating Desc    " + pad + "= <" + tmpCP.ratingTypeDesc + ">");
           tmpDumpList.add("    Rated Value    " + pad + "= <" + tmpCP.chargedValue + ">");
           tmpDumpList.add("    Splitting      " + pad + "= <" + tmpCP.timeSplitting + ">");
+          tmpDumpList.add("    Splitting      " + pad + "= <" + tmpCP.timeSplitting + ">");
+          tmpDumpList.add("    Next packet    " + pad + "= <" + tmpCP.nextChargePacket + ">");
+          tmpDumpList.add("    Prev packet    " + pad + "= <" + tmpCP.previousChargePacket + ">");
           tmpDumpList.add("    ----------------");
             
           if (tmpCP.getTimeZones() != null)

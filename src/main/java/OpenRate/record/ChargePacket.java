@@ -172,6 +172,16 @@ public class ChargePacket {
   public String ratingTypeDesc;
 
   /**
+   * The next charge packet in the rating chain. Filled by rating.
+   */
+  public ChargePacket nextChargePacket = null;
+  
+  /**
+   * The previous charge packet in the rating chain. Filled by rating.
+   */
+  public ChargePacket previousChargePacket = null;
+  
+  /**
    * tiemSplitting is used to control whether the time zoning module splits up
    * charge on the basis of the duration of an event.
    *
@@ -221,6 +231,8 @@ public class ChargePacket {
     this.ratingTypeDesc = toClone.ratingTypeDesc;
     this.timeSplitting = toClone.timeSplitting;
     this.consumeRUM = toClone.consumeRUM;
+    this.nextChargePacket = toClone.nextChargePacket;
+    this.previousChargePacket = toClone.previousChargePacket;
     this.TimeZones = new ArrayList<>();
     this.breakDown = new ArrayList<>();
 
@@ -289,6 +301,12 @@ public class ChargePacket {
     if (this.TimeZones == null) {
       this.TimeZones = new ArrayList<>();
     }
+    
+    // Packet number 0 means we auto allocate a number
+    if (tmpTZ.packetNumber == 0) {
+      tmpTZ.packetNumber = TimeZones.size() + 1;
+    }
+    
     this.TimeZones.add(tmpTZ);
   }
   
