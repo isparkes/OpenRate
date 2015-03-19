@@ -72,8 +72,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * This test runs in a cut down processing environment. Just enough framework is
- * made to allow the processing module to run, and to set up the test data.
+ * Test the RUM based rating functions. These build on the standard rate 
+ * calculation module to give a RUM based rating. There are certain functions
+ * available only in the RUM model, such as automatic multiple rating against
+ * several price models and intelligent time handling.
  *
  * @author TGDSPIA1
  */
@@ -587,7 +589,6 @@ public class AbstractRUMRateCalcTest {
 
     long startMs = Calendar.getInstance().getTimeInMillis();
 
-    // intra-beat 1st beat - try all integer values
     for (int i = 1; i < 10000; i++) {
       ratingRecord = getNewRatingRecordDURTimeSplit(CDRDate, "TestModel5a", "TestModel5b", 78.4);
       instance.performRating(ratingRecord);
@@ -597,7 +598,6 @@ public class AbstractRUMRateCalcTest {
 
     System.out.println("10000 took " + duration + "mS");
     assertTrue(duration < 1000);
-
   }
 
   /**

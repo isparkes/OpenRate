@@ -166,7 +166,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
 
         if (tmpCP.Valid) {
           switch (tmpCP.timeSplitting) {
-            // It's a Holiday, do nothing - the holiday match shoudl already
+            // It's a Holiday, do nothing - the holiday match should already
             // have done the work
             case TIME_SPLITTING_HOLIDAY: {
               break;
