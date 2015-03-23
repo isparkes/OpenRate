@@ -384,17 +384,17 @@ public class AbstractRUMTimeTest {
     
     long startMs = Calendar.getInstance().getTimeInMillis();
 
-    // Dropped to 5000/s because of our crappy Jenkins
-    // TODO revert to 10k/s when we upgrade Jenkins (memory expansion)
-    for (int i = 1; i < 5000; i++) {
+    for (int i = 1; i < 10000; i++) {
       ratingRecord = getNewRatingRecord("2010-01-20 07:50:00","2010-01-20 08:10:01", TIME_SPLITTING_CHECK_SPLITTING);
       instance.performRUMTimeMatch(ratingRecord);
     }
 
     long duration = Calendar.getInstance().getTimeInMillis() - startMs;
 
+    // Dropped to 5000/s because of our crappy Jenkins
+    // TODO revert to 10k/s when we upgrade Jenkins (memory expansion)
     System.out.println("10000 took " + duration + "mS");
-    assertTrue(duration < 1000);
+    assertTrue(duration < 2000);
   }
 
   public class AbstractRUMTimeMatchImpl extends AbstractRUMTimeMatch {
