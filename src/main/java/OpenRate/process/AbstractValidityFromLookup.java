@@ -101,7 +101,7 @@ public abstract class AbstractValidityFromLookup
    * @param time
    * @return The returned value, or NOMATCH if none was found
    */
-  public String getValiditySegmentMatch(String Group, String resourceId, long time) {
+  public String getValidityFromMatch(String Group, String resourceId, long time) {
     return NPC.getValiditySegmentMatch(Group, resourceId, time);
   }
 
@@ -113,7 +113,7 @@ public abstract class AbstractValidityFromLookup
    * @param time
    * @return The returned value, or NOMATCH if none was found
    */
-  public ArrayList<String> getValiditySegmentMatchWithChildData(String Group, String resourceId, long time) {
+  public ArrayList<String> getValidityFromMatchWithChildData(String Group, String resourceId, long time) {
     return NPC.getValiditySegmentMatchWithChildData(Group, resourceId, time);
   }
 

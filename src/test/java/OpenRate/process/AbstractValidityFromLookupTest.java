@@ -136,7 +136,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "NOMATCH";
     Assert.assertEquals(expResult, result);
   }
@@ -171,7 +171,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "KPNB";
     Assert.assertEquals(expResult, result);
   }
@@ -206,7 +206,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "MOBM";
     Assert.assertEquals(expResult, result);
   }
@@ -241,7 +241,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "VOXB";
     Assert.assertEquals(expResult, result);
   }
@@ -276,7 +276,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "NOMATCH";
     Assert.assertEquals(expResult, result);
   }
@@ -311,7 +311,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "KPNB";
     Assert.assertEquals(expResult, result);
   }
@@ -346,7 +346,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "MOBM";
     Assert.assertEquals(expResult, result);
   }
@@ -381,7 +381,7 @@ public class AbstractValidityFromLookupTest {
       Assert.fail(message);
     }
     
-    result = instance.getValiditySegmentMatch(Group, BNumber, eventDate);
+    result = instance.getValidityFromMatch(Group, BNumber, eventDate);
     expResult = "VOXB";
     Assert.assertEquals(expResult, result);
   }
