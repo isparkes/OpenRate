@@ -89,7 +89,7 @@ public abstract class AbstractRUMHolidayMatch
     int Index;
     ChargePacket tmpCP;
 
-    calendar.setTime(recordToMatch.EventStartDate);
+    calendar.setTime(recordToMatch.eventStartDate);
     searchParameters[0] = "" + calendar.get(Calendar.DAY_OF_MONTH);
     searchParameters[1] = "" + (calendar.get(Calendar.MONTH) + 1); // Incrementing by 1 as January = 0
     searchParameters[2] = "" + calendar.get(Calendar.YEAR);
@@ -123,7 +123,7 @@ public abstract class AbstractRUMHolidayMatch
     int Index;
     ChargePacket tmpCP;
 
-    calendar.setTime(recordToMatch.EventStartDate);
+    calendar.setTime(recordToMatch.eventStartDate);
     searchParameters[0] = "" + calendar.get(Calendar.DAY_OF_MONTH);
     searchParameters[1] = "" + (calendar.get(Calendar.MONTH) + 1); // Incrementing by 1 as January = 0
     searchParameters[2] = "" + calendar.get(Calendar.YEAR);

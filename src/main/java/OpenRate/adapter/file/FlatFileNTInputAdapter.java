@@ -274,7 +274,7 @@ public abstract class FlatFileNTInputAdapter
 
           // Pass the header to the user layer for any processing that
           // needs to be done
-          tmpHeader = (HeaderRecord) procHeader((IRecord) tmpHeader);
+          tmpHeader = procHeader(tmpHeader);
           Outbatch.add(tmpHeader);
           ThisBatchCounter++;
         } catch (FileNotFoundException exFileNotFound) {
@@ -301,7 +301,7 @@ public abstract class FlatFileNTInputAdapter
           InputRecordNumber++;
 
           // Call the user layer for any processing that needs to be done
-          batchRecord = procValidRecord((IRecord) tmpDataRecord);
+          batchRecord = procValidRecord(tmpDataRecord);
 
           // Add the prepared record to the batch
           Outbatch.add(batchRecord);
@@ -332,7 +332,7 @@ public abstract class FlatFileNTInputAdapter
 
           // Pass the trailer to the user layer for any processing that
           // needs to be done
-          tmpTrailer = (TrailerRecord) procTrailer((IRecord) tmpTrailer);
+          tmpTrailer = procTrailer(tmpTrailer);
           Outbatch.add(tmpTrailer);
           ThisBatchCounter++;
 
@@ -378,11 +378,31 @@ public abstract class FlatFileNTInputAdapter
   }
 
   /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procValidRecord(FlatRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procErrorRecord(FlatRecord r) throws ProcessingException;
+  
+  /**
    * Allows any records to be purged at the end of a file
    *
    * @return The pending record
    */
-  @Override
   public IRecord purgePendingRecord() {
     // default - do nothing
     return null;

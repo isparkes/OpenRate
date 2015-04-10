@@ -405,7 +405,7 @@ public abstract class BinaryFileInputAdapter
 
           // Pass the header to the user layer for any processing that
           // needs to be done
-          tmpHeader = (HeaderRecord) procHeader((IRecord) tmpHeader);
+          tmpHeader = procHeader(tmpHeader);
           Outbatch.add(tmpHeader);
 
           // now load the file into a memory buffer - it's difficult to know
@@ -506,13 +506,13 @@ public abstract class BinaryFileInputAdapter
         // needs to be done. To allow for purging in the case of record
         // compression, we allow multiple calls to procTrailer until the
         // trailer is returned
-        batchRecord = procTrailer((IRecord) tmpTrailer);
+        batchRecord = procTrailer(tmpTrailer);
 
         while (!(batchRecord instanceof TrailerRecord)) {
           // the call the trailer returned a purged record. Add this
           // to the batch and refetch
           Outbatch.add(batchRecord);
-          batchRecord = procTrailer((IRecord) tmpTrailer);
+          batchRecord = procTrailer(tmpTrailer);
         }
 
         Outbatch.add(tmpTrailer);
@@ -570,11 +570,31 @@ public abstract class BinaryFileInputAdapter
   }
 
   /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procErrorRecord(IRecord r) throws ProcessingException;
+  
+  /**
    * Allows any records to be purged at the end of a file
    *
    * @return The pending record
    */
-  @Override
   public IRecord purgePendingRecord() {
     // default - do nothing
     return null;

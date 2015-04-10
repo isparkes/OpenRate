@@ -222,7 +222,7 @@ public final class SimpleRecord extends RatingRecord
     if (this.RECORD_TYPE == DETAIL_RECORD)
     {
       tmpDumpList.add("============ BEGIN RECORD ============");
-      tmpDumpList.add("  Record Number         = <" + this.RecordNumber + ">");
+      tmpDumpList.add("  Record Number         = <" + this.recordNumber + ">");
       tmpDumpList.add("--------------------------------------");
       tmpDumpList.add("  B Number              = <" + this.B_Number + ">");
       tmpDumpList.add("  Destination           = <" + this.Destination + ">");

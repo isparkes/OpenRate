@@ -264,9 +264,9 @@ public abstract class AbstractAMQOutputAdapter
   public IRecord prepValidRecord(IRecord r) throws ProcessingException
   {
     int i;
-    Collection<IRecord> outRecCol = null;
+    Collection<QueueMessageRecord> outRecCol = null;
     QueueMessageRecord  outRec;
-    Iterator<IRecord>   outRecIter;
+    Iterator<QueueMessageRecord>   outRecIter;
 
     try
     {
@@ -299,7 +299,7 @@ public abstract class AbstractAMQOutputAdapter
       outRecIter = outRecCol.iterator();
       while (outRecIter.hasNext())
       {
-        outRec = (QueueMessageRecord)outRecIter.next();
+        outRec = outRecIter.next();
         
         try
         {  
@@ -333,9 +333,9 @@ public abstract class AbstractAMQOutputAdapter
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException
   {
     int i;
-    Collection<IRecord> outRecCol = null;
+    Collection<QueueMessageRecord> outRecCol = null;
     QueueMessageRecord  outRec;
-    Iterator<IRecord>   outRecIter;
+    Iterator<QueueMessageRecord>   outRecIter;
 
     try
     {
@@ -379,7 +379,7 @@ public abstract class AbstractAMQOutputAdapter
 
       while (outRecIter.hasNext())
       {
-        outRec = (QueueMessageRecord)outRecIter.next();
+        outRec = outRecIter.next();
 
         try
         {
@@ -407,6 +407,29 @@ public abstract class AbstractAMQOutputAdapter
 
     return r;
   }
+
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here. Note that the result is a collection for the case that we
+   * have to re-expand after a record compression input adapter has done
+   * compression on the input stream.
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<QueueMessageRecord> procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<QueueMessageRecord> procErrorRecord(IRecord r) throws ProcessingException;
 
   // -----------------------------------------------------------------------------
   // ------------------ Custom connection management functions -------------------

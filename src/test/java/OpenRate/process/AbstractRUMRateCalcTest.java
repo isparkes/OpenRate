@@ -756,7 +756,7 @@ public class AbstractRUMRateCalcTest {
    */
   private TestRatingRecord getNewRatingRecordDUR(long CDRDate, String newPriceGroup, double durationValue) {
     TestRatingRecord ratingRecord = new TestRatingRecord();
-    ratingRecord.UTCEventDate = CDRDate;
+    ratingRecord.utcEventDate = CDRDate;
 
     ChargePacket tmpCP = new ChargePacket();
     TimePacket tmpTZ = new TimePacket();
@@ -779,7 +779,7 @@ public class AbstractRUMRateCalcTest {
    */
   private TestRatingRecord getNewRatingRecordEVT(long CDRDate, String newPriceGroup, double durationValue) {
     TestRatingRecord ratingRecord = new TestRatingRecord();
-    ratingRecord.UTCEventDate = CDRDate;
+    ratingRecord.utcEventDate = CDRDate;
 
     ChargePacket tmpCP = new ChargePacket();
     TimePacket tmpTZ = new TimePacket();
@@ -803,7 +803,7 @@ public class AbstractRUMRateCalcTest {
    */
   private TestRatingRecord getNewRatingRecordDURTimeSplit(long CDRDate, String newPriceGroup1, String newPriceGroup2, double durationValue) {
     TestRatingRecord ratingRecord = new TestRatingRecord();
-    ratingRecord.UTCEventDate = CDRDate;
+    ratingRecord.utcEventDate = CDRDate;
 
     ChargePacket tmpCP = new ChargePacket();
     TimePacket tmpTZ1 = new TimePacket();
@@ -830,7 +830,7 @@ public class AbstractRUMRateCalcTest {
    */
   private TestRatingRecord getNewRatingRecordDURTimeSplitBeatRounding(long CDRDate, String newPriceGroup1, String newPriceGroup2, int durationValue1, int durationValue2) {
     TestRatingRecord ratingRecord = new TestRatingRecord();
-    ratingRecord.UTCEventDate = CDRDate;
+    ratingRecord.utcEventDate = CDRDate;
 
     ChargePacket tmpCP = new ChargePacket();
     tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING;
@@ -862,7 +862,7 @@ public class AbstractRUMRateCalcTest {
    */
   private TestRatingRecord getNewRatingRecordDURTimeSplitNoBeatRounding(long CDRDate, String newPriceGroup1, String newPriceGroup2, int durationValue1, int durationValue2) {
     TestRatingRecord ratingRecord = new TestRatingRecord();
-    ratingRecord.UTCEventDate = CDRDate;
+    ratingRecord.utcEventDate = CDRDate;
 
     ChargePacket tmpCP = new ChargePacket();
     tmpCP.timeSplitting = AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING;

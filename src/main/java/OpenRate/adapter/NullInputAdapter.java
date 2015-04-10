@@ -55,7 +55,9 @@
 package OpenRate.adapter;
 
 import OpenRate.exception.ProcessingException;
+import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.record.TrailerRecord;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -90,7 +92,7 @@ public class NullInputAdapter
    * @throws ProcessingException
    */
   @Override
-  public IRecord procHeader(IRecord r) throws ProcessingException {
+  public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
     return r;
   }
 
@@ -102,7 +104,6 @@ public class NullInputAdapter
    * @return The processed record
    * @throws ProcessingException
    */
-  @Override
   public IRecord procValidRecord(IRecord r) throws ProcessingException {
     return r;
   }
@@ -116,7 +117,6 @@ public class NullInputAdapter
    * @return The processed record
    * @throws ProcessingException
    */
-  @Override
   public IRecord procErrorRecord(IRecord r) throws ProcessingException {
     return r;
   }
@@ -130,7 +130,6 @@ public class NullInputAdapter
    * @return The possible pending record in the adapter at the moment
    * @throws ProcessingException
    */
-  @Override
   public IRecord purgePendingRecord() throws ProcessingException {
     return null;
   }
@@ -145,7 +144,7 @@ public class NullInputAdapter
    * @throws ProcessingException
    */
   @Override
-  public IRecord procTrailer(IRecord r) throws ProcessingException {
+  public TrailerRecord procTrailer(TrailerRecord r) throws ProcessingException {
     return r;
   }
 }

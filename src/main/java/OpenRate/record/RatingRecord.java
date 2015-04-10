@@ -110,23 +110,23 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   /**
    * This holds the original data
    */
-  public String OriginalData;
+  public String originalData;
 
   /**
    * Worker variables to save references during processing.
    */
-  public String Service = null;
+  public String service = null;
 
   /**
    * The candidate rate plans that this customer has
    */
-  public ArrayList<CustProductInfo> RatePlans = new ArrayList<>();
+  public ArrayList<CustProductInfo> ratePlans = new ArrayList<>();
 
   // Rating information for performing internal calculations
-  private final ArrayList<ChargePacket> ChargePackets = new ArrayList<>();
+  private final ArrayList<ChargePacket> chargePackets = new ArrayList<>();
 
   // Rating information for updating the DB
-  private final ArrayList<BalanceImpact> BalanceImpacts = new ArrayList<>();
+  private final ArrayList<BalanceImpact> balanceImpacts = new ArrayList<>();
 
   /**
    * RUM information - holds the list of RUMs and their values
@@ -136,27 +136,27 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   /**
    * This is the counter index for monthly counters, usually filled with YYYYMM
    */
-  public int CounterCycle;
+  public int counterCycle;
 
   /**
    * This is the event start date
    */
-  public Date EventStartDate;
+  public Date eventStartDate;
 
   /**
    * This is the event end date
    */
-  public Date EventEndDate;
+  public Date eventEndDate;
 
   /**
    * This is the event date as a UTC date
    */
-  public long UTCEventDate;
+  public long utcEventDate;
 
   /**
    * this controls the creation of the charge breakdown
    */
-  public boolean CreateBreakdown = true;
+  public boolean createBreakdown = true;
 
  /**
   * Default Constructor for RateRecord, creating the empty record container
@@ -188,7 +188,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public ArrayList<ChargePacket> getChargePackets()
   {
-    return this.ChargePackets;
+    return this.chargePackets;
   }
 
  /**
@@ -199,7 +199,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public int getChargePacketCount()
   {
-    return this.ChargePackets.size();
+    return this.chargePackets.size();
   }
 
  /**
@@ -210,7 +210,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public ChargePacket getChargePacket(int Index)
   {
-    return this.ChargePackets.get(Index);
+    return this.chargePackets.get(Index);
   }
 
  /**
@@ -220,7 +220,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public void addChargePacket(ChargePacket newCP)
   {
-    this.ChargePackets.add(newCP);
+    this.chargePackets.add(newCP);
   }
 
  /**
@@ -240,8 +240,8 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public void replaceChargePackets(ArrayList<ChargePacket> tmpCPList)
   {
-    this.ChargePackets.clear();
-    this.ChargePackets.addAll(tmpCPList);
+    this.chargePackets.clear();
+    this.chargePackets.addAll(tmpCPList);
   }
 
  /**
@@ -253,7 +253,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   @Override
   public int getBalanceImpactCount()
   {
-    return this.BalanceImpacts.size();
+    return this.balanceImpacts.size();
   }
 
  /**
@@ -265,7 +265,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   @Override
   public BalanceImpact getBalanceImpact(int Index)
   {
-    return this.BalanceImpacts.get(Index);
+    return this.balanceImpacts.get(Index);
   }
 
   /* This returns all balance impacts.
@@ -274,7 +274,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   @Override
   public List<BalanceImpact> getBalanceImpacts() {
-    return this.BalanceImpacts;
+    return this.balanceImpacts;
   }
   
  /**
@@ -285,7 +285,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   @Override
   public void addBalanceImpact(BalanceImpact newBI)
   {
-    this.BalanceImpacts.add(newBI);
+    this.balanceImpacts.add(newBI);
   }
 
  /**
@@ -306,8 +306,8 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public void replaceBalanceImpacts(ArrayList<BalanceImpact> tmpBIList)
   {
-    this.BalanceImpacts.clear();
-    this.BalanceImpacts.addAll(tmpBIList);
+    this.balanceImpacts.clear();
+    this.balanceImpacts.addAll(tmpBIList);
   }
 
  /**
@@ -340,7 +340,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public final String getOriginalData()
   {
-    return this.OriginalData;
+    return this.originalData;
   }
 
  /**
@@ -350,7 +350,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public final void setOriginalData(String NewData)
   {
-    this.OriginalData = NewData;
+    this.originalData = NewData;
   }
 
  /**
@@ -413,8 +413,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   }
 
  /**
-  * Set the value of a RUM, return true if OK, false if not OK (e.g. overwrite
-  * existing value)
+  * Set the value of a RUM, overwrites existing value
   *
   * @param RUM The RUM value to set
   * @param newValue The new value to set
@@ -476,7 +475,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public void setCounterCycle(int NewValue)
   {
-    CounterCycle = NewValue;
+    counterCycle = NewValue;
   }
 
  /**
@@ -486,7 +485,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   */
   public int getCounterCycle()
   {
-    return CounterCycle;
+    return counterCycle;
   }
 
  /**
@@ -502,9 +501,9 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     ChargePacket tmpCP;
     double Total = 0;
 
-    for (Index = 0 ; Index < ChargePackets.size() ; Index++)
+    for (Index = 0 ; Index < chargePackets.size() ; Index++)
     {
-      tmpCP = ChargePackets.get(Index);
+      tmpCP = chargePackets.get(Index);
 
       if (tmpCP.Valid)
       {
@@ -532,9 +531,9 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     ChargePacket tmpCP;
     double Total = 0;
 
-    for (Index = 0 ; Index < ChargePackets.size() ; Index++)
+    for (Index = 0 ; Index < chargePackets.size() ; Index++)
     {
-      tmpCP = ChargePackets.get(Index);
+      tmpCP = chargePackets.get(Index);
 
       if (tmpCP.Valid)
       {
@@ -562,9 +561,9 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
     Iterator<String>       ResourceIterator;
     boolean        Found = false;
 
-    for (Index = 0 ; Index < ChargePackets.size() ; Index++)
+    for (Index = 0 ; Index < chargePackets.size() ; Index++)
     {
-      tmpCP = ChargePackets.get(Index);
+      tmpCP = chargePackets.get(Index);
 
       Resource = tmpCP.resource;
 
@@ -597,7 +596,7 @@ public abstract class RatingRecord extends AbstractRecord implements IRatingReco
   @Override
   public long getUTCEventDate()
   {
-    return UTCEventDate;
+    return utcEventDate;
   }
 
  /**

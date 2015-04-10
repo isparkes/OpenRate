@@ -74,13 +74,14 @@ public abstract class AbstractRecord implements IRecord
    * Default UID for Serializable class
    */
   private static final long serialVersionUID = -1971022798790808812L;
+  
   // Errors that this record has
   private List<IError> errors = new ArrayList<>();
 
   /**
    * The record number is the sequential number of the record in the stream.
    */
-  public int RecordNumber;
+  public int recordNumber;
 
  /**
   * the record type - integer for speed
@@ -408,7 +409,7 @@ public abstract class AbstractRecord implements IRecord
   @Override
   public void setRecordID(int newRecordID)
   {
-    this.RecordNumber = newRecordID;
+    this.recordNumber = newRecordID;
   }
 
  /**
@@ -417,7 +418,7 @@ public abstract class AbstractRecord implements IRecord
   @Override
   public int getRecordID()
   {
-    return this.RecordNumber;
+    return this.recordNumber;
   }
 
  /**

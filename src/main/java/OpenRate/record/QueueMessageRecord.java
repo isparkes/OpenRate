@@ -33,7 +33,7 @@ public class QueueMessageRecord extends AbstractRecord
     super();
 
     this.OriginalMessage   = msg;
-    this.RecordNumber   = recordNumber;
+    this.recordNumber   = recordNumber;
   }
 
  /**

@@ -67,7 +67,7 @@ public class FlatRecord extends AbstractRecord
   private static final long serialVersionUID = -1506405981820429432L;
 
   // the original data we received
-  private String OriginalData;
+  private String originalData;
 
   /**
    * Creates a new instance of FlatRecord
@@ -79,8 +79,8 @@ public class FlatRecord extends AbstractRecord
   {
     super();
 
-    this.OriginalData   = data;
-    this.RecordNumber   = RecordNumber;
+    this.originalData   = data;
+    this.recordNumber   = RecordNumber;
   }
 
  /**
@@ -91,7 +91,7 @@ public class FlatRecord extends AbstractRecord
   public FlatRecord(String data)
   {
     super();
-    this.OriginalData   = data;
+    this.originalData   = data;
   }
 
   /** Overloaded contructor for derived classes */
@@ -107,7 +107,7 @@ public class FlatRecord extends AbstractRecord
    */
   public String getData()
   {
-    return this.OriginalData;
+    return this.originalData;
   }
 
   /**
@@ -117,7 +117,7 @@ public class FlatRecord extends AbstractRecord
    */
   public void setData(String DataToSet)
   {
-    this.OriginalData = DataToSet;
+    this.originalData = DataToSet;
   }
 
  /**
@@ -139,7 +139,7 @@ public class FlatRecord extends AbstractRecord
 
     // Format the fields
     tmpDumpList.add("============== FLAT RECORD ============");
-    tmpDumpList.add("  original record = <" + this.OriginalData + ">");
+    tmpDumpList.add("  original record = <" + this.originalData + ">");
 
     tmpDumpList.add("  Errors          = <" + this.getErrors().size() + ">");
     if (tmpErrorCount>0)

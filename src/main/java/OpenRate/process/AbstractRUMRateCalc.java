@@ -69,24 +69,24 @@ import java.util.ArrayList;
  * here</a> to go to wiki page.
  * <br>
  * <p>
- * This class provides the abstract base for the more complex rating plug in.
- * The implementation class should not have to do much more than call the
- * "performRating", after having set the appropriate RUM values.
- *
- * The rating is performed on the Charge Packets that should already be and
- * should have the "priceGroup" field filled with an appropriate value. Usually
- * the priceGroup value is retrieved using the zoning and timing results. Note
- * that the number of Charge Packets can (and often will) increase during the
- * rating, because we may have to impact multiple resources (a charge packet
- * will be created for each of these resource impacts (in the case that multiple
- * resources have been impacted.
- *
- * No roll-up of charges is performed in this module. You can use the module
- * "GatherRUMImpacts" to collect and create a summary of the CP impacts.
- *
- * You can obtain a rating breakdown (which provides exact details of the steps
- * and tiers used to calculate the charge) by enabling the standard rating
- * record field "CreateBreakdown" boolean value to true.
+ This class provides the abstract base for the more complex rating plug in.
+ The implementation class should not have to do much more than call the
+ "performRating", after having set the appropriate RUM values.
+
+ The rating is performed on the Charge Packets that should already be and
+ should have the "priceGroup" field filled with an appropriate value. Usually
+ the priceGroup value is retrieved using the zoning and timing results. Note
+ that the number of Charge Packets can (and often will) increase during the
+ rating, because we may have to impact multiple resources (a charge packet
+ will be created for each of these resource impacts (in the case that multiple
+ resources have been impacted.
+
+ No roll-up of charges is performed in this module. You can use the module
+ "GatherRUMImpacts" to collect and create a summary of the CP impacts.
+
+ You can obtain a rating breakdown (which provides exact details of the steps
+ and tiers used to calculate the charge) by enabling the standard rating
+ record field "createBreakdown" boolean value to true.
  */
 public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
 
@@ -366,7 +366,7 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
                   switch (cpToRate.ratingType) {
                     case ChargePacket.RATING_TYPE_FLAT: {
                       // Flat Rating
-                      tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      tmpRatingResult = rateCalculateFlat(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.utcEventDate, CurrentRecord.createBreakdown);
                       cpToRate.chargedValue += tmpRatingResult.RatedValue;
                       cpToRate.addBreakdown(tmpRatingResult.breakdown);
                       break;
@@ -374,21 +374,21 @@ public abstract class AbstractRUMRateCalc extends AbstractRateCalc {
                     case ChargePacket.RATING_TYPE_TIERED:
                     default: {
                       // Tiered Rating
-                      tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      tmpRatingResult = rateCalculateTiered(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.utcEventDate, CurrentRecord.createBreakdown);
                       cpToRate.chargedValue += tmpRatingResult.RatedValue;
                       cpToRate.addBreakdown(tmpRatingResult.breakdown);
                       break;
                     }
                     case ChargePacket.RATING_TYPE_THRESHOLD: {
                       // Threshold Rating
-                      tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      tmpRatingResult = rateCalculateThreshold(tmpTZ.priceModel, thisZoneRUM, rumRoundedCumulative, CurrentRecord.utcEventDate, CurrentRecord.createBreakdown);
                       cpToRate.chargedValue += tmpRatingResult.RatedValue;
                       cpToRate.addBreakdown(tmpRatingResult.breakdown);
                       break;
                     }
                     case ChargePacket.RATING_TYPE_EVENT: {
                       // Event Rating
-                      tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.UTCEventDate, CurrentRecord.CreateBreakdown);
+                      tmpRatingResult = rateCalculateEvent(tmpTZ.priceModel, thisZoneRUM, CurrentRecord.utcEventDate, CurrentRecord.createBreakdown);
                       cpToRate.chargedValue += tmpRatingResult.RatedValue;
                       cpToRate.addBreakdown(tmpRatingResult.breakdown);
                       break;

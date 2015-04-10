@@ -323,9 +323,9 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         CurrentRecord1.setRUMValue("RUM", rumValue1);
         CurrentRecord2.setRUMValue("RUM", rumValue1);
         CurrentRecord3.setRUMValue("RUM", rumValue1);
-        CurrentRecord1.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecord2.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecord3.UTCEventDate = UTCBalanceStartValidity;
+        CurrentRecord1.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecord2.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecord3.utcEventDate = UTCBalanceStartValidity;
 
         // ---------- First Event Fully Discounted ------------
         DiscountInformation result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
@@ -441,15 +441,15 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         CurrentRecord1.setRUMValue("RUM", rumValue1);
         CurrentRecord2.setRUMValue("RUM", rumValue1);
         CurrentRecord3.setRUMValue("RUM", rumValue1);
-        CurrentRecord1.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecord2.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecord3.UTCEventDate = UTCBalanceStartValidity;
+        CurrentRecord1.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecord2.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecord3.utcEventDate = UTCBalanceStartValidity;
         CurrentRecordR1.setRUMValue("RUM", rumValue1);
         CurrentRecordR2.setRUMValue("RUM", rumValue1);
         CurrentRecordR3.setRUMValue("RUM", rumValue1);
-        CurrentRecordR1.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecordR2.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecordR3.UTCEventDate = UTCBalanceStartValidity;
+        CurrentRecordR1.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecordR2.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecordR3.utcEventDate = UTCBalanceStartValidity;
 
         // ---------- First Event Fully Discounted ------------
         DiscountInformation result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
@@ -628,9 +628,9 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         CurrentRecord1.setRUMValue("RUM", rumValue1);
         CurrentRecord2.setRUMValue("RUM", rumValue1);
         CurrentRecord3.setRUMValue("RUM", rumValue2);
-        CurrentRecord1.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecord2.UTCEventDate = UTCBalanceStartValidity;
-        CurrentRecord3.UTCEventDate = UTCBalanceStartValidity;
+        CurrentRecord1.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecord2.utcEventDate = UTCBalanceStartValidity;
+        CurrentRecord3.utcEventDate = UTCBalanceStartValidity;
 
         DiscountInformation result = instance.discountAggregateRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
 

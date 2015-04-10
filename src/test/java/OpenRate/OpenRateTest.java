@@ -79,7 +79,7 @@ import org.junit.*;
 public class OpenRateTest {
 
   // The revision number has to be changed to match the current revision
-  String OpenRateVersion = "V1.5.2.3";
+  String OpenRateVersion = "V1.5.2.4";
 
   // By default we check that the build date is created on each build
   SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");

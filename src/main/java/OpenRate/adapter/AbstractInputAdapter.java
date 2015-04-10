@@ -65,7 +65,9 @@ import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
+import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.record.TrailerRecord;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -306,39 +308,7 @@ public abstract class AbstractInputAdapter
    * @return The processed record
    * @throws ProcessingException
    */
-  public abstract IRecord procHeader(IRecord r) throws ProcessingException;
-
-  /**
-   * This is called when a data record is encountered. You should do any normal
-   * processing here.
-   *
-   * @param r The record we are working on
-   * @return The processed record
-   * @throws ProcessingException
-   */
-  public abstract IRecord procValidRecord(IRecord r) throws ProcessingException;
-
-  /**
-   * This is called when a data record with errors is encountered. You should do
-   * any processing here that you have to do for error records, e.g. statistics,
-   * special handling, even error correction!
-   *
-   * @param r The record we are working on
-   * @return The processed record
-   * @throws ProcessingException
-   */
-  public abstract IRecord procErrorRecord(IRecord r) throws ProcessingException;
-
-  /**
-   * This is called just before the trailer, and allows any pending record to be
-   * pushed into the pipe before the trailer. Note that this is useful when
-   * there is no trailer in a file, otherwise the file (not the synthetic
-   * trailer) trailer will normally be used for this.
-   *
-   * @return The possible pending record in the adapter at the moment
-   * @throws ProcessingException
-   */
-  public abstract IRecord purgePendingRecord() throws ProcessingException;
+  public abstract HeaderRecord procHeader(HeaderRecord r) throws ProcessingException;
 
   /**
    * This is called when the synthetic trailer record is encountered, and has
@@ -349,7 +319,7 @@ public abstract class AbstractInputAdapter
    * @return The processed record
    * @throws ProcessingException
    */
-  public abstract IRecord procTrailer(IRecord r) throws ProcessingException;
+  public abstract TrailerRecord procTrailer(TrailerRecord r) throws ProcessingException;
 
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------

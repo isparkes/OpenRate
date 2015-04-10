@@ -88,21 +88,22 @@ public class SimpleSTOutputAdapter
   *
   * Note that this is just undoing the transformation that we did in the input
   * adapter.
+   * @return 
   */
   @Override
-  public Collection<IRecord> procValidRecord(IRecord r)
+  public Collection<FlatRecord> procValidRecord(IRecord r)
   {
     FlatRecord tmpOutRecord;
     SimpleRecord tmpInRecord;
 
-    Collection<IRecord> Outbatch;
+    Collection<FlatRecord> Outbatch;
     Outbatch = new ArrayList<>();
 
     tmpOutRecord = new FlatRecord();
     tmpInRecord = (SimpleRecord)r;
     tmpOutRecord.setData(tmpInRecord.unmapOriginalData());
 
-    Outbatch.add((IRecord)tmpOutRecord);
+    Outbatch.add(tmpOutRecord);
 
     return Outbatch;
   }
@@ -111,9 +112,10 @@ public class SimpleSTOutputAdapter
   * Handle any error records here so that they are ready to output making any
   * specific changes to the record that are necessary to make it ready for
   * output.
+   * @return 
   */
   @Override
-  public Collection<IRecord> procErrorRecord(IRecord r)
+  public Collection<FlatRecord> procErrorRecord(IRecord r)
   {
     return null;
   }

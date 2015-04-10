@@ -54,7 +54,9 @@
  */
 package OpenRate.adapter;
 
+import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.record.TrailerRecord;
 import java.util.Collection;
 
 /**
@@ -93,7 +95,7 @@ public class NullOutputAdapter
    * @return The processed record
    */
   @Override
-  public IRecord procHeader(IRecord r) {
+  public HeaderRecord procHeader(HeaderRecord r) {
     return null;
   }
 
@@ -109,7 +111,6 @@ public class NullOutputAdapter
    * @param r The record we are working on
    * @return The collection of processed records
    */
-  @Override
   public Collection<IRecord> procValidRecord(IRecord r) {
     return null;
   }
@@ -125,7 +126,6 @@ public class NullOutputAdapter
    * @param r The record we are working on
    * @return The collection of processed records
    */
-  @Override
   public Collection<IRecord> procErrorRecord(IRecord r) {
     return null;
   }
@@ -143,7 +143,7 @@ public class NullOutputAdapter
    * @return The processed record
    */
   @Override
-  public IRecord procTrailer(IRecord r) {
+  public TrailerRecord procTrailer(TrailerRecord r) {
     return null;
   }
 

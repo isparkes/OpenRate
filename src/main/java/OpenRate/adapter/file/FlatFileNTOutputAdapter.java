@@ -201,15 +201,15 @@ public abstract class FlatFileNTOutputAdapter
    */
   @Override
   public IRecord prepValidRecord(IRecord r) throws ProcessingException {
-    Collection<IRecord> OutRecCol;
+    Collection<FlatRecord> OutRecCol;
     FlatRecord OutRec;
-    Iterator<IRecord> OutRecIter;
+    Iterator<FlatRecord> OutRecIter;
 
     OutRecCol = procValidRecord(r);
     OutRecIter = OutRecCol.iterator();
 
     while (OutRecIter.hasNext()) {
-      OutRec = (FlatRecord) OutRecIter.next();
+      OutRec = OutRecIter.next();
 
       try {
         validWriter.write(OutRec.getData());
@@ -230,15 +230,15 @@ public abstract class FlatFileNTOutputAdapter
    */
   @Override
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException {
-    Collection<IRecord> OutRecCol;
+    Collection<FlatRecord> OutRecCol;
     FlatRecord OutRec;
-    Iterator<IRecord> OutRecIter;
+    Iterator<FlatRecord> OutRecIter;
 
     OutRecCol = procErrorRecord(r);
     OutRecIter = OutRecCol.iterator();
 
     while (OutRecIter.hasNext()) {
-      OutRec = (FlatRecord) OutRecIter.next();
+      OutRec = OutRecIter.next();
 
       try {
         validWriter.write(OutRec.getData());
@@ -257,10 +257,8 @@ public abstract class FlatFileNTOutputAdapter
    * @return 
    */
   @Override
-  public IRecord procHeader(IRecord r) {
-    HeaderRecord tmpHeader;
-    tmpHeader = (HeaderRecord) r;
-    fileBaseName = tmpHeader.getStreamName();
+  public HeaderRecord procHeader(HeaderRecord r) {
+    fileBaseName = r.getStreamName();
     OutputStreamOpen = true;
 
     // Calculate the names and open the writers
@@ -281,12 +279,10 @@ public abstract class FlatFileNTOutputAdapter
    * @return 
    */
   @Override
-  public IRecord procTrailer(IRecord r) {
+  public TrailerRecord procTrailer(TrailerRecord r) {
     int CloseResult;
 
-    TrailerRecord tmpTrailer;
-    tmpTrailer = (TrailerRecord) r;
-    fileBaseName = tmpTrailer.getStreamName();
+    fileBaseName = r.getStreamName();
     SetBaseName(fileBaseName);
     CloseResult = closeFiles();
     if (CloseResult == 0) {
@@ -300,6 +296,29 @@ public abstract class FlatFileNTOutputAdapter
 
     return r;
   }
+
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here. Note that the result is a collection for the case that we
+   * have to re-expand after a record compression input adapter has done
+   * compression on the input stream.
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<FlatRecord> procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<FlatRecord> procErrorRecord(IRecord r) throws ProcessingException;
 
   /**
    * Open the output file for writing good records to

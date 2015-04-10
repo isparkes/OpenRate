@@ -132,7 +132,7 @@ public class DBRecord extends AbstractRecord
   {
     super();
 
-    this.RecordNumber      = RecordNumber;
+    this.recordNumber      = RecordNumber;
     this.ColumnCount       = ColumnCount;
     this.OriginalColumns   = new String[ColumnCount];
     this.OriginalColumns   = Columns;
