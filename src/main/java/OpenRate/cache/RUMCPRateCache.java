@@ -545,7 +545,7 @@ public class RUMCPRateCache
                       throws InitializationException
   {
     int            RatesLoaded = 0;
-    int            Columns;
+    int            columns;
     String         PriceModel;
     double         tmpFrom;
     double         tmpTo;
@@ -573,7 +573,7 @@ public class RUMCPRateCache
     try
     {
       mrs = StmtPriceModelDataSelectQuery.executeQuery();
-      Columns = mrs.getMetaData().getColumnCount();
+      columns = mrs.getMetaData().getColumnCount();
     }
     catch (SQLException ex)
     {
@@ -585,7 +585,7 @@ public class RUMCPRateCache
 
     // check we have something we can use - either we expect 7 fields (no
     // date defined) or 9 fields (date defined). Everything else is BAD
-    if ((Columns == 7) | (Columns == 8))
+    if ((columns == 7) | (columns == 8))
     {
       // loop through the results for the customer login cache
       try
@@ -604,7 +604,7 @@ public class RUMCPRateCache
           tmpChargeBase = mrs.getDouble(7);
 
           // if we have the date, load it, otherwise use the default
-          if (Columns == 8)
+          if (columns == 8)
           {
             tmpStringStartTime = mrs.getString(8);
             tmpStartTime = fieldInterpreter.convertInputDateToUTC(tmpStringStartTime);
@@ -644,7 +644,7 @@ public class RUMCPRateCache
     {
       // Not a valid number of fields
       message = "Invalid number of fields in price map loading for module <" +
-                       getSymbolicName() + ">. Expecting <7> or <9>, but got <" + Columns + ">.";
+                       getSymbolicName() + ">. Expecting <7> or <9>, but got <" + columns + ">.";
       OpenRate.getOpenRateFrameworkLog().error(message);
       throw new InitializationException(message,getSymbolicName());
     }
