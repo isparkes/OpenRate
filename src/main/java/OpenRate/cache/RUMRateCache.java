@@ -812,6 +812,7 @@ public class RUMRateCache
     // Execute the query
     try {
       mrs = StmtRUMMapDataSelectQuery.executeQuery();
+      Columns = mrs.getMetaData().getColumnCount();
     } catch (SQLException ex) {
       message = "Error performing SQL for retieving Price Group Data for <"
               + getSymbolicName() + ">. SQL Error = <" + ex.getMessage() + ">";
