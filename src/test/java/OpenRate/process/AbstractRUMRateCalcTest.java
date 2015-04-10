@@ -170,6 +170,12 @@ public class AbstractRUMRateCalcTest {
     JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel6a',1,0,999999,60,2,60,'2000-01-01')").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel6b',1,0,999999,30,1,60,'2000-01-01')").execute();
 
+    // Model with a setup step
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel7a1',1,0,0,1,10,1,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel7a1',2,0,999999,60,0.35,60,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel7b1',1,0,0,1,10,1,'2000-01-01')").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_PRICE_MODEL (ID,PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM) values (1,'TestModel7b1',2,0,999999,60,0.16875,60,'2000-01-01')").execute();
+    
     // ********************************** RUM MAP ******************************
     // Create the test table
     JDBCChcon.prepareStatement("CREATE TABLE TEST_RUM_MAP (ID int, PRICE_GROUP varchar(24), STEP int, PRICE_MODEL varchar(24), RUM varchar(24), RESOURCE varchar(24), RESOURCE_ID int, RUM_TYPE varchar(24), CONSUME_FLAG int)").execute();
@@ -195,6 +201,10 @@ public class AbstractRUMRateCalcTest {
     // Tiered beat rounding model. Changes beat between first and second step
     JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel6a',1,'TestModel6a','DUR','EUR',978,'TIERED',0)").execute();
     JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel6b',1,'TestModel6b','DUR','EUR',978,'TIERED',0)").execute();
+
+    // Model with a setup step
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel7a',1,'TestModel7a1','DUR','EUR',978,'TIERED',0)").execute();
+    JDBCChcon.prepareStatement("INSERT INTO TEST_RUM_MAP (ID,PRICE_GROUP,STEP,PRICE_MODEL,RUM,RESOURCE,RESOURCE_ID,RUM_TYPE,CONSUME_FLAG) VALUES (1,'TestModel7b',1,'TestModel7b1','DUR','EUR',978,'TIERED',0)").execute();
 
     // Get the caches that we are using
     FrameworkUtils.startupCaches();
@@ -617,6 +627,10 @@ public class AbstractRUMRateCalcTest {
    * With the example we have we expect the result to be:
    *
    * 1 minute at 2 per minute = 2, .5 minutes at 1 per minute = 0.5
+   * 
+   * --> 1 second in peak pulls in a whole beat of 60 seconds into peak = 2
+   * --> remaining duration in off-peak = 62 - 60 = 2
+   * --> 2 seconds in off-peak rounded up to 30 seconds because of the model = 0.5
    *
    * @throws java.lang.Exception
    */
@@ -630,7 +644,6 @@ public class AbstractRUMRateCalcTest {
     conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
     long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-    // zero value to rate
     ratingRecord = getNewRatingRecordDURTimeSplitBeatRounding(CDRDate, "TestModel6a", "TestModel6b", 1, 61);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
@@ -639,8 +652,8 @@ public class AbstractRUMRateCalcTest {
 
   /**
    * Test of the main performRating method, of class AbstractRUMRateCalc. Test
-   * the beat rounding time splitting algorithm. This should apportion as much
-   * of the RUM necessary to each packet to respect the beat rounding of that
+   * the time splitting algorithm. This should blindly apportion as much
+   * of the RUM necessary to each packet, ignoring the beat rounding of that
    * model.
    *
    * For example, if a 62 second call has 1 second in off-peak, but a 60 second
@@ -654,6 +667,10 @@ public class AbstractRUMRateCalcTest {
    * With the example we have we expect the result to be:
    *
    * 1 minute at 2 per minute = 2, 1.5 minutes at 1 per minute = 1.5
+   * 
+   * --> 1 second in peak gets rated as 60 seconds = 2
+   * --> remaining duration in off-peak = 62 - 1 = 61
+   * --> 61 seconds in off-peak rounded up to 90 seconds because of the model = 1.5
    *
    * @throws java.lang.Exception
    */
@@ -667,8 +684,42 @@ public class AbstractRUMRateCalcTest {
     conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
     long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
 
-    // zero value to rate
     ratingRecord = getNewRatingRecordDURTimeSplitNoBeatRounding(CDRDate, "TestModel6a", "TestModel6b", 1, 61);
+    instance.performRating(ratingRecord);
+    assertEquals(2, ratingRecord.getChargePacketCount());
+    assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
+  }
+
+  /**
+   * Test the time splitting algorithm. This should blindly apportion as much
+   * of the RUM necessary to each packet, ignoring the beat rounding of that
+   * model.
+   * 
+   * In this case, we are testing that the setup step is not triggered in the
+   * second packet (it should have been triggered in the first packet)
+   * 
+   * We expect:
+   * 
+   * --> a setup step = 10
+   * --> 1 second rated in peak at 60 second beat = 0.35
+   * --> remaining duration in off-peak = 62 - 1 = 61
+   * --> 61 seconds in off-peak rounded up to 120 seconds because of the model = 0.16875*2 = 0.3375
+   * 
+   * --> 10.6875
+   *
+   * @throws java.lang.Exception
+   */
+  @Test
+  public void testPerformRatingTieredNoBeatRoundingSetup() throws Exception {
+    TestRatingRecord ratingRecord;
+    double expResult = 10.6875;
+    System.out.println("testPerformRatingTieredNoBeatRoundingSetup");
+
+    ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
+    conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
+    long CDRDate = conv.convertInputDateToUTC("2010-01-23 00:00:00");
+
+    ratingRecord = getNewRatingRecordDURTimeSplitNoBeatRounding(CDRDate, "TestModel7a", "TestModel7b", 1, 61);
     instance.performRating(ratingRecord);
     assertEquals(2, ratingRecord.getChargePacketCount());
     assertEquals(expResult, getRollUp(ratingRecord), 0.00001);
