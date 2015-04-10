@@ -285,8 +285,8 @@ public abstract class AbstractRUMCPRateCalc extends AbstractRateCalc {
         return rawRUMAmount;
       }
       case AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING: {
-        // we accept the raw RUM value
-        return rawRUMAmount;
+        // we accept the raw RUM value simply divided proportionally to the time
+        return rawRUMAmount * (duration / (double) totalDuration);
       }
       case AbstractRUMTimeMatch.TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING: {
         // Adjust the RUM for this zone to align to beat rounding
