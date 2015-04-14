@@ -221,7 +221,7 @@ public class Pipeline
     setSymbolicName(Name);
 
     // Create & configure the pipeline components
-    ConfigurePipeline();
+    configurePipeline();
 
     // Register with the client manager
     registerClientManager();
@@ -234,7 +234,7 @@ public class Pipeline
             "1");
     try {
       maxTransTM = Integer.parseInt(maxTransactions);
-    } catch (NumberFormatException nfe) {
+    } catch (NumberFormatException ex) {
       message = "MaxTransactions must be a numeric value, but we got <" + maxTransactions + "> in pipeline <" + symbolicName + ">. Aborting.";
       throw new InitializationException(message, getSymbolicName());
     }
@@ -258,7 +258,7 @@ public class Pipeline
    * @param props - the properties we have inherited
    * @throws InitializationException
    */
-  private void ConfigurePipeline() throws InitializationException {
+  private void configurePipeline() throws InitializationException {
     // this controls the type (batch or realtime) we create
     String pipelineType;
 
@@ -307,6 +307,7 @@ public class Pipeline
 
       if (!active) {
         OpenRate.getOpenRateFrameworkLog().warning("Starting pipeline <" + symbolicName + "> in inactive state");
+        System.out.println("    Starting pipeline <" + symbolicName + "> in inactive state");
       }
 
       // set the halt on exception state
