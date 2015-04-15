@@ -70,25 +70,27 @@ import org.junit.*;
  *
  * @author tgdspia1
  */
-public class ConversionUtilsTest
-{
+public class ConversionUtilsTest {
+
   private static URL FQConfigFileName;
   private static ConversionUtils instance;
   private static TimeZone tz;
+  private static Calendar cal;
 
   public ConversionUtilsTest() {
   }
 
   @BeforeClass
-  public static void setUpClass() throws Exception
-  {
+  public static void setUpClass() throws Exception {
+    // Set up time zone
     tz = TimeZone.getDefault();
-    //TimeZone.setDefault(TimeZone.getTimeZone());
+    cal = Calendar.getInstance();
+    cal.setTimeZone(tz);
 
     // Get an initialise the cache
     FQConfigFileName = new URL("File:src/test/resources/TestUtils.properties.xml");
-    
-   // Set up the OpenRate internal logger - this is normally done by app startup
+
+    // Set up the OpenRate internal logger - this is normally done by app startup
     OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
@@ -96,7 +98,7 @@ public class ConversionUtilsTest
 
     // Get the loggers
     FrameworkUtils.startupLoggers();
-    
+
     // Get the conversion cache resource
     FrameworkUtils.startupConversionCache();
   }
@@ -124,8 +126,7 @@ public class ConversionUtilsTest
    * Test of getConversionCache method, of class ConversionUtils.
    */
   @Test
-  public void testGetConversionCache()
-  {
+  public void testGetConversionCache() {
     System.out.println("getConversionCache");
     ConversionCache result = ConversionUtils.getConversionCache();
 
@@ -137,8 +138,7 @@ public class ConversionUtilsTest
    * Test of getConversionCache method, of class ConversionUtils.
    */
   @Test
-  public void testGetConversionCacheSymbolicName()
-  {
+  public void testGetConversionCacheSymbolicName() {
     System.out.println("getConversionCache");
     String result = ConversionUtils.getConversionCache().getSymbolicName();
 
@@ -148,10 +148,11 @@ public class ConversionUtilsTest
 
   /**
    * Test of convertInputDateToUTC method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testConvertInputDateToUTC() throws Exception
-  {
+  public void testConvertInputDateToUTC() throws ParseException {
     long expResult;
     long result;
     String amorphicDate;
@@ -161,38 +162,38 @@ public class ConversionUtilsTest
     // Test the standard date formatsTimeZone
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
-    expResult = 1325372400;
+    expResult = getUTCDateExpected(2012,1,1,0,0,0);
+    
     result = instance.convertInputDateToUTC(amorphicDate);
-    Assert.assertEquals(expResult,result);
+    Assert.assertEquals(expResult, result);
 
     // another common one
     amorphicDate = "2012-01-01 00:00:00";
     instance.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
-    expResult = 1325372400;
     result = instance.convertInputDateToUTC(amorphicDate);
-    Assert.assertEquals(expResult,result);
+    Assert.assertEquals(expResult, result);
 
     // an integer
-    amorphicDate = "1325372400";
+    amorphicDate = Long.toString(expResult);
     instance.setInputDateFormat("integer");
-    expResult = 1325372400;
     result = instance.convertInputDateToUTC(amorphicDate);
-    Assert.assertEquals(expResult,result);
+    Assert.assertEquals(expResult, result);
 
     // a long
-    amorphicDate = "1325372400000";
-    instance.setInputDateFormat("long");
     expResult = 1325372400;
+    amorphicDate = Long.toString(expResult) + "000";
+    instance.setInputDateFormat("long");
     result = instance.convertInputDateToUTC(amorphicDate);
-    Assert.assertEquals(expResult,result);
+    Assert.assertEquals(expResult, result);
   }
 
   /**
    * Test of getDayOfWeek method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testGetDayOfWeek() throws Exception
-  {
+  public void testGetDayOfWeek() throws ParseException {
     long expResult;
     long result;
     long UTCDate;
@@ -204,8 +205,8 @@ public class ConversionUtilsTest
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
     UTCDate = instance.convertInputDateToUTC(amorphicDate);
-    expResult = 1325372400;
-    Assert.assertEquals(expResult,expResult);
+    expResult = getUTCDateExpected(2012,1,1,0,0,0);
+    Assert.assertEquals(expResult, expResult);
 
     result = instance.getDayOfWeek(UTCDate);
 
@@ -233,10 +234,11 @@ public class ConversionUtilsTest
 
   /**
    * Test of getMinuteOfDay method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testGetMinuteOfDay() throws ParseException
-  {
+  public void testGetMinuteOfDay() throws ParseException {
     long expResult;
     long result;
     long UTCDate;
@@ -247,8 +249,8 @@ public class ConversionUtilsTest
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
     UTCDate = instance.convertInputDateToUTC(amorphicDate);
-    expResult = 1325372400;
-    Assert.assertEquals(expResult,expResult);
+    expResult = getUTCDateExpected(2012,1,1,0,0,0);
+    Assert.assertEquals(expResult, expResult);
 
     // minute 0 of day
     result = instance.getMinuteOfDay(UTCDate);
@@ -286,10 +288,11 @@ public class ConversionUtilsTest
 
   /**
    * Test of setInputDateFormat method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testSetInputDateFormat() throws ParseException
-  {
+  public void testSetInputDateFormat() throws ParseException {
     String amorphicDate;
 
     System.out.println("setInputDateFormat");
@@ -297,12 +300,9 @@ public class ConversionUtilsTest
     amorphicDate = "20120101000000";
     instance.setInputDateFormat("yyyyMMddhhmmss");
 
-    try
-    {
+    try {
       instance.convertInputDateToUTC(amorphicDate);
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       Assert.fail("We expect no exception.");
     }
   }
@@ -311,8 +311,7 @@ public class ConversionUtilsTest
    * Test of getInputDateFormat method, of class ConversionUtils.
    */
   @Test
-  public void testGetInputDateFormat()
-  {
+  public void testGetInputDateFormat() {
     String expResult;
     String result;
 
@@ -352,16 +351,12 @@ public class ConversionUtilsTest
    * Test of setOutputDateFormat method, of class ConversionUtils.
    */
   @Test
-  public void testSetOutputDateFormat()
-  {
+  public void testSetOutputDateFormat() {
     System.out.println("setOutputDateFormat");
 
-    try
-    {
+    try {
       instance.setOutputDateFormat("yyyyMMddhhmmss");
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       Assert.fail("We expect no exception.");
     }
   }
@@ -370,8 +365,7 @@ public class ConversionUtilsTest
    * Test of getOutputDateFormat method, of class ConversionUtils.
    */
   @Test
-  public void testGetOutputDateFormat()
-  {
+  public void testGetOutputDateFormat() {
     String expResult;
     String result;
 
@@ -416,8 +410,7 @@ public class ConversionUtilsTest
    * Test of formatLongDate method, of class ConversionUtils.
    */
   @Test
-  public void testFormatLongDate_long()
-  {
+  public void testFormatLongDate_long() {
     String result;
     long dateToFormat;
     String expResult;
@@ -425,7 +418,7 @@ public class ConversionUtilsTest
     System.out.println("formatLongDate");
 
     // simple case
-    dateToFormat = 1325372400;
+    dateToFormat = getUTCDateExpected(2012,1,1,0,0,0);
     instance.setOutputDateFormat("yyyyMMddHHmmss");
     result = instance.formatLongDate(dateToFormat);
     expResult = "20120101000000";
@@ -440,19 +433,20 @@ public class ConversionUtilsTest
 
   /**
    * Test of formatLongDate method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testFormatLongDate_Date() throws ParseException
-  {
+  public void testFormatLongDate_Date() throws ParseException {
     String result;
-    Date   dateToFormat;
+    Date dateToFormat;
     String expResult;
-    long   dateInput;
+    long dateInput;
 
     System.out.println("formatLongDate");
 
     // simple case
-    dateInput = 1325372400;
+    dateInput = this.getUTCDateExpected(2012,1,1,0,0,0);
     dateToFormat = instance.getDateFromUTC(dateInput);
     instance.setOutputDateFormat("yyyyMMddHHmmss");
     result = instance.formatLongDate(dateToFormat);
@@ -462,29 +456,31 @@ public class ConversionUtilsTest
 
   /**
    * Test of getDatefromLongFormat method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testGetDatefromLongFormat() throws Exception
-  {
+  public void testGetDatefromLongFormat() throws ParseException {
     String DateToFormat;
     Date expResult;
 
     System.out.println("getDatefromLongFormat");
 
     // simple case
-    expResult = instance.getDateFromUTC(1325372400);
+    expResult = getDateExpected(2012,1,1,0,0,0);
     DateToFormat = "20120101000000";
     instance.setInputDateFormat("yyyyMMddHHmmss");
     Date result = instance.getDatefromLongFormat(DateToFormat);
-    Assert.assertEquals(expResult, result);
+    Assert.assertTrue(expResult.compareTo(result) == 0);
   }
 
   /**
    * Test of getGmtDate method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testGetGmtDate() throws ParseException
-  {
+  public void testGetGmtDate() throws ParseException {
     int offSet;
     int dateInput;
     String DateToFormat;
@@ -499,9 +495,9 @@ public class ConversionUtilsTest
     instance.setInputDateFormat("yyyyMMddHHmmss");
     dateFormatted = instance.getDatefromLongFormat(DateToFormat);
     dateInput = (int) (dateFormatted.getTime() / 1000);
-    offSet = tz.getOffset( dateInput * 1000 );
+    offSet = tz.getOffset(dateInput * 1000);
     dateFormatted = instance.getDateFromUTC(dateInput);
-    expResult = instance.getDateFromUTC(dateInput - (offSet/1000));
+    expResult = instance.getDateFromUTC(dateInput - (offSet / 1000));
     result = instance.getGmtDate(dateFormatted);
     Assert.assertEquals(expResult, result);
 
@@ -510,38 +506,37 @@ public class ConversionUtilsTest
     instance.setInputDateFormat("yyyyMMddHHmmss");
     dateFormatted = instance.getDatefromLongFormat(DateToFormat);
     dateInput = (int) (dateFormatted.getTime() / 1000);
-    offSet = tz.getOffset( dateInput * 1000 ) + tz.getDSTSavings();
+    offSet = tz.getOffset(dateInput * 1000) + tz.getDSTSavings();
     dateFormatted = instance.getDateFromUTC(dateInput);
-    expResult = instance.getDateFromUTC(dateInput - (offSet/1000));
+    expResult = instance.getDateFromUTC(dateInput - (offSet / 1000));
     result = instance.getGmtDate(dateFormatted);
     Assert.assertEquals(expResult, result);
   }
 
   /**
-   * Test of getDateInDST method, of class ConversionUtils.
+   * Test of getDateInDST method, of class ConversionUtils. Not all time zones
+   * have DST. We take a day a month and check it.
    */
   @Test
-  public void testGetDateInDST()
-  {
+  public void testGetDateInDST() {
     System.out.println("getDateInDST");
 
-    Date date = new Date();
-    int offSet = tz.getOffset( new Date().getTime() );
-    int offSetDST = tz.getDSTSavings();
-    boolean expResult = ( offSet != offSetDST );
-    boolean result = instance.getDateInDST(date);
-    Assert.assertEquals(expResult, result);
+    for (int month = 1 ; month < 12 ; month++) {
+      Date expDate = getDateExpected(2012, month, 1, 0, 0, 0);
+      boolean expResult = tz.inDaylightTime(expDate);
+      boolean result = instance.getDateInDST(expDate);
+      Assert.assertEquals(expResult, result);
+    }
   }
 
   /**
    * Test of getUTCMonthStart method, of class ConversionUtils.
    */
   @Test
-  public void testGetUTCMonthStart()
-  {
+  public void testGetUTCMonthStart() {
     System.out.println("getUTCMonthStart");
 
-    int dateInput = 1325372400;
+    long dateInput = getUTCDateExpected(2012,1,1,0,0,0);
     long expResult = dateInput;
 
     // Move the date 20+ days on
@@ -555,12 +550,11 @@ public class ConversionUtilsTest
    * Test of getUTCMonthEnd method, of class ConversionUtils.
    */
   @Test
-  public void testGetUTCMonthEnd()
-  {
+  public void testGetUTCMonthEnd() {
     System.out.println("getUTCMonthEnd");
 
-    int dateInput = 1325372400;
-    long expResult = dateInput - 1;
+    long dateInput = getUTCDateExpected(2012,1,31,23,59,59);
+    long expResult = dateInput;
 
     // Move the date 20+ days back
     dateInput -= 2322134;
@@ -573,14 +567,14 @@ public class ConversionUtilsTest
    * Test of getUTCDayStart method, of class ConversionUtils.
    */
   @Test
-  public void testGetUTCDayStart()
-  {
+  public void testGetUTCDayStart() {
     System.out.println("getUTCDayStart");
 
-    int dateInput = 1325372400;
+    long dateInput = getUTCDateExpected(2012,1,1,0,0,0);
     long expResult = dateInput;
 
-    // Move the date 4+ hours on
+    // Move the date 4+ hours on, but when we get the result, it should be
+    // rounded back down to the start date
     dateInput += 12134;
     Date EventStartDate = instance.getDateFromUTC(dateInput);
     long result = instance.getUTCDayStart(EventStartDate);
@@ -591,8 +585,7 @@ public class ConversionUtilsTest
    * Test of getUTCDate method, of class ConversionUtils.
    */
   @Test
-  public void testGetUTCDate()
-  {
+  public void testGetUTCDate() {
     System.out.println("getUTCDate");
 
     int dateInput = 1325372400;
@@ -604,10 +597,11 @@ public class ConversionUtilsTest
 
   /**
    * Test of getDateFromUTC method, of class ConversionUtils.
+   *
+   * @throws java.text.ParseException
    */
   @Test
-  public void testGetDateFromUTC() throws ParseException
-  {
+  public void testGetDateFromUTC() throws ParseException {
     System.out.println("getDateFromUTC");
 
     long EventStartDate = 1325372400;
@@ -622,14 +616,14 @@ public class ConversionUtilsTest
    * Test of getUTCDayEnd method, of class ConversionUtils.
    */
   @Test
-  public void testGetUTCDayEnd_Date()
-  {
+  public void testGetUTCDayEnd_Date() {
     System.out.println("getUTCDayEnd");
 
-    int dateInput = 1325372399;
+    long dateInput = getUTCDateExpected(2012,1,1,23,59,59);
     long expResult = dateInput;
 
-    // Move the date 4+ hours back
+    // Move the date 4+ hours back, but when we get the result, it should have
+    // been rounded up again
     dateInput -= 12134;
     Date EventStartDate = instance.getDateFromUTC(dateInput);
     long result = instance.getUTCDayEnd(EventStartDate);
@@ -640,14 +634,14 @@ public class ConversionUtilsTest
    * Test of getUTCDayEnd method, of class ConversionUtils.
    */
   @Test
-  public void testGetUTCDayEnd_Date_int()
-  {
+  public void testGetUTCDayEnd_Date_int() {
     System.out.println("getUTCDayEnd");
 
-    int dateInput = 1325372399;
+    long dateInput = getUTCDateExpected(2012,1,1,23,59,59);
     long expResult = dateInput;
 
-    // Move the date 4+ hours back
+    // Move the date 4+ hours back, but when we get the result, it should have
+    // been rounded up again
     dateInput -= 12134;
     Date EventStartDate = instance.getDateFromUTC(dateInput);
 
@@ -660,8 +654,7 @@ public class ConversionUtilsTest
    * Test of getRoundedValue method, of class ConversionUtils.
    */
   @Test
-  public void testGetRoundedValue()
-  {
+  public void testGetRoundedValue() {
     double valueToRound;
     int decimalPlaces = 2;
     double expResult;
@@ -692,8 +685,7 @@ public class ConversionUtilsTest
    * Test of getRoundedValueRoundUp method, of class ConversionUtils.
    */
   @Test
-  public void testGetRoundedValueRoundUp()
-  {
+  public void testGetRoundedValueRoundUp() {
     double valueToRound;
     int decimalPlaces = 2;
     double expResult;
@@ -730,8 +722,7 @@ public class ConversionUtilsTest
    * Test of getRoundedValueRoundDown method, of class ConversionUtils.
    */
   @Test
-  public void testGetRoundedValueRoundDown()
-  {
+  public void testGetRoundedValueRoundDown() {
     double valueToRound;
     int decimalPlaces = 2;
     double expResult;
@@ -768,8 +759,7 @@ public class ConversionUtilsTest
    * Test of getRoundedValueRoundHalfEven method, of class ConversionUtils.
    */
   @Test
-  public void testGetRoundedValueRoundHalfEven()
-  {
+  public void testGetRoundedValueRoundHalfEven() {
     double valueToRound;
     int decimalPlaces = 2;
     double expResult;
@@ -801,31 +791,43 @@ public class ConversionUtilsTest
     result = instance.getRoundedValueRoundHalfEven(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
   }
+
+  /**
+   * Get the UTC date using the calendar. We expect 
+   */
+  private long getUTCDateExpected(int year, int month, int day, int hour, int min, int sec) {
+    cal.set(year, month-1, day, hour, min, sec);
+    return cal.getTimeInMillis()/1000;
+  }
   
- /**
-  * Method to get an instance of the implementation. Done this way to allow
-  * tests to be executed individually.
-  *
-  * @throws InitializationException
-  */
-  private void getInstance()
-  {
-    if (instance == null)
-    {
+  /**
+   * Get the UTC date using the calendar. We expect 
+   */
+  private Date getDateExpected(int year, int month, int day, int hour, int min, int sec) {
+    cal.set(year, month-1, day, hour, min, sec);
+    cal.set(Calendar.MILLISECOND,0);
+    return cal.getTime();
+  }
+  
+  /**
+   * Method to get an instance of the implementation. Done this way to allow
+   * tests to be executed individually.
+   *
+   * @throws InitializationException
+   */
+  private void getInstance() {
+    if (instance == null) {
       // Get an initialise the cache
-      instance = new ConversionUtils();      
-    }
-    else
-    {
+      instance = new ConversionUtils();
+    } else {
       org.junit.Assert.fail("Instance already allocated");
     }
   }
-  
- /**
-  * Method to release an instance of the implementation.
-  */
-  private void releaseInstance()
-  {
+
+  /**
+   * Method to release an instance of the implementation.
+   */
+  private void releaseInstance() {
     instance = null;
   }
 }
