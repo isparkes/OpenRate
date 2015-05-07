@@ -918,9 +918,12 @@ public class BalanceCache extends AbstractCache
             for (i = 0 ; i < counters.size() ; i++)
             {
               tmpCounter = counters.get(i);
-              stringToWrite = tmpBalGrpKey + ";" + tmpCounterId + ";" +
-                              tmpCounter.RecId + ";" + tmpCounter.validFrom +  ";" +
-                              tmpCounter.validTo + ";" + tmpCounter.CurrentBalance;
+              stringToWrite = tmpBalGrpKey + ";" + 
+                              tmpCounterId + ";" +
+                              tmpCounter.RecId + ";" + 
+                              tmpCounter.validFrom +  ";" +
+                              tmpCounter.validTo + ";" + 
+                              tmpCounter.CurrentBalance;
               outFile.write(stringToWrite);
               outFile.newLine();
             }

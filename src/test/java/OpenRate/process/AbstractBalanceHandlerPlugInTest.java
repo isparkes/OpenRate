@@ -300,7 +300,12 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
     }
 
     /**
-     * Test of discountConsumeRUM method, of class AbstractBalanceHandlerPlugIn.
+     * Test that discounting applies the correct logic.
+     * 
+     *  - If the counter is not there, create it
+     *  - If the counter is there but zero, do not discount (no counter)
+     *  - Fully discount a record in the case that there is sufficient balance
+     *  - Partially discount a record where there is not enough balance to cover it completely
      */
     @Test
     public void testDiscountConsumeRUM()
@@ -315,7 +320,8 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         String DiscountName = "TestDiscount";
         long BalanceGroupId = 1000L;
         String RUMToUse = "RUM";
-        int counterId = 100000;
+        int counterId1 = 100000;
+        int counterId2 = 100001;
         double initialBalance = 200.0;
         double rumValue1 = 123.0;
         long UTCBalanceStartValidity = ConversionUtils.getConversionUtilsObject().getUTCDayStart(new Date());
@@ -328,11 +334,11 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         CurrentRecord3.UTCEventDate = UTCBalanceStartValidity;
 
         // ---------- First Event Fully Discounted ------------
-        DiscountInformation result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+        DiscountInformation result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId1, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
 
         // Check the results of the discounting
         Assert.assertEquals(true, result.isDiscountApplied());
-        Assert.assertEquals(counterId, result.getCounterId());
+        Assert.assertEquals(counterId1, result.getCounterId());
         Assert.assertEquals((initialBalance-rumValue1), result.getNewBalanceValue(), 0.000001);
         Assert.assertEquals(rumValue1, result.getDiscountedValue(), 0.000001);
         Assert.assertEquals(1, result.getRecId());
@@ -349,7 +355,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         Assert.assertEquals("RUM",balImp1.rumUsed);
         Assert.assertEquals(200,balImp1.balanceDelta,0.000001);
         Assert.assertEquals(200,balImp1.balanceAfter,0.000001);
-        Assert.assertEquals(counterId,balImp1.counterID);
+        Assert.assertEquals(counterId1,balImp1.counterID);
         Assert.assertEquals(1,balImp1.recID);
         Assert.assertEquals(UTCBalanceStartValidity,balImp1.startDate);
         Assert.assertEquals(UTCBalanceEndValidity,balImp1.endDate);
@@ -360,7 +366,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         Assert.assertEquals("RUM",balImp2.rumUsed);
         Assert.assertEquals(-123,balImp2.balanceDelta,0.000001);
         Assert.assertEquals(77,balImp2.balanceAfter,0.000001);
-        Assert.assertEquals(counterId,balImp2.counterID);
+        Assert.assertEquals(counterId1,balImp2.counterID);
         Assert.assertEquals(1,balImp2.recID);
         Assert.assertEquals(UTCBalanceStartValidity,balImp2.startDate);
         Assert.assertEquals(UTCBalanceEndValidity,balImp2.endDate);
@@ -368,11 +374,11 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         Assert.assertEquals(0,balImp2.rumValueAfter,0.000001);
 
         // ---------- Second Event Partially Discounted ------------
-        result = instance.discountConsumeRUM(CurrentRecord2, DiscountName, BalanceGroupId, RUMToUse, counterId, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+        result = instance.discountConsumeRUM(CurrentRecord2, DiscountName, BalanceGroupId, RUMToUse, counterId1, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
 
         // Check the results of the discounting
         Assert.assertEquals(true, result.isDiscountApplied());
-        Assert.assertEquals(counterId, result.getCounterId());
+        Assert.assertEquals(counterId1, result.getCounterId());
         Assert.assertEquals(0, result.getNewBalanceValue(), 0.000001);
         Assert.assertEquals(77, result.getDiscountedValue(), 0.000001);
         Assert.assertEquals(1, result.getRecId());
@@ -389,15 +395,15 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         Assert.assertEquals("RUM",balImp3.rumUsed);
         Assert.assertEquals(-77,balImp3.balanceDelta,0.000001);
         Assert.assertEquals(0,balImp3.balanceAfter,0.000001);
-        Assert.assertEquals(counterId,balImp3.counterID);
+        Assert.assertEquals(counterId1,balImp3.counterID);
         Assert.assertEquals(1,balImp3.recID);
         Assert.assertEquals(UTCBalanceStartValidity,balImp3.startDate);
         Assert.assertEquals(UTCBalanceEndValidity,balImp3.endDate);
         Assert.assertEquals(77,balImp3.rumValueUsed,0.000001);
         Assert.assertEquals(46,balImp3.rumValueAfter,0.000001);
 
-        // ---------- Third Event not Discounted ------------
-        result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+        // ------ Third Event not Discounted (no balance left) -------
+        result = instance.discountConsumeRUM(CurrentRecord3, DiscountName, BalanceGroupId, RUMToUse, counterId1, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
 
         // Check the results of the discounting
         Assert.assertEquals(false, result.isDiscountApplied());
@@ -408,8 +414,182 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         Assert.assertEquals(false, result.isBalanceCreated());
         Assert.assertEquals(AbstractBalanceHandlerPlugIn.DISCOUNT_FLAG_NO_DISCOUNT, result.getDiscountFlag());
 
-        // Check the RUM value has been used up
+        // Check the RUM value has not been used up (there was no counter therefore
+        // there can be no impact)
         Assert.assertEquals(123,CurrentRecord3.getRUMValue("RUM"),0.000001);
+        
+        // ------ Fourth Event not Discounted (no RUM left) -------
+        result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId2, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+
+        // Check the results of the discounting
+        Assert.assertEquals(false, result.isDiscountApplied());
+        Assert.assertEquals(0, result.getCounterId());
+        Assert.assertEquals(0, result.getNewBalanceValue(), 0.000001);
+        Assert.assertEquals(0, result.getDiscountedValue(), 0.000001);
+        Assert.assertEquals(0, result.getRecId());
+        Assert.assertEquals(true, result.isBalanceCreated());
+        Assert.assertEquals(AbstractBalanceHandlerPlugIn.DISCOUNT_FLAG_NO_DISCOUNT, result.getDiscountFlag());
+
+        // Check the RUM value has not been used up (there was no counter therefore
+        // there can be no impact)
+        Assert.assertEquals(0,CurrentRecord1.getRUMValue("RUM"),0.000001);
+    }
+
+    /**
+     * Test that discounting applies the correct logic in the case we are
+     * *refunding* balance. (i.e. with a negative RUM value).
+     */
+    @Test
+    public void testDiscountConsumeRUMRefund()
+    {
+        System.out.println("discountConsumeRUMRefund");
+
+        // Set up the record
+        TestRatingRecord CurrentRecord1 = new TestRatingRecord();
+        TestRatingRecord CurrentRecord2 = new TestRatingRecord();
+        TestRatingRecord CurrentRecord3 = new TestRatingRecord();
+
+        String DiscountName = "TestDiscount";
+        long BalanceGroupId = 1001L;
+        String RUMToUse = "RUM";
+        int counterId1 = 100000;
+        int counterId2 = 100001;
+        double initialBalance = 200.0;
+        double rumValue = -123.0;
+        long UTCBalanceStartValidity = ConversionUtils.getConversionUtilsObject().getUTCDayStart(new Date());
+        long UTCBalanceEndValidity = ConversionUtils.getConversionUtilsObject().getUTCDayEnd(new Date());
+        CurrentRecord1.setRUMValue("RUM", rumValue);
+        CurrentRecord2.setRUMValue("RUM", rumValue);
+        CurrentRecord3.setRUMValue("RUM", rumValue);
+        CurrentRecord1.UTCEventDate = UTCBalanceStartValidity;
+        CurrentRecord2.UTCEventDate = UTCBalanceStartValidity;
+        CurrentRecord3.UTCEventDate = UTCBalanceStartValidity;
+
+        // --- First Event Refund onto an new counter (non zero init value) ---
+        DiscountInformation result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId1, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+
+        // Check the results of the discounting
+        Assert.assertEquals(true, result.isDiscountApplied());
+        Assert.assertEquals(counterId1, result.getCounterId());
+        Assert.assertEquals((initialBalance-rumValue), result.getNewBalanceValue(), 0.000001);
+        Assert.assertEquals(rumValue, result.getDiscountedValue(), 0.000001);
+        Assert.assertEquals(1, result.getRecId());
+        Assert.assertEquals(true, result.isBalanceCreated());
+        Assert.assertEquals(AbstractBalanceHandlerPlugIn.DISCOUNT_FLAG_FULLY_DISCOUNTED, result.getDiscountFlag());
+
+        // Check the RUM value has been used up
+        Assert.assertEquals(0,CurrentRecord1.getRUMValue("RUM"),0.000001);
+
+        // Check the balance impacts in the record
+        Assert.assertEquals(2,CurrentRecord1.getBalanceImpactCount());
+        BalanceImpact balImp1 = CurrentRecord1.getBalanceImpact(0);
+        Assert.assertEquals("CREATION",balImp1.ruleName);
+        Assert.assertEquals("RUM",balImp1.rumUsed);
+        Assert.assertEquals(200,balImp1.balanceDelta,0.000001);
+        Assert.assertEquals(200,balImp1.balanceAfter,0.000001);
+        Assert.assertEquals(counterId1,balImp1.counterID);
+        Assert.assertEquals(1,balImp1.recID);
+        Assert.assertEquals(UTCBalanceStartValidity,balImp1.startDate);
+        Assert.assertEquals(UTCBalanceEndValidity,balImp1.endDate);
+        Assert.assertEquals(0,balImp1.rumValueUsed,0.000001);
+        Assert.assertEquals(0,balImp1.rumValueAfter,0.000001);
+        BalanceImpact balImp2 = CurrentRecord1.getBalanceImpact(1);
+        Assert.assertEquals("ConsumeRUM",balImp2.ruleName);
+        Assert.assertEquals("RUM",balImp2.rumUsed);
+        Assert.assertEquals(123,balImp2.balanceDelta,0.000001);
+        Assert.assertEquals(323,balImp2.balanceAfter,0.000001);
+        Assert.assertEquals(counterId1,balImp2.counterID);
+        Assert.assertEquals(1,balImp2.recID);
+        Assert.assertEquals(UTCBalanceStartValidity,balImp2.startDate);
+        Assert.assertEquals(UTCBalanceEndValidity,balImp2.endDate);
+        Assert.assertEquals(-123,balImp2.rumValueUsed,0.000001);
+        Assert.assertEquals(0,balImp2.rumValueAfter,0.000001);
+
+        // --------- Second Event Refund onto an existing counter ------------
+        result = instance.discountConsumeRUM(CurrentRecord2, DiscountName, BalanceGroupId, RUMToUse, counterId1, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+
+        // Check the results of the discounting
+        Assert.assertEquals(true, result.isDiscountApplied());
+        Assert.assertEquals(counterId1, result.getCounterId());
+        Assert.assertEquals(446, result.getNewBalanceValue(), 0.000001);
+        Assert.assertEquals(rumValue, result.getDiscountedValue(), 0.000001);
+        Assert.assertEquals(1, result.getRecId());
+        Assert.assertEquals(false, result.isBalanceCreated());
+        Assert.assertEquals(AbstractBalanceHandlerPlugIn.DISCOUNT_FLAG_FULLY_DISCOUNTED, result.getDiscountFlag());
+
+        // Check the RUM value has been used up
+        Assert.assertEquals(0,CurrentRecord2.getRUMValue("RUM"),0.000001);
+
+        // Check the balance impacts in the record
+        Assert.assertEquals(1,CurrentRecord2.getBalanceImpactCount());
+        BalanceImpact balImp3 = CurrentRecord2.getBalanceImpact(0);
+        Assert.assertEquals("ConsumeRUM",balImp3.ruleName);
+        Assert.assertEquals("RUM",balImp3.rumUsed);
+        Assert.assertEquals(123,balImp3.balanceDelta,0.000001);
+        Assert.assertEquals(446,balImp3.balanceAfter,0.000001);
+        Assert.assertEquals(counterId1,balImp3.counterID);
+        Assert.assertEquals(1,balImp3.recID);
+        Assert.assertEquals(UTCBalanceStartValidity,balImp3.startDate);
+        Assert.assertEquals(UTCBalanceEndValidity,balImp3.endDate);
+        Assert.assertEquals(-123,balImp3.rumValueUsed,0.000001);
+        Assert.assertEquals(0,balImp3.rumValueAfter,0.000001);
+
+        // --- Third Event Refund onto an new counter (zero init value) ---
+        initialBalance = 0;
+        result = instance.discountConsumeRUM(CurrentRecord3, DiscountName, BalanceGroupId, RUMToUse, counterId2, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+
+        // Check the results of the discounting
+        Assert.assertEquals(true, result.isDiscountApplied());
+        Assert.assertEquals(counterId2, result.getCounterId());
+        Assert.assertEquals((initialBalance-rumValue), result.getNewBalanceValue(), 0.000001);
+        Assert.assertEquals(rumValue, result.getDiscountedValue(), 0.000001);
+        Assert.assertEquals(2, result.getRecId());
+        Assert.assertEquals(true, result.isBalanceCreated());
+        Assert.assertEquals(AbstractBalanceHandlerPlugIn.DISCOUNT_FLAG_FULLY_DISCOUNTED, result.getDiscountFlag());
+
+        // Check the RUM value has been used up
+        Assert.assertEquals(0,CurrentRecord1.getRUMValue("RUM"),0.000001);
+
+        // Check the balance impacts in the record
+        Assert.assertEquals(2,CurrentRecord3.getBalanceImpactCount());
+        balImp1 = CurrentRecord3.getBalanceImpact(0);
+        Assert.assertEquals("CREATION",balImp1.ruleName);
+        Assert.assertEquals("RUM",balImp1.rumUsed);
+        Assert.assertEquals(0,balImp1.balanceDelta,0.000001);
+        Assert.assertEquals(0,balImp1.balanceAfter,0.000001);
+        Assert.assertEquals(counterId2,balImp1.counterID);
+        Assert.assertEquals(2,balImp1.recID);
+        Assert.assertEquals(UTCBalanceStartValidity,balImp1.startDate);
+        Assert.assertEquals(UTCBalanceEndValidity,balImp1.endDate);
+        Assert.assertEquals(0,balImp1.rumValueUsed,0.000001);
+        Assert.assertEquals(0,balImp1.rumValueAfter,0.000001);
+        balImp2 = CurrentRecord3.getBalanceImpact(1);
+        Assert.assertEquals("ConsumeRUM",balImp2.ruleName);
+        Assert.assertEquals("RUM",balImp2.rumUsed);
+        Assert.assertEquals(123,balImp2.balanceDelta,0.000001);
+        Assert.assertEquals(123,balImp2.balanceAfter,0.000001);
+        Assert.assertEquals(counterId2,balImp2.counterID);
+        Assert.assertEquals(2,balImp2.recID);
+        Assert.assertEquals(UTCBalanceStartValidity,balImp2.startDate);
+        Assert.assertEquals(UTCBalanceEndValidity,balImp2.endDate);
+        Assert.assertEquals(-123,balImp2.rumValueUsed,0.000001);
+        Assert.assertEquals(0,balImp2.rumValueAfter,0.000001);
+        
+        // ------ Fourth Event not Discounted (no RUM left) -------
+        result = instance.discountConsumeRUM(CurrentRecord1, DiscountName, BalanceGroupId, RUMToUse, counterId2, initialBalance, UTCBalanceStartValidity, UTCBalanceEndValidity);
+
+        // Check the results of the discounting
+        Assert.assertEquals(false, result.isDiscountApplied());
+        Assert.assertEquals(0, result.getCounterId());
+        Assert.assertEquals(0, result.getNewBalanceValue(), 0.000001);
+        Assert.assertEquals(0, result.getDiscountedValue(), 0.000001);
+        Assert.assertEquals(0, result.getRecId());
+        Assert.assertEquals(false, result.isBalanceCreated());
+        Assert.assertEquals(AbstractBalanceHandlerPlugIn.DISCOUNT_FLAG_NO_DISCOUNT, result.getDiscountFlag());
+
+        // Check the RUM value has not been used up (there was no counter therefore
+        // there can be no impact)
+        Assert.assertEquals(0,CurrentRecord1.getRUMValue("RUM"),0.000001);
     }
 
     /**
@@ -431,7 +611,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         TestRatingRecord CurrentRecordR3 = new TestRatingRecord();
 
         String DiscountName = "TestDiscount";
-        long BalanceGroupId = 1001L;
+        long BalanceGroupId = 1002L;
         String RUMToUse = "RUM";
         int counterId = 100000;
         double initialBalance = 200.0;
@@ -617,7 +797,7 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
         TestRatingRecord CurrentRecord3 = new TestRatingRecord();
 
         String DiscountName = "TestDiscount";
-        long BalanceGroupId = 1002L;
+        long BalanceGroupId = 1003L;
         String RUMToUse = "RUM";
         int counterId = 100000;
         double initialBalance = 0.0;
