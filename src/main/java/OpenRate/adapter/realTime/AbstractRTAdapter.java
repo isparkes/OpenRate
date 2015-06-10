@@ -61,7 +61,6 @@ import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.process.IPlugIn;
 import OpenRate.record.FlatRecord;
 import OpenRate.record.IRecord;
@@ -84,6 +83,11 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   // The symbolic name is used in the management of the pipeline (control and
   // thread monitoring) and logging.
   private String SymbolicName;
+  
+  /**
+   * Flag that marks adapters shutdown
+   */
+  private volatile boolean shutdown = false;
 
  /**
   * This is the pipeline that we are in, used for logging and property retrieval
@@ -105,13 +109,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
    * used to control if the performance sensitive process thread debugs or not
    */
   protected boolean debugging = false;
-
- /**
-  * Constructor
-  */
-  public void AbstractRTAdapter()
-  {
-  }
 
  /**
   * Get the ID of the thread that is currently being used in this context.
@@ -217,7 +214,7 @@ public abstract class AbstractRTAdapter implements IRTAdapter
    */
   public void write() throws ProcessingException
   {
-    while (true)
+    while (!shutdown)
     {
       // If not marked for shutdown, wait for notification from the
       // suppler that new records are available for processing.
@@ -255,6 +252,9 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   @Override
   public void markForClosedown()
   {
+  	// Mark adapter for shutdown
+  	shutdown = true;
+	  
     // Shutdown the listener
     shutdownInputListener();
 
