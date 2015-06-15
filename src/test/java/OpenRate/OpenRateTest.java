@@ -203,6 +203,14 @@ public class OpenRateTest {
     Thread openRateThread = new Thread(appl);
     openRateThread.start();
 
+    System.out.println("Waiting for startup to complete");
+    while (!appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
+    
     // wait for it to start
     System.out.println("Waiting for the system to come up");
     while (!appl.isFrameworkActive()) {
@@ -282,6 +290,14 @@ public class OpenRateTest {
     Thread openRateThread = new Thread(appl);
     openRateThread.start();
 
+    System.out.println("Waiting for startup to complete");
+    while (!appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
+    
     // And test the shutdown
     try {
       // Create file 

@@ -169,6 +169,7 @@ public class Pipeline
   private final String SERVICE_RUNCOUNT = "RunCount";
   private final String SERVICE_HALT_ON_EXCP = "HaltOnException";
   private final String SERVICE_BUFFER_STATUS = "BufferStatus";
+  private final String SERVICE_PIPELINE_TYPE = "PipelineType";
 
   // If we encounter an unhadled processing exception, this says if we stop
   private boolean haltOnException = true;
@@ -278,7 +279,7 @@ public class Pipeline
               "true");
 
       // set the default active state of the pipeline
-      pipelineType = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList." + symbolicName + ".PipelineType",
+      pipelineType = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList." + symbolicName + "." + SERVICE_PIPELINE_TYPE,
               "Batch");
 
       // set the default active state of the pipeline

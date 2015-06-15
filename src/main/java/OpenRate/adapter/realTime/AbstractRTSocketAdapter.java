@@ -80,7 +80,7 @@ public abstract class AbstractRTSocketAdapter extends AbstractRTAdapter
   private SocketServerThread RTSocketServer;
 
   // Thread group for managing all the listeners
-  private ArrayList<SocketServerThread> listenerGroup = new ArrayList<>();
+  private final ArrayList<SocketServerThread> listenerGroup = new ArrayList<>();
 
  /**
   * Constructor
@@ -184,7 +184,8 @@ public abstract class AbstractRTSocketAdapter extends AbstractRTAdapter
     if (tmpRecord != null)
     {
       tmpRecord.setRealtime(true);
-      tmpRecord.setRecordID(currRecordNumber++);
+      tmpRecord.setRecordID(currRecordNumber);
+      currRecordNumber++;
     }
 
     return tmpRecord;

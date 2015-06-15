@@ -61,7 +61,6 @@ import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.process.IPlugIn;
 import OpenRate.record.FlatRecord;
 import OpenRate.record.IRecord;
@@ -273,7 +272,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   @Override
   public void close() throws ProcessingException
   {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
  /**
@@ -283,7 +281,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   @Override
   public void closeStream()
   {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
  /**
