@@ -61,7 +61,6 @@ import OpenRate.exception.ExceptionHandler;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.ILogger;
-import OpenRate.logging.LogUtil;
 import OpenRate.process.IPlugIn;
 import OpenRate.record.FlatRecord;
 import OpenRate.record.IRecord;
