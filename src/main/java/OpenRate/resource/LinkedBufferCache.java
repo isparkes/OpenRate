@@ -98,6 +98,9 @@ public class LinkedBufferCache implements IResource
   @Override
   public void init(String ResourceName) throws InitializationException
   {
+	// Set the symbolic name
+	symbolicName = ResourceName;
+	
     if (ResourceName.equals(RESOURCE_KEY) == false)
     {
       throw new InitializationException("The linked buffer cache must be called " + RESOURCE_KEY,getSymbolicName());
