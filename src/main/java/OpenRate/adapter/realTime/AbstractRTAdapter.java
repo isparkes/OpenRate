@@ -272,7 +272,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   @Override
   public void close() throws ProcessingException
   {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
  /**
@@ -282,7 +281,6 @@ public abstract class AbstractRTAdapter implements IRTAdapter
   @Override
   public void closeStream()
   {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
  /**

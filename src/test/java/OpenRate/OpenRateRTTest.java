@@ -124,6 +124,14 @@ public class OpenRateRTTest {
     Thread openRateThread = new Thread(appl);
     openRateThread.start();
 
+    System.out.println("Waiting for startup to complete");
+    while (!appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
+    
     // And test the shutdown
     try {
       // Create file 

@@ -8,13 +8,13 @@
   </Application>
 
   <PipelineList>
-    <DBTestPipe>
+    <RTTestPipe>
       <Active>True</Active>
       <PipelineType>RealTime</PipelineType>
-    </DBTestPipe>
+    </RTTestPipe>
   </PipelineList>
 
-  <DBTestPipe>
+  <RTTestPipe>
     <Configuration>
       <TestValue>
         testPipelinePropertyValue
@@ -31,7 +31,7 @@
     <Process>
     </Process>
         
-  </DBTestPipe>
+  </RTTestPipe>
 
   <Resource>
     <LogFactory>
