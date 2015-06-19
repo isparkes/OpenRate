@@ -235,7 +235,7 @@ public abstract class FlatFileOutputAdapter
   @Override
   public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
 	  
-	super.procHeader(r);  
+    super.procHeader(r);  
 	  
     int tmpTransNumber;
     TransControlStructure tmpFileNames = new TransControlStructure();
@@ -346,9 +346,9 @@ public abstract class FlatFileOutputAdapter
   @Override
   public TrailerRecord procTrailer(TrailerRecord r) {
 	 
-	// Do the transaction level maintenance
-	super.procTrailer(r); 
-	  
+    // Do the transaction level maintenance
+    super.procTrailer(r); 
+    
     // Close the files
     closeFiles(getTransactionNumber());
 
