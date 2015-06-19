@@ -64,6 +64,7 @@ import OpenRate.logging.LogUtil;
 import OpenRate.record.FlatRecord;
 import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.record.TrailerRecord;
 import OpenRate.utils.PropertyUtils;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -232,20 +233,18 @@ public abstract class FlatFileOutputAdapter
    * @throws ProcessingException
    */
   @Override
-  public IRecord procHeader(IRecord r) throws ProcessingException {
-    HeaderRecord tmpHeader;
+  public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
+	  
+	super.procHeader(r);  
+	  
     int tmpTransNumber;
     TransControlStructure tmpFileNames = new TransControlStructure();
-
-    tmpHeader = (HeaderRecord) r;
-
-    super.procHeader(r);
-
+    
     // if we are not currently streaming, open the stream using the transaction
     // information for the transaction we are processing
     if (!outputStreamOpen) {
-      fileBaseName = tmpHeader.getStreamName();
-      tmpTransNumber = tmpHeader.getTransactionNumber();
+      fileBaseName = r.getStreamName();
+      tmpTransNumber = r.getTransactionNumber();
 
       // Calculate the names and open the writers
       tmpFileNames.procOutputFileName = filePath + System.getProperty("file.separator")
@@ -253,10 +252,10 @@ public abstract class FlatFileOutputAdapter
       tmpFileNames.outputFileName = filePath + System.getProperty("file.separator")
               + filePrefix + fileBaseName + fileSuffix;
       tmpFileNames.procErrorFileName = errPath + System.getProperty("file.separator")
-              + processingPrefix + processingPrefix + fileBaseName + errSuffix;
+              + processingPrefix + errPrefix + fileBaseName + errSuffix;
       tmpFileNames.errorFileName = errPath + System.getProperty("file.separator")
               + errPrefix + fileBaseName + errSuffix;
-
+      
       // Store the names for later
       CurrentFileNames.put(tmpTransNumber, tmpFileNames);
 
@@ -279,9 +278,9 @@ public abstract class FlatFileOutputAdapter
    */
   @Override
   public IRecord prepValidRecord(IRecord r) throws ProcessingException {
-    Collection<IRecord> outRecCol;
+    Collection<FlatRecord> outRecCol;
     FlatRecord outRec;
-    Iterator<IRecord> outRecIter;
+    Iterator<FlatRecord> outRecIter;
 
     outRecCol = procValidRecord(r);
 
@@ -290,7 +289,7 @@ public abstract class FlatFileOutputAdapter
       outRecIter = outRecCol.iterator();
 
       while (outRecIter.hasNext()) {
-        outRec = (FlatRecord) outRecIter.next();
+        outRec = outRecIter.next();
         try {
           validWriter.write(outRec.getData());
           validWriter.newLine();
@@ -312,9 +311,9 @@ public abstract class FlatFileOutputAdapter
    */
   @Override
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException {
-    Collection<IRecord> outRecCol;
+    Collection<FlatRecord> outRecCol;
     FlatRecord outRec;
-    Iterator<IRecord> outRecIter;
+    Iterator<FlatRecord> outRecIter;
 
     outRecCol = procErrorRecord(r);
 
@@ -323,7 +322,7 @@ public abstract class FlatFileOutputAdapter
       outRecIter = outRecCol.iterator();
 
       while (outRecIter.hasNext()) {
-        outRec = (FlatRecord) outRecIter.next();
+        outRec = outRecIter.next();
 
         try {
           errorWriter.write(outRec.getData());
@@ -345,15 +344,39 @@ public abstract class FlatFileOutputAdapter
    * @return
    */
   @Override
-  public IRecord procTrailer(IRecord r) {
+  public TrailerRecord procTrailer(TrailerRecord r) {
+	 
+	// Do the transaction level maintenance
+	super.procTrailer(r); 
+	  
     // Close the files
     closeFiles(getTransactionNumber());
 
-    // Do the transaction level maintenance
-    super.procTrailer(r);
-
     return r;
   }
+
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here. Note that the result is a collection for the case that we
+   * have to re-expand after a record compression input adapter has done
+   * compression on the input stream.
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<FlatRecord> procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<FlatRecord> procErrorRecord(IRecord r) throws ProcessingException;
 
   /**
    * Open the output file for writing.
@@ -416,7 +439,7 @@ public abstract class FlatFileOutputAdapter
    * @param transactionNumber The transaction number we are working on
    * @return 0 if the file closing went OK
    */
-  public int closeFiles(int transactionNumber) {
+  public int closeFiles(int transactionNumber) {	  
     boolean ErrorFound = false;
     int ReturnCode = 0;
 
