@@ -237,6 +237,9 @@ public abstract class FlatFileOutputAdapter
     int tmpTransNumber;
     TransControlStructure tmpFileNames = new TransControlStructure();
 
+    // Do the transaction level maintenance
+    super.procHeader(r);
+    
     // if we are not currently streaming, open the stream using the transaction
     // information for the transaction we are processing
     if (!outputStreamOpen) {
@@ -344,6 +347,9 @@ public abstract class FlatFileOutputAdapter
   public TrailerRecord procTrailer(TrailerRecord r) {
     // Close the files
     closeFiles(getTransactionNumber());
+    
+    // Do the transaction level maintenance
+    super.procTrailer(r);
 
     return r;
   }
