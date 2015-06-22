@@ -187,7 +187,7 @@ public class TeeBatchConverter implements Runnable
         else
         {
           Thread.sleep(100);
-          sleepCounter = sleepCounter + 100;
+          sleepCounter += 100;
 
           if (sleepCounter > sleepTime)
           {
