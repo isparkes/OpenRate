@@ -60,11 +60,13 @@ import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
 import OpenRate.utils.PropertyUtils;
+
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
-import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.xml.DOMConfigurator;
+
+import org.apache.logging.log4j.core.config.Configurator;
+
 
 /**
  * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Log'>click here</a> to go to wiki page.
@@ -165,13 +167,13 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
         {
           // ToDo: Add configure and watch
           // use the XML model
-          DOMConfigurator.configure(fqConfigFileName);
+          Configurator.initialize(symbolicName, fqConfigFileName.getPath());  
         }
         else
         {
           // ToDo: Add configure and watch
           // use the traditional properties file model: Deprecated
-          PropertyConfigurator.configure(fqConfigFileName);
+        	OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Properties file model is no longer supported. Convert to XML based model.", getSymbolicName()));          
         }
 
         // log4j initialized.
@@ -196,6 +198,11 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   @Override
   public void close()
   {
+	if(isLoaded())
+	{
+		getDefaultLogger().close();
+	}
+	
     LogStreams.clear();
     loaded = false;
   }
@@ -231,7 +238,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
    *
    * @return true if loaded
    */
-  protected boolean isLoaded()
+  private boolean isLoaded()
   {
     return loaded;
   }
