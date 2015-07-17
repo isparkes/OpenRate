@@ -56,8 +56,14 @@ package OpenRate.logging;
 
 import OpenRate.exception.InitializationException;
 import OpenRate.resource.ResourceContext;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.LifeCycle;
+import org.apache.logging.log4j.core.async.AsyncLogger;
+import org.apache.logging.log4j.message.LoggerNameAwareMessage;
+
+//import org.apache.log4j.Level;
+//import org.apache.log4j.Logger;
 
 /**
  * Log4JLogger
@@ -68,18 +74,15 @@ public final class Log4JLogger extends AstractLogger
   /**
    * space for message templates.
    */
-  public static final String SPACER = "   ";
-
   // make logging details work.
-  private static final String FQCN   = Log4JLogger.class.getName();
-  private Logger              logger;
+  private Logger logger;
 
   /**
    * Default constructor. - for backward compatibility.
    */
   public Log4JLogger()
   {
-    logger                           = null;
+    logger = null;
   }
 
   /**
@@ -90,7 +93,7 @@ public final class Log4JLogger extends AstractLogger
    */
   public Log4JLogger(String categoryName)
   {
-    logger = Logger.getLogger(categoryName);
+    logger = LogManager.getLogger(categoryName);
   }
 
   /**
@@ -129,7 +132,7 @@ public final class Log4JLogger extends AstractLogger
   * @throws ConfigurationException
   * @throws InitializationException
   */
-  public AbstractLogFactory getFactory(String ResourceName)
+  private AbstractLogFactory getFactory(String ResourceName)
     throws InitializationException
   {
     AbstractLogFactory factory = AbstractLogFactory.getFactory(AbstractLogFactory.RESOURCE_KEY);
@@ -149,7 +152,11 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public void close()
   {
-    // no op
+	  LifeCycle lc = ((LifeCycle)LogManager.getContext());
+	  if (lc.isStarted())
+	  {
+	     lc.stop();
+	  }
   }
 
  /**
@@ -164,19 +171,19 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public void fatal(String message)
   {
-    logger.log(FQCN, Level.FATAL, message, null);
+    logger.log(Level.FATAL, message);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly.)
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   */
   public void fatal(String className, String message)
   {
-    logger.log(className, Level.FATAL, message, null);
+    logger.log(Level.FATAL, className, message);
   }
 
  /**
@@ -191,20 +198,20 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public void fatal(String message, Throwable t)
   {
-    logger.log(FQCN, Level.FATAL, message, t);
+    logger.log(Level.FATAL, message, t);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly.)
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   * @param t The throwable
   */
   public void fatal(String className, String message, Throwable t)
   {
-    logger.log(className, Level.FATAL, message, t);
+    logger.log(Level.FATAL, className, message, t);
   }
 
   /**
@@ -218,19 +225,19 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public void error(String message)
   {
-    logger.log(FQCN, Level.ERROR, message, null);
+    logger.log(Level.ERROR, message);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly.)
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   */
   public void error(String className, String message)
   {
-    logger.log(className, Level.ERROR, message, null);
+    logger.log(Level.ERROR, className, message);
   }
 
  /**
@@ -245,20 +252,20 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public void error(String message, Throwable t)
   {
-    logger.log(FQCN, Level.ERROR, message, t);
+    logger.log(Level.ERROR, message, t);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly.)
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   * @param t The throwable
   */
   public void error(String className, String message, Throwable t)
   {
-    logger.log(className, Level.ERROR, message, t);
+    logger.log(Level.ERROR, className, message, t);
   }
 
  /**
@@ -277,19 +284,19 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public final void warning(String message)
   {
-    logger.log(FQCN, Level.WARN, message, null);
+    logger.log(Level.WARN, message);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly.)
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   */
   public final void warning(String className, String message)
   {
-    logger.log(className, Level.WARN, message, null);
+    logger.log(Level.WARN, className, message);
   }
 
   /**
@@ -300,7 +307,7 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public boolean isWarningEnabled()
   {
-    return logger.isEnabledFor(Level.WARN);
+    return logger.isEnabled(Level.WARN);
   }
 
  /**
@@ -319,19 +326,19 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public final void info(String message)
   {
-    logger.log(FQCN, Level.INFO, message, null);
+	logger.log(Level.INFO, message);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   */
   public final void info(String className, String message)
-  {
-    logger.log(className, Level.INFO, message, null);
+  {	 
+    logger.log(Level.INFO, className, message);
   }
 
   /**
@@ -361,19 +368,19 @@ public final class Log4JLogger extends AstractLogger
   @Override
   public final void debug(String message)
   {
-    logger.log(FQCN, Level.DEBUG, message, null);
+    logger.log(Level.DEBUG, message);
   }
 
  /**
   * So that InterfaceLogger works correctly (details such as
   * filename, line number, etc... so up correctly.)
   *
-  * @param className The classname reporting the message
+  * @param className The class name reporting the message
   * @param message The message
   */
   public final void debug(String className, String message)
   {
-    logger.log(className, Level.DEBUG, message, null);
+    logger.log(Level.DEBUG, className, message);
   }
 
   /**
