@@ -90,8 +90,6 @@ public abstract class AbstractRecordInsertPlugIn extends AbstractPlugIn
   * processed in precedence to the batch events. This is achieved by processing
   * all real time events through the pipeline between each batch event. This
   * creates a very high priority path through the pipe for real time events.
-  *
-  * @throws OpenRate.exception.ProcessingException
   */
   @Override
   public void process()

@@ -95,7 +95,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
   public static final String RESOURCE_KEY = "EmailNotificationCache";
 
   // This is the symbolic name of the resource
-  private String symbolicName = RESOURCE_KEY;
+  private final String symbolicName = RESOURCE_KEY;
 
   // The mail address we are to despatch to
   private String mailTo;
