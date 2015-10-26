@@ -301,7 +301,7 @@ public abstract class SocketInputAdapter
               Outbatch.add(batchRecord);
               batchRecord = procTrailer(tmpTrailer);
             }
-            Outbatch.add(tmpTrailer);
+            Outbatch.add(batchRecord);
             ThisBatchCounter++;
             
             // set successful response message to be sent to the client 
