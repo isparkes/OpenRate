@@ -234,11 +234,11 @@ public abstract class FlatFileOutputAdapter
    */
   @Override
   public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
+    
+    super.procHeader(r);  
+	  
     int tmpTransNumber;
     TransControlStructure tmpFileNames = new TransControlStructure();
-
-    // Do the transaction level maintenance
-    super.procHeader(r);
     
     // if we are not currently streaming, open the stream using the transaction
     // information for the transaction we are processing
@@ -252,10 +252,10 @@ public abstract class FlatFileOutputAdapter
       tmpFileNames.outputFileName = filePath + System.getProperty("file.separator")
               + filePrefix + fileBaseName + fileSuffix;
       tmpFileNames.procErrorFileName = errPath + System.getProperty("file.separator")
-              + processingPrefix + processingPrefix + fileBaseName + errSuffix;
+              + processingPrefix + errPrefix + fileBaseName + errSuffix;
       tmpFileNames.errorFileName = errPath + System.getProperty("file.separator")
               + errPrefix + fileBaseName + errSuffix;
-
+      
       // Store the names for later
       CurrentFileNames.put(tmpTransNumber, tmpFileNames);
 
@@ -345,11 +345,11 @@ public abstract class FlatFileOutputAdapter
    */
   @Override
   public TrailerRecord procTrailer(TrailerRecord r) {
+    // Do the transaction level maintenance
+    super.procTrailer(r); 
+    
     // Close the files
     closeFiles(getTransactionNumber());
-    
-    // Do the transaction level maintenance
-    super.procTrailer(r);
 
     return r;
   }
@@ -438,7 +438,7 @@ public abstract class FlatFileOutputAdapter
    * @param transactionNumber The transaction number we are working on
    * @return 0 if the file closing went OK
    */
-  public int closeFiles(int transactionNumber) {
+  public int closeFiles(int transactionNumber) {	  
     boolean ErrorFound = false;
     int ReturnCode = 0;
 

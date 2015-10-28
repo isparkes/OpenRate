@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+    </Console>
+    
+    <File name="FrameworkAppender" fileName="logs/Framework.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
+    </File>
+    
+    <File name="StatisticsAppender" fileName="logs/Statistics.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
+    </File>
+    
+    <File name="ErrorAppender" fileName="logs/Error.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
+    </File>
+    
+    <File name="PipeAppender" fileName="logs/Pipeline.log">
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+      </PatternLayout>
+    </File>
+  </Appenders>
+  <Loggers>
+    <Logger name="Framework" level="debug" additivity="false">
+      <AppenderRef ref="FrameworkAppender"/>
+    </Logger>
+    
+    <Logger name="Statistics" level="debug" additivity="false">
+      <AppenderRef ref="StatisticsAppender"/>
+    </Logger>
+    
+    <Logger name="Error" level="debug" additivity="false">
+      <AppenderRef ref="ErrorAppender"/>
+    </Logger>
+    
+    <Logger name="DBTestPipe" level="debug" additivity="false">
+      <AppenderRef ref="PipeAppender"/>
+    </Logger>
+    
+    <Logger name="RTTestPipe" level="debug" additivity="false">
+      <AppenderRef ref="PipeAppender"/>
+    </Logger>
+
+    <Root level="error">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>

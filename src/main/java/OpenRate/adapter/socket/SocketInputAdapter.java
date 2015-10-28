@@ -63,9 +63,11 @@ import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
 import OpenRate.utils.PropertyUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -78,7 +80,7 @@ import java.util.Iterator;
  *
  * <p>
  * The basic function of this socket input adapter is to facilitate reading of
- * records from socket in batches, so that two piplines can communicate each
+ * records from socket in batches, so that two pipelines can communicate each
  * other regardless where they are running and on which machine.
  *
  * The input adapter waits for record on socket, and when found, reads them and
@@ -105,13 +107,15 @@ public abstract class SocketInputAdapter
         extends AbstractTransactionalInputAdapter
         implements IEventInterface {
 
-  // this is the hard limit on the maximum number of files that we can open
-  // in the same batch
-
-  private static final int MAX_CONCURRENT_CONNECTIONS = 1;
-
   // Port of the Socket to listen on
   private int ListenerPort;
+  
+//Response in case the request was successful
+  private String onSuccessfulResponse;
+  
+  // Response in case the request failed
+  private String onFailedResponse;
+  
   /*
    * Socket is initialized in the init() method and is kept open for loadBatch()
    * calls and then closed in cleanup().
@@ -120,12 +124,6 @@ public abstract class SocketInputAdapter
 
   // Used to hold current communication
   private Socket InputSocket;
-
-  /*
-   * Socket Reader is initialized in the init() method and is kept open for loadBatch()
-   * calls and then closed in cleanup().
-   */
-  private final BufferedReader socketRecordReader = null;
 
   // This is the current transaction number we are working on
   private int transactionNumber = 0;
@@ -180,6 +178,20 @@ public abstract class SocketInputAdapter
       throw new InitializationException(message, getSymbolicName());
     }
 
+    // Get successful response 
+    ConfigHelper = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(PipelineName, ModuleName, "onSuccessfulResponse");
+
+    if (ConfigHelper != null) {
+      onSuccessfulResponse = ConfigHelper;
+    }
+    
+    // Get failed response
+    ConfigHelper = PropertyUtils.getPropertyUtils().getBatchInputAdapterPropertyValue(PipelineName, ModuleName, "onFailedResponse");
+
+    if (ConfigHelper != null) {
+      onFailedResponse = ConfigHelper;
+    }   
+    
     // Check the file name scanning variables, throw initialisation exception
     // if something is wrong.
     try {
@@ -244,6 +256,8 @@ public abstract class SocketInputAdapter
         if (inputRecordStream.ready()) {
           inputRecord = inputRecordStream.readLine();
         } else {
+        	// set failed response message to be sent to the client 
+          sendSocketResponse(onFailedResponse);	
           break;
         }
 
@@ -287,8 +301,12 @@ public abstract class SocketInputAdapter
               Outbatch.add(batchRecord);
               batchRecord = procTrailer(tmpTrailer);
             }
-            Outbatch.add(tmpTrailer);
+            Outbatch.add(batchRecord);
             ThisBatchCounter++;
+            
+            // set successful response message to be sent to the client 
+            sendSocketResponse(onSuccessfulResponse);
+            
             // Close the socket
             inputRecordStream.close();
             InputSocket.close();
@@ -347,6 +365,21 @@ public abstract class SocketInputAdapter
     }
 
     return Outbatch;
+  }
+  
+  /**
+   * Send response to client
+   * @param message
+   */
+  private void sendSocketResponse(String message) throws IOException
+  {
+	  if (message != null)
+	  {
+		  PrintWriter response = new PrintWriter(InputSocket.getOutputStream(), true); 
+		  // Return response to the client
+	      response.println(message);
+		  response.close();
+	  }
   }
 
   /**

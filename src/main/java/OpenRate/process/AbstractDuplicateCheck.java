@@ -194,6 +194,27 @@ public abstract class AbstractDuplicateCheck
       return false;
     }
   }
+  
+  /**
+   * @ddijak
+   * Check if the record is a duplicate using UTCDate as input attribute.
+   *
+   * @param UTCDate The date of the CDR in UTC format
+   * @param IDData The Call Reference ID
+   * @return false if the call is not a duplicate
+   * @throws ProcessingException  
+   */
+  public boolean CheckDuplicate(long UTCDate, String IDData) throws ProcessingException
+  {
+    if (Active)
+    {
+      return DupCache.DuplicateCheck(IDData,UTCDate,getTransactionNumber());
+    }
+    else
+    {
+      return false;
+    }
+  }
 
   // -----------------------------------------------------------------------------
   // ------------------ Start of transaction layer functions ---------------------

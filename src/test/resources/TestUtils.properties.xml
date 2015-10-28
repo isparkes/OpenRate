@@ -47,8 +47,8 @@
   <Resource>
     <LogFactory>
       <ClassName>OpenRate.logging.LogFactory</ClassName>
-      <Properties>logUnitTest.properties</Properties>
-      <DefaultCategory>RatingTest</DefaultCategory>
+      <Properties>logUnitTest.xml</Properties>
+      <DefaultCategory>DBTestPipe</DefaultCategory>
     </LogFactory>
 
     <ECI>
