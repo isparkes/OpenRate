@@ -381,7 +381,7 @@ public class OpenRate
     }
 
     if (foundVersion && foundBuild && foundDate) {
-      return "OpenRate V" + versionID + " (" + buildDate + ")";
+      return CommonConfig.PROG_NAME + " V" + versionID + " (" + buildDate + ")";
     } else {
       return null;
     }

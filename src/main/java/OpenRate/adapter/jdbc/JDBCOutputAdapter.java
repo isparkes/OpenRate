@@ -62,6 +62,7 @@ import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.record.DBRecord;
+import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.utils.PropertyUtils;
 import java.sql.Connection;
@@ -258,7 +259,7 @@ public abstract class JDBCOutputAdapter
    * @throws ProcessingException
    */
   @Override
-  public IRecord procHeader(IRecord r) throws ProcessingException {
+  public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
     // perform any parent processing first
     super.procHeader(r);
 
@@ -322,9 +323,9 @@ public abstract class JDBCOutputAdapter
   @Override
   public IRecord prepValidRecord(IRecord r) throws ProcessingException {
     int i;
-    Collection<IRecord> outRecCol = null;
+    Collection<DBRecord> outRecCol = null;
     DBRecord outRec;
-    Iterator<IRecord> outRecIter;
+    Iterator<DBRecord> outRecIter;
 
     try {
       outRecCol = procValidRecord(r);
@@ -359,7 +360,7 @@ public abstract class JDBCOutputAdapter
       outRecIter = outRecCol.iterator();
 
       while (outRecIter.hasNext()) {
-        outRec = (DBRecord) outRecIter.next();
+        outRec = outRecIter.next();
 
         if (outRec.getOutputColumnCount() != insertQueryParamCount) {
           // columns we go does not match the expected columns
@@ -461,9 +462,9 @@ public abstract class JDBCOutputAdapter
   @Override
   public IRecord prepErrorRecord(IRecord r) throws ProcessingException {
     int i;
-    Collection<IRecord> outRecCol = null;
+    Collection<DBRecord> outRecCol = null;
     DBRecord outRec;
-    Iterator<IRecord> outRecIter;
+    Iterator<DBRecord> outRecIter;
 
     try {
       outRecCol = procErrorRecord(r);
@@ -498,7 +499,7 @@ public abstract class JDBCOutputAdapter
       outRecIter = outRecCol.iterator();
 
       while (outRecIter.hasNext()) {
-        outRec = (DBRecord) outRecIter.next();
+        outRec = outRecIter.next();
 
         try {
           // Prepare the parameter values
@@ -580,6 +581,29 @@ public abstract class JDBCOutputAdapter
 
     return r;
   }
+
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here. Note that the result is a collection for the case that we
+   * have to re-expand after a record compression input adapter has done
+   * compression on the input stream.
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<DBRecord> procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The collection of processed records
+   * @throws ProcessingException
+   */
+  public abstract Collection<DBRecord> procErrorRecord(IRecord r) throws ProcessingException;
 
   // -----------------------------------------------------------------------------
   // ------------------ Custom connection management functions -------------------

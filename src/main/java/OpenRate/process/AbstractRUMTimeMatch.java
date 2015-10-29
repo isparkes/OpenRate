@@ -148,7 +148,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
 
       // Check if we have the start date - we will need this in any case
       // Throw an exception if we do not have the date
-      if (CurrentRecord.EventStartDate == null) {
+      if (CurrentRecord.eventStartDate == null) {
         if (reportExceptions == false) {
           tmpError = new RecordError("ERR_EVENT_START_DATE_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
           CurrentRecord.addError(tmpError);
@@ -175,7 +175,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
             case TIME_SPLITTING_NO_CHECK: {
               try {
                 // Use the time zoning from AbstractTimeMatch on this charge packet
-                TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.EventStartDate, CurrentRecord.EventStartDate);
+                TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.eventStartDate, CurrentRecord.eventStartDate);
                 tmpCP.setTimeZones(TimeZones);
 
                 if (TimeZones.size() == 1) {
@@ -211,7 +211,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
             case TIME_SPLITTING_CHECK_SPLITTING_BEAT_ROUNDING: {
               try {
                 // Check the end date, only if we need it for splitting
-                if (CurrentRecord.EventEndDate == null) {
+                if (CurrentRecord.eventEndDate == null) {
                   if (reportExceptions == false) {
                     tmpError = new RecordError("ERR_EVENT_END_DATE_NOT_FOUND", ErrorType.DATA_NOT_FOUND, getSymbolicName());
                     CurrentRecord.addError(tmpError);
@@ -224,7 +224,7 @@ public abstract class AbstractRUMTimeMatch extends AbstractTimeMatch {
                 }
 
                 // Use the time zoning from AbstractTimeMatch on this charge packet
-                TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.EventStartDate, CurrentRecord.EventEndDate);
+                TimeZones = getTimeZone(tmpCP.timeModel, CurrentRecord.eventStartDate, CurrentRecord.eventEndDate);
                 tmpCP.setTimeZones(TimeZones);
 
                 if (TimeZones.size() == 1) {

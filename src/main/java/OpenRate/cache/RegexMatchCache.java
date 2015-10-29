@@ -786,7 +786,7 @@ public class RegexMatchCache
             }
 
             // Add the map
-            addEntry(Group, SearchMapFields, tmpResultList);
+            addEntry(Group.intern(), SearchMapFields, tmpResultList);
           } else {
             // Error because the form factor changed
             message = "Form Factor should be Key = <" + Integer.toString(KeyFormFactor)
@@ -940,7 +940,7 @@ public class RegexMatchCache
         }
 
         // Add the map
-        addEntry(Group, SearchMapFields, tmpResultList);
+        addEntry(Group.intern(), SearchMapFields, tmpResultList);
 
         // Update to the log file
         if ((ConfigsLoaded % loadingLogNotificationStep) == 0) {
@@ -1070,7 +1070,7 @@ public class RegexMatchCache
           }
 
           // Add the map
-          addEntry(Group, SearchMapFields, tmpResultList);
+          addEntry(Group.intern(), SearchMapFields, tmpResultList);
 
           // Update to the log file
           if ((ConfigsLoaded % loadingLogNotificationStep) == 0) {

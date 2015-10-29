@@ -52,216 +52,105 @@
  * Half International.
  * ====================================================================
  */
+package OpenRate.record;
 
-package OpenRate.lang;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
- * Class to encapsulate the customer/product information
- *
- * @author Ian
+ * Flat record is the basic type of record used by the file adapters, and
+ * returns the data as a single string, which can then be split and processed as
+ * required.
  */
-public class CustProductInfo
-{
-  private static final long HIGH_DATE = 2147483647;
+public class KeyValuePairRecord extends AbstractRecord {
 
- /**
-  * The CustProductInfo structure holds the information about the products the,
-  * customer has, including the validity dates. Note that we are using long integers
-  * for the dates to reduce storage requirements.
-  */
-  String ProductID=null;
-  String Service=null;
-  String SubId=null;
-  long   ProductRefId;
-  long   UTCValidFrom = 0;
-  long   UTCValidTo = HIGH_DATE;
-  int    Quantity = 0;
-  int    Status = 0;
-  int    Priority = 0;
+  private static final long serialVersionUID = -1506405981820429430L;
+
+  // the original data we received
+  private Map<String, String> originalData;
 
   /**
-   * Creates a new instance of CustProductInfo
-   */
-  public CustProductInfo()
-  {
-    // Nothing
-  }
-
-  /**
-   * Sets the product ID
+   * Creates a new instance of FlatRecord
    *
-   * @param Id The new product ID to set
+   * @param data The data to map
+   * @param RecordNumber The record number
    */
-  public void setProductID(String Id)
-  {
-    ProductID = Id.intern();
+  public KeyValuePairRecord(Map<String, String> data, int RecordNumber) {
+    super();
+
+    this.originalData = data;
+    this.recordNumber = RecordNumber;
   }
 
   /**
-   * Gets the product ID
+   * Creates a new instance of FlatRecord
    *
-   * @return The product ID
+   * @param data The data to map
    */
-  public String getProductID()
-  {
-    return ProductID;
+  public KeyValuePairRecord(Map<String, String> data) {
+    super();
+
+    this.originalData = data;
   }
 
   /**
-   * Sets the subscription ID
+   * Overloaded constructor for derived classes
+   */
+  public KeyValuePairRecord() {
+    super();
+  }
+
+  /**
+   * Get the original data
    *
-   * @param Id The subscription ID
+   * @return The original data
    */
-  public void setSubID(String Id)
-  {
-    SubId = Id.intern();
+  public Map<String, String> getData() {
+    return this.originalData;
   }
 
   /**
-   * Sets the subscription ID
+   * Set the original data
    *
-   * @return The subscription ID
+   * @param dataToSet The data to store
    */
-  public String getSubID()
-  {
-    return SubId;
+  public void setData(Map<String, String> dataToSet) {
+    this.originalData = dataToSet;
   }
 
   /**
-   *
-   * @param newService
-   */
-  public void setService(String newService)
-  {
-    Service = newService.intern();
-  }
-
-  /**
+   * This returns the dump information. Should be overwritten by the final
+   * implementation class
    *
    * @return
    */
-  public String getService()
-  {
-    return Service;
-  }
+  @Override
+  public ArrayList<String> getDumpInfo() {
+    RecordError tmpError;
+    int i;
+    int tmpErrorCount;
+    ArrayList<String> tmpDumpList;
 
-  /**
-   * Sets the valid from date
-   *
-   * @param ValidFrom The valid from date
-   */
-  public void setUTCValidFrom(long ValidFrom)
-  {
-    UTCValidFrom = ValidFrom;
-  }
+    tmpDumpList = new ArrayList<>();
 
-  /**
-   * Sets the valid to date
-   *
-   * @param ValidTo The valid to date
-   */
-  public void setUTCValidTo(long ValidTo)
-  {
-    UTCValidTo = ValidTo;
-  }
+    // Get the error count
+    tmpErrorCount = this.getErrors().size();
 
-  /**
-   * Sets the quantity
-   *
-   * @param NewQuantity The new quantity
-   */
-  public void setQuantity(int NewQuantity)
-  {
-    Quantity = NewQuantity;
-  }
+    // Format the fields
+    tmpDumpList.add("============== KVP RECORD =============");
+    for (String key : originalData.keySet()) {
+      tmpDumpList.add("  KVP             = <" + key + ":" + originalData.get(key) + ">");
+    }
 
-  /**
-   * Gets the quantity
-   *
-   * @return The quantity
-   */
-  public int getQuantity()
-  {
-    return Quantity;
-  }
+    tmpDumpList.add("  Errors          = <" + this.getErrors().size() + ">");
+    if (tmpErrorCount > 0) {
+      tmpDumpList.add("-------------- ERRORS ----------------");
+      for (i = 0; i < this.getErrors().size(); i++) {
+        tmpError = (RecordError) this.getErrors().get(i);
+        tmpDumpList.add("    Error           = <" + tmpError.getMessage() + ">");
+      }
+    }
 
-  /**
-   * Gets the valid from date
-   *
-   * @return The valid from date
-   */
-  public long getUTCValidFrom()
-  {
-    return UTCValidFrom;
-  }
-
-  /**
-   * Gets the valid to date
-   *
-   * @return The valid to date
-   */
-  public long getUTCValidTo()
-  {
-    return UTCValidTo;
-  }
-
-  /**
-   * Sets the new status
-   *
-   * @param newStatus The new status
-   */
-  public void setStatus(int newStatus)
-  {
-    Status = newStatus;
-  }
-
-  /**
-   * Gets the status
-   *
-   * @return The status
-   */
-  public int getStatus()
-  {
-    return Status;
-  }
-
-  /**
-   * Sets the priority
-   *
-   * @param newPriority The priority
-   */
-  public void setPriority(int newPriority)
-  {
-    Priority = newPriority;
-  }
-
-  /**
-   * Gets the priority
-   *
-   * @return The priority
-   */
-  public int getPriority()
-  {
-    return Priority;
-  }
-
-  /**
-   * Sets the product reference ID
-   *
-   * @param newProductRefId The product reference id
-   */
-  public void setProductRefId(int newProductRefId)
-  {
-    ProductRefId = newProductRefId;
-  }
-
-  /**
-   * Gets the product reference ID
-   *
-   * @return The product reference ID
-   */
-  public long getProductRefId()
-  {
-    return ProductRefId;
+    return tmpDumpList;
   }
 }

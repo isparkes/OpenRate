@@ -169,6 +169,7 @@ public class Pipeline
   private final String SERVICE_RUNCOUNT = "RunCount";
   private final String SERVICE_HALT_ON_EXCP = "HaltOnException";
   private final String SERVICE_BUFFER_STATUS = "BufferStatus";
+  private final String SERVICE_PIPELINE_TYPE = "PipelineType";
 
   // If we encounter an unhadled processing exception, this says if we stop
   private boolean haltOnException = true;
@@ -221,7 +222,7 @@ public class Pipeline
     setSymbolicName(Name);
 
     // Create & configure the pipeline components
-    ConfigurePipeline();
+    configurePipeline();
 
     // Register with the client manager
     registerClientManager();
@@ -230,11 +231,11 @@ public class Pipeline
     TM = TransactionManagerFactory.getTransactionManager(getSymbolicName());
 
     // set the default max transactions state of the pipeline
-    maxTransactions = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList." + symbolicName + ".MaxTransactions",
-            "1");
+    maxTransactions = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList." + symbolicName + ".MaxTransactions","1");
+    
     try {
       maxTransTM = Integer.parseInt(maxTransactions);
-    } catch (NumberFormatException nfe) {
+    } catch (NumberFormatException ex) {
       message = "MaxTransactions must be a numeric value, but we got <" + maxTransactions + "> in pipeline <" + symbolicName + ">. Aborting.";
       throw new InitializationException(message, getSymbolicName());
     }
@@ -258,7 +259,7 @@ public class Pipeline
    * @param props - the properties we have inherited
    * @throws InitializationException
    */
-  private void ConfigurePipeline() throws InitializationException {
+  private void configurePipeline() throws InitializationException {
     // this controls the type (batch or realtime) we create
     String pipelineType;
 
@@ -278,7 +279,7 @@ public class Pipeline
               "true");
 
       // set the default active state of the pipeline
-      pipelineType = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList." + symbolicName + ".PipelineType",
+      pipelineType = PropertyUtils.getPropertyUtils().getPropertyValueDef("PipelineList." + symbolicName + "." + SERVICE_PIPELINE_TYPE,
               "Batch");
 
       // set the default active state of the pipeline
@@ -307,6 +308,7 @@ public class Pipeline
 
       if (!active) {
         OpenRate.getOpenRateFrameworkLog().warning("Starting pipeline <" + symbolicName + "> in inactive state");
+        System.out.println("    Starting pipeline <" + symbolicName + "> in inactive state");
       }
 
       // set the halt on exception state

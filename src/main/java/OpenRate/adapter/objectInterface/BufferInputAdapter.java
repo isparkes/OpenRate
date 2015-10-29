@@ -195,6 +195,8 @@ public abstract class BufferInputAdapter
   * The way this works is that we assign a batch of files to work on, and then
   * work our way through them. This minimizes the directory scans that we have
   * to do and improves performance.
+   * @return 
+   * @throws OpenRate.exception.ProcessingException
   */
   @Override
   protected Collection<IRecord> loadBatch() throws ProcessingException
@@ -269,7 +271,7 @@ public abstract class BufferInputAdapter
                   tmpHeader.setTransactionNumber(transactionCounter);
 
                   // send for user processing
-                  r = procHeader(r);
+                  r = procHeader(tmpHeader);
                 }
 
                 if (r instanceof TrailerRecord)
@@ -280,7 +282,7 @@ public abstract class BufferInputAdapter
                   tmpTrailer.setTransactionNumber(transactionCounter);
 
                   // Send the record for user processing
-                  r = procTrailer(r);
+                  r = procTrailer(tmpTrailer);
 
                   // Notify the transaction layer that we have finished
                   setTransactionFlushed(transactionCounter);
@@ -348,7 +350,7 @@ public abstract class BufferInputAdapter
                 tmpHeader.setTransactionNumber(transactionCounter);
 
                 // send for user processing
-                r = procHeader(r);
+                r = procHeader(tmpHeader);
               }
 
               if (r instanceof TrailerRecord)
@@ -359,7 +361,7 @@ public abstract class BufferInputAdapter
                 tmpTrailer.setTransactionNumber(transactionCounter);
 
                 // Send the record for user processing
-                r = procTrailer(r);
+                r = procTrailer(tmpTrailer);
 
                 // Notify the transaction layer that we have finished
                 setTransactionFlushed(transactionCounter);
@@ -378,6 +380,27 @@ public abstract class BufferInputAdapter
     return Outbatch;
   }
 
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procErrorRecord(IRecord r) throws ProcessingException;
+  
   // -----------------------------------------------------------------------------
   // --------------- Start of transactional layer functions ----------------------
   // -----------------------------------------------------------------------------

@@ -582,7 +582,11 @@ public abstract class AbstractRateCalc extends AbstractPlugIn {
       // Now roll up the rating values
       thisTierRoundedRUM = (thisTierBeatCount - thisTierOffsetBeatCount) * tmpEntry.getBeat();
       thisTierValue = (thisTierRoundedRUM * tmpEntry.getFactor()) / tmpEntry.getChargeBase();
-      roundedRUMUsed += thisTierRoundedRUM;
+      
+      // Only count rounded RUM used for non-singularity steps, otherwise we count more than once
+      if (tmpEntry.getFrom() != tmpEntry.getTo()) {
+        roundedRUMUsed += thisTierRoundedRUM;
+      }
 
       // provide the rating breakdown if it is required
       if (BreakDown) {

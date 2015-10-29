@@ -395,7 +395,7 @@ public abstract class FlatFileInputAdapter
 
           // Pass the header to the user layer for any processing that
           // needs to be done
-          tmpHeader = (HeaderRecord) procHeader((IRecord) tmpHeader);
+          tmpHeader = procHeader(tmpHeader);
           Outbatch.add(tmpHeader);
         } catch (FileNotFoundException exFileNotFound) {
           getPipeLog().error(
@@ -420,7 +420,7 @@ public abstract class FlatFileInputAdapter
             tmpDataRecord = new FlatRecord(tmpFileRecord, inputRecordNumber);
 
             // Call the user layer for any processing that needs to be done
-            batchRecord = procValidRecord((IRecord) tmpDataRecord);
+            batchRecord = procValidRecord(tmpDataRecord);
 
             // Add the prepared record to the batch, because of record compression
             // we may receive a null here. If we do, don't bother adding it
@@ -482,7 +482,7 @@ public abstract class FlatFileInputAdapter
             // needs to be done. To allow for purging in the case of record
             // compression, we allow multiple calls to procTrailer until the
             // trailer is returned
-            batchRecord = procTrailer((IRecord) tmpTrailer);
+            batchRecord = procTrailer(tmpTrailer);
 
             // This allows us to purge out records from the input adapter
             // before the trailer
@@ -490,7 +490,7 @@ public abstract class FlatFileInputAdapter
               // the call the trailer returned a purged record. Add this
               // to the batch and fetch again
               Outbatch.add(batchRecord);
-              batchRecord = procTrailer((IRecord) tmpTrailer);
+              batchRecord = procTrailer(tmpTrailer);
             }
 
             Outbatch.add(batchRecord);
@@ -548,11 +548,31 @@ public abstract class FlatFileInputAdapter
   }
 
   /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procValidRecord(FlatRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procErrorRecord(FlatRecord r) throws ProcessingException;
+  
+  /**
    * Allows any records to be purged at the end of a file
    *
    * @return The pending record
    */
-  @Override
   public IRecord purgePendingRecord() {
     // default - do nothing
     return null;

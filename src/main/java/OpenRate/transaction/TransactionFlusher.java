@@ -146,7 +146,7 @@ public class TransactionFlusher implements Runnable
   * thread.
   */
   public void updateTransactionStatus()
-  {
+  {	  
     int     i;
     int     NewOverallStatus;
     TransactionInfo cachedTrans;

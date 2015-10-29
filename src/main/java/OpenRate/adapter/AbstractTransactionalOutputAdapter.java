@@ -57,7 +57,6 @@ package OpenRate.adapter;
 import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.record.HeaderRecord;
-import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
 import OpenRate.transaction.ITMClient;
 import OpenRate.transaction.TMDefs;
@@ -115,11 +114,8 @@ public abstract class AbstractTransactionalOutputAdapter
    * @throws ProcessingException
    */
   @Override
-  public IRecord procHeader(IRecord r) throws ProcessingException {
-    HeaderRecord tmpHeader;
-
-    tmpHeader = (HeaderRecord) r;
-    int currentTransactionNumber = tmpHeader.getTransactionNumber();
+  public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
+    int currentTransactionNumber = r.getTransactionNumber();
 
     // Inform the client that we are opening the transaction
     startTransaction(currentTransactionNumber);
@@ -138,12 +134,9 @@ public abstract class AbstractTransactionalOutputAdapter
    * @return The processed record
    */
   @Override
-  public IRecord procTrailer(IRecord r) {
-    TrailerRecord tmpTrailer;
-
+  public TrailerRecord procTrailer(TrailerRecord r) {
     // recover the transaction number
-    tmpTrailer = (TrailerRecord) r;
-    int currentTransactionNumber = tmpTrailer.getTransactionNumber();
+    int currentTransactionNumber = r.getTransactionNumber();
 
     // Mark that we have finished the stream
     TM.setClientStatus(currentTransactionNumber, TMClientNumber, TMDefs.getTMDefs().TM_FLUSHED);

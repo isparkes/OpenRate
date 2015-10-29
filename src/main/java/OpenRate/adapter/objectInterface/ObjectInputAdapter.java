@@ -163,18 +163,16 @@ public abstract class ObjectInputAdapter
     super.init(PipelineName, ModuleName);
 
     // Get a copy of our local consumer as the local buffer
-    Class BufferClass = null;
+    Class<?> BufferClass;
+
     try
     {
       BufferClass = Class.forName(CommonConfig.DEFAULT_BUFFER_TYPE);
+      LocalBuffer = (IBuffer) BufferClass.newInstance();
     }
     catch (ClassNotFoundException ex)
     {
       getPipeLog().error("Unable to find buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
-    }
-    try
-    {
-      LocalBuffer = (IBuffer) BufferClass.newInstance();
     }
     catch (InstantiationException ex)
     {
@@ -269,7 +267,7 @@ public abstract class ObjectInputAdapter
 
     // Pass the header to the user layer for any processing that
     // needs to be done
-    tmpHeader = (HeaderRecord)procHeader((IRecord)tmpHeader);
+    tmpHeader = procHeader(tmpHeader);
     tmpBatch.add(tmpHeader);
 
     // contine with the iterator
@@ -283,7 +281,7 @@ public abstract class ObjectInputAdapter
       tmpDataRecord = mapObjectToRecord(tmpObject);
 
       // Call the user layer for any processing that needs to be done on the record
-      batchRecord = procValidRecord((IRecord) tmpDataRecord);
+      batchRecord = procValidRecord(tmpDataRecord);
 
       // Add the prepared record to the batch, because of record compression
       // we may receive a null here. If we do, don't bother adding it
@@ -306,14 +304,14 @@ public abstract class ObjectInputAdapter
     // needs to be done. To allow for purging in the case of record
     // compression, we allow mutiple calls to procTrailer until the
     // trailer is returned
-    batchRecord = procTrailer((IRecord)tmpTrailer);
+    batchRecord = procTrailer(tmpTrailer);
 
     while (!(batchRecord instanceof TrailerRecord))
     {
       // the call the trailer returned a purged record. Add this
       // to the batch and refetch
       tmpBatch.add(batchRecord);
-      batchRecord = procTrailer((IRecord)tmpTrailer);
+      batchRecord = procTrailer(tmpTrailer);
     }
 
     tmpBatch.add(tmpTrailer);
@@ -326,6 +324,27 @@ public abstract class ObjectInputAdapter
     setTransactionFlushed(tmpTransNumber);
   }
 
+  /**
+   * This is called when a data record is encountered. You should do any normal
+   * processing here.
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procValidRecord(IRecord r) throws ProcessingException;
+
+  /**
+   * This is called when a data record with errors is encountered. You should do
+   * any processing here that you have to do for error records, e.g. statistics,
+   * special handling, even error correction!
+   *
+   * @param r The record we are working on
+   * @return The processed record
+   * @throws ProcessingException
+   */
+  public abstract IRecord procErrorRecord(IRecord r) throws ProcessingException;
+  
   // -----------------------------------------------------------------------------
   // --------------- Start of transactional layer functions ----------------------
   // -----------------------------------------------------------------------------

@@ -68,15 +68,6 @@ public interface IOutputAdapter
         Runnable {
 
   /**
-   * Processing method for the output adapter. Opens the possibility of
-   * processing completed records asynchronously while the pipeline is running.
-   * It can also be run directly by the exec strategy from within the main
-   * thread. Both modes are supported and reasonable.
-   */
-  @Override
-  public void run();
-
-  /**
    * Do any non-record level processing required to finish this batch cycle.
    *
    * @return The number of records in the outbound buffer

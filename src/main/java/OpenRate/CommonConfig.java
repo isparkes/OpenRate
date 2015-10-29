@@ -64,7 +64,7 @@ public class CommonConfig {
    * the key to the program name. the program name is used to retrieve the
    * configuration info
    */
-  public static final String PROG_NAME = "application";
+  public static final String PROG_NAME = "MercuryRate";
 
   /**
    * the key to the common environment name. the common environment name used to
@@ -187,17 +187,17 @@ public class CommonConfig {
   /**
    * Defines the default UTC value of a low date (big bang)
    */
-  public static final long LOW_DATE = 0;
+  public static final long LOW_DATE = 0L;
 
   /**
    * Defines the default UTC value of a high date (end of the universe)
    */
-  public static final long HIGH_DATE = 2147483647;
+  public static final long HIGH_DATE = 10413792000L;
 
   /**
    * Defines the default date format for OpenRate
    */
-  public static final String OR_DEFAULT_DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
+  public static final String OR_DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
   /**
    * Module statistics command

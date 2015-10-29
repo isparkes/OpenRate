@@ -474,7 +474,7 @@ public class MultipleValidityCache
             timeTo = CommonConfig.HIGH_DATE;
           }
 
-          addEntry(group, resourceID, timeFrom, timeTo, result);
+          addEntry(group.intern(), resourceID, timeFrom, timeTo, result);
 
           // Update to the log file
           if ((validityPeriodsLoaded % loadingLogNotificationStep) == 0)
@@ -597,7 +597,7 @@ public class MultipleValidityCache
           }
 
           // Add the map
-          addEntry(group, resourceID, timeFrom, timeTo, result);
+          addEntry(group.intern(), resourceID, timeFrom, timeTo, result);
 
           // Update to the log file
           if ((validityPeriodsLoaded % loadingLogNotificationStep) == 0)
@@ -719,7 +719,7 @@ public class MultipleValidityCache
         timeTo = CommonConfig.HIGH_DATE;
       }
 
-      addEntry(group, resourceID, timeFrom, timeTo, result);
+      addEntry(group.intern(), resourceID, timeFrom, timeTo, result);
 
       // Update to the log file
       if ((validityPeriodsLoaded % loadingLogNotificationStep) == 0)

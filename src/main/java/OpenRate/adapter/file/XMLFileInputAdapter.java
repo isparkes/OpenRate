@@ -370,7 +370,7 @@ public abstract class XMLFileInputAdapter
 
           // Pass the header to the user layer for any processing that
           // needs to be done
-          tmpHeader = (HeaderRecord) procHeader((IRecord) tmpHeader);
+          tmpHeader = procHeader(tmpHeader);
           Outbatch.add(tmpHeader);
         } catch (FileNotFoundException exFileNotFound) {
           getPipeLog().error(
@@ -456,16 +456,6 @@ public abstract class XMLFileInputAdapter
           // we have finished
           InputStreamOpen = false;
 
-          // get any pending records that are in the input handler
-          batchRecord = purgePendingRecord();
-
-          // Add the prepared record to the batch, because of record compression
-          // we may receive a null here. If we do, don't bother adding it
-          if (batchRecord != null) {
-            InputRecordNumber++;
-            Outbatch.add(batchRecord);
-          }
-
           // Inject a stream header record into the stream
           tmpTrailer = new TrailerRecord();
           tmpTrailer.setStreamName(baseName);
@@ -475,13 +465,13 @@ public abstract class XMLFileInputAdapter
           // needs to be done. To allow for purging in the case of record
           // compression, we allow multiple calls to procTrailer until the
           // trailer is returned
-          batchRecord = procTrailer((IRecord) tmpTrailer);
+          batchRecord = procTrailer(tmpTrailer);
 
           while (!(batchRecord instanceof TrailerRecord)) {
             // the call the trailer returned a purged record. Add this
             // to the batch and fetch again
             Outbatch.add(batchRecord);
-            batchRecord = procTrailer((IRecord) tmpTrailer);
+            batchRecord = procTrailer(tmpTrailer);
           }
 
           Outbatch.add(tmpTrailer);
@@ -537,17 +527,6 @@ public abstract class XMLFileInputAdapter
    */
   public BufferedReader getFileReader() {
     return reader;
-  }
-
-  /**
-   * Allows any records to be purged at the end of a file
-   *
-   * @return The pending record
-   */
-  @Override
-  public IRecord purgePendingRecord() {
-    // default - do nothing
-    return null;
   }
 
   // -----------------------------------------------------------------------------

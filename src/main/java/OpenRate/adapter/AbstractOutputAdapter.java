@@ -308,7 +308,7 @@ public abstract class AbstractOutputAdapter
               if (r instanceof HeaderRecord) {
                 ThisBatchRecordsWritten++;
                 streamsProcessed++;
-                procHeader(r);
+                procHeader((HeaderRecord)r);
                 out.add(r);
                 inTransaction = true;
               }
@@ -324,7 +324,7 @@ public abstract class AbstractOutputAdapter
                 }
 
                 // Process the trailer and pass it on
-                procTrailer(r);
+                procTrailer((TrailerRecord)r);
                 out.add(r);
 
                 // Mark that we have finished this stream
@@ -555,30 +555,7 @@ public abstract class AbstractOutputAdapter
    * @return The processed record
    * @throws ProcessingException
    */
-  public abstract IRecord procHeader(IRecord r) throws ProcessingException;
-
-  /**
-   * This is called when a data record is encountered. You should do any normal
-   * processing here. Note that the result is a collection for the case that we
-   * have to re-expand after a record compression input adapter has done
-   * compression on the input stream.
-   *
-   * @param r The record we are working on
-   * @return The collection of processed records
-   * @throws ProcessingException
-   */
-  public abstract Collection<IRecord> procValidRecord(IRecord r) throws ProcessingException;
-
-  /**
-   * This is called when a data record with errors is encountered. You should do
-   * any processing here that you have to do for error records, e.g. statistics,
-   * special handling, even error correction!
-   *
-   * @param r The record we are working on
-   * @return The collection of processed records
-   * @throws ProcessingException
-   */
-  public abstract Collection<IRecord> procErrorRecord(IRecord r) throws ProcessingException;
+  public abstract HeaderRecord procHeader(HeaderRecord r) throws ProcessingException;
 
   /**
    * This is called when the synthetic trailer record is encountered, and has
@@ -590,7 +567,7 @@ public abstract class AbstractOutputAdapter
    * @return The processed record
    * @throws ProcessingException
    */
-  public abstract IRecord procTrailer(IRecord r) throws ProcessingException;
+  public abstract TrailerRecord procTrailer(TrailerRecord r) throws ProcessingException;
 
 // -----------------------------------------------------------------------------
 // ----------------------- Start of IMonitor functions -------------------------
