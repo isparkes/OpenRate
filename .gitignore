@@ -1,2 +1,4 @@
 /target/
 /log/
+*.dat
+Semaphore.txt_*

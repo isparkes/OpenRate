@@ -74,21 +74,10 @@ public abstract class AbstractLogFactory implements IResource
   public static final String RESOURCE_KEY = "LogFactory";
 
   /**
-   * Get default logger. This method exists to support backward
-   * compatibility prior to the factory class. Prefer
-   * getLogger(String type) instead.
-   *
-   * @return The default logger
-   * @throws ConfigurationException
-   */
-  public abstract AstractLogger getDefaultLogger() throws InitializationException;
-
-  /**
    * Get a logger instance for the provided type.
    *
    * @param type The logger type
    * @return The logger
-   * @throws ConfigurationException
    */
   public abstract AstractLogger getLogger(String type);
 
@@ -97,7 +86,7 @@ public abstract class AbstractLogFactory implements IResource
    *
    * @param type The logger type
    * @return The logger
-   * @throws ConfigurationException
+   * @throws InitializationException
    */
   public AstractLogger getLogger(Class<?> type) throws InitializationException
   {
@@ -110,7 +99,7 @@ public abstract class AbstractLogFactory implements IResource
    *
    * @param factoryImpl
    * @return The log factory
-   * @throws ConfigurationException
+   * @throws InitializationException
    */
   public static AbstractLogFactory getFactory(String factoryImpl)
     throws InitializationException

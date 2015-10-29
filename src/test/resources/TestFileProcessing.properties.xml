@@ -4,21 +4,16 @@
      outside of the context of unit tests!!! -->
 <config>
   <Application>
-    UtilsTest
+    FrameworkTest
   </Application>
 
   <PipelineList>
-    <DBTestPipe>
+    <FlatFileTestPipe>
       <Active>True</Active>
-    </DBTestPipe>
-    
-    <DBRTTestPipe>
-      <Active>True</Active>
-      <PipelineType>RealTime</PipelineType>
-    </DBRTTestPipe>
+    </FlatFileTestPipe>
   </PipelineList>
 
-  <DBTestPipe>
+  <FlatFileTestPipe>
     <Configuration>
       <TestValue>
         testPipelinePropertyValue
@@ -27,8 +22,17 @@
 
     <InputAdapter>
       <TestInpAdapter>
-        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+        <ClassName>OpenRate.testsupport.FlatFileInputAdapterTest</ClassName>
         <BatchSize>5000</BatchSize>
+        <InputFilePath>target</InputFilePath>
+        <InputFilePrefix>CDR_</InputFilePrefix>
+        <InputFileSuffix>.in</InputFileSuffix>
+        <DoneFilePath>target</DoneFilePath>
+        <DoneFilePrefix>CDR_</DoneFilePrefix>
+        <DoneFileSuffix>.done</DoneFileSuffix>
+        <ErrFilePath>target</ErrFilePath>
+        <ErrFilePrefix>CDR_</ErrFilePrefix>
+        <ErrFileSuffix>.err</ErrFileSuffix>
       </TestInpAdapter>
     </InputAdapter>
 
@@ -37,32 +41,38 @@
     
     <OutputAdapter>
       <SOutAdapter>
-        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+        <ClassName>OpenRate.testsupport.FlatFileOutputAdapterTest</ClassName>
         <OutputName>default</OutputName>
         <BatchSize>5000</BatchSize>
+        <MaxSleep>50</MaxSleep>
+        <OutputFilePath>target</OutputFilePath>
+        <OutputFilePrefix>CDR_</OutputFilePrefix>
+        <OutputFileSuffix>.out</OutputFileSuffix>
+        <ErrFilePath>target</ErrFilePath>
+        <ErrFilePrefix>CDR_</ErrFilePrefix>
+        <ErrFileSuffix>.outerr</ErrFileSuffix>
+        <DeleteEmptyOutputFile>True</DeleteEmptyOutputFile>
+        <DeleteEmptyErrorFile>True</DeleteEmptyErrorFile>
       </SOutAdapter>
     </OutputAdapter>
-  </DBTestPipe>
+  </FlatFileTestPipe>
 
   <Resource>
     <LogFactory>
       <ClassName>OpenRate.logging.LogFactory</ClassName>
       <Properties>logUnitTest.xml</Properties>
-      <DefaultCategory>DBTestPipe</DefaultCategory>
+      <DefaultCategory>RatingTest</DefaultCategory>
     </LogFactory>
 
     <ECI>
       <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
       <Port>8086</Port>
+      <SemaphoreFile>Semaphore.txt</SemaphoreFile>
       <MaxConnection>2</MaxConnection>
     </ECI>
 
     <TransactionManagerFactory>
       <ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
     </TransactionManagerFactory>
-
-    <ConversionCache>
-      <ClassName>OpenRate.resource.ConversionCache</ClassName>
-    </ConversionCache>
   </Resource>
 </config>

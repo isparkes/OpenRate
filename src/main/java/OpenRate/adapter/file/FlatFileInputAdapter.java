@@ -258,6 +258,7 @@ public abstract class FlatFileInputAdapter
   // This is used to hold the calculated file names
   private class TransControlStructure {
 
+    String origFileName;
     String procFileName;
     String doneFileName;
     String errorFileName;
@@ -1098,34 +1099,31 @@ public abstract class FlatFileInputAdapter
                     inputFilePath,
                     inputFilePrefix,
                     inputFileSuffix,
-                    processingPrefix,
-                    tmpTransNumber);
+                    processingPrefix);
 
             doneName = getDoneFilePath(fileName,
                     inputFilePrefix,
                     inputFileSuffix,
                     doneFilePath,
                     doneFilePrefix,
-                    doneFileSuffix,
-                    tmpTransNumber);
+                    doneFileSuffix);
 
             errName = getErrorFilePath(fileName,
                     inputFilePrefix,
                     inputFileSuffix,
                     errFilePath,
                     errFilePrefix,
-                    errFileSuffix,
-                    tmpTransNumber);
+                    errFileSuffix);
 
             inpName = getInputFilePath(fileName,
                     inputFilePath);
 
             baseName = getFileBaseName(fileName,
                     inputFilePrefix,
-                    inputFileSuffix,
-                    tmpTransNumber);
+                    inputFileSuffix);
 
             tmpFileNames = new TransControlStructure();
+            tmpFileNames.origFileName = fileName;
             tmpFileNames.procFileName = procName;
             tmpFileNames.doneFileName = doneName;
             tmpFileNames.errorFileName = errName;
@@ -1215,15 +1213,13 @@ public abstract class FlatFileInputAdapter
    * @param inputFilePrefix The file prefix of the input file
    * @param inputFileSuffix The file suffix of the input file
    * @param processingPrefix the file processing prefix to use
-   * @param tmpTransNumber The transaction number
    * @return The full file path of the file in processing
    */
   protected String getProcFilePath(String fileName,
           String inputFilePath,
           String inputFilePrefix,
           String inputFileSuffix,
-          String processingPrefix,
-          int tmpTransNumber) {
+          String processingPrefix) {
     return inputFilePath + System.getProperty("file.separator")
             + processingPrefix + fileName;
   }
@@ -1238,7 +1234,6 @@ public abstract class FlatFileInputAdapter
    * @param doneFilePrefix The prefix of the done file
    * @param doneFileSuffix The suffix of the done file
    * @param inputFileSuffix The file suffix of the input file
-   * @param tmpTransNumber The transaction number
    * @return The full file path of the file in processing
    */
   protected String getDoneFilePath(String fileName,
@@ -1246,12 +1241,10 @@ public abstract class FlatFileInputAdapter
           String inputFileSuffix,
           String doneFilePath,
           String doneFilePrefix,
-          String doneFileSuffix,
-          int tmpTransNumber) {
+          String doneFileSuffix) {
     String baseName;
 
-    baseName = fileName.replaceAll("^" + inputFilePrefix, "");
-    baseName = baseName.replaceAll(inputFileSuffix + "$", "");
+    baseName = getFileBaseName(fileName,inputFilePrefix,inputFileSuffix);
 
     return doneFilePath + System.getProperty("file.separator")
             + doneFilePrefix + baseName + doneFileSuffix;
@@ -1267,7 +1260,6 @@ public abstract class FlatFileInputAdapter
    * @param errFilePrefix The prefix of the error file
    * @param errFileSuffix The suffix of the error file
    * @param inputFileSuffix The file suffix of the input file
-   * @param tmpTransNumber The transaction number
    * @return The full file path of the file in processing
    */
   protected String getErrorFilePath(String fileName,
@@ -1275,12 +1267,10 @@ public abstract class FlatFileInputAdapter
           String inputFileSuffix,
           String errFilePath,
           String errFilePrefix,
-          String errFileSuffix,
-          int tmpTransNumber) {
+          String errFileSuffix) {
     String baseName;
 
-    baseName = fileName.replaceAll("^" + inputFilePrefix, "");
-    baseName = baseName.replaceAll(inputFileSuffix + "$", "");
+    baseName = getFileBaseName(fileName,inputFilePrefix,inputFileSuffix);
 
     return errFilePath + System.getProperty("file.separator")
             + errFilePrefix + baseName + errFileSuffix;
@@ -1293,17 +1283,15 @@ public abstract class FlatFileInputAdapter
    * @param fileName The file name to use
    * @param inputFilePrefix The input file prefix
    * @param inputFileSuffix The input file suffix
-   * @param transactionNumber The transaction number
    * @return The base name for the transaction
    */
   protected String getFileBaseName(String fileName,
           String inputFilePrefix,
-          String inputFileSuffix,
-          int transactionNumber) {
+          String inputFileSuffix) {
     String baseName;
 
-    baseName = fileName.replaceAll("^" + inputFilePrefix, "");
-    baseName = baseName.replaceAll(inputFileSuffix + "$", "");
+    baseName = fileName.replaceAll("^" + inputFilePrefix, "")
+            .replaceAll(inputFileSuffix + "$", "");
 
     return baseName;
   }
@@ -1333,6 +1321,21 @@ public abstract class FlatFileInputAdapter
     tmpFileNames = currentFileNames.get(TransactionNumber);
 
     return tmpFileNames.procFileName;
+  }
+
+  /**
+   * Get the original file name for the given transaction
+   *
+   * @param TransactionNumber The transaction number to get the proc name for
+   * @return The temporary processing file name associated with the transaction
+   */
+  protected String getFileName(int TransactionNumber) {
+    TransControlStructure tmpFileNames;
+
+    // Get the name to work on
+    tmpFileNames = currentFileNames.get(TransactionNumber);
+
+    return tmpFileNames.origFileName;
   }
 
   /**

@@ -79,7 +79,7 @@ import org.junit.*;
 public class OpenRateTest {
 
   // The revision number has to be changed to match the current revision
-  String OpenRateVersion = "V1.5.2.3";
+  String OpenRateVersion = "V1.5.2.4";
 
   // By default we check that the build date is created on each build
   SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -203,6 +203,14 @@ public class OpenRateTest {
     Thread openRateThread = new Thread(appl);
     openRateThread.start();
 
+    System.out.println("Waiting for startup to complete");
+    while (!appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
+    
     // wait for it to start
     System.out.println("Waiting for the system to come up");
     while (!appl.isFrameworkActive()) {
@@ -282,6 +290,14 @@ public class OpenRateTest {
     Thread openRateThread = new Thread(appl);
     openRateThread.start();
 
+    System.out.println("Waiting for startup to complete");
+    while (!appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
+    
     // And test the shutdown
     try {
       // Create file 

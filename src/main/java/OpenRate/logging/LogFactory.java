@@ -52,7 +52,6 @@
  * Half International.
  * ====================================================================
  */
-
 package OpenRate.logging;
 
 import OpenRate.OpenRate;
@@ -66,23 +65,26 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.apache.logging.log4j.core.config.Configurator;
+<<<<<<< HEAD
 
+=======
+>>>>>>> isparkes/master
 
 /**
- * Please <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Log'>click here</a> to go to wiki page.
+ * Please
+ * <a target='new' href='http://www.open-rate.com/wiki/index.php?title=Log'>click
+ * here</a> to go to wiki page.
  * <br>
  * <p>
- * The LogFactory provides access to the logging mechanism, based on Log4J.
- * It provides a map to the various log objects that can exist in the system,
- * and this can provide access to them.
+ * The LogFactory provides access to the logging mechanism, based on Log4J. It
+ * provides a map to the various log objects that can exist in the system, and
+ * this can provide access to them.
  */
-public class LogFactory extends AbstractLogFactory implements IEventInterface
-{
-  // cache Categories
-  private static HashMap<String, Log4JLogger> LogStreams = new HashMap<>();
+public class LogFactory extends AbstractLogFactory implements IEventInterface {
 
-  // Default logger name
-  private static String defaultLoggerName = "DefaultLogger";
+  // cache Categories
+
+  private static final HashMap<String, Log4JLogger> LogStreams = new HashMap<>();
 
   // The properties we are working from
   private static String log4j_properties;
@@ -108,65 +110,59 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   /**
    * default constructor - protected
    */
-  public LogFactory()
-  {
+  public LogFactory() {
     super();
   }
 
   /**
-   * Perform whatever initialization is required of the resource.
-   * This method should only be called once per application instance.
+   * Perform whatever initialization is required of the resource. This method
+   * should only be called once per application instance.
+   *
+   * @param ResourceName
+   * @throws OpenRate.exception.InitializationException
    */
   @Override
-  public void init(String ResourceName) throws InitializationException
-  {
+  public void init(String ResourceName) throws InitializationException {
     /* in the case of multi-process applications, the init() may
      * be called more than once. Ensure that log4j only creates one file by
      * only configuring it one time per application.
      */
-    if (!isLoaded())
-    {
+    if (!isLoaded()) {
       // Set the symbolic name
       symbolicName = ResourceName;
 
-      if (!symbolicName.equalsIgnoreCase(RESOURCE_KEY))
-      {
+      if (!symbolicName.equalsIgnoreCase(RESOURCE_KEY)) {
         // we are relying on this name to be able to find the resource
         // later, so stop if it is not right
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Log ModuleName should be <" + RESOURCE_KEY + ">",getSymbolicName()));
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Log ModuleName should be <" + RESOURCE_KEY + ">", getSymbolicName()));
       }
 
       // configure log4j if a log4j config file is provided in the
       // configuration. If not, ignore configuration on the assumption
       // that log4j will handle it internally.
-      log4j_properties = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"Properties","None");
+      log4j_properties = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName, "Properties", "None");
 
       // See if we got a logger definition
-      if (log4j_properties.equals("None"))
-      {
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Logger Configuration File <" + ResourceName + "> not defined in Logger resource",getSymbolicName()));
+      if (log4j_properties.equals("None")) {
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Logger Configuration File <" + ResourceName + "> not defined in Logger resource", getSymbolicName()));
       }
 
       // Get the file from the classpath
-      URL fqConfigFileName = getClass().getResource( "/" + log4j_properties );
-      
+      URL fqConfigFileName = getClass().getResource("/" + log4j_properties);
+
       // Does it exist?
-      if (fqConfigFileName == null)
-      {
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
-      }
-      else
-      {
+      if (fqConfigFileName == null) {
+        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource", getSymbolicName()));
+      } else {
         // Is it a file?
-        if (new File(fqConfigFileName.getFile()).isFile() == false)
-        {
-          OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource",getSymbolicName()));
+        if (new File(fqConfigFileName.getFile()).isFile() == false) {
+          OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not open Configuration File <" + fqConfigFileName + "> not defined in Logger resource", getSymbolicName()));
         }
 
-        if (log4j_properties.endsWith(".xml"))
-        {
+        if (log4j_properties.endsWith(".xml")) {
           // ToDo: Add configure and watch
           // use the XML model
+<<<<<<< HEAD
           Configurator.initialize(symbolicName, fqConfigFileName.getPath());  
         }
         else
@@ -174,20 +170,21 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
           // ToDo: Add configure and watch
           // use the traditional properties file model: Deprecated
         	OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Properties file model is no longer supported. Convert to XML based model.", getSymbolicName()));          
+=======
+          Configurator.initialize(symbolicName, fqConfigFileName.getPath());
+        } else {
+          // ToDo: Add configure and watch
+          // use the traditional properties file model: Deprecated
+          OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Properties file model is no longer supported. Convert to XML based model.", getSymbolicName()));
+>>>>>>> isparkes/master
         }
 
         // log4j initialized.
-        loaded              = true;
+        loaded = true;
 
         System.out.println("Logger initialised using configuration <" + fqConfigFileName.getFile() + ">");
-
-        // If there is a default logger configured in the properties file then
-        // use that.  Otherwise use AstractLogger.DEFAULT_CATEGORY
-        defaultLoggerName   = PropertyUtils.getPropertyUtils().getResourcePropertyValueDef(ResourceName,"DefaultCategory","Default");
       }
-    }
-    else
-    {
+    } else {
       System.err.println("Logger already loaded");
     }
   }
@@ -196,6 +193,7 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
    * Perform any required cleanup.
    */
   @Override
+<<<<<<< HEAD
   public void close()
   {
 	if(isLoaded())
@@ -203,19 +201,22 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
 		getDefaultLogger().close();
 	}
 	
+=======
+  public void close() {
+>>>>>>> isparkes/master
     LogStreams.clear();
     loaded = false;
   }
 
   /**
    * Utility to return the reference to the logger resource
+   * 
+   * @return the logger matching the given name
    */
   @Override
-  public AstractLogger getLogger(String type)
-  {
+  public AstractLogger getLogger(String type) {
     Log4JLogger tmpLogger = new Log4JLogger(type);
-    if (LogStreams.containsKey(type) == false)
-    {
+    if (LogStreams.containsKey(type) == false) {
       LogStreams.put(type, tmpLogger);
     }
 
@@ -223,96 +224,80 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface
   }
 
   /**
-   * Get default logger. This method exists to support backward
-   * compatibility prior to the factory class. Prefer
-   * getLogger(String type) instead.
-   */
-  @Override
-  public AstractLogger getDefaultLogger()
-  {
-    return getLogger(defaultLoggerName);
-  }
-
-  /**
    * Returns the loaded status.
    *
    * @return true if loaded
    */
+<<<<<<< HEAD
   private boolean isLoaded()
   {
+=======
+  private boolean isLoaded() {
+>>>>>>> isparkes/master
     return loaded;
   }
 
   // -----------------------------------------------------------------------------
   // ------------- Start of inherited IEventInterface functions ------------------
   // -----------------------------------------------------------------------------
-
- /**
-  * registerClientManager registers the client module to the ClientManager class
-  * which manages all the client modules available in this OpenRate Application.
-  *
-  * registerClientManager registers this class as a client of the ECI listener
-  * and publishes the commands that the plug in understands. The listener is
-  * responsible for delivering only these commands to the plug in.
-  *
-  */
+  /**
+   * registerClientManager registers the client module to the ClientManager
+   * class which manages all the client modules available in this OpenRate
+   * Application.
+   *
+   * registerClientManager registers this class as a client of the ECI listener
+   * and publishes the commands that the plug in understands. The listener is
+   * responsible for delivering only these commands to the plug in.
+   *
+   * @throws OpenRate.exception.InitializationException
+   */
   @Override
-  public void registerClientManager() throws InitializationException
-  {
+  public void registerClientManager() throws InitializationException {
     //Register this Client
-    ClientManager.getClientManager().registerClient("Resource",getSymbolicName(), this);
+    ClientManager.getClientManager().registerClient("Resource", getSymbolicName(), this);
 
     //Register services for this Client
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_RELOAD, ClientManager.PARAM_MANDATORY);
   }
 
   /**
-  * processControlEvent is the event processing hook for the External Control
-  * Interface (ECI). This allows interaction with the external world, for
-  * example turning the dumping on and off.
-  */
+   * processControlEvent is the event processing hook for the External Control
+   * Interface (ECI). This allows interaction with the external world, for
+   * example turning the dumping on and off.
+   */
   @Override
-  public String processControlEvent(String Command, boolean Init, String Parameter)
-  {
+  public String processControlEvent(String Command, boolean Init, String Parameter) {
 
     int ResultCode = -1;
 
-    if (Command.equalsIgnoreCase(SERVICE_RELOAD))
-    {
-      if (Parameter.equalsIgnoreCase("true"))
-      {
+    if (Command.equalsIgnoreCase(SERVICE_RELOAD)) {
+      if (Parameter.equalsIgnoreCase("true")) {
         ResultCode = 0;
-      }
-      else if (Parameter.equalsIgnoreCase("false"))
-      {
+      } else if (Parameter.equalsIgnoreCase("false")) {
         // Don't reload
         ResultCode = 0;
-      }
-      else if (Parameter.equalsIgnoreCase(""))
-      {
+      } else if (Parameter.equalsIgnoreCase("")) {
         // return something that sounds meaningful
         return "false";
       }
     }
 
     // Currently this cannot handle any dynamic events
-    if (ResultCode == 0)
-    {
+    if (ResultCode == 0) {
       OpenRate.getOpenRateFrameworkLog().debug(LogUtil.LogECIPipeCommand(getSymbolicName(), getSymbolicName(), Command, Parameter));
       return "OK";
-    }
-    else
-    {
+    } else {
       return "Command Not Understood";
     }
   }
 
- /**
-  * Return the resource symbolic name
-  */
+  /**
+   * Return the resource symbolic name
+   * 
+   * @return The symbolic name
+   */
   @Override
-  public String getSymbolicName()
-  {
+  public String getSymbolicName() {
     return symbolicName;
   }
 }

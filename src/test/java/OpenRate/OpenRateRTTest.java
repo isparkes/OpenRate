@@ -52,71 +52,107 @@
  * Half International.
  * ====================================================================
  */
-package ExampleApplications.SimpleApplication;
+package OpenRate;
 
-import OpenRate.adapter.file.FlatFileOutputAdapter;
-import OpenRate.record.FlatRecord;
-import OpenRate.record.IRecord;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import org.junit.*;
 
 /**
- * The Output Adapter is responsible for writing the completed records to the
- * target file.
+ * Tests OpenRate application framework loading, stopping in RT mode.
+ *
+ * @author TGDSPIA1
  */
-public class SimpleSTOutputAdapter
-  extends FlatFileOutputAdapter
-{
+public class OpenRateRTTest {
 
- /**
-  * Constructor for SimpleOutputAdapter.
-  */
-  public SimpleSTOutputAdapter()
-  {
-    super();
+  // The revision number has to be changed to match the current revision
+  String OpenRateVersion = "V1.5.2.3";
+
+  // By default we check that the build date is created on each build
+  SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+  String revisionDate = sdf.format(new Date());
+
+  // this is the OpenRate application object
+  private static OpenRate appl;
+
+  public OpenRateRTTest() {
   }
 
- /**
-  * We transform the records here so that they are ready to output making any
-  * specific changes to the record that are necessary to make it ready for
-  * output.
-  *
-  * As we are using the FlatFileOutput adapter, we should transform the records
-  * into FlatRecords, storing the data to be written using the setData() method.
-  * This means that we do not have to know about the internal workings of the
-  * output adapter.
-  *
-  * Note that this is just undoing the transformation that we did in the input
-  * adapter.
-   * @return 
-  */
-  @Override
-  public Collection<FlatRecord> procValidRecord(IRecord r)
-  {
-    FlatRecord tmpOutRecord;
-    SimpleRecord tmpInRecord;
-
-    Collection<FlatRecord> Outbatch;
-    Outbatch = new ArrayList<>();
-
-    tmpOutRecord = new FlatRecord();
-    tmpInRecord = (SimpleRecord)r;
-    tmpOutRecord.setData(tmpInRecord.unmapOriginalData());
-
-    Outbatch.add(tmpOutRecord);
-
-    return Outbatch;
+  @BeforeClass
+  public static void setUpClass() throws Exception {
   }
 
- /**
-  * Handle any error records here so that they are ready to output making any
-  * specific changes to the record that are necessary to make it ready for
-  * output.
-   * @return 
-  */
-  @Override
-  public Collection<FlatRecord> procErrorRecord(IRecord r)
-  {
-    return null;
+  @AfterClass
+  public static void tearDownClass() throws Exception {
+  }
+
+  @Before
+  public void setUp() {
+  }
+
+  @After
+  public void tearDown() {
+  }
+
+  /**
+   * Test of application startup and shutdown. This test builds a real 
+   * (but very simple) RT processing pipeline using the standard framework 
+   * startup procedure, and then shuts it down again.
+   */
+  @Test(timeout = 10000)
+  public void testApplicationCloseViaSemaphore() {
+    System.out.println("--> OpenRate RT shutdown on Semaphore");
+
+    // get the date portion of the version string
+    int expResult = 0;
+
+    // Define the property file we are using
+    String[] args = new String[2];
+    args[0] = "-p";
+    args[1] = "TestRTFramework.properties.xml";
+
+    // Start up the framework
+    appl = OpenRate.getApplicationInstance();
+    int status = appl.createApplication(args);
+
+    // check the start up of the framework
+    Assert.assertEquals(expResult, status);
+
+    Thread openRateThread = new Thread(appl);
+    openRateThread.start();
+
+    System.out.println("Waiting for startup to complete");
+    while (!appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+      }
+    }
+    
+    // And test the shutdown
+    try {
+      // Create file 
+      FileWriter fstream = new FileWriter("Semaphore.txt");
+      try (BufferedWriter out = new BufferedWriter(fstream)) {
+        out.write("Framework:Shutdown=true");
+      }
+    } catch (IOException e) {//Catch exception if any
+      Assert.fail();
+    }
+
+    // wait for it to stop
+    System.out.println("Waiting for the system to stop");
+    while (appl.isFrameworkActive()) {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException ex) {
+      }
+    }
+
+    // Finish off
+    appl.finaliseApplication();
   }
 }

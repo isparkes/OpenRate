@@ -469,9 +469,9 @@ public class AbstractRUMTimeTest {
     ConversionUtils conv = ConversionUtils.getConversionUtilsObject();
     conv.setInputDateFormat("yyyy-MM-dd hh:mm:ss");
     long CDRDateUTC = conv.convertInputDateToUTC(CDRStartDate);
-    ratingRecord.UTCEventDate = CDRDateUTC;
-    ratingRecord.EventStartDate = conv.getDatefromLongFormat(CDRStartDate);
-    ratingRecord.EventEndDate = conv.getDatefromLongFormat(CDREndDate);
+    ratingRecord.utcEventDate = CDRDateUTC;
+    ratingRecord.eventStartDate = conv.getDatefromLongFormat(CDRStartDate);
+    ratingRecord.eventEndDate = conv.getDatefromLongFormat(CDREndDate);
     ChargePacket tmpCP = new ChargePacket();
     tmpCP.timeModel = "Default";
     tmpCP.timeSplitting = splittingType;

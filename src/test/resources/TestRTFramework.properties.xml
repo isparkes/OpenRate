@@ -4,65 +4,51 @@
      outside of the context of unit tests!!! -->
 <config>
   <Application>
-    UtilsTest
+    FrameworkTest
   </Application>
 
   <PipelineList>
-    <DBTestPipe>
-      <Active>True</Active>
-    </DBTestPipe>
-    
-    <DBRTTestPipe>
+    <RTTestPipe>
       <Active>True</Active>
       <PipelineType>RealTime</PipelineType>
-    </DBRTTestPipe>
+    </RTTestPipe>
   </PipelineList>
 
-  <DBTestPipe>
+  <RTTestPipe>
     <Configuration>
       <TestValue>
         testPipelinePropertyValue
       </TestValue>
     </Configuration>
 
-    <InputAdapter>
+    <RTAdapter>
       <TestInpAdapter>
-        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+        <ClassName>OpenRate.adapter.NullRTAdapter</ClassName>
         <BatchSize>5000</BatchSize>
       </TestInpAdapter>
-    </InputAdapter>
+    </RTAdapter>
 
     <Process>
     </Process>
-    
-    <OutputAdapter>
-      <SOutAdapter>
-        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
-        <OutputName>default</OutputName>
-        <BatchSize>5000</BatchSize>
-      </SOutAdapter>
-    </OutputAdapter>
-  </DBTestPipe>
+        
+  </RTTestPipe>
 
   <Resource>
     <LogFactory>
       <ClassName>OpenRate.logging.LogFactory</ClassName>
       <Properties>logUnitTest.xml</Properties>
-      <DefaultCategory>DBTestPipe</DefaultCategory>
+      <DefaultCategory>RatingTest</DefaultCategory>
     </LogFactory>
 
     <ECI>
       <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
       <Port>8086</Port>
+      <SemaphoreFile>Semaphore.txt</SemaphoreFile>
       <MaxConnection>2</MaxConnection>
     </ECI>
 
     <TransactionManagerFactory>
       <ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
     </TransactionManagerFactory>
-
-    <ConversionCache>
-      <ClassName>OpenRate.resource.ConversionCache</ClassName>
-    </ConversionCache>
   </Resource>
 </config>

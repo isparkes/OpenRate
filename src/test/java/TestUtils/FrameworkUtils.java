@@ -149,7 +149,7 @@ public class FrameworkUtils {
       for (Exception exception : OpenRate.getFrameworkExceptionHandler().getExceptionList()) {
         System.err.println("Exception: " + exception.getMessage());
       }
-      Assert.fail("Exception szatzing up the cache factory");
+      Assert.fail("Exception starting up the cache factory");
     }
   }
   

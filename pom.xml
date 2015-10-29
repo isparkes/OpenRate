@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>OpenRate</artifactId>
-	<version>1.5.2.3</version>
+	<version>1.5.2.4</version>
 	<packaging>jar</packaging>
 	<groupId>OpenRate</groupId>
 	<description>OpenRate project: Open Source rating engine</description>
@@ -117,12 +117,12 @@
 		<version.java.target>1.7</version.java.target>
 		<version.commons.collections>3.2.1</version.commons.collections>
 		<version.commons.pool>1.5.5</version.commons.pool>
-		<version.c3p0>0.9.1.2</version.c3p0>
+		<version.c3p0>0.9.5.1</version.c3p0>
 		<version.bonecp>0.7.1.RELEASE</version.bonecp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.mysql.connector>5.1.13</version.mysql.connector>
     <version.hsql.connector>2.2.4</version.hsql.connector>
-		<version.log4j>1.2.13</version.log4j>
+		<version.log4j>2.4.1</version.log4j>
 		<version.oro>2.0.8</version.oro>
 		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
 	</properties>
@@ -166,7 +166,7 @@
 
 		<!-- C3P0 connection pool -->
 		<dependency>
-			<groupId>c3p0</groupId>
+			<groupId>com.mchange</groupId>
 			<artifactId>c3p0</artifactId>
 			<version>${version.c3p0}</version>
 		</dependency>
@@ -177,12 +177,6 @@
 			<artifactId>bonecp-spring</artifactId>
 			<version>${version.bonecp}</version>
 		</dependency>
-
-		<!--dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>1.4</version>
-		</dependency-->
 
     <!-- MySQL for database access -->		
 		<dependency>
@@ -199,12 +193,18 @@
     </dependency>
 
     <!-- Fantastic log4j for logging -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>${version.log4j}</version>
-		</dependency>
-		
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${version.log4j}</version>
+    </dependency>
+  
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${version.log4j}</version>
+    </dependency>
+  		
     <!-- Oro for file filtering -->
 		<dependency>
 			<groupId>oro</groupId>
@@ -281,48 +281,49 @@
             <version>3.0.4</version>
         </dependency>
 
-        <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>1.8.0.7</version>
-        </dependency>
--->
+            <dependency>
+                <groupId>hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>1.8.0.7</version>
+            </dependency>
+    -->
 		
     <!-- Mail for emailer module -->
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4</version>
-		</dependency>
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4</version>
+    </dependency>
 
-     <!--   <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-jci-core</artifactId>
-            <version>1.0</version>
-        </dependency>
--->
-	</dependencies>
+    <!-- Cassandra adapters -->
+    <dependency>
+      <groupId>org.apache.cassandra</groupId>
+      <artifactId>cassandra-thrift</artifactId>
+      <version>1.2.3</version>
+      <type>jar</type>
+    </dependency>   
+  </dependencies>
 	
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.10</version>
-				<configuration>
-					<configLocation>config/sun_checks.xml</configLocation>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.10</version>
+        <configuration>
+          <configLocation>config/sun_checks.xml</configLocation>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 	
   <!-- link to our git repository -->
-	<scm>
-		<connection>scm:git:git://github.com/isparkes/OpenRate.git</connection>
-	</scm>
+  <scm>
+    <connection>scm:git:git://github.com/isparkes/OpenRate.git</connection>
+  </scm>
   
   <!-- link to our Jenkins -->
-	<ciManagement>
-		<url>http://obrm:8888/job/openrate/</url>
-	</ciManagement>
+  <ciManagement>
+    <url>http://obrm:8888/job/openrate/</url>
+  </ciManagement>
 </project>
