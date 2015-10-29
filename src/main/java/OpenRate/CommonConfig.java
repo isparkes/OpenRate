@@ -64,7 +64,7 @@ public class CommonConfig {
    * the key to the program name. the program name is used to retrieve the
    * configuration info
    */
-  public static final String PROG_NAME = "MercuryRate";
+  public static final String PROG_NAME = "application";
 
   /**
    * the key to the common environment name. the common environment name used to
