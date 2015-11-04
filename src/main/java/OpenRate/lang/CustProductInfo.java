@@ -94,7 +94,7 @@ public class CustProductInfo
    */
   public void setProductID(String Id)
   {
-    ProductID = Id;
+    ProductID = Id.intern();
   }
 
   /**
@@ -114,7 +114,7 @@ public class CustProductInfo
    */
   public void setSubID(String Id)
   {
-    SubId = Id;
+    SubId = Id.intern();
   }
 
   /**
@@ -133,7 +133,7 @@ public class CustProductInfo
    */
   public void setService(String newService)
   {
-    Service = newService;
+    Service = newService.intern();
   }
 
   /**

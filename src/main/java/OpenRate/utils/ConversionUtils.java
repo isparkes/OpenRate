@@ -481,6 +481,75 @@ public class ConversionUtils
     return cal.getTime();
   }
 
+	/**
+	 * Gets the rounded start date of the year the given event date is in
+	 *
+	 * @param EventStartDate
+	 *            The date of the event
+	 * @return The UTC year start date
+	 */
+	public long getUTCYearStart(Date EventStartDate) {
+		Date roundedDate = getYearStart(EventStartDate);
+		cal.setTime(roundedDate);
+		long validityYearStart = cal.getTimeInMillis() / 1000;
+
+		return validityYearStart;
+	}
+
+	/**
+	 * Gets the rounded end date of the year the given event date is in
+	 *
+	 * @param EventStartDate
+	 *            The date of the event
+	 * @return The UTC year end date
+	 */
+	public long getUTCYearEnd(Date EventStartDate) {
+		Date roundedDate = getYearEnd(EventStartDate);
+		cal.setTime(roundedDate);
+		long validityYearEnd = cal.getTimeInMillis() / 1000;
+
+		return validityYearEnd;
+	}
+
+	/**
+	 * Gets the rounded start date of the year the given event date is in
+	 *
+	 * @param EventStartDate
+	 *            The date of the event
+	 * @return The year start date
+	 */
+	public Date getYearStart(Date EventStartDate) {
+		// Get the yearly counter validity periods for this CDR
+		cal.setTime(EventStartDate);
+		cal.set(Calendar.DAY_OF_YEAR, 1);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		return cal.getTime();
+	}
+
+	/**
+	 * Gets the rounded end date of the year the given event date is in
+	 *
+	 * @param EventStartDate
+	 *            The date of the event
+	 * @return The year end date
+	 */
+	public Date getYearEnd(Date EventStartDate) {
+		// Get the yearly counter validity periods for this CDR
+		cal.setTime(EventStartDate);
+		cal.set(Calendar.DAY_OF_YEAR, 366); // 366 for leap year
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.add(Calendar.SECOND, -1);
+
+		return cal.getTime();
+	}
+  
  /**
   * Gets the rounded start date of the month the given event date is in
   *

@@ -55,6 +55,7 @@
 
 package OpenRate.cache;
 
+import OpenRate.CommonConfig;
 import OpenRate.OpenRate;
 import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
@@ -63,12 +64,14 @@ import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.utils.PropertyUtils;
+
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * This is a cache for performing duplicate checks on CDRs, using a persistent
@@ -82,6 +85,10 @@ public class DuplicateCheckCache
   implements ICacheLoader,
              IEventInterface
 {
+	
+  // Regular expression pattern for duplicate check 
+  private static final Pattern duplicateCheckPattern = Pattern.compile("(?s).*uplicate.*");  	
+	
   // the only supported one is Database
   private String DataSourceType = null;
 
@@ -119,6 +126,9 @@ public class DuplicateCheckCache
   // Log every n records loaded
   private final static String SERVICE_LOAD_LOG_STEP = "LoadLogStep";
 
+  // Active service 
+  private final static String SERVICE_ACTIVE  = CommonConfig.ACTIVE;
+  
   // default values for BufferLimit and StoreLimit
   private static final int    DEFAULT_BUFFER_LIMIT_DAYS = 90;
   private static final int    DEFAULT_STORE_LIMIT_DAYS = 180;
@@ -127,6 +137,9 @@ public class DuplicateCheckCache
   private long bufferLimit;
   private long storeLimit;
 
+  // Whether the check is active or not
+  private boolean Active = true;
+  
   /**
    * This is our connection object for changes to the DB via purge or
    */
@@ -420,73 +433,76 @@ public class DuplicateCheckCache
     Connection tmpInsertConnection;
     PreparedStatement tmpInsertStatement = null;
 
-    if (TimeStamp > bufferLimit)
+    if (Active)
     {
-      // look only in the HashMap
-      if (recordList.containsKey(RecordKey))
-      {
-        // found in the main cache
-        return true;
-      }
-      else
-      {
-        // Check in the current transaction cache
-        if  (TransRecordList.get(TransactionNumber).containsKey(RecordKey))
-        {
-          // found in the transaction cache
-          return true;
-        }
-        else
-        {
-          // Add the record to the transaction list
-          TransRecordList.get(TransactionNumber).put(RecordKey, TimeStamp);
-          return false;
-        }
-      }
-    }
-    else if (TimeStamp > storeLimit)
-    {
-      // the key won't be in the HashMap, we need to check directly in the database
-
-      try
-      {
-        // Get the connection
-        tmpInsertConnection = getTransactionInsertConnection(TransactionNumber);
-        tmpInsertStatement = getInsertStatement(tmpInsertConnection);
-
-        // We should not normally have to use the in-transaction insert, so we
-        // will spend the time to open the connection and close it afterwards
-        // which makes the connection management and transaction management much easier
-        try
-        {
-          tmpInsertStatement.setString(1, RecordKey);
-          Timestamp date = new Timestamp(TimeStamp*1000);
-          tmpInsertStatement.setTimestamp(2, date);
-          tmpInsertStatement.execute();
-        }
-        catch (SQLException ex)
-        {
-          // check which type of exception we got
-          message=ex.getMessage();
-          if (message.matches(".*uplicate.*"))
-          {
-            // the unique constraint of the DB has been violated, that means the key is already there
-            return true;
-          }
-          else
-          {
-            // other SQL exception
-            message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
-                + "check data on direct DB insert. message=<" + ex.getMessage()+">";
-            OpenRate.getOpenRateFrameworkLog().error(message);
-            throw new ProcessingException(message,ex,getSymbolicName());
-          }
-        }
-      }
-      finally
-      {
-        DBUtil.close(tmpInsertStatement);
-      }
+	    if (TimeStamp > bufferLimit)
+	    {
+	      // look only in the HashMap
+	      if (recordList.containsKey(RecordKey))
+	      {
+	        // found in the main cache
+	        return true;
+	      }
+	      else
+	      {
+	        // Check in the current transaction cache
+	        if  (TransRecordList.get(TransactionNumber).containsKey(RecordKey))
+	        {
+	          // found in the transaction cache
+	          return true;
+	        }
+	        else
+	        {
+	          // Add the record to the transaction list
+	          TransRecordList.get(TransactionNumber).put(RecordKey, TimeStamp);
+	          return false;
+	        }
+	      }
+	    }
+	    else if (TimeStamp > storeLimit)
+	    {
+	      // the key won't be in the HashMap, we need to check directly in the database
+	
+	      try
+	      {
+	        // Get the connection
+	        tmpInsertConnection = getTransactionInsertConnection(TransactionNumber);
+	        tmpInsertStatement = getInsertStatement(tmpInsertConnection);
+	
+	        // We should not normally have to use the in-transaction insert, so we
+	        // will spend the time to open the connection and close it afterwards
+	        // which makes the connection management and transaction management much easier
+	        try
+	        {
+	          tmpInsertStatement.setString(1, RecordKey);
+	          Timestamp date = new Timestamp(TimeStamp*1000);
+	          tmpInsertStatement.setTimestamp(2, date);
+	          tmpInsertStatement.execute();
+	        }
+	        catch (SQLException ex)
+	        {
+	          // check which type of exception we got
+	          message=ex.getMessage();
+	          if (duplicateCheckPattern.matcher(message).matches())
+	          {
+	            // the unique constraint of the DB has been violated, that means the key is already there
+	            return true;
+	          }
+	          else
+	          {
+	            // other SQL exception
+	            message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
+	                + "check data on direct DB insert. message=<" + ex.getMessage()+">";
+	            OpenRate.getOpenRateFrameworkLog().error(message);
+	            throw new ProcessingException(message,ex,getSymbolicName());
+	          }
+	        }
+	      }
+	      finally
+	      {
+	        DBUtil.close(tmpInsertStatement);
+	      }
+	    }
     }
 
     // CDR is older than the storeLimit, don't even bother to check and treat it as non-duplicate
@@ -517,86 +533,94 @@ public class DuplicateCheckCache
   */
   public void CommitTransaction(int TransactionNumber)
   {
-    // insert into the DB the items in TransRecordList as well
-    HashMap<String, Long> ThisTrxRecordList = TransRecordList.get(TransactionNumber);
-
-    if (ThisTrxRecordList == null)
+	if (Active)  
+	{ 
+	    // insert into the DB the items in TransRecordList as well
+	    HashMap<String, Long> ThisTrxRecordList = TransRecordList.get(TransactionNumber);
+	
+	    if (ThisTrxRecordList == null)
+	    {
+	      // Something wrong, we don't expect this
+	      message = "No record elements found for transaction <" + TransactionNumber + "> in module <" + getSymbolicName() + ">";
+	      OpenRate.getOpenRateFrameworkLog().error(message);
+	    }
+	    else
+	    {
+	      int recordCount = ThisTrxRecordList.size();
+	      int recordsInserted = 0;
+	
+	      message = "Inserting <" + recordCount + "> records into duplicate check table" +
+	                        " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
+	      
+	      if (recordCount > 0)
+	      {
+	        // we are going to insert something, get the connection and statement
+	        Connection tmpInsertConnection = getTransactionInsertConnection(TransactionNumber);
+	        PreparedStatement tmpInsertStatement = getInsertStatement(tmpInsertConnection);
+	
+	        try
+	        {
+	          // Get the keys to insert
+	          Set<String> keys = ThisTrxRecordList.keySet();
+	          for (String key : keys)
+	          {
+	            try
+	            {
+	              tmpInsertStatement.setString(1, key);
+	              Timestamp date = new Timestamp(ThisTrxRecordList.get(key)*1000);
+	              tmpInsertStatement.setTimestamp(2, date);
+	              tmpInsertStatement.execute();
+	              
+	              // Update the count of what we have inserted
+	              recordsInserted++;
+	            }
+	            catch (SQLException ex)
+	            {
+	              message=ex.getMessage();
+	              if (duplicateCheckPattern.matcher(message).matches())
+	              {
+	                // other SQL exception
+	                message = "Duplicate Error inserting into <" + cacheDataSourceName + "> for the duplicate "
+	                    + "check data on transaction commit for key <" + key+"> in transaction <" + TransactionNumber + ">";
+	                OpenRate.getOpenRateFrameworkLog().warning(message);
+	              }
+	              else
+	              {
+	                // other SQL exception
+	                message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
+	                    + "check data on transaction commit. message=<" + ex.getMessage()+"> in transaction <" + TransactionNumber + ">";
+	                OpenRate.getOpenRateFrameworkLog().error(message);
+	              }
+	            }
+	          }
+	        }
+	        finally
+	        {
+	          // Close the statement
+	          DBUtil.close(tmpInsertStatement);
+	        }
+	
+	        recordList.putAll(TransRecordList.get(TransactionNumber));
+	      }
+	
+	
+	      // and close the connection now that we have finished with it
+	      closeTransactionInsertConnection(TransactionNumber);
+	
+	      // remove the transaction
+	      TransRecordList.remove(TransactionNumber);
+	
+	      // Log what we did
+	      message = "Inserted <" + recordsInserted + "> records into duplicate check table" +
+	                        " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
+	      OpenRate.getOpenRateFrameworkLog().info(message);
+	    }
+	} else
     {
-      // Something wrong, we don't expect this
-      message = "No record elements found for transaction <" + TransactionNumber + "> in module <" + getSymbolicName() + ">";
-      OpenRate.getOpenRateFrameworkLog().error(message);
-    }
-    else
-    {
-      int recordCount = ThisTrxRecordList.size();
-      int recordsInserted = 0;
-
-      message = "Inserting <" + recordCount + "> records into duplicate check table" +
-                        " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
-      
-      if (recordCount > 0)
-      {
-        // we are going to insert something, get the connection and statement
-        Connection tmpInsertConnection = getTransactionInsertConnection(TransactionNumber);
-        PreparedStatement tmpInsertStatement = getInsertStatement(tmpInsertConnection);
-
-        try
-        {
-          // Get the keys to insert
-          Set<String> keys = ThisTrxRecordList.keySet();
-          for (String key : keys)
-          {
-            try
-            {
-              tmpInsertStatement.setString(1, key);
-              Timestamp date = new Timestamp(ThisTrxRecordList.get(key)*1000);
-              tmpInsertStatement.setTimestamp(2, date);
-              tmpInsertStatement.execute();
-              
-              // Update the count of what we have inserted
-              recordsInserted++;
-            }
-            catch (SQLException ex)
-            {
-              message=ex.getMessage();
-              if (message.matches(".*uplicate.*"))
-              {
-                // other SQL exception
-                message = "Duplicate Error inserting into <" + cacheDataSourceName + "> for the duplicate "
-                    + "check data on transaction commit for key <" + key+"> in transaction <" + TransactionNumber + ">";
-                OpenRate.getOpenRateFrameworkLog().warning(message);
-              }
-              else
-              {
-                // other SQL exception
-                message = "Error inserting into <" + cacheDataSourceName + "> for the duplicate "
-                    + "check data on transaction commit. message=<" + ex.getMessage()+"> in transaction <" + TransactionNumber + ">";
-                OpenRate.getOpenRateFrameworkLog().error(message);
-              }
-            }
-          }
-        }
-        finally
-        {
-          // Close the statement
-          DBUtil.close(tmpInsertStatement);
-        }
-
-        recordList.putAll(TransRecordList.get(TransactionNumber));
-      }
-
-
-      // and close the connection now that we have finished with it
-      closeTransactionInsertConnection(TransactionNumber);
-
-      // remove the transaction
-      TransRecordList.remove(TransactionNumber);
-
-      // Log what we did
-      message = "Inserted <" + recordsInserted + "> records into duplicate check table" +
-                        " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
-      OpenRate.getOpenRateFrameworkLog().info(message);
-    }
+	   String message = "Duplicate check is disabled. No records were put into duplicate check table" + 
+       " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
+	   OpenRate.getOpenRateFrameworkLog().info(message);
+	}
   }
 
  /**
@@ -634,6 +658,7 @@ public class DuplicateCheckCache
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_OBJECT_COUNT, ClientManager.PARAM_DYNAMIC);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_BUFFER, ClientManager.PARAM_DYNAMIC_SYNC);
     ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_STORE, ClientManager.PARAM_DYNAMIC_SYNC);
+    ClientManager.getClientManager().registerClientService(getSymbolicName(), SERVICE_ACTIVE, ClientManager.PARAM_DYNAMIC_SYNC);
   }
 
  /**
@@ -676,6 +701,26 @@ public class DuplicateCheckCache
     {
       // no input, return the current parameter
       return new Date(storeLimit*1000).toString();
+    } 
+    else if (Command.equalsIgnoreCase(SERVICE_ACTIVE))
+    {
+	    if (Parameter.equals(""))
+	    {
+	      return Boolean.toString(Active);
+	    }
+	    else
+	    {
+	      if (Parameter.equalsIgnoreCase("true"))
+	      {
+	        Active = true;
+	        ResultCode = 0;
+	      }
+	      else if (Parameter.equalsIgnoreCase("false"))
+	      {
+	        Active = false;
+	        ResultCode = 0;
+	      }
+	    }
     }
 
     if (ResultCode == 0)
@@ -730,9 +775,11 @@ public class DuplicateCheckCache
     // get our cutoff date
     OpenRate.getOpenRateFrameworkLog().info("Duplicate check retrieve cutoff date is <" + new Date(bufferLimit) + ">");
 
-     // Execute the query
+    // Execute the query
+    Timestamp storeLimitTimestamp = new Timestamp(storeLimit*1000);
     try
     {
+      StmtSelectQuery.setTimestamp(1, storeLimitTimestamp);
       mrs = StmtSelectQuery.executeQuery();
     }
     catch (SQLException ex)

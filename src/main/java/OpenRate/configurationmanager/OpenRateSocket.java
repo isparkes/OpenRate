@@ -166,10 +166,11 @@ public final class OpenRateSocket implements Runnable, IEventInterface
         socket = getSocket(serverSocket);
 
         // Only open up a new socket if we are still running
-        if (socData.isLoop())
+       
+        if(socData.getConnectionNumber() < maxConnections)
         {
-          if(socData.getConnectionNumber() < maxConnections)
-          {
+        	if (socData.isLoop())
+            {
             //This block happens when connection is still allowed
             SocketHelper.addAConnectionCount(socData);
 

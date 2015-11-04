@@ -56,7 +56,6 @@
 package OpenRate.exception;
 
 import java.util.ArrayList;
-import org.springframework.stereotype.Service;
 
 /**
  * The handler class is designed for dealing with failures during plug in

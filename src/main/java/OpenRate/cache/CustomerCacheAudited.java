@@ -251,7 +251,7 @@ public class CustomerCacheAudited
     long         ID;         // Required for managing updates
     long         validFrom;
     long         validTo;
-    Integer      custId = 0;
+    int		     custId = 0;
     String       subId = "";
     ValidityNode child = null;
   }
@@ -266,7 +266,7 @@ public class CustomerCacheAudited
     super();
 
     aliasCache        = new ConcurrentHashMap<>(5000);
-    custCache         = new ConcurrentHashMap<>    (5000);
+    custCache         = new ConcurrentHashMap<>(5000);
     auditSegmentCache = new ConcurrentHashMap<>(5000);
   }
 
@@ -723,23 +723,18 @@ public class CustomerCacheAudited
   */
   public Integer getCustId(String alias, long cdrDate)
   {
-    Integer custId = null;
-    ValidityNode tmpValidityNode;
-
     // See if we already have AuditSegID for this customer
-    if (alias!= null && aliasCache.containsKey(alias))
+    if (alias!= null)
     {
       // get the start of the search tree
-      tmpValidityNode = aliasCache.get(alias);
+      ValidityNode tmpValidityNode = aliasCache.get(alias);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.validFrom <= cdrDate) &
-            (tmpValidityNode.validTo > cdrDate))
+        if (isFound(tmpValidityNode, cdrDate))
         {
-          custId = tmpValidityNode.custId;
-          break;
+          return tmpValidityNode.custId;
         }
 
         // Move down the map
@@ -748,9 +743,14 @@ public class CustomerCacheAudited
     }
 
     // return the id
-    return custId;
+    return null;
   }
 
+  private boolean isFound(ValidityNode tmpValidityNode, long cdrDate)
+  {
+	 return tmpValidityNode.validFrom <= cdrDate && tmpValidityNode.validTo > cdrDate ? true : false;
+  }
+  
  /**
   * Gets an internal custID for a given alias and date
   *
@@ -760,19 +760,16 @@ public class CustomerCacheAudited
   */
   public String getSubscriptionId(String alias, long cdrDate)
   {
-    ValidityNode tmpValidityNode;
-
     // See if we already have AuditSegID for this customer
-    if (alias!= null && aliasCache.containsKey(alias))
+    if (alias!= null)
     {
       // get the start of the search tree
-      tmpValidityNode = aliasCache.get(alias);
+      ValidityNode tmpValidityNode = aliasCache.get(alias);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.validFrom <= cdrDate) &
-            (tmpValidityNode.validTo > cdrDate))
+        if (isFound(tmpValidityNode, cdrDate))
         {
           return tmpValidityNode.subId;
         }
@@ -825,25 +822,20 @@ public class CustomerCacheAudited
   * @param CDRDate The date to get the subscription AuditSegID for
   * @return The subscription AuditSegID for the alias and date
   */
-  public String getSubId(String alias, long CDRDate)
+  public String getSubId(String alias, long cdrDate)
   {
-    String subId = null;
-    ValidityNode tmpValidityNode;
-
     // See if we already have AuditSegID for this customer
-    if (aliasCache.containsKey(alias))
+    if (alias != null)
     {
       // get the start of the search tree
-      tmpValidityNode = aliasCache.get(alias);
+      ValidityNode tmpValidityNode = aliasCache.get(alias);
 
       // Now that we have the Validity Map, get the entry
       while (tmpValidityNode != null)
       {
-        if ((tmpValidityNode.validFrom <= CDRDate) &
-            (tmpValidityNode.validTo > CDRDate))
+        if (isFound(tmpValidityNode, cdrDate))
         {
-          subId = tmpValidityNode.subId;
-          break;
+          return tmpValidityNode.subId;
         }
 
         // Move down the map
@@ -851,7 +843,7 @@ public class CustomerCacheAudited
       }
     }
 
-    return subId;
+    return null;
   }
 
  /**
@@ -861,18 +853,13 @@ public class CustomerCacheAudited
   * @param CDRDate The date to retrieve for
   * @return The audit segment for the account and date
   */
-  public AuditSegment getAuditSegment(Integer custId, long CDRDate)
+  public AuditSegment getAuditSegment(int custId, long CDRDate)
   {
-    CustInfo tmpCustInfo;
-    AuditSegment tmpAuditSegment;
-
     // get the customer for the alias
-    tmpCustInfo = custCache.get(custId);
+    CustInfo tmpCustInfo = custCache.get(custId);
 
     //get the correct audit segment
-    tmpAuditSegment = tmpCustInfo.getBestAuditSegmentMatch(CDRDate);
-
-    return tmpAuditSegment;
+    return tmpCustInfo.getBestAuditSegmentMatch(CDRDate);
   }
 
  /**

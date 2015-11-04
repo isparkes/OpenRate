@@ -196,8 +196,12 @@ public abstract class AbstractDuplicateCheck
   }
   
   /**
+<<<<<<< HEAD
+   * Check if the record is a duplicate using UTCDate as input attribute. @ddijak
+=======
    * @ddijak
    * Check if the record is a duplicate using UTCDate as input attribute.
+>>>>>>> isparkes/master
    *
    * @param UTCDate The date of the CDR in UTC format
    * @param IDData The Call Reference ID

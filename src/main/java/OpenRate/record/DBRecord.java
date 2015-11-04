@@ -486,16 +486,16 @@ public class DBRecord extends AbstractRecord
     // times to rebuild the string).
     tmpReassemble = new StringBuilder(1024);
 
-    for (i=0;i<ColumnCount;i++)
+    for (i=0;i< this.getOutputColumnCount(); i++)
     {
       if (i == 0)
       {
-        tmpReassemble.append(this.OriginalColumns[i]);
+        tmpReassemble.append(this.getOutputColumns()[i]);
       }
       else
       {
         tmpReassemble.append(";");
-        tmpReassemble.append(this.OriginalColumns[i]);
+        tmpReassemble.append(this.getOutputColumns()[i]);
       }
     }
 

@@ -59,11 +59,16 @@ import OpenRate.configurationmanager.ClientManager;
 import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.exception.InitializationException;
 import OpenRate.utils.PropertyUtils;
+
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
 import org.apache.logging.log4j.core.config.Configurator;
+<<<<<<< HEAD
+
+=======
+>>>>>>> isparkes/master
 
 /**
  * Please
@@ -157,11 +162,21 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface {
         if (log4j_properties.endsWith(".xml")) {
           // ToDo: Add configure and watch
           // use the XML model
+<<<<<<< HEAD
+          Configurator.initialize(symbolicName, fqConfigFileName.getPath());  
+        }
+        else
+        {
+          // ToDo: Add configure and watch
+          // use the traditional properties file model: Deprecated
+        	OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Properties file model is no longer supported. Convert to XML based model.", getSymbolicName()));          
+=======
           Configurator.initialize(symbolicName, fqConfigFileName.getPath());
         } else {
           // ToDo: Add configure and watch
           // use the traditional properties file model: Deprecated
           OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Properties file model is no longer supported. Convert to XML based model.", getSymbolicName()));
+>>>>>>> isparkes/master
         }
 
         // log4j initialized.
@@ -178,7 +193,17 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface {
    * Perform any required cleanup.
    */
   @Override
+<<<<<<< HEAD
+  public void close()
+  {
+	if(isLoaded())
+	{
+		getDefaultLogger().close();
+	}
+	
+=======
   public void close() {
+>>>>>>> isparkes/master
     LogStreams.clear();
     loaded = false;
   }
@@ -203,7 +228,12 @@ public class LogFactory extends AbstractLogFactory implements IEventInterface {
    *
    * @return true if loaded
    */
+<<<<<<< HEAD
+  private boolean isLoaded()
+  {
+=======
   private boolean isLoaded() {
+>>>>>>> isparkes/master
     return loaded;
   }
 
