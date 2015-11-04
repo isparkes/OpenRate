@@ -318,7 +318,7 @@ public class ConversionUtilsTest {
     System.out.println("getInputDateFormat");
 
     // default format
-    expResult = "yyyy-MM-dd hh:mm:ss";
+    expResult = "yyyy-MM-dd HH:mm:ss";
     result = instance.getInputDateFormat();
     Assert.assertEquals(expResult, result);
 
@@ -372,7 +372,7 @@ public class ConversionUtilsTest {
     System.out.println("getOutputDateFormat");
 
     // default format
-    expResult = "yyyy-MM-dd hh:mm:ss";
+    expResult = "yyyy-MM-dd HH:mm:ss";
     result = instance.getOutputDateFormat();
     Assert.assertEquals(expResult, result);
 
@@ -401,7 +401,7 @@ public class ConversionUtilsTest {
     Assert.assertEquals(expResult, result);
 
     // make sure that we didn't change the input date format
-    expResult = "yyyy-MM-dd hh:mm:ss";
+    expResult = "yyyy-MM-dd HH:mm:ss";
     result = instance.getInputDateFormat();
     Assert.assertEquals(expResult, result);
   }

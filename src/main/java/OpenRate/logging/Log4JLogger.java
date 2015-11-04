@@ -59,14 +59,9 @@ import OpenRate.resource.ResourceContext;
 
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.LifeCycle;
-<<<<<<< HEAD
-import org.apache.logging.log4j.core.async.AsyncLogger;
-import org.apache.logging.log4j.message.LoggerNameAwareMessage;
 
 //import org.apache.log4j.Level;
 //import org.apache.log4j.Logger;
-=======
->>>>>>> isparkes/master
 
 /**
  * Log4JLogger
@@ -78,17 +73,13 @@ public final class Log4JLogger extends AstractLogger {
    * space for message templates.
    */
   // make logging details work.
-  private Logger logger;
+  private final Logger logger;
 
   /**
    * Default constructor. - for backward compatibility.
    */
-<<<<<<< HEAD
   public Log4JLogger()
   {
-=======
-  public Log4JLogger() {
->>>>>>> isparkes/master
     logger = null;
   }
 
@@ -97,12 +88,8 @@ public final class Log4JLogger extends AstractLogger {
    *
    * @param categoryName The logger category name
    */
-<<<<<<< HEAD
   public Log4JLogger(String categoryName)
   {
-=======
-  public Log4JLogger(String categoryName) {
->>>>>>> isparkes/master
     logger = LogManager.getLogger(categoryName);
   }
 
@@ -119,7 +106,6 @@ public final class Log4JLogger extends AstractLogger {
     setSymbolicName(ResourceName);
   }
 
-<<<<<<< HEAD
  /**
   * Load factory - used only for backward compatibility to support users
   * who don't know about the new AbstractLogFactory interface & are initializing
@@ -136,23 +122,6 @@ public final class Log4JLogger extends AstractLogger {
   private AbstractLogFactory getFactory(String ResourceName)
     throws InitializationException
   {
-=======
-  /**
-   * Load factory - used only for backward compatibility to support users who
-   * don't know about the new AbstractLogFactory interface & are initializing
-   * the AstractLogger class directly.
-   *
-   * Register the AbstractLogFactory so that it can be cleaned up by the
-   * architecture upon application shutdown.
-   *
-   * @param ResourceName The resource name to get the factory for
-   * @return The factory for the resource
-   * @throws ConfigurationException
-   * @throws InitializationException
-   */
-  private AbstractLogFactory getFactory(String ResourceName)
-          throws InitializationException {
->>>>>>> isparkes/master
     AbstractLogFactory factory = AbstractLogFactory.getFactory(AbstractLogFactory.RESOURCE_KEY);
     factory.init(ResourceName);
     // register with ResourceContext for later.
@@ -168,7 +137,6 @@ public final class Log4JLogger extends AstractLogger {
    * Perform whatever cleanup is required of the underlying object..
    */
   @Override
-<<<<<<< HEAD
   public void close()
   {
 	  LifeCycle lc = ((LifeCycle)LogManager.getContext());
@@ -176,13 +144,6 @@ public final class Log4JLogger extends AstractLogger {
 	  {
 	     lc.stop();
 	  }
-=======
-  public void close() {
-    LifeCycle lc = ((LifeCycle) LogManager.getContext());
-    if (lc.isStarted()) {
-      lc.stop();
-    }
->>>>>>> isparkes/master
   }
 
   /**
@@ -194,7 +155,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param message The message
    */
   @Override
-<<<<<<< HEAD
   public void fatal(String message)
   {
     logger.log(Level.FATAL, message);
@@ -209,20 +169,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public void fatal(String className, String message)
   {
-=======
-  public void fatal(String message) {
-    logger.log(Level.FATAL, message);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly.)
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   */
-  public void fatal(String className, String message) {
->>>>>>> isparkes/master
     logger.log(Level.FATAL, className, message);
   }
 
@@ -236,7 +182,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param t throwable to log
    */
   @Override
-<<<<<<< HEAD
   public void fatal(String message, Throwable t)
   {
     logger.log(Level.FATAL, message, t);
@@ -252,21 +197,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public void fatal(String className, String message, Throwable t)
   {
-=======
-  public void fatal(String message, Throwable t) {
-    logger.log(Level.FATAL, message, t);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly.)
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   * @param t throwable to log
-   */
-  public void fatal(String className, String message, Throwable t) {
->>>>>>> isparkes/master
     logger.log(Level.FATAL, className, message, t);
   }
 
@@ -279,7 +209,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param message The message
    */
   @Override
-<<<<<<< HEAD
   public void error(String message)
   {
     logger.log(Level.ERROR, message);
@@ -294,20 +223,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public void error(String className, String message)
   {
-=======
-  public void error(String message) {
-    logger.log(Level.ERROR, message);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly.)
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   */
-  public void error(String className, String message) {
->>>>>>> isparkes/master
     logger.log(Level.ERROR, className, message);
   }
 
@@ -321,7 +236,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param t The throwable
    */
   @Override
-<<<<<<< HEAD
   public void error(String message, Throwable t)
   {
     logger.log(Level.ERROR, message, t);
@@ -337,21 +251,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public void error(String className, String message, Throwable t)
   {
-=======
-  public void error(String message, Throwable t) {
-    logger.log(Level.ERROR, message, t);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly.)
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   * @param t The throwable
-   */
-  public void error(String className, String message, Throwable t) {
->>>>>>> isparkes/master
     logger.log(Level.ERROR, className, message, t);
   }
 
@@ -368,7 +267,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param message The message
    */
   @Override
-<<<<<<< HEAD
   public final void warning(String message)
   {
     logger.log(Level.WARN, message);
@@ -383,20 +281,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public final void warning(String className, String message)
   {
-=======
-  public final void warning(String message) {
-    logger.log(Level.WARN, message);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly.)
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   */
-  public final void warning(String className, String message) {
->>>>>>> isparkes/master
     logger.log(Level.WARN, className, message);
   }
 
@@ -406,12 +290,8 @@ public final class Log4JLogger extends AstractLogger {
    * @return true if enabled
    */
   @Override
-<<<<<<< HEAD
   public boolean isWarningEnabled()
   {
-=======
-  public boolean isWarningEnabled() {
->>>>>>> isparkes/master
     return logger.isEnabled(Level.WARN);
   }
 
@@ -428,7 +308,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param message The message
    */
   @Override
-<<<<<<< HEAD
   public final void info(String message)
   {
 	logger.log(Level.INFO, message);
@@ -443,20 +322,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public final void info(String className, String message)
   {	 
-=======
-  public final void info(String message) {
-    logger.log(Level.INFO, message);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   */
-  public final void info(String className, String message) {
->>>>>>> isparkes/master
     logger.log(Level.INFO, className, message);
   }
 
@@ -483,7 +348,6 @@ public final class Log4JLogger extends AstractLogger {
    * @param message The message
    */
   @Override
-<<<<<<< HEAD
   public final void debug(String message)
   {
     logger.log(Level.DEBUG, message);
@@ -498,20 +362,6 @@ public final class Log4JLogger extends AstractLogger {
   */
   public final void debug(String className, String message)
   {
-=======
-  public final void debug(String message) {
-    logger.log(Level.DEBUG, message);
-  }
-
-  /**
-   * So that InterfaceLogger works correctly (details such as filename, line
-   * number, etc... so up correctly.)
-   *
-   * @param className The class name reporting the message
-   * @param message The message
-   */
-  public final void debug(String className, String message) {
->>>>>>> isparkes/master
     logger.log(Level.DEBUG, className, message);
   }
 

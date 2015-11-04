@@ -234,19 +234,10 @@ public abstract class FlatFileOutputAdapter
    */
   @Override
   public HeaderRecord procHeader(HeaderRecord r) throws ProcessingException {
-<<<<<<< HEAD
-    int tmpTransNumber;
-    TransControlStructure tmpFileNames = new TransControlStructure();
-
-    // Do the transaction level maintenance
-    super.procHeader(r);
-=======
-    
     super.procHeader(r);  
 	  
     int tmpTransNumber;
     TransControlStructure tmpFileNames = new TransControlStructure();
->>>>>>> isparkes/master
     
     // if we are not currently streaming, open the stream using the transaction
     // information for the transaction we are processing
@@ -353,19 +344,11 @@ public abstract class FlatFileOutputAdapter
    */
   @Override
   public TrailerRecord procTrailer(TrailerRecord r) {
-<<<<<<< HEAD
-    // Close the files
-    closeFiles(getTransactionNumber());
-    
-    // Do the transaction level maintenance
-    super.procTrailer(r);
-=======
     // Do the transaction level maintenance
     super.procTrailer(r); 
     
     // Close the files
     closeFiles(getTransactionNumber());
->>>>>>> isparkes/master
 
     return r;
   }

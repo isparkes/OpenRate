@@ -598,7 +598,7 @@ public class AbstractDuplicateCheckTest
     int countAfter = getTableRowCount(false);
     
     // Check that all were inserted properly
-    Assert.assertEquals(countAfter-countBefore, 100000);
+    Assert.assertEquals(100000, countAfter-countBefore);
   }
 
   /**
@@ -699,7 +699,7 @@ public class AbstractDuplicateCheckTest
     int countAfter = getTableRowCount(false);
     
     // Check that all were inserted properly - only 1
-    Assert.assertEquals(countAfter-countBefore, 1);
+    Assert.assertEquals(1, countAfter-countBefore);
   }
 
   /**

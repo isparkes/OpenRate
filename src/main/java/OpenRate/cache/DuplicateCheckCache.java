@@ -617,7 +617,7 @@ public class DuplicateCheckCache
 	    }
 	} else
     {
-	   String message = "Duplicate check is disabled. No records were put into duplicate check table" + 
+	   message = "Duplicate check is disabled. No records were put into duplicate check table" + 
        " in module <" + getSymbolicName() + "> for transaction <" + TransactionNumber + ">";
 	   OpenRate.getOpenRateFrameworkLog().info(message);
 	}

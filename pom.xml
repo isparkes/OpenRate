@@ -178,7 +178,7 @@
 			<version>${version.bonecp}</version>
 		</dependency>
 
-    <!-- MySQL for database access -->		
+    <!-- MySQL for database access -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -301,8 +301,20 @@
       <artifactId>cassandra-thrift</artifactId>
       <version>1.2.3</version>
       <type>jar</type>
-    </dependency>   
-  </dependencies>
+    </dependency>
+	 <dependency>
+	  <groupId>org.postgresql</groupId>
+	  <artifactId>postgresql</artifactId>
+	  <version>9.4-1202-jdbc42</version>
+	  <type>jar</type>
+	 </dependency>
+	 <dependency>
+	  <groupId>com.zaxxer</groupId>
+	  <artifactId>HikariCP</artifactId>
+	  <version>2.2.5</version>
+	  <type>jar</type>
+	 </dependency>
+	</dependencies>
 	
   <reporting>
     <plugins>

@@ -93,7 +93,7 @@
 					<ClassName>OpenRate.cache.DuplicateCheckCache</ClassName>
 					<DataSourceType>DB</DataSourceType>
 					<DataSource>TestDB</DataSource>
-					<SelectStatement>select CDR_KEY,CDR_DATE from TEST_DUPLICATE_CHECK</SelectStatement>
+					<SelectStatement>select CDR_KEY,CDR_DATE from TEST_DUPLICATE_CHECK where CDR_DATE &gt; ?</SelectStatement>
 					<InsertStatement>insert into TEST_DUPLICATE_CHECK (CDR_KEY,CDR_DATE) values (?,?)</InsertStatement>
 					<PurgeStatement>delete from TEST_DUPLICATE_CHECK where CDR_DATE &lt; ?</PurgeStatement>
 				</DuplicateCheckTestCache>
