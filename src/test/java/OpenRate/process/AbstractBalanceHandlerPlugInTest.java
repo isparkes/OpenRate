@@ -156,7 +156,6 @@ public class AbstractBalanceHandlerPlugInTest implements IPlugIn
   @AfterClass
   public static void tearDownClass() throws Exception
   {
-    // Shut down
     OpenRate.getApplicationInstance().finaliseApplication();
   }
 

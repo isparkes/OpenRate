@@ -75,6 +75,7 @@ import static org.junit.Assert.*;
 public class AbstractPersistentObjectProcessTest {
   private static URL FQConfigFileName;
   private static AbstractPersistentObjectProcess instance;
+  private static OpenRate appl;
   
   public AbstractPersistentObjectProcessTest() {
   }
@@ -85,7 +86,7 @@ public class AbstractPersistentObjectProcessTest {
     FQConfigFileName = new URL("File:src/test/resources/TestPersistentObject.properties.xml");
     
    // Set up the OpenRate internal logger - this is normally done by app startup
-    OpenRate.getApplicationInstance();
+    appl = OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
     FrameworkUtils.loadProperties(FQConfigFileName);
@@ -105,8 +106,7 @@ public class AbstractPersistentObjectProcessTest {
   
   @AfterClass
   public static void tearDownClass() {
-    // Deallocate
-    OpenRate.getApplicationInstance().cleanup();
+    OpenRate.getApplicationInstance().finaliseApplication();
   }
   
   @Before

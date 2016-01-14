@@ -19,6 +19,7 @@ import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.PropertyUtils;
 import java.net.URL;
 import java.sql.Connection;
+import java.util.ArrayList;
 import org.junit.Assert;
 
 /**
@@ -116,7 +117,12 @@ public class FrameworkUtils {
     // Check for exceptions
     if (OpenRate.getFrameworkExceptionHandler().hasError())
     {
-      Assert.fail("Exception: " + OpenRate.getFrameworkExceptionHandler().getExceptionList().get(0).getLocalizedMessage());
+      ArrayList<Exception> exceptionList = OpenRate.getFrameworkExceptionHandler().getExceptionList();
+      for (Exception ex : exceptionList) {
+        System.err.println("Exception: " + ex.getMessage());
+        ex.printStackTrace();
+      }
+      Assert.fail("Exception(s) in startupDataSources()");
     }
   }  
   

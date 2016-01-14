@@ -77,6 +77,7 @@ public class AbstractBestMatchTest
 
   // Used for logging and exception handling
   private static String message; 
+  private static OpenRate appl;
 
  /**
   * This sets up a run time environment for testing modules. It is fairly
@@ -93,7 +94,7 @@ public class AbstractBestMatchTest
     FQConfigFileName = new URL("File:src/test/resources/TestBestMatchDB.properties.xml");
     
     // Set up the OpenRate internal logger - this is normally done by app startup
-    OpenRate.getApplicationInstance();
+    appl = OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
     FrameworkUtils.loadProperties(FQConfigFileName);
@@ -149,8 +150,7 @@ public class AbstractBestMatchTest
   @AfterClass
   public static void tearDownClass()
   {
-    // Deallocate
-    OpenRate.getApplicationInstance().cleanup();
+    OpenRate.getApplicationInstance().finaliseApplication();
   }
 
   @Before

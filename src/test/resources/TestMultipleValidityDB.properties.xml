@@ -1,102 +1,102 @@
 <?xml version="1.0"?>
 <!-- Properties file for supporting unit tests. This is not a Typical properties
-     file and should not be taken as a general example because it won't work
-     outside of the context of unit tests!!! -->
+file and should not be taken as a general example because it won't work
+outside of the context of unit tests!!! -->
 <config>
-	<Application>
-    DBTest
-  </Application>
+    <Application>
+        DBTest
+    </Application>
 
-	<PipelineList>
-		<DBTestPipe>
-			<Active>True</Active>
-		</DBTestPipe>
-		<DBRTTestPipe>
-			<Active>True</Active>
-		</DBRTTestPipe>
-	</PipelineList>
+    <PipelineList>
+        <DBTestPipe>
+            <Active>True</Active>
+        </DBTestPipe>
+        <DBRTTestPipe>
+            <Active>True</Active>
+        </DBRTTestPipe>
+    </PipelineList>
   
-	<DBTestPipe>
-    <InputAdapter>
-      <NullInput>
-        <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
-        <BatchSize>5000</BatchSize>
-      </NullInput>
-    </InputAdapter>
+    <DBTestPipe>
+        <InputAdapter>
+            <NullInput>
+                <ClassName>OpenRate.adapter.NullInputAdapter</ClassName>
+                <BatchSize>5000</BatchSize>
+            </NullInput>
+        </InputAdapter>
         
-		<Process>
-			<AbstractMultipleValidityMatchTest>
-				<DataCache>MultipleValidityMatchTestCache</DataCache>
-				<BatchSize>5000</BatchSize>
-			</AbstractMultipleValidityMatchTest>
-		</Process>
+        <Process>
+            <AbstractMultipleValidityMatchTest>
+                <DataCache>MultipleValidityMatchTestCache</DataCache>
+                <BatchSize>5000</BatchSize>
+            </AbstractMultipleValidityMatchTest>
+        </Process>
     
-    <OutputAdapter>
-      <NullOutput>
-        <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
-        <BatchSize>5000</BatchSize>
-      </NullOutput>
-    </OutputAdapter>
-	</DBTestPipe>
+        <OutputAdapter>
+            <NullOutput>
+                <ClassName>OpenRate.adapter.NullOutputAdapter</ClassName>
+                <BatchSize>5000</BatchSize>
+            </NullOutput>
+        </OutputAdapter>
+    </DBTestPipe>
 
-	<Resource>
-		<LogFactory>
-			<ClassName>OpenRate.logging.LogFactory</ClassName>
-			<Properties>logUnitTest.xml</Properties>
-			<DefaultCategory>RatingTest</DefaultCategory>
-		</LogFactory>
+    <Resource>
+        <LogFactory>
+            <ClassName>OpenRate.logging.LogFactory</ClassName>
+            <Properties>logUnitTest.xml</Properties>
+            <DefaultCategory>RatingTest</DefaultCategory>
+        </LogFactory>
 
-		<ECI>
-			<ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
-			<Port>8086</Port>
-			<MaxConnection>2</MaxConnection>
-		</ECI>
+        <ECI>
+            <ClassName>OpenRate.configurationmanager.EventHandler</ClassName>
+            <Port>8086</Port>
+            <MaxConnection>2</MaxConnection>
+        </ECI>
 
-		<TransactionManagerFactory>
-			<ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
-		</TransactionManagerFactory>
+        <TransactionManagerFactory>
+            <ClassName>OpenRate.transaction.TransactionManagerFactory</ClassName>
+        </TransactionManagerFactory>
 
-		<DataSourceFactory>
-			<ClassName>OpenRate.resource.DataSourceFactory</ClassName>
-			<DataSourceBuilder>
-				<ClassName>OpenRate.db.C3P0DataSource</ClassName>
-			</DataSourceBuilder>
-			<DataSource>
-        <!-- MySQL/MariaDB -->
-				<!--TestDB>
-					<db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
-					<driver>com.mysql.jdbc.Driver</driver>
-					<username>root</username>
-					<password>cpr</password>
-					<ValidationQuery>select 1 from dual</ValidationQuery>
-					<InitQuery>select 1 from dual</InitQuery>
-					<TestConnectionPeriod>60</TestConnectionPeriod>
-				</TestDB-->
+        <DataSourceFactory>
+            <ClassName>OpenRate.resource.DataSourceFactory</ClassName>
+            <DataSourceBuilder>
+                <ClassName>OpenRate.db.C3P0DataSource</ClassName>
+            </DataSourceBuilder>
+            <DataSource>
+                <!-- MySQL/MariaDB -->
+                <!--TestDB>
+                        <db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
+                        <driver>com.mysql.jdbc.Driver</driver>
+                        <username>root</username>
+                        <password>cpr</password>
+                        <ValidationQuery>select 1 from dual</ValidationQuery>
+                        <InitQuery>select 1 from dual</InitQuery>
+                        <TestConnectionPeriod>60</TestConnectionPeriod>
+                </TestDB-->
         
-        <!-- HSQL -->
-				<TestDB>
-					<db_url>jdbc:hsqldb:mem://localhost/testdb</db_url>
-					<driver>org.hsqldb.jdbc.JDBCDriver</driver>
-					<username>SA</username>
-					<password></password>
-					<ValidationQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</ValidationQuery>
-					<InitQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</InitQuery>
-					<TestConnectionPeriod>60</TestConnectionPeriod>
-				</TestDB>
-			</DataSource>
-		</DataSourceFactory>
+                <!-- HSQL -->
+                <TestDB>
+                    <db_url>jdbc:hsqldb:mem://localhost/testdb</db_url>
+                    <driver>org.hsqldb.jdbc.JDBCDriver</driver>
+                    <username>SA</username>
+                    <password></password>
+                    <ValidationQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</ValidationQuery>
+                    <InitQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</InitQuery>
+                    <TestConnectionPeriod>60</TestConnectionPeriod>
+                </TestDB>
+            </DataSource>
+        </DataSourceFactory>
 
-		<CacheFactory>
-			<ClassName>OpenRate.resource.CacheFactory</ClassName>
-			<CacheableClass>
-				<MultipleValidityMatchTestCache>
-					<ClassName>OpenRate.cache.MultipleValidityCache</ClassName>
-					<DataSourceType>DB</DataSourceType>
-					<DataSource>TestDB</DataSource>
-					<SelectStatement>select MAP_GROUP,INPUT_VAL,START_DATE,END_DATE,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_MULT_VALIDITY_MATCH</SelectStatement>
-					<DateFormat>yyyyMMddhhmmss</DateFormat>
-				</MultipleValidityMatchTestCache>
-			</CacheableClass>
-		</CacheFactory>
-	</Resource>
+        <CacheFactory>
+            <ClassName>OpenRate.resource.CacheFactory</ClassName>
+            <CacheableClass>
+                <MultipleValidityMatchTestCache>
+                    <ClassName>OpenRate.cache.MultipleValidityCache</ClassName>
+                    <DataSourceType>DB</DataSourceType>
+                    <DataSource>TestDB</DataSource>
+                    <SelectStatement>select MAP_GROUP,INPUT_VAL,START_DATE,END_DATE,OUTPUT_VAL1,OUTPUT_VAL2 from TEST_MULT_VALIDITY_MATCH</SelectStatement>
+                    <DateFormat>yyyyMMddhhmmss</DateFormat>
+                </MultipleValidityMatchTestCache>
+            </CacheableClass>
+        </CacheFactory>
+    </Resource>
 </config>
