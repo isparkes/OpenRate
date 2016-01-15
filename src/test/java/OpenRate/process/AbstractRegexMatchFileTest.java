@@ -75,6 +75,7 @@ public class AbstractRegexMatchFileTest
 
   // Used for logging and exception handling
   private static String message; 
+  private static OpenRate appl;
 
   @BeforeClass
   public static void setUpClass() throws Exception
@@ -82,7 +83,7 @@ public class AbstractRegexMatchFileTest
     FQConfigFileName = new URL("File:src/test/resources/TestRegexFile.properties.xml");
     
    // Set up the OpenRate internal logger - this is normally done by app startup
-    OpenRate.getApplicationInstance();
+    appl = OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
     FrameworkUtils.loadProperties(FQConfigFileName);
@@ -100,7 +101,7 @@ public class AbstractRegexMatchFileTest
   @AfterClass
   public static void tearDownClass() {
     // Deallocate
-    OpenRate.getApplicationInstance().cleanup();
+    OpenRate.getApplicationInstance().finaliseApplication();
   }
 
   @Before

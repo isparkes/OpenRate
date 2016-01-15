@@ -466,6 +466,15 @@ public class OpenRateTest {
 
       // Stop
       out.println("Framework:Shutdown=true");
+      
+      // get rid of console
+      out.flush();
+      out.close();
+      
+      try {
+          testSocket.close();
+      } catch (IOException ex) {
+      }
 
       // wait for it to stop
       System.out.println("Waiting for the system to stop");

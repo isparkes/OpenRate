@@ -1074,7 +1074,6 @@ public class OpenRate
           // Hook triggered, starting shutdown process
           // Stop all pipes
           stopAllPipelines();
-
           getFwLog().info("Shutdown command called");
         }
 
@@ -1361,7 +1360,11 @@ public class OpenRate
    * @return The framework exception handler
    */
   public static ILogger getOpenRateFrameworkLog() {
-    return appl.getFwLog();
+    if (appl != null) {
+      return appl.getFwLog();
+    } else {
+      return null;
+    }
   }
 
   /**

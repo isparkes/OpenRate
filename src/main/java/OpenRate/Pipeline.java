@@ -938,9 +938,10 @@ public class Pipeline
    */
   @Override
   public void markForShutdown() {
-    // Only notify once
     if (stopRequested == false) {
-      OpenRate.getOpenRateFrameworkLog().warning("Pipeline <" + symbolicName + "> received Stop Command. Will exit after the current Transaction");
+      if (OpenRate.getOpenRateFrameworkLog() != null) {
+        OpenRate.getOpenRateFrameworkLog().warning("Pipeline <" + symbolicName + "> received Stop Command. Will exit after the current Transaction");
+      }
 
       // Only shut down the transaction manager if it is started
       if (TM != null) {

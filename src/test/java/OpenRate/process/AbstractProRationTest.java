@@ -75,6 +75,7 @@ public class AbstractProRationTest
 {
   private static URL FQConfigFileName;
   private static AbstractProRation instance;
+  private static OpenRate appl;
 
  /**
   * Default constructor
@@ -87,8 +88,8 @@ public class AbstractProRationTest
   {
     FQConfigFileName = new URL("File:src/test/resources/TestDB.properties.xml");
     
-   // Set up the OpenRate internal logger - this is normally done by app startup
-    OpenRate.getApplicationInstance();
+    // Set up the OpenRate internal logger - this is normally done by app startup
+    appl = OpenRate.getApplicationInstance();
 
     // Load the properties into the OpenRate object
     FrameworkUtils.loadProperties(FQConfigFileName);
@@ -99,8 +100,7 @@ public class AbstractProRationTest
 
   @AfterClass
   public static void tearDownClass() {
-    // Deallocate
-    OpenRate.getApplicationInstance().cleanup();
+    OpenRate.getApplicationInstance().finaliseApplication();
   }
 
     @Before
