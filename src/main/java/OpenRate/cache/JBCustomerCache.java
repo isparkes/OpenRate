@@ -477,9 +477,24 @@ public abstract class JBCustomerCache
         service = getService(description);
         subscription = getSubscription(description);
 
-        if ((prodName == null) | (alias == null) | (service == null) | (subscription == null))
+        if (prodName == null)
         {
-          OpenRate.getOpenRateFrameworkLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">." );
+          OpenRate.getOpenRateFrameworkLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">. Product Name missing." );
+          continue;
+        }
+        if (alias == null)
+        {
+          OpenRate.getOpenRateFrameworkLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">. Alias missing." );
+          continue;
+        }
+        if (service == null)
+        {
+          OpenRate.getOpenRateFrameworkLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">. Service Name missing." );
+          continue;
+        }
+        if (subscription == null)
+        {
+          OpenRate.getOpenRateFrameworkLog().warning("Record <" + description + "> skipped for customer <" + custId + "> order <" + orderId + ">. Subscription missing." );
           continue;
         }
 
