@@ -57,7 +57,6 @@ package OpenRate.configurationmanager;
 import OpenRate.OpenRate;
 import OpenRate.Pipeline;
 import OpenRate.exception.InitializationException;
-import OpenRate.logging.LogUtil;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -190,7 +189,7 @@ public class ClientManager {
 
     ClientContainer clCont = new ClientContainer(pipelineName, symbolicName, objClient);
     put(symbolicName, clCont);
-    LogUtil.getStaticLogger("Framework").debug("Registered Client <" + symbolicName + ">");
+    OpenRate.getOpenRateFrameworkLog().debug("Registered Client <" + symbolicName + ">");
   }
 
   /**

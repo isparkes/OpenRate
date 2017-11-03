@@ -88,7 +88,6 @@ public class LogUtil
    *
    * @param LoggerName The logger name to get
    * @return The logger
-   * @throws ConfigurationException
    */
   public ILogger getLogger(String LoggerName)
   {
@@ -122,7 +121,6 @@ public class LogUtil
    *
    * @param LoggerName The logger name to get
    * @return The logger
-   * @throws ConfigurationException
    */
   public static AstractLogger getStaticLogger(String LoggerName)
   {
