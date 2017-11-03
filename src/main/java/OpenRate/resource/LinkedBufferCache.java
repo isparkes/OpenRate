@@ -79,7 +79,7 @@ public class LinkedBufferCache implements IResource
   private String symbolicName;
 
   // cache Categories
-  private static HashMap<String, IBuffer> BufferList = new HashMap<>();
+  private static final HashMap<String, IBuffer> BufferList = new HashMap<>();
 
   /**
    * default constructor - protected
@@ -121,7 +121,7 @@ public class LinkedBufferCache implements IResource
    *
    * @param name The name to get the buffer for
    * @return The supplier for the name
-   * @throws ConfigurationException
+   * @throws InitializationException
    */
   public ISupplier getSupplier(String name) throws InitializationException
   {
@@ -141,7 +141,7 @@ public class LinkedBufferCache implements IResource
    *
    * @param name The name to get the consumer for
    * @return The consumer
-   * @throws ConfigurationException
+   * @throws InitializationException
    */
   public IConsumer getConsumer(String name) throws InitializationException
   {
@@ -161,7 +161,7 @@ public class LinkedBufferCache implements IResource
    *
    * @param name The name to store with
    * @param buffer The buffer to store
-   * @throws ConfigurationException
+   * @throws InitializationException
    */
   public void putBuffer(String name, IBuffer buffer) throws InitializationException
   {
