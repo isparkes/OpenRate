@@ -140,6 +140,16 @@ public class ChargePacket {
    * The calculated value for this packet
    */
   public double chargedValue = 0;
+  
+  /**
+   * TODO
+   */
+  public double priceGroup = 0;
+  
+  /**
+   * TODO
+   */  
+  public String timeResult = "";
 
   /**
    * 0 are base products, > 0 are override products
@@ -232,6 +242,7 @@ public class ChargePacket {
     this.timeSplitting = toClone.timeSplitting;
     this.consumeRUM = toClone.consumeRUM;
     this.nextChargePacket = toClone.nextChargePacket;
+    this.priceGroup = toClone.priceGroup;
     this.previousChargePacket = toClone.previousChargePacket;
     this.TimeZones = new ArrayList<>();
     this.breakDown = new ArrayList<>();
