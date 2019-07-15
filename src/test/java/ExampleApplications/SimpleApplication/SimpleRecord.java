@@ -174,7 +174,7 @@ public final class SimpleRecord extends RatingRecord
     if (this.RECORD_TYPE == DETAIL_RECORD)
     {
       // We use the string buffer for the reassembly of the record. Avoid
-      // just catenating strings, as it is a LOT slower because of the
+      // just concatenating strings, as it is a LOT slower because of the
       // java internal string handling (it has to allocate/deallocate many
       // times to rebuild the string).
       tmpReassemble = new StringBuilder(1024);

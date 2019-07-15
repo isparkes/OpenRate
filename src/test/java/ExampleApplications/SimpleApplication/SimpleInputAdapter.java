@@ -124,7 +124,7 @@ public class SimpleInputAdapter
      * (SimpleRecord) and cast this back to the generic class before passing
      * back
      */
-    // Get the data we are goingt to work on from the input record
+    // Get the data we are going to work on from the input record
     tmpData = r.getData();
 
     // Determine if there is anything to do (if it is a detail record) and if
