@@ -7,7 +7,7 @@ This is the official repository of the OpenRate open source rating engine!
 
 For information, please refer to
 
-http://www.open-rate.com/
+https://github.com/isparkes/OpenRate
 
 The best documentation is in the code.
 

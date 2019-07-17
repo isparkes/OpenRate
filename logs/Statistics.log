@@ -183,3 +183,313 @@
 2019-05-16 12:18:16,013 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
 2019-05-16 12:18:16,014 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
 2019-05-16 12:18:16,014 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:12,969 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@1e44e3e9> in <24> ms
+2019-05-28 12:28:17,974 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@1e44e3e9> in <0> ms
+2019-05-28 12:28:19,243 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@33267d64> in <1> ms
+2019-05-28 12:28:24,250 INFO O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Opened transaction <1> for pipeline <FlatFileTestPipe>
+2019-05-28 12:28:24,255 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <3> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@33267d64> in <6> ms
+2019-05-28 12:28:24,259 INFO O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter> persisted <3> events from a batch of <3> events in <4> ms
+2019-05-28 12:28:24,260 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Transaction <1> closed
+2019-05-28 12:28:24,261 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Statistics: Records  <1>
+2019-05-28 12:28:24,261 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Duration <10> ms
+2019-05-28 12:28:24,262 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Speed    <100> records /sec
+2019-05-28 12:28:24,358 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@33267d64> in <1> ms
+2019-05-28 12:28:25,692 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@46160dbd> in <0> ms
+2019-05-28 12:28:30,698 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@46160dbd> in <0> ms
+2019-05-28 12:28:31,953 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@16aca316> in <0> ms
+2019-05-28 12:28:36,957 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@16aca316> in <0> ms
+2019-05-28 12:28:38,210 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@20173fce> in <0> ms
+2019-05-28 12:28:43,213 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@20173fce> in <0> ms
+2019-05-28 12:28:52,606 INFO O.l.Log4JLogger [main] Opened transaction <2> for pipeline <test>
+2019-05-28 12:28:52,613 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <2> closed
+2019-05-28 12:28:52,613 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:52,613 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <7> ms
+2019-05-28 12:28:52,613 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:52,714 INFO O.l.Log4JLogger [main] Opened transaction <3> for pipeline <test>
+2019-05-28 12:28:53,656 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <3> closed
+2019-05-28 12:28:53,656 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:53,656 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <942> ms
+2019-05-28 12:28:53,656 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:53,731 INFO O.l.Log4JLogger [main] Opened transaction <4> for pipeline <test>
+2019-05-28 12:28:53,734 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <4> closed
+2019-05-28 12:28:53,735 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:53,735 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <3> ms
+2019-05-28 12:28:53,735 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:53,838 INFO O.l.Log4JLogger [main] Opened transaction <5> for pipeline <test>
+2019-05-28 12:28:53,840 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <5> closed
+2019-05-28 12:28:53,840 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:53,841 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-05-28 12:28:53,841 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:53,941 INFO O.l.Log4JLogger [main] Opened transaction <6> for pipeline <test>
+2019-05-28 12:28:54,115 INFO O.l.Log4JLogger [main] Opened transaction <7> for pipeline <test>
+2019-05-28 12:28:54,978 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <6> closed
+2019-05-28 12:28:54,979 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:54,979 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1037> ms
+2019-05-28 12:28:54,979 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:55,380 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <7> closed
+2019-05-28 12:28:55,381 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:55,381 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1265> ms
+2019-05-28 12:28:55,381 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:55,487 INFO O.l.Log4JLogger [main] Opened transaction <8> for pipeline <test>
+2019-05-28 12:28:55,487 INFO O.l.Log4JLogger [main] Opened transaction <9> for pipeline <test>
+2019-05-28 12:28:55,497 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <8> closed
+2019-05-28 12:28:55,498 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:55,498 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <10> ms
+2019-05-28 12:28:55,498 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:55,503 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <9> closed
+2019-05-28 12:28:55,503 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:55,503 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <16> ms
+2019-05-28 12:28:55,504 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 12:28:55,591 INFO O.l.Log4JLogger [main] Opened transaction <10> for pipeline <test>
+2019-05-28 12:28:55,593 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <10> closed
+2019-05-28 12:28:55,593 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 12:28:55,594 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-05-28 12:28:55,594 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:11,254 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@2b8515bf> in <14> ms
+2019-05-28 16:57:16,262 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@2b8515bf> in <1> ms
+2019-05-28 16:57:17,543 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@4f634ad6> in <0> ms
+2019-05-28 16:57:22,549 INFO O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Opened transaction <1> for pipeline <FlatFileTestPipe>
+2019-05-28 16:57:22,553 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <3> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@4f634ad6> in <6> ms
+2019-05-28 16:57:22,556 INFO O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter> persisted <3> events from a batch of <3> events in <3> ms
+2019-05-28 16:57:22,557 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Transaction <1> closed
+2019-05-28 16:57:22,557 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Statistics: Records  <1>
+2019-05-28 16:57:22,558 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Duration <9> ms
+2019-05-28 16:57:22,558 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Speed    <111> records /sec
+2019-05-28 16:57:22,658 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@4f634ad6> in <0> ms
+2019-05-28 16:57:23,923 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@31093d14> in <0> ms
+2019-05-28 16:57:28,927 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@31093d14> in <0> ms
+2019-05-28 16:57:30,179 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@200704fb> in <0> ms
+2019-05-28 16:57:35,182 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@200704fb> in <0> ms
+2019-05-28 16:57:36,431 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@34c45a8d> in <0> ms
+2019-05-28 16:57:41,435 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@34c45a8d> in <0> ms
+2019-05-28 16:57:50,756 INFO O.l.Log4JLogger [main] Opened transaction <2> for pipeline <test>
+2019-05-28 16:57:50,760 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <2> closed
+2019-05-28 16:57:50,761 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:50,761 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <4> ms
+2019-05-28 16:57:50,762 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:50,867 INFO O.l.Log4JLogger [main] Opened transaction <3> for pipeline <test>
+2019-05-28 16:57:51,804 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <3> closed
+2019-05-28 16:57:51,804 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:51,804 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <937> ms
+2019-05-28 16:57:51,805 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:51,841 INFO O.l.Log4JLogger [main] Opened transaction <4> for pipeline <test>
+2019-05-28 16:57:51,847 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <4> closed
+2019-05-28 16:57:51,848 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:51,848 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <6> ms
+2019-05-28 16:57:51,848 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:51,947 INFO O.l.Log4JLogger [main] Opened transaction <5> for pipeline <test>
+2019-05-28 16:57:51,948 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <5> closed
+2019-05-28 16:57:51,949 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:51,949 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1> ms
+2019-05-28 16:57:51,949 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:52,052 INFO O.l.Log4JLogger [main] Opened transaction <6> for pipeline <test>
+2019-05-28 16:57:52,261 INFO O.l.Log4JLogger [main] Opened transaction <7> for pipeline <test>
+2019-05-28 16:57:53,489 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <6> closed
+2019-05-28 16:57:53,489 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:53,489 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1437> ms
+2019-05-28 16:57:53,489 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:54,087 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <7> closed
+2019-05-28 16:57:54,088 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:54,088 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1826> ms
+2019-05-28 16:57:54,088 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:54,098 INFO O.l.Log4JLogger [main] Opened transaction <8> for pipeline <test>
+2019-05-28 16:57:54,099 INFO O.l.Log4JLogger [main] Opened transaction <9> for pipeline <test>
+2019-05-28 16:57:54,103 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <8> closed
+2019-05-28 16:57:54,103 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:54,103 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <5> ms
+2019-05-28 16:57:54,103 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:54,106 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <9> closed
+2019-05-28 16:57:54,106 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:54,106 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <7> ms
+2019-05-28 16:57:54,108 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-28 16:57:54,204 INFO O.l.Log4JLogger [main] Opened transaction <10> for pipeline <test>
+2019-05-28 16:57:54,206 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <10> closed
+2019-05-28 16:57:54,206 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-28 16:57:54,206 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-05-28 16:57:54,206 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:33:34,024 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@429a3811> in <16> ms
+2019-05-30 22:33:39,032 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@429a3811> in <1> ms
+2019-05-30 22:33:40,256 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@34c33760> in <0> ms
+2019-05-30 22:33:45,265 INFO O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Opened transaction <1> for pipeline <FlatFileTestPipe>
+2019-05-30 22:33:45,294 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <3> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@34c33760> in <33> ms
+2019-05-30 22:33:45,323 INFO O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter> persisted <3> events from a batch of <3> events in <29> ms
+2019-05-30 22:33:45,324 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Transaction <1> closed
+2019-05-30 22:33:45,324 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Statistics: Records  <1>
+2019-05-30 22:33:45,324 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Duration <59> ms
+2019-05-30 22:33:45,325 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Speed    <16> records /sec
+2019-05-30 22:33:45,398 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@34c33760> in <1> ms
+2019-05-30 22:33:46,693 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@46160dbd> in <0> ms
+2019-05-30 22:33:51,695 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@46160dbd> in <0> ms
+2019-05-30 22:33:52,948 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@164b9b8f> in <0> ms
+2019-05-30 22:33:57,952 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@164b9b8f> in <0> ms
+2019-05-30 22:33:59,196 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@60b419dd> in <1> ms
+2019-05-30 22:34:04,198 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@60b419dd> in <0> ms
+2019-05-30 22:34:13,417 INFO O.l.Log4JLogger [main] Opened transaction <2> for pipeline <test>
+2019-05-30 22:34:13,420 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <2> closed
+2019-05-30 22:34:13,421 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:13,421 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <3> ms
+2019-05-30 22:34:13,421 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:13,525 INFO O.l.Log4JLogger [main] Opened transaction <3> for pipeline <test>
+2019-05-30 22:34:13,968 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <3> closed
+2019-05-30 22:34:13,969 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:13,969 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <443> ms
+2019-05-30 22:34:13,969 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:13,978 INFO O.l.Log4JLogger [main] Opened transaction <4> for pipeline <test>
+2019-05-30 22:34:13,980 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <4> closed
+2019-05-30 22:34:13,980 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:13,981 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-05-30 22:34:13,981 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:14,081 INFO O.l.Log4JLogger [main] Opened transaction <5> for pipeline <test>
+2019-05-30 22:34:14,082 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <5> closed
+2019-05-30 22:34:14,082 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:14,083 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1> ms
+2019-05-30 22:34:14,083 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:14,188 INFO O.l.Log4JLogger [main] Opened transaction <6> for pipeline <test>
+2019-05-30 22:34:14,283 INFO O.l.Log4JLogger [main] Opened transaction <7> for pipeline <test>
+2019-05-30 22:34:14,565 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <6> closed
+2019-05-30 22:34:14,565 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:14,565 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <377> ms
+2019-05-30 22:34:14,565 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:14,751 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <7> closed
+2019-05-30 22:34:14,751 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:14,751 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <468> ms
+2019-05-30 22:34:14,751 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:14,820 INFO O.l.Log4JLogger [main] Opened transaction <8> for pipeline <test>
+2019-05-30 22:34:14,821 INFO O.l.Log4JLogger [main] Opened transaction <9> for pipeline <test>
+2019-05-30 22:34:14,823 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <8> closed
+2019-05-30 22:34:14,823 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:14,823 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <3> ms
+2019-05-30 22:34:14,824 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:14,826 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <9> closed
+2019-05-30 22:34:14,827 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:14,827 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <5> ms
+2019-05-30 22:34:14,827 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-30 22:34:14,927 INFO O.l.Log4JLogger [main] Opened transaction <10> for pipeline <test>
+2019-05-30 22:34:14,929 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <10> closed
+2019-05-30 22:34:14,929 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-30 22:34:14,929 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-05-30 22:34:14,929 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:08,245 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@53f3d6cd> in <21> ms
+2019-05-31 22:51:13,250 INFO O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Opened transaction <1> for pipeline <FlatFileTestPipe>
+2019-05-31 22:51:13,253 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <3> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@53f3d6cd> in <5> ms
+2019-05-31 22:51:13,255 INFO O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter> persisted <3> events from a batch of <3> events in <2> ms
+2019-05-31 22:51:13,255 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Transaction <1> closed
+2019-05-31 22:51:13,256 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Statistics: Records  <1>
+2019-05-31 22:51:13,256 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Duration <5> ms
+2019-05-31 22:51:13,256 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Speed    <200> records /sec
+2019-05-31 22:51:13,358 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@53f3d6cd> in <0> ms
+2019-05-31 22:51:14,408 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@3e803098> in <1> ms
+2019-05-31 22:51:19,414 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@3e803098> in <0> ms
+2019-05-31 22:51:20,811 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@51e0173d> in <0> ms
+2019-05-31 22:51:25,816 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@51e0173d> in <0> ms
+2019-05-31 22:51:27,064 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@3dd1d4b8> in <0> ms
+2019-05-31 22:51:32,070 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@3dd1d4b8> in <0> ms
+2019-05-31 22:51:33,313 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@500e2dc4> in <0> ms
+2019-05-31 22:51:38,317 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@500e2dc4> in <1> ms
+2019-05-31 22:51:47,407 INFO O.l.Log4JLogger [main] Opened transaction <2> for pipeline <test>
+2019-05-31 22:51:47,410 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <2> closed
+2019-05-31 22:51:47,410 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:47,410 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <3> ms
+2019-05-31 22:51:47,410 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:47,516 INFO O.l.Log4JLogger [main] Opened transaction <3> for pipeline <test>
+2019-05-31 22:51:48,058 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <3> closed
+2019-05-31 22:51:48,058 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,058 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <542> ms
+2019-05-31 22:51:48,058 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:48,070 INFO O.l.Log4JLogger [main] Opened transaction <4> for pipeline <test>
+2019-05-31 22:51:48,092 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <4> closed
+2019-05-31 22:51:48,092 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,092 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <22> ms
+2019-05-31 22:51:48,092 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:48,172 INFO O.l.Log4JLogger [main] Opened transaction <5> for pipeline <test>
+2019-05-31 22:51:48,194 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <5> closed
+2019-05-31 22:51:48,195 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,195 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <22> ms
+2019-05-31 22:51:48,195 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:48,276 INFO O.l.Log4JLogger [main] Opened transaction <6> for pipeline <test>
+2019-05-31 22:51:48,372 INFO O.l.Log4JLogger [main] Opened transaction <7> for pipeline <test>
+2019-05-31 22:51:48,728 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <6> closed
+2019-05-31 22:51:48,729 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,729 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <452> ms
+2019-05-31 22:51:48,729 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:48,971 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <7> closed
+2019-05-31 22:51:48,971 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,971 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <599> ms
+2019-05-31 22:51:48,971 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:48,985 INFO O.l.Log4JLogger [main] Opened transaction <8> for pipeline <test>
+2019-05-31 22:51:48,986 INFO O.l.Log4JLogger [main] Opened transaction <9> for pipeline <test>
+2019-05-31 22:51:48,989 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <8> closed
+2019-05-31 22:51:48,989 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,989 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <4> ms
+2019-05-31 22:51:48,989 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:48,993 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <9> closed
+2019-05-31 22:51:48,994 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:48,994 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <7> ms
+2019-05-31 22:51:48,994 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-05-31 22:51:49,091 INFO O.l.Log4JLogger [main] Opened transaction <10> for pipeline <test>
+2019-05-31 22:51:49,093 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <10> closed
+2019-05-31 22:51:49,093 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-05-31 22:51:49,093 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-05-31 22:51:49,094 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:42:38,276 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@31a0a62a> in <16> ms
+2019-07-17 09:42:43,287 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@31a0a62a> in <0> ms
+2019-07-17 09:42:44,526 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@28927976> in <0> ms
+2019-07-17 09:42:49,532 INFO O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Opened transaction <1> for pipeline <FlatFileTestPipe>
+2019-07-17 09:42:49,536 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <3> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@28927976> in <6> ms
+2019-07-17 09:42:49,537 INFO O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter> persisted <3> events from a batch of <3> events in <1> ms
+2019-07-17 09:42:49,538 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Transaction <1> closed
+2019-07-17 09:42:49,538 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0] Statistics: Records  <1>
+2019-07-17 09:42:49,538 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Duration <6> ms
+2019-07-17 09:42:49,539 INFO O.l.Log4JLogger [TransFlusher.FlatFileTestPipe-Inst-0]             Speed    <166> records /sec
+2019-07-17 09:42:49,641 DEBUG O.l.Log4JLogger [Pipeline-FlatFileTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@28927976> in <1> ms
+2019-07-17 09:42:50,987 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@2b5f30d2> in <0> ms
+2019-07-17 09:42:55,992 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@2b5f30d2> in <0> ms
+2019-07-17 09:42:57,245 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@67182607> in <0> ms
+2019-07-17 09:43:02,250 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@67182607> in <0> ms
+2019-07-17 09:43:03,498 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@55e975c> in <0> ms
+2019-07-17 09:43:08,502 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] Input  <TestInpAdapter> pushed <0> events into the valid buffer <OpenRate.buffer.ArrayListQueueBuffer@55e975c> in <0> ms
+2019-07-17 09:43:17,581 INFO O.l.Log4JLogger [main] Opened transaction <2> for pipeline <test>
+2019-07-17 09:43:17,584 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <2> closed
+2019-07-17 09:43:17,584 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:17,584 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <3> ms
+2019-07-17 09:43:17,584 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:17,701 INFO O.l.Log4JLogger [main] Opened transaction <3> for pipeline <test>
+2019-07-17 09:43:18,351 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <3> closed
+2019-07-17 09:43:18,351 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:18,351 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <650> ms
+2019-07-17 09:43:18,352 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:18,364 INFO O.l.Log4JLogger [main] Opened transaction <4> for pipeline <test>
+2019-07-17 09:43:18,367 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <4> closed
+2019-07-17 09:43:18,367 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:18,367 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <3> ms
+2019-07-17 09:43:18,367 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:18,468 INFO O.l.Log4JLogger [main] Opened transaction <5> for pipeline <test>
+2019-07-17 09:43:18,469 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <5> closed
+2019-07-17 09:43:18,469 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:18,469 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <1> ms
+2019-07-17 09:43:18,470 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:18,573 INFO O.l.Log4JLogger [main] Opened transaction <6> for pipeline <test>
+2019-07-17 09:43:18,660 INFO O.l.Log4JLogger [main] Opened transaction <7> for pipeline <test>
+2019-07-17 09:43:19,133 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <6> closed
+2019-07-17 09:43:19,133 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:19,133 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <560> ms
+2019-07-17 09:43:19,133 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:19,383 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <7> closed
+2019-07-17 09:43:19,384 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:19,384 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <723> ms
+2019-07-17 09:43:19,385 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:19,415 INFO O.l.Log4JLogger [main] Opened transaction <8> for pipeline <test>
+2019-07-17 09:43:19,416 INFO O.l.Log4JLogger [main] Opened transaction <9> for pipeline <test>
+2019-07-17 09:43:19,422 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <8> closed
+2019-07-17 09:43:19,423 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:19,423 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <7> ms
+2019-07-17 09:43:19,423 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:19,426 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <9> closed
+2019-07-17 09:43:19,426 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:19,426 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <9> ms
+2019-07-17 09:43:19,426 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec
+2019-07-17 09:43:19,521 INFO O.l.Log4JLogger [main] Opened transaction <10> for pipeline <test>
+2019-07-17 09:43:19,523 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Transaction <10> closed
+2019-07-17 09:43:19,523 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0] Statistics: Records  <0>
+2019-07-17 09:43:19,523 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Duration <2> ms
+2019-07-17 09:43:19,523 INFO O.l.Log4JLogger [TransFlusher.DBTestPipe-Inst-0]             Speed    <0> records /sec

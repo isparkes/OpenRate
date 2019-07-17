@@ -109,3 +109,188 @@
 2019-05-16 12:18:02,084 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
 2019-05-16 12:18:02,189 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
 2019-05-16 12:18:03,219 INFO O.l.Log4JLogger [Thread-24] Request Start for Transaction manager.
+2019-05-28 12:28:25,675 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 12:28:25,676 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 12:28:25,680 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 12:28:25,680 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 12:28:25,681 DEBUG O.l.Log4JLogger [Thread-11] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-28 12:28:25,681 DEBUG O.l.Log4JLogger [Thread-11] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-28 12:28:25,682 DEBUG O.l.Log4JLogger [Thread-11] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-28 12:28:25,684 INFO O.l.Log4JLogger [Thread-11] Request Start for Transaction manager.
+2019-05-28 12:28:25,692 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 12:28:30,799 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 12:28:30,800 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-28 12:28:30,901 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-28 12:28:31,939 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 12:28:31,940 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 12:28:31,944 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 12:28:31,944 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 12:28:31,944 DEBUG O.l.Log4JLogger [Thread-16] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-28 12:28:31,945 DEBUG O.l.Log4JLogger [Thread-16] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-28 12:28:31,945 DEBUG O.l.Log4JLogger [Thread-16] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-28 12:28:31,947 INFO O.l.Log4JLogger [Thread-16] Request Start for Transaction manager.
+2019-05-28 12:28:31,953 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 12:28:37,061 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 12:28:37,062 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-28 12:28:37,166 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-28 12:28:38,198 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 12:28:38,198 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 12:28:38,201 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 12:28:38,201 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 12:28:38,201 DEBUG O.l.Log4JLogger [Thread-20] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-28 12:28:38,202 DEBUG O.l.Log4JLogger [Thread-20] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-28 12:28:38,202 DEBUG O.l.Log4JLogger [Thread-20] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-28 12:28:38,204 INFO O.l.Log4JLogger [Thread-20] Request Start for Transaction manager.
+2019-05-28 12:28:38,209 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 12:28:43,315 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 12:28:43,315 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-28 12:28:43,415 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-28 12:28:44,388 INFO O.l.Log4JLogger [Thread-24] Request Start for Transaction manager.
+2019-05-28 16:57:23,910 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 16:57:23,911 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 16:57:23,915 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 16:57:23,915 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 16:57:23,916 DEBUG O.l.Log4JLogger [Thread-11] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-28 16:57:23,916 DEBUG O.l.Log4JLogger [Thread-11] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-28 16:57:23,916 DEBUG O.l.Log4JLogger [Thread-11] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-28 16:57:23,918 INFO O.l.Log4JLogger [Thread-11] Request Start for Transaction manager.
+2019-05-28 16:57:23,922 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 16:57:29,033 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 16:57:29,033 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-28 16:57:29,135 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-28 16:57:30,164 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 16:57:30,165 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 16:57:30,167 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 16:57:30,168 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 16:57:30,168 DEBUG O.l.Log4JLogger [Thread-16] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-28 16:57:30,168 DEBUG O.l.Log4JLogger [Thread-16] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-28 16:57:30,169 DEBUG O.l.Log4JLogger [Thread-16] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-28 16:57:30,174 INFO O.l.Log4JLogger [Thread-16] Request Start for Transaction manager.
+2019-05-28 16:57:30,179 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 16:57:35,286 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 16:57:35,286 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-28 16:57:35,390 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-28 16:57:36,421 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 16:57:36,421 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 16:57:36,424 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-28 16:57:36,424 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-28 16:57:36,425 DEBUG O.l.Log4JLogger [Thread-20] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-28 16:57:36,425 DEBUG O.l.Log4JLogger [Thread-20] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-28 16:57:36,425 DEBUG O.l.Log4JLogger [Thread-20] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-28 16:57:36,427 INFO O.l.Log4JLogger [Thread-20] Request Start for Transaction manager.
+2019-05-28 16:57:36,431 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 16:57:41,540 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-28 16:57:41,540 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-28 16:57:41,647 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-28 16:57:42,636 INFO O.l.Log4JLogger [Thread-24] Request Start for Transaction manager.
+2019-05-30 22:33:46,679 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-30 22:33:46,680 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-30 22:33:46,686 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-30 22:33:46,686 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-30 22:33:46,686 DEBUG O.l.Log4JLogger [Thread-11] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-30 22:33:46,687 DEBUG O.l.Log4JLogger [Thread-11] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-30 22:33:46,687 DEBUG O.l.Log4JLogger [Thread-11] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-30 22:33:46,688 INFO O.l.Log4JLogger [Thread-11] Request Start for Transaction manager.
+2019-05-30 22:33:46,693 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-30 22:33:51,799 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-30 22:33:51,799 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-30 22:33:51,899 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-30 22:33:52,943 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-30 22:33:52,943 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-30 22:33:52,944 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-30 22:33:52,944 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-30 22:33:52,945 DEBUG O.l.Log4JLogger [Thread-16] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-30 22:33:52,945 DEBUG O.l.Log4JLogger [Thread-16] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-30 22:33:52,945 DEBUG O.l.Log4JLogger [Thread-16] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-30 22:33:52,946 INFO O.l.Log4JLogger [Thread-16] Request Start for Transaction manager.
+2019-05-30 22:33:52,948 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-30 22:33:58,056 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-30 22:33:58,057 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-30 22:33:58,160 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-30 22:33:59,190 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-30 22:33:59,191 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-30 22:33:59,192 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-30 22:33:59,192 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-30 22:33:59,192 DEBUG O.l.Log4JLogger [Thread-20] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-30 22:33:59,192 DEBUG O.l.Log4JLogger [Thread-20] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-30 22:33:59,192 DEBUG O.l.Log4JLogger [Thread-20] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-30 22:33:59,193 INFO O.l.Log4JLogger [Thread-20] Request Start for Transaction manager.
+2019-05-30 22:33:59,195 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-30 22:34:04,303 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-30 22:34:04,304 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-30 22:34:04,405 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-30 22:34:05,436 INFO O.l.Log4JLogger [Thread-24] Request Start for Transaction manager.
+2019-05-31 22:51:20,801 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-31 22:51:20,801 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-31 22:51:20,805 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-31 22:51:20,805 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-31 22:51:20,805 DEBUG O.l.Log4JLogger [Thread-11] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-31 22:51:20,805 DEBUG O.l.Log4JLogger [Thread-11] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-31 22:51:20,806 DEBUG O.l.Log4JLogger [Thread-11] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-31 22:51:20,807 INFO O.l.Log4JLogger [Thread-11] Request Start for Transaction manager.
+2019-05-31 22:51:20,810 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-31 22:51:25,920 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-31 22:51:25,920 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-31 22:51:26,025 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-31 22:51:27,050 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-31 22:51:27,050 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-31 22:51:27,055 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-31 22:51:27,056 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-31 22:51:27,056 DEBUG O.l.Log4JLogger [Thread-16] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-31 22:51:27,056 DEBUG O.l.Log4JLogger [Thread-16] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-31 22:51:27,056 DEBUG O.l.Log4JLogger [Thread-16] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-31 22:51:27,058 INFO O.l.Log4JLogger [Thread-16] Request Start for Transaction manager.
+2019-05-31 22:51:27,064 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-31 22:51:32,176 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-31 22:51:32,176 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-31 22:51:32,281 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-31 22:51:33,298 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-31 22:51:33,299 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-31 22:51:33,303 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-05-31 22:51:33,303 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-05-31 22:51:33,304 DEBUG O.l.Log4JLogger [Thread-20] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-05-31 22:51:33,304 DEBUG O.l.Log4JLogger [Thread-20] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-05-31 22:51:33,305 DEBUG O.l.Log4JLogger [Thread-20] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-05-31 22:51:33,307 INFO O.l.Log4JLogger [Thread-20] Request Start for Transaction manager.
+2019-05-31 22:51:33,313 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-31 22:51:38,420 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-05-31 22:51:38,422 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-05-31 22:51:38,526 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-05-31 22:51:39,489 INFO O.l.Log4JLogger [Thread-24] Request Start for Transaction manager.
+2019-07-17 09:42:50,977 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-07-17 09:42:50,978 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-07-17 09:42:50,981 DEBUG O.l.Log4JLogger [Thread-11] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-07-17 09:42:50,981 DEBUG O.l.Log4JLogger [Thread-11] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-07-17 09:42:50,981 DEBUG O.l.Log4JLogger [Thread-11] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-07-17 09:42:50,982 DEBUG O.l.Log4JLogger [Thread-11] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-07-17 09:42:50,982 DEBUG O.l.Log4JLogger [Thread-11] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-07-17 09:42:50,983 INFO O.l.Log4JLogger [Thread-11] Request Start for Transaction manager.
+2019-07-17 09:42:50,987 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-07-17 09:42:56,096 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-07-17 09:42:56,096 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-07-17 09:42:56,198 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-07-17 09:42:57,238 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-07-17 09:42:57,239 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-07-17 09:42:57,241 DEBUG O.l.Log4JLogger [Thread-16] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-07-17 09:42:57,241 DEBUG O.l.Log4JLogger [Thread-16] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-07-17 09:42:57,242 DEBUG O.l.Log4JLogger [Thread-16] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-07-17 09:42:57,242 DEBUG O.l.Log4JLogger [Thread-16] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-07-17 09:42:57,242 DEBUG O.l.Log4JLogger [Thread-16] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-07-17 09:42:57,243 INFO O.l.Log4JLogger [Thread-16] Request Start for Transaction manager.
+2019-07-17 09:42:57,245 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-07-17 09:43:02,358 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-07-17 09:43:02,359 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-07-17 09:43:02,459 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-07-17 09:43:03,488 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-07-17 09:43:03,488 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <TestInpAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-07-17 09:43:03,494 DEBUG O.l.Log4JLogger [Thread-20] Command <BatchSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <5000>
+2019-07-17 09:43:03,494 DEBUG O.l.Log4JLogger [Thread-20] Command <BufferSize> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <10000>
+2019-07-17 09:43:03,494 DEBUG O.l.Log4JLogger [Thread-20] Command <MaxSleep> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <50>
+2019-07-17 09:43:03,494 DEBUG O.l.Log4JLogger [Thread-20] Command <OutputName> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <default>
+2019-07-17 09:43:03,495 DEBUG O.l.Log4JLogger [Thread-20] Command <LogDiscardedRecords> handled by <SOutAdapter> in pipe <DBTestPipe> with parameter <false>
+2019-07-17 09:43:03,495 INFO O.l.Log4JLogger [Thread-20] Request Start for Transaction manager.
+2019-07-17 09:43:03,498 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-07-17 09:43:08,607 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, Idle Cycle, thread <SOutAdapter.Inst-0>
+2019-07-17 09:43:08,607 DEBUG O.l.Log4JLogger [SOutAdapter.Inst-0] Output <SOutAdapter>, thread <SOutAdapter.Inst-0> shut down. Exiting.
+2019-07-17 09:43:08,712 DEBUG O.l.Log4JLogger [Pipeline-DBTestPipe] close
+2019-07-17 09:43:09,647 INFO O.l.Log4JLogger [Thread-24] Request Start for Transaction manager.

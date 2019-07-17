@@ -1,57 +1,4 @@
-/* ====================================================================
- * Limited Evaluation License:
- *
- * This software is open source, but licensed. The license with this package
- * is an evaluation license, which may not be used for productive systems. If
- * you want a full license, please contact us.
- *
- * The exclusive owner of this work is the OpenRate project.
- * This work, including all associated documents and components
- * is Copyright of the OpenRate project 2006-2015.
- *
- * The following restrictions apply unless they are expressly relaxed in a
- * contractual agreement between the license holder or one of its officially
- * assigned agents and you or your organisation:
- *
- * 1) This work may not be disclosed, either in full or in part, in any form
- *    electronic or physical, to any third party. This includes both in the
- *    form of source code and compiled modules.
- * 2) This work contains trade secrets in the form of architecture, algorithms
- *    methods and technologies. These trade secrets may not be disclosed to
- *    third parties in any form, either directly or in summary or paraphrased
- *    form, nor may these trade secrets be used to construct products of a
- *    similar or competing nature either by you or third parties.
- * 3) This work may not be included in full or in part in any application.
- * 4) You may not remove or alter any proprietary legends or notices contained
- *    in or on this work.
- * 5) This software may not be reverse-engineered or otherwise decompiled, if
- *    you received this work in a compiled form.
- * 6) This work is licensed, not sold. Possession of this software does not
- *    imply or grant any right to you.
- * 7) You agree to disclose any changes to this work to the copyright holder
- *    and that the copyright holder may include any such changes at its own
- *    discretion into the work
- * 8) You agree not to derive other works from the trade secrets in this work,
- *    and that any such derivation may make you liable to pay damages to the
- *    copyright holder
- * 9) You agree to use this software exclusively for evaluation purposes, and
- *    that you shall not use this software to derive commercial profit or
- *    support your business or personal activities.
- *
- * This software is provided "as is" and any expressed or impled warranties,
- * including, but not limited to, the impled warranties of merchantability
- * and fitness for a particular purpose are disclaimed. In no event shall
- * The OpenRate Project or its officially assigned agents be liable to any
- * direct, indirect, incidental, special, exemplary, or consequential damages
- * (including but not limited to, procurement of substitute goods or services;
- * Loss of use, data, or profits; or any business interruption) however caused
- * and on theory of liability, whether in contract, strict liability, or tort
- * (including negligence or otherwise) arising in any way out of the use of
- * this software, even if advised of the possibility of such damage.
- * This software contains portions by The Apache Software Foundation, Robert
- * Half International.
- * ====================================================================
- */
+
 package OpenRate;
 
 import OpenRate.configurationmanager.ClientManager;
@@ -255,10 +202,10 @@ public class OpenRate
    * default constructor
    */
   public OpenRate() {
-    // Initialise the pipeline index
+    // Initialize the pipeline index
     pipelineMap = new HashMap<>(50);
 
-    // Initialise the map of the event aware resources (for sync point handling)
+    // Initialize the map of the event aware resources (for sync point handling)
     syncPointResourceMap = new HashMap<>(50);
   }
 
@@ -274,7 +221,7 @@ public class OpenRate
   public static void main(String[] args) {
     int status;
 
-    // Create the application - this initialises the entire system
+    // Create the application - this initializes the entire system
     appl = OpenRate.getApplicationInstance();
     frameworkActive = true;
 
@@ -495,7 +442,7 @@ public class OpenRate
       // Manager instance
       pipelineList = PropertyUtils.getPropertyUtils().getGenericNameList("PipelineList");
 
-      // Now that we have finished our internal initialisation, create the
+      // Now that we have finished our internal initialization, create the
       // pipelines
       Iterator<String> pipelineIterator = pipelineList.iterator();
 
@@ -580,20 +527,20 @@ public class OpenRate
       applicationName = PropertyUtils.getPropertyUtils().getPropertyValueDef("Application", "Undefined");
       System.out.println("Initialising application <" + applicationName + ">");
 
-      // Initialse the FWLog. This should be done before anything else so that
+      // Initials the FWLog. This should be done before anything else so that
       // we are able to get a record of all the messages that occur
       System.out.println("Intialising log resource...");
       resourceContext = new ResourceContext();
 
       // Initialize the AstractLogger from the ResourceContext. This means that we will
       // have access to the logging functionality in time for the resource
-      // and module intialisation
+      // and module initialization
       // if we fail to get the logger, there's not much we can do other than
       // pass this up to the loader, because we can't log it...
       loadResources(true);
 
-      // Intialise the logger from the resource context. This overwrites the
-      // default logger that was set up previously and rewire the logger in the
+      // Initialize the logger from the resource context. This overwrites the
+      // default logger that was set up previously and rewired the logger in the
       // resource context which was forced to use the default logger up until
       // now
       setFwLog(LogUtil.getLogUtil().getLogger("Framework"));
@@ -602,19 +549,19 @@ public class OpenRate
       // Log the version information
       getFwLog().info("OpenRate version: " + getApplicationVersion() + " (" + getBuildHash() + ")");
 
-      // Initalise the error log - this is intended to log all stack trace
+      // Entails the error log - this is intended to log all stack trace
       // type events, keeping the main output as clean and businesslike as possible.
       setErrorLog(LogUtil.getLogUtil().getLogger("ErrorLog"));
 
-      // Initalise the stats log - this is intended to log all statistics
+      // Entails the stats log - this is intended to log all statistics
       // information, dealing with performance and profiling
       setStatsLog(LogUtil.getLogUtil().getLogger("Statistics"));
 
       // Get the sequential loading flag
       sequentialLoading = Boolean.valueOf(PropertyUtils.getPropertyUtils().getFrameworkPropertyValueDef(SERVICE_SEQUENTIAL_LOADING, "true"));
 
-      // Intialise the other resources in the framework so that these are
-      // available for the module initialisation
+      // Initialize the other resources in the framework so that these are
+      // available for the module initialization
       System.out.println("Initialising other resources...");
       loadResources(false);
 
@@ -671,7 +618,7 @@ public class OpenRate
   }
 
   /**
-   * Handle, format and report top level initialisation exceptions.
+   * Handle, format and report top level initialization exceptions.
    *
    * @param ex
    */
@@ -688,7 +635,7 @@ public class OpenRate
     }
 
     if (getErrorLog() != null) {
-      // We have an Error Log initialised, so use it
+      // We have an Error Log initialized, so use it
       getErrorLog().fatal(Message, ex);
 
       // Also send to system out
@@ -701,7 +648,7 @@ public class OpenRate
 
     // see if we have the Framework log, and if yes, log to it
     if (getFwLog() != null) {
-      // We have a FWLog initialised, so use it
+      // We have a FWLog initialized, so use it
       getFwLog().fatal(Message);
     } else {
       // else we have no FWLog, so give a minimum of feedback on the console
