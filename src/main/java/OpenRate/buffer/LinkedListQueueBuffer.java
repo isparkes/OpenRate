@@ -6,6 +6,7 @@ import OpenRate.record.IRecord;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * Buffer implementation using an LinkedListQueue as the buffering element.
@@ -20,23 +21,13 @@ import java.util.LinkedList;
 public class LinkedListQueueBuffer
   extends AbstractBuffer
 {
-  // The main storage object of the buffer
-  private LinkedList<IRecord> queueHelperBatch;
+  //The main storage object of the buffer
+  private final ConcurrentLinkedDeque<IRecord> queueHelperBatch;
 
-  // the locking object so that we make sure that the multi-threadedness of
-  // the object is guaranteed
-  private final Object lock;
 
-  /**
-   * Default constructor.
-   */
   public LinkedListQueueBuffer()
   {
-    super();
-
-    //queueHelper = Collections.synchronizedList(new LinkedList());
-    queueHelperBatch = new LinkedList<>();
-    lock = new Object();
+    queueHelperBatch = new ConcurrentLinkedDeque<>();
   }
 
  /**
@@ -48,11 +39,7 @@ public class LinkedListQueueBuffer
   @Override
   public void push(Collection<IRecord> collection)
   {
-    synchronized (lock)
-    {
-      // blocks waiting for queue availability.
-      queueHelperBatch.addAll(collection);
-    }
+    queueHelperBatch.addAll(collection);
 
     // tell the downstream modules that there is stuff to do
     notifyMonitors();
@@ -77,19 +64,14 @@ public class LinkedListQueueBuffer
   {
     LinkedList<IRecord> list = new LinkedList<>();
 
-    synchronized (lock)
-    {
-      int size = queueHelperBatch.size();
+    for (int i = 0; i < max; i++) {
 
-      for (int i = 0; (i < max) && (size > 0); ++i)
-      {
-        // It would be faster to pull from the end of the array instead
-        // of the beginning, but if order matters (and mostly it will) we have
-        // to work from the head of the queue.
-        // In cases where order really does not matter, we could use:
-        // Object o = queueHelper.remove(--size);
-        IRecord o = queueHelperBatch.remove();
-        list.add(o);
+      IRecord record = queueHelperBatch.poll();
+      if (record != null) {
+        list.add(record);
+      }
+      else {
+        break;
       }
     }
 
