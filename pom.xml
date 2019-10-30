@@ -156,7 +156,7 @@
 		<version.java.target>1.7</version.java.target>
 		<version.commons.collections>3.2.2</version.commons.collections>
 		<version.commons.pool>1.5.5</version.commons.pool>
-		<version.c3p0>0.9.5.1</version.c3p0>
+		<version.c3p0>0.9.5.4</version.c3p0>
 		<version.bonecp>0.7.1.RELEASE</version.bonecp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.mysql.connector>5.1.13</version.mysql.connector>
