@@ -93,8 +93,7 @@ import java.util.ListIterator;
 public class Pipeline
         extends Thread
         implements IPipeline,
-        IEventInterface,
-        ISyncPoint {
+        IEventInterface {
   // Get the logs, for this and all child classes. The pipe log will be
   // intialised during the init, up until then, all logging will go to the
   // framework log, or the default logger (console).

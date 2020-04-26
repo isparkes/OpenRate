@@ -2,3 +2,5 @@
 /log/
 *.dat
 Semaphore.txt_*
+/logs/
+/.vscode/
