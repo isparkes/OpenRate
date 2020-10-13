@@ -149,7 +149,7 @@
 	</build>
 
 	<properties>
-		<version.junit>4.8</version.junit>
+		<version.junit>4.13.1</version.junit>
 		<version.common.logging>1.1.1</version.common.logging>
 		<version.common.lang>2.6</version.common.lang>
 		<version.java.source>1.7</version.java.source>
