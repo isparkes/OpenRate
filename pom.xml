@@ -163,7 +163,7 @@
 		<version.hsql.connector>2.2.4</version.hsql.connector>
 		<version.log4j>2.8.2</version.log4j>
 		<version.oro>2.0.8</version.oro>
-		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+		<org.springframework.version>5.2.21.RELEASE</org.springframework.version>
 	</properties>
 
 	<dependencies>
