@@ -65,7 +65,6 @@ import OpenRate.lang.AuditSegment;
 import OpenRate.lang.CustInfo;
 import OpenRate.lang.CustProductInfo;
 import OpenRate.lang.ProductList;
-import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import OpenRate.utils.PropertyUtils;
 import java.io.*;

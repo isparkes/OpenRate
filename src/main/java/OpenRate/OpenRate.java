@@ -313,6 +313,7 @@ public class OpenRate
 
       if (propertiesFile == null) {
         System.out.println("Properties file <" + args[1] + "> not found on the class path. Aborting.");
+        System.out.println(System.getProperty("java.class.path"));
         return PROPERTIES_FILE_NOT_FOUND;
       }
 
