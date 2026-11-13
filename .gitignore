@@ -1,7 +1,8 @@
 /target/
 /log/
+Semaphore.txt*
 *.dat
-Semaphore.txt_*
-.DS_Store
 *.log
 .DS_Store
+/checks.json
+.settings/org.eclipse.jdt.apt.core.prefs

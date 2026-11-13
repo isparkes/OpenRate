@@ -42,7 +42,7 @@ public class FrameworkUtils {
     }
     catch (InitializationException ex)
     {
-      String message = "Error reading the configuration file <" + configFileName + ">" + System.getProperty("user.dir");
+      String message = "Error reading the configuration file <" + System.getProperty("user.dir") + "/" + configFileName + ">";
       Assert.fail(message);
     }
     

@@ -18,8 +18,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+	                <source>1.8</source>
+	                <target>1.8</target>
 					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
@@ -152,8 +152,6 @@
 		<version.junit>4.8</version.junit>
 		<version.common.logging>1.1.1</version.common.logging>
 		<version.common.lang>2.6</version.common.lang>
-		<version.java.source>1.7</version.java.source>
-		<version.java.target>1.7</version.java.target>
 		<version.commons.collections>3.2.2</version.commons.collections>
 		<version.commons.pool>1.5.5</version.commons.pool>
 		<version.c3p0>0.9.5.4</version.c3p0>
@@ -306,13 +304,6 @@
 			<version>1.4</version>
 		</dependency>
 
-		<!-- Cassandra adapters -->
-		<dependency>
-			<groupId>org.apache.cassandra</groupId>
-			<artifactId>cassandra-thrift</artifactId>
-			<version>1.2.3</version>
-			<type>jar</type>
-		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -325,12 +316,6 @@
 			<version>2.2.5</version>
 			<type>jar</type>
 		</dependency>
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>6.0</version>
-			<type>jar</type>
-		</dependency>			
 	</dependencies>
 
 	<reporting>
