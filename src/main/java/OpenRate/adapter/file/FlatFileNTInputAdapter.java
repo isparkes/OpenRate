@@ -24,8 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.oro.io.GlobFilenameFilter;
-import org.apache.oro.text.GlobCompiler;
+import OpenRate.utils.GlobFilenameFilter;
 
 import OpenRate.CommonConfig;
 import OpenRate.OpenRate;
@@ -796,8 +795,7 @@ public abstract class FlatFileNTInputAdapter
     // get the first file name from the directory that matches the
     dir = new File(InputFilePath);
     filter = new GlobFilenameFilter(InputFilePrefix + "*"
-            + InputFileSuffix,
-            GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
+            + InputFileSuffix);
     FileNames = dir.list(filter);
 
     // if we have a file, add it to the list of transaction files

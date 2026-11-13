@@ -31,8 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.apache.oro.io.GlobFilenameFilter;
-import org.apache.oro.text.GlobCompiler;
+import OpenRate.utils.GlobFilenameFilter;
 
 /**
  *
@@ -1030,8 +1029,7 @@ public abstract class BinaryFileInputAdapter
     // get the first file name from the directory that matches the
     dir = new File(InputFilePath);
     filter = new GlobFilenameFilter(InputFilePrefix + "*"
-            + InputFileSuffix,
-            GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
+            + InputFileSuffix);
     fileNames = dir.list(filter);
 
     // if we have a file, add it to the list of transaction files

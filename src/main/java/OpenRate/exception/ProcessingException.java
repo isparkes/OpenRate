@@ -18,7 +18,6 @@
 package OpenRate.exception;
 
 import OpenRate.OpenRate;
-import org.apache.commons.lang.exception.NestableException;
 
 /**
  * ProcessingException Class. Used in the OpenRate architecture
@@ -30,7 +29,7 @@ import org.apache.commons.lang.exception.NestableException;
  * for applications where keeping running is important, you can configure
  * OpenRate to simply report the exception but keep running.
  */
-public final class ProcessingException extends NestableException
+public final class ProcessingException extends Exception
 {
   private static final long serialVersionUID = -7872768799697114024L;
   private int exitCode;         // The exit code that should be passed back

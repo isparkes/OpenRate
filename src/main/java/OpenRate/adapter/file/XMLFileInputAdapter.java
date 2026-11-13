@@ -33,8 +33,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import org.apache.oro.io.GlobFilenameFilter;
-import org.apache.oro.text.GlobCompiler;
+import OpenRate.utils.GlobFilenameFilter;
 
 /**
  * Input adapter for XML formatted files. This adapter works by breaking down
@@ -977,8 +976,7 @@ public abstract class XMLFileInputAdapter
     // get the first file name from the directory that matches the
     dir = new File(InputFilePath);
     filter = new GlobFilenameFilter(InputFilePrefix + "*"
-            + InputFileSuffix,
-            GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
+            + InputFileSuffix);
     // sort files
     fileNames = getOrderedFileListForProcessing(dir, filter);
 

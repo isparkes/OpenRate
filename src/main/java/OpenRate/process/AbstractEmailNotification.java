@@ -24,8 +24,8 @@ import OpenRate.resource.notification.EmailNotificationCache;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  * Email notification module.

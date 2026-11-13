@@ -20,12 +20,12 @@ package OpenRate.resource.notification;
 import OpenRate.OpenRate;
 import OpenRate.exception.ProcessingException;
 import java.util.ArrayList;
-import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.MessagingException;
+import jakarta.mail.NoSuchProviderException;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.MimeMessage;
 
 /**
  * This module implements a socket server that listens on a TCP port for

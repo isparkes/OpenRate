@@ -32,8 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.apache.oro.io.GlobFilenameFilter;
-import org.apache.oro.text.GlobCompiler;
+import OpenRate.utils.GlobFilenameFilter;
 
 /**
  *
@@ -1031,8 +1030,7 @@ public abstract class FlatFileInputAdapter
     // get the first file name from the directory that matches the
     dir = new File(inputFilePath);
     filter = new GlobFilenameFilter(inputFilePrefix + "*"
-            + inputFileSuffix,
-            GlobCompiler.STAR_CANNOT_MATCH_NULL_MASK);
+            + inputFileSuffix);
 
     // sort files
     fileNames = getOrderedFileListForProcessing(dir, filter);

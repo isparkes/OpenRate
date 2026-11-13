@@ -27,8 +27,8 @@ import OpenRate.utils.PropertyUtils;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Properties;
-import javax.mail.*;
-import javax.mail.internet.*;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
 
 /**
  * The email notification cache simplifies the process of sending email messages 
@@ -546,7 +546,7 @@ public class EmailNotificationCache implements IResource, IEventInterface
   * The JavaMail authenticator object. Needed for cases where we need to perform
   * authenticated logins to be able to send mails.
   */
-  private class SMTPAuthenticator extends javax.mail.Authenticator
+  private class SMTPAuthenticator extends jakarta.mail.Authenticator
   {
     @Override
     public PasswordAuthentication getPasswordAuthentication()

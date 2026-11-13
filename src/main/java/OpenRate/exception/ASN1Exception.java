@@ -15,14 +15,13 @@
  */
 package OpenRate.exception;
 
-import org.apache.commons.lang.exception.NestableException;
 
 /**
  * ASN1Exception
  *
  * @author Magnus
  */
-public class ASN1Exception extends NestableException
+public class ASN1Exception extends Exception
 {
  /**
   * constructor

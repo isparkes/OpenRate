@@ -17,12 +17,11 @@
 
 package OpenRate.exception;
 
-import org.apache.commons.lang.exception.NestableException;
 
 /**
  * Generic cache exception class.
  */
-public class CacheException extends NestableException
+public class CacheException extends Exception
 {
   private static final long serialVersionUID = 4909964323623796674L;
 

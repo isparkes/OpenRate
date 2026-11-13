@@ -24,10 +24,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>3.13.0</version>
 				<configuration>
-	                <source>1.8</source>
-	                <target>1.8</target>
+					<release>17</release>
 					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
@@ -116,8 +115,6 @@
 				</configuration>
 			</plugin>
 
-
-
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -157,19 +154,13 @@
 	</build>
 
 	<properties>
-		<version.junit>4.8</version.junit>
-		<version.common.logging>1.1.1</version.common.logging>
-		<version.common.lang>2.6</version.common.lang>
-		<version.commons.collections>3.2.2</version.commons.collections>
-		<version.commons.pool>1.5.5</version.commons.pool>
-		<version.c3p0>0.9.5.4</version.c3p0>
-		<version.bonecp>0.7.1.RELEASE</version.bonecp>
+		<version.junit>4.13.2</version.junit>
+		<version.c3p0>0.9.5.5</version.c3p0>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.mysql.connector>5.1.13</version.mysql.connector>
-		<version.hsql.connector>2.2.4</version.hsql.connector>
-		<version.log4j>2.8.2</version.log4j>
-		<version.oro>2.0.8</version.oro>
-		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+		<version.mysql.connector>9.7.0</version.mysql.connector>
+		<version.hsql.connector>2.7.4</version.hsql.connector>
+		<version.log4j>2.26.1</version.log4j>
+		<version.activemq>5.19.12</version.activemq>
 	</properties>
 
 	<dependencies>
@@ -182,32 +173,11 @@
 		</dependency>
 
 		<!-- common logging -->
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>${version.common.logging}</version>
-		</dependency>
 
-		<!-- common lang -->
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>${version.common.lang}</version>
-		</dependency>
 
 		<!-- common collections -->
-		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>${version.commons.collections}</version>
-		</dependency>
 
 		<!-- common pool -->
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-			<version>${version.commons.pool}</version>
-		</dependency>
 
 		<!-- C3P0 connection pool -->
 		<dependency>
@@ -216,17 +186,11 @@
 			<version>${version.c3p0}</version>
 		</dependency>
 
-		<!-- Bone connection pool -->
-		<dependency>
-			<groupId>com.jolbox</groupId>
-			<artifactId>bonecp-spring</artifactId>
-			<version>${version.bonecp}</version>
-		</dependency>
 
 		<!-- MySQL for database access -->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
 			<version>${version.mysql.connector}</version>
 		</dependency>
 
@@ -250,49 +214,12 @@
 			<version>${version.log4j}</version>
 		</dependency>
 
-		<!-- Oro for file filtering -->
-		<dependency>
-			<groupId>oro</groupId>
-			<artifactId>oro</artifactId>
-			<version>${version.oro}</version>
-		</dependency>
-
-		<!-- Spring -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-expression</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
 
 		<!-- Apache ActiveMQ for JMS Queue adapters -->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-core</artifactId>
-			<version>5.7.0</version>
+			<artifactId>activemq-client</artifactId>
+			<version>${version.activemq}</version>
 		</dependency>
 
 		<!-- <dependency> <groupId>drools</groupId> <artifactId>drools-compiler</artifactId> 
@@ -307,21 +234,21 @@
 
 		<!-- Mail for emailer module -->
 		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4</version>
+			<groupId>org.eclipse.angus</groupId>
+			<artifactId>angus-mail</artifactId>
+			<version>2.0.5</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.4-1202-jdbc42</version>
+			<version>42.7.14</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
-			<version>2.2.5</version>
+			<version>7.1.0</version>
 			<type>jar</type>
 		</dependency>
 	</dependencies>

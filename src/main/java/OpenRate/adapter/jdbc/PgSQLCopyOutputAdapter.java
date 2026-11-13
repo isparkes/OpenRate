@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.apache.commons.lang.StringUtils;
 import OpenRate.CommonConfig;
 import OpenRate.OpenRate;
 import OpenRate.adapter.AbstractTransactionalOutputAdapter;
@@ -274,7 +273,7 @@ public abstract class PgSQLCopyOutputAdapter
       // Start with copy steps	    
       for (String copyRecords : dataHolder.keySet()) {
         // Prepare copy data				
-        byte[] CopyData = StringUtils.join(dataHolder.get(copyRecords), System.getProperty("line.separator")).getBytes();
+        byte[] CopyData = String.join(System.getProperty("line.separator"), dataHolder.get(copyRecords)).getBytes();
         //  Start with COPY operation/s
         long numOfRowsEffected = cpManager.copyIn(this.prepareCopyStatement(copyRecords), new ByteArrayInputStream(CopyData));
         getPipeLog().debug("Copy effected " + numOfRowsEffected + " rows in module <" + getSymbolicName() + ">");

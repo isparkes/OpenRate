@@ -114,7 +114,7 @@
       <DataSource>
         <TestDB>
           <db_url>jdbc:mysql://localhost:3306/ORUnitTestDB</db_url>
-          <driver>com.mysql.jdbc.Driver</driver>
+          <driver>com.mysql.cj.jdbc.Driver</driver>
           <username>root</username>
           <password>cpr</password>
           <ValidationQuery>select 1 from dual</ValidationQuery>

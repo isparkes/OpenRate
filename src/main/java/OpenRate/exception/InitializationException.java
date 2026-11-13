@@ -17,7 +17,6 @@
 
 package OpenRate.exception;
 
-import org.apache.commons.lang.exception.NestableException;
 
 /**
  * InitializationException Class. Used by batch application
@@ -36,7 +35,7 @@ import org.apache.commons.lang.exception.NestableException;
  *  - The cause (optional): The exception or throwable which caused the
  *      underlying exception
  */
-public class InitializationException extends NestableException
+public class InitializationException extends Exception
 {
   // Serial UID
   private static final long serialVersionUID = 4048205287633180700L;
