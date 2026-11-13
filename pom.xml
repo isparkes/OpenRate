@@ -10,6 +10,14 @@
 	<name>OpenRate</name>
 	<url>https://github.com/isparkes/OpenRate</url>
 
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<build>
 		<plugins>
 			<!-- The compiler -->
