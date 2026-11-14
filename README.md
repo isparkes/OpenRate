@@ -349,7 +349,23 @@ commands by registering services through `ClientManager`.
 
 ## Building an application
 
-1. **Depend on the OpenRate jar.**
+1. **Depend on the OpenRate jar.** OpenRate is *not* published to Maven
+   Central, so build and install it into your local repository first:
+
+   ```bash
+   git clone https://github.com/isparkes/OpenRate.git
+   cd OpenRate && mvn clean install
+   ```
+
+   Then depend on it:
+
+   ```xml
+   <dependency>
+     <groupId>OpenRate</groupId>
+     <artifactId>OpenRate</artifactId>
+     <version>1.5.2.6</version>
+   </dependency>
+   ```
 2. **Define a record type.** Extend `OpenRate.record.AbstractRecord`, or use
    `FlatRecord` / `RatingRecord` directly. A record normally implements:
    * `mapOriginalData()` — raw input to structured fields (mandatory)
@@ -367,16 +383,88 @@ commands by registering services through `ClientManager`.
 5. **Write the configuration file** and put it on the classpath.
 6. **Run it.**
 
-Example applications that demonstrate complete pipelines:
+### Example applications
 
-* **OpenRateSimple** — the simplest non-trivial pipeline; start here
-* **ORPixip** — revenue assurance across five data sources, with re-rating and
-  comparison
-* **ORTyfon** — fixed line and VoIP reseller rating with fraud detection
-* **ORSeaSatCom** — GSM and satellite reseller retail rating
-* **OpenRateWeblinksInterconnect** — interconnect rating
+Complete worked pipelines live in separate repositories under
+[github.com/isparkes](https://github.com/isparkes). All of them pin older
+OpenRate versions, so each needs its dependency bumped to `1.5.2.6` and its
+compiler set to `<release>17</release>`.
 
----
+Each was migrated and built against OpenRate 1.5.2.6 on Java 17 to confirm the
+steps below are sufficient:
+
+| Application | What it demonstrates | Pins | Work needed |
+|---|---|---|---|
+| [OpenRateSimple](https://github.com/isparkes/OpenRateSimple) | Simplest non-trivial pipeline — **start here** | 1.5.2.4 | pom only |
+| [ORPixip](https://github.com/isparkes/ORPixip) | Revenue assurance over five sources, re-rating and comparison | 1.5.2.4 | pom + config |
+| [OpenRateWeblinksInterconnect](https://github.com/isparkes/OpenRateWeblinksInterconnect) | Interconnect rating | 1.5.2.5 | pom + config |
+| [ORTyfon](https://github.com/isparkes/ORTyfon) | Fixed line and VoIP reseller rating, fraud detection | 1.5.2.2 | pom + config + API (21 files) |
+| [ORSeaSatCom](https://github.com/isparkes/ORSeaSatCom) | GSM and satellite reseller retail rating | 1.5.2.2 | pom + config + API (16 files) |
+
+#### Migrating an older application
+
+`ORTyfon` and `ORSeaSatCom` pin 1.5.2.2 and predate API changes made between
+1.5.2.2 and 1.5.2.6. Nothing recent broke them. The required changes are
+mechanical:
+
+**1. Record fields moved to camel case.** These are public fields on
+`RatingRecord` and `AbstractRecord`:
+
+| Was | Now |
+|---|---|
+| `OriginalData` | `originalData` |
+| `UTCEventDate` | `utcEventDate` |
+| `EventStartDate` / `EventEndDate` | `eventStartDate` / `eventEndDate` |
+| `RecordNumber` | `recordNumber` |
+| `CounterCycle` | `counterCycle` |
+| `CreateBreakdown` | `createBreakdown` |
+| `Service` | `service` |
+
+Note that `FlatRecord.originalData` is **private** — subclasses of `FlatRecord`
+must use `getData()` / `setData()` instead.
+
+**2. Adapter signatures are strongly typed.** The base classes now declare:
+
+```java
+// FlatFileInputAdapter
+public abstract IRecord procValidRecord(FlatRecord r);
+public abstract IRecord procErrorRecord(FlatRecord r);
+
+// FlatFileOutputAdapter
+public abstract Collection<FlatRecord> procValidRecord(IRecord r);
+public abstract Collection<FlatRecord> procErrorRecord(IRecord r);
+
+// JDBCOutputAdapter - same shape, with DBRecord
+public abstract Collection<DBRecord> procValidRecord(IRecord r);
+
+// every adapter
+public abstract HeaderRecord  procHeader(HeaderRecord r);
+public abstract TrailerRecord procTrailer(TrailerRecord r);
+```
+
+Knock-on changes in the method bodies:
+
+* local `Collection<IRecord>` batches become `Collection<FlatRecord>` or
+  `Collection<DBRecord>` to match the return type
+* `outbatch.add((IRecord) rec)` casts are no longer valid — drop the cast
+* `return (IRecord) trailer;` no longer compiles where the return type is
+  `TrailerRecord` — drop the cast
+* add imports for `HeaderRecord`, `TrailerRecord`, `FlatRecord` or `DBRecord`
+  as the new signatures require
+
+Check for partially migrated code before converting: `WIInputAdapter` in
+`OpenRateWeblinksInterconnect` already carries the typed methods alongside the
+old `IRecord` overloads, and converting those overloads produces duplicate
+methods rather than a fix.
+
+**3. The MySQL driver class was renamed.** In the `.properties.xml` files,
+`com.mysql.jdbc.Driver` becomes `com.mysql.cj.jdbc.Driver`. Four of the five
+examples need this.
+
+Other OpenRate related repositories, not build tested:
+[ORFuzer](https://github.com/isparkes/ORFuzer),
+[OpenRateProv](https://github.com/isparkes/OpenRateProv),
+[OpenRateProvWS](https://github.com/isparkes/OpenRateProvWS).
 
 ## Module reference
 

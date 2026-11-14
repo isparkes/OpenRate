@@ -99,13 +99,6 @@ public class TransactionFlusher implements Runnable
   */
   public synchronized void addTransactionToFlushList(TransactionInfo trans)
   {
-    // The transaction manager re-evaluates flush readiness on every client
-    // status change, so guard against queueing the same transaction twice.
-    if (transFlushedList.contains(trans))
-    {
-      return;
-    }
-
     transFlushedList.add(trans);
     pipeLog.debug("Added transaction <"+trans.getTransactionNumber()+"> to flusher for pipe <"+pipelineName+">");
     this.notify();
