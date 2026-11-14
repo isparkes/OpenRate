@@ -348,7 +348,7 @@ public class OpenRateTest {
     String[] headerResponse = new String[7];
     headerResponse[0] = "--------------------------------------------------------------";
     headerResponse[1] = "OpenRate Admin Console, " + OpenRate.getApplicationVersionString();
-    headerResponse[2] = "Copyright The OpenRate Project, 2006-2015";
+    headerResponse[2] = OpenRate.COPYRIGHT;
     headerResponse[3] = headerResponse[0];
     headerResponse[4] = "";
     headerResponse[5] = "Type 'Help' for more information.";

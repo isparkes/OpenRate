@@ -80,12 +80,28 @@ public class OpenRate
         Runnable {
 
   /**
+   * The copyright line shown at startup and in the admin console.
+   */
+  public static final String COPYRIGHT = "Copyright 2006-2026 Ian Sparkes";
+
+  /**
    * Returns the application version string.
    *
    * @return the applicationVersionString
    */
   public static String getApplicationVersionString() {
     return applicationVersionString;
+  }
+
+  /**
+   * Print the startup banner: the version we are running and the copyright.
+   */
+  private static void printBanner() {
+    System.out.println("");
+    System.out.println("--------------------------------------------------------");
+    System.out.println("  " + getApplicationVersionString());
+    System.out.println("  " + COPYRIGHT);
+    System.out.println("--------------------------------------------------------");
   }
 
   /**
@@ -414,6 +430,11 @@ public class OpenRate
     // Set the version string
     applicationVersionString = getApplicationVersion();
 
+    // Announce ourselves before anything can fail, so that the version is in
+    // the output even when startup aborts on the arguments or a missing
+    // properties file.
+    printBanner();
+
     // Check that the parameters we got are formally correct
     status = checkParameters(args);
 
@@ -443,13 +464,6 @@ public class OpenRate
     // Prepare the framework environment - Get the default logger until we
     // read the properties file to get the correct logger
     loadDefaultLogger();
-
-    // Start the dialogue with the user
-    System.out.println("");
-    System.out.println("--------------------------------------------------------");
-    System.out.println("  " + getApplicationVersionString());
-    System.out.println("  Copyright The OpenRate Project, 2005-2015");
-    System.out.println("--------------------------------------------------------");
 
     // Start up the framework and load the resources etc
     if (startupFramework() == true) {

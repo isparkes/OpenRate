@@ -184,7 +184,7 @@ public class SocketProtocol implements ISocketProtocol
     return 
     "--------------------------------------------------------------\r\n" +
     "OpenRate Admin Console, "+OpenRate.getApplicationVersionString()+"\r\n" +
-    "Copyright The OpenRate Project, 2006-2015\r\n" +
+    OpenRate.COPYRIGHT+"\r\n" +
     "--------------------------------------------------------------\r\n\r\n" +
     "Type 'Help' for more information.\r\n\r\n";
     
