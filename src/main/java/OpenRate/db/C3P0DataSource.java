@@ -66,6 +66,21 @@ public class C3P0DataSource implements IDBDataSource {
    */
   public static final String DEFAULT_TEST_CONN = "600";
 
+  /**
+   * Default for c3p0's PreparedStatement cache: disabled.
+   *
+   * OpenRate used to set both maxStatements (a global cache) and
+   * maxStatementsPerConnection. c3p0 documents these as alternatives and warns
+   * against configuring both at once. From c3p0 0.10 onwards that combination
+   * hands out cached statements belonging to connections that have already been
+   * checked back into the pool, which surfaces as the SQL error
+   * "connection exception: closed" once transactions overlap.
+   *
+   * Caching stays off unless a data source explicitly configures it. Most
+   * modern drivers cache server side anyway, so this costs little.
+   */
+  public static final String DEFAULT_STMT_CACHE = "0";
+
   // -----------------------------------------------------------------------------
   // --------------------------- Implementation  ---------------------------------
   // -----------------------------------------------------------------------------
@@ -167,12 +182,12 @@ public class C3P0DataSource implements IDBDataSource {
     int maxIdleTime = Integer.parseInt(maxIdleTimeStr);
 
     // Options with defaults
-    maxStatementsStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, MAX_STMTS_KEY, DEFAULT_MAX_STMTS);
+    maxStatementsStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, MAX_STMTS_KEY, DEFAULT_STMT_CACHE);
     maxStatements = Integer.parseInt(maxStatementsStr);
     testConnPeriodStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, TEST_CONN_KEY, DEFAULT_TEST_CONN);
     testConnPeriod = Integer.parseInt(testConnPeriodStr);
 
-    maxStatementPerConnectionStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, MAX_STMTS_PER_CONNECTION_KEY, DEFAULT_MAX_STMTS);
+    maxStatementPerConnectionStr = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, MAX_STMTS_PER_CONNECTION_KEY, DEFAULT_STMT_CACHE);
     maxStatementPerConnection = Integer.parseInt(maxStatementPerConnectionStr);
 
     String connTimeOut = PropertyUtils.getPropertyUtils().getDataSourcePropertyValueDef(dataSourceName, CONN_TIMEOUT_KEY, DEFAULT_CONN_TIMEOUT);
@@ -184,6 +199,9 @@ public class C3P0DataSource implements IDBDataSource {
     dataSource.setPassword(password);
 
     // Pooling configuration
+    // Statement caching. Both of these default to 0 (off) - see
+    // DEFAULT_STMT_CACHE above for why. Setting both to non-zero values is
+    // explicitly discouraged by c3p0 and breaks under c3p0 0.10 and later.
     dataSource.setMaxStatements(maxStatements);
     dataSource.setInitialPoolSize(minSize);
     dataSource.setMaxPoolSize(maxSize);

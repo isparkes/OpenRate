@@ -808,6 +808,13 @@ public class DuplicateCheckCache
     DBUtil.close(StmtSelectQuery);
     DBUtil.close(JDBCcon);
 
+    // Drop the reference once the connection has gone back to the pool.
+    // Leaving it set allows a later close() of the same object to check the
+    // connection in a second time, which hands one physical connection to two
+    // callers and leads to "connection exception: closed" in whichever of
+    // them is unlucky.
+    JDBCcon = null;
+
     message = "Duplicate Check Data Loading completed. <" + recordsLoaded +
           "> records buffered and <" + recordsDiscarded +
           "> records in duplicate data table for <" + getSymbolicName() + ">";
@@ -915,7 +922,13 @@ public class DuplicateCheckCache
     finally
     {
       DBUtil.close(StmtPurgeQuery);
+
+      // Only check the connection back in if this method actually took one
+      // out. This finally block runs even when the purge branch above was
+      // skipped, in which case JDBCcon still referred to the already closed
+      // connection from the load and was being closed a second time.
       DBUtil.close(JDBCcon);
+      JDBCcon = null;
     }
 
     // log what we have saved

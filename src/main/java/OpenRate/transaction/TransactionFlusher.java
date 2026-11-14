@@ -49,8 +49,13 @@ public class TransactionFlusher implements Runnable
   // Our logger
   private ILogger pipeLog;
 
-  // Scheduler
-  private int sleepTime;
+  // Longest time the flusher sleeps when there is nothing queued. A notify()
+  // from addTransactionToFlushList() normally wakes it well before this.
+  private static final long IDLE_WAIT_MS = 1000;
+
+  // Short retry used when transactions are still queued but could not be
+  // completed on this pass, for example because the client lock was held.
+  private static final long PENDING_RETRY_MS = 50;
 
   @Override
   public void run()
@@ -60,26 +65,24 @@ public class TransactionFlusher implements Runnable
       if (getFlushedTransactionCount() > 0)
       {
         updateTransactionStatus();
-        sleepTime = 0;
       }
-      else
-      {
-        sleepTime = 1000;
-      }
-      /*try {
-        Thread.sleep(sleepTime);
-      } catch (InterruptedException ex)
-      {
-        // Ignore
-      }*/
 
-      // If not marked for shutdown, wait for notification from the
-      // suppler that new records are available for processing.
+      // Wait for notification from the supplier that new transactions are
+      // available for processing. This wait must always be bounded:
+      //
+      //  - addTransactionToFlushList() may notify() between the check above
+      //    and the wait below. That notification is lost, and an untimed
+      //    wait() would leave the flusher asleep with work still queued.
+      //  - updateTransactionStatus() returns without doing anything while the
+      //    client lock is held, so queued work has to be picked up on a later
+      //    pass rather than waiting for a notification that may never come.
+      //
+      // Either case previously hung the flusher permanently.
       try
       {
         synchronized (this)
         {
-          wait();
+          wait(transFlushedList.isEmpty() ? IDLE_WAIT_MS : PENDING_RETRY_MS);
         }
       }
       catch (InterruptedException e)
@@ -96,6 +99,13 @@ public class TransactionFlusher implements Runnable
   */
   public synchronized void addTransactionToFlushList(TransactionInfo trans)
   {
+    // The transaction manager re-evaluates flush readiness on every client
+    // status change, so guard against queueing the same transaction twice.
+    if (transFlushedList.contains(trans))
+    {
+      return;
+    }
+
     transFlushedList.add(trans);
     pipeLog.debug("Added transaction <"+trans.getTransactionNumber()+"> to flusher for pipe <"+pipelineName+">");
     this.notify();
@@ -227,7 +237,7 @@ public class TransactionFlusher implements Runnable
   *
   * @return the count.
   */
-  public int getFlushedTransactionCount()
+  public synchronized int getFlushedTransactionCount()
   {
     return transFlushedList.size();
   }

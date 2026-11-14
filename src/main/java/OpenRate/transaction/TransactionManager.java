@@ -410,10 +410,30 @@ public class TransactionManager implements ITransactionManager, IEventInterface
       // Store away the transaction number
       clientTransNumber[clientNumber] = transNumber;
 
-      // Set the transaction into the "finish transaction list" (if it is ready)
-      if ((clientNumber==numberOfClients) && (newStatus==TMD.TM_FLUSHED))
+      // Set the transaction into the "finish transaction list" once every
+      // client has flushed.
+      //
+      // This has to be re-evaluated on each status change rather than only at
+      // the moment the highest numbered client reports TM_FLUSHED. Clients do
+      // not necessarily report in order, and the previous edge triggered test
+      // missed the transition completely whenever the last client flushed
+      // before one of its predecessors. The transaction was then never handed
+      // to the flusher and stayed open forever.
+      TransactionInfo currentTrans = transactionList.get(transNumber);
+
+      boolean allClientsFlushed = true;
+      for (int client = 1; client <= numberOfClients; client++)
       {
-        tmf.addTransactionToFlushList(transactionList.get(transNumber));
+        if (currentTrans.getClientStatus(client) < TMD.TM_FLUSHED)
+        {
+          allClientsFlushed = false;
+          break;
+        }
+      }
+
+      if (allClientsFlushed)
+      {
+        tmf.addTransactionToFlushList(currentTrans);
       }
     }
     catch (NullPointerException npe)

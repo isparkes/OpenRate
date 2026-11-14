@@ -155,7 +155,7 @@
 
 	<properties>
 		<version.junit>4.13.2</version.junit>
-		<version.c3p0>0.9.5.5</version.c3p0>
+		<version.c3p0>0.15.1</version.c3p0>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.mysql.connector>9.7.0</version.mysql.connector>
 		<version.hsql.connector>2.7.4</version.hsql.connector>
