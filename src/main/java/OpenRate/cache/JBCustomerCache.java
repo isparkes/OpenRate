@@ -244,7 +244,6 @@ public abstract class JBCustomerCache
     ProductList tmpProductList;
     CustInfo tmpCustInfo;
     CustProductInfo tmpCPI;
-    boolean firstProduct = true;
 
     // Prepare the result
     tmpProductList = new ProductList();
@@ -270,15 +269,9 @@ public abstract class JBCustomerCache
               {
                 if ( tmpCPI.UTCValidTo > CDRDate )
                 {
-                  if (firstProduct)
-                  {
-                    tmpProductList.addProduct(0,tmpCPI.ProductID,null,tmpCPI.Service,tmpCPI.UTCValidFrom,tmpCPI.UTCValidTo,tmpCPI.Quantity);
-                    firstProduct = false;
-                  }
-                  else
-                  {
-                    tmpProductList.addProduct(0,tmpCPI.ProductID,null,tmpCPI.Service,tmpCPI.UTCValidFrom,tmpCPI.UTCValidTo,tmpCPI.Quantity);
-                  }
+                  // The subscription is the one we just matched on, so pass
+                  // it through rather than a null.
+                  tmpProductList.addProduct(0,tmpCPI.ProductID,tmpCPI.Subscription,tmpCPI.Service,tmpCPI.UTCValidFrom,tmpCPI.UTCValidTo,tmpCPI.Quantity);
                 }
               }
             }

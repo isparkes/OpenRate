@@ -76,7 +76,7 @@ public class CustProductInfo
    */
   public void setSubID(String Id)
   {
-    SubId = Id.intern();
+    SubId = (Id == null) ? null : Id.intern();
   }
 
   /**
