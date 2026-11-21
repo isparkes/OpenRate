@@ -23,9 +23,16 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.*;
 
 /**
@@ -641,6 +648,42 @@ public class ConversionUtilsTest {
     expResult = 1.27;
     result = instance.getRoundedValue(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
+
+    // The old implementation rounded at one extra decimal place first and
+    // then rounded that result, so 1.2649 became 1.265 became 1.27. Rounding
+    // once, at the requested place, gives 1.26.
+    valueToRound = 1.2649;
+    expResult = 1.26;
+    result = instance.getRoundedValue(valueToRound, decimalPlaces);
+    Assert.assertEquals(expResult, result, 0.0);
+
+    // The old implementation lost the cent on anything above ~167772, and
+    // clamped everything above 21474836.47, because Math.round() applied to a
+    // long resolves to the float overload and returns an int.
+    valueToRound = 1000000.01;
+    expResult = 1000000.01;
+    result = instance.getRoundedValue(valueToRound, decimalPlaces);
+    Assert.assertEquals(expResult, result, 0.0);
+
+    valueToRound = 50000000.00;
+    expResult = 50000000.00;
+    result = instance.getRoundedValue(valueToRound, decimalPlaces);
+    Assert.assertEquals(expResult, result, 0.0);
+
+    // Negative values round away from zero, the same distance as the
+    // equivalent positive value. The old implementation rounded towards
+    // positive infinity, so debits and credits rounded differently.
+    valueToRound = -1.265;
+    expResult = -1.27;
+    result = instance.getRoundedValue(valueToRound, decimalPlaces);
+    Assert.assertEquals(expResult, result, 0.0);
+
+    // The old implementation computed 10^places into an int, which overflowed
+    // for 10 or more places and returned 1.0 here.
+    valueToRound = 1.5;
+    expResult = 1.5;
+    result = instance.getRoundedValue(valueToRound, 10);
+    Assert.assertEquals(expResult, result, 0.0);
   }
 
   /**
@@ -655,9 +698,13 @@ public class ConversionUtilsTest {
 
     System.out.println("getRoundedValueRoundUp");
 
-    // already rounded - round it up
+    // Already exact at 2 decimal places, so there is nothing to round up.
+    // The old implementation returned 1.27 here, because new BigDecimal(1.26)
+    // is 1.26000000000000000888 and ROUND_UP moved it. Whether that happened
+    // depended on the binary representation: 2.67 is 2.66999999999999992894
+    // and stayed put. See the stability check at the end of this test.
     valueToRound = 1.26;
-    expResult = 1.27;
+    expResult = 1.26;
     result = instance.getRoundedValueRoundUp(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
 
@@ -678,6 +725,15 @@ public class ConversionUtilsTest {
     expResult = 1.57;
     result = instance.getRoundedValueRoundUp(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
+
+    // Values that are already exact at 2 decimal places must all be left
+    // alone, whichever side of the decimal their binary representation falls.
+    // The old implementation moved the first, third, fifth and sixth of these
+    // and left the others.
+    for (double exact : new double[]{1.26, 2.67, 0.10, 0.29, 3.45, 1.11, 0.07})
+    {
+      Assert.assertEquals(exact, instance.getRoundedValueRoundUp(exact, decimalPlaces), 0.0);
+    }
   }
 
   /**
@@ -741,9 +797,12 @@ public class ConversionUtilsTest {
     result = instance.getRoundedValueRoundHalfEven(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
 
-    // round up on half
+    // A true tie: half-even breaks it towards the even neighbour, so 1.56.
+    // The old implementation returned 1.55, because new BigDecimal(1.555) is
+    // 1.55499999999999993783 and so was not a tie at all. That defeats the
+    // point of half-even rounding, which is to remove the bias on ties.
     valueToRound = 1.555;
-    expResult = 1.55;
+    expResult = 1.56;
     result = instance.getRoundedValueRoundHalfEven(valueToRound, decimalPlaces);
     Assert.assertEquals(expResult, result, 0.0);
 
@@ -762,6 +821,125 @@ public class ConversionUtilsTest {
     return cal.getTimeInMillis()/1000;
   }
   
+  /**
+   * A ConversionUtils object is shared: the ConversionCache hands the same
+   * one to everything asking for a given type, and getConversionUtilsObject()
+   * is a process wide singleton that the pipeline worker threads use. The
+   * date helpers must therefore be safe to call concurrently.
+   *
+   * Before the calendar was made per thread, this failed within a few hundred
+   * iterations, because one thread's setTime() landed between another
+   * thread's setTime() and getTime(). Nothing was thrown: the wrong month
+   * simply came back.
+   */
+  @Test
+  public void testConcurrentDateHelpers() throws Exception {
+    System.out.println("concurrent date helpers");
+
+    final int threadCount = 8;
+    final int iterations = 5000;
+    final ConversionUtils shared = instance;
+    final CountDownLatch start = new CountDownLatch(1);
+    final List<String> failures = Collections.synchronizedList(new ArrayList<String>());
+
+    ExecutorService pool = Executors.newFixedThreadPool(threadCount);
+
+    for (int thread = 0; thread < threadCount; thread++) {
+      final int month = thread + 1;
+
+      pool.submit(() -> {
+        try {
+          Date input = dateFor(2015, month, 15, 12, 30, 0);
+          Date expectedStart = dateFor(2015, month, 1, 0, 0, 0);
+
+          start.await();
+
+          for (int i = 0; i < iterations; i++) {
+            Date result = shared.getMonthStart(input);
+
+            if (result.equals(expectedStart) == false) {
+              failures.add("getMonthStart for month " + month + " returned <"
+                      + result + "> instead of <" + expectedStart + ">");
+              return;
+            }
+          }
+        } catch (Throwable ex) {
+          failures.add("month " + month + " threw " + ex);
+        }
+      });
+    }
+
+    start.countDown();
+    pool.shutdown();
+
+    Assert.assertTrue("worker threads did not finish", pool.awaitTermination(60, TimeUnit.SECONDS));
+    Assert.assertEquals("concurrent date helpers disagreed", Collections.emptyList(), failures);
+  }
+
+  /**
+   * The same again for the input formatter. SimpleDateFormat is not thread
+   * safe, and used concurrently it either throws from inside the number
+   * parser or returns a date built from another thread's input.
+   */
+  @Test
+  public void testConcurrentDateParsing() throws Exception {
+    System.out.println("concurrent date parsing");
+
+    final int threadCount = 8;
+    final int iterations = 5000;
+    final ConversionUtils shared = instance;
+    final CountDownLatch start = new CountDownLatch(1);
+    final List<String> failures = Collections.synchronizedList(new ArrayList<String>());
+
+    shared.setInputDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    ExecutorService pool = Executors.newFixedThreadPool(threadCount);
+
+    for (int thread = 0; thread < threadCount; thread++) {
+      final int month = thread + 1;
+
+      pool.submit(() -> {
+        try {
+          String input = String.format("2015-%02d-15 12:30:00", month);
+          long expected = dateFor(2015, month, 15, 12, 30, 0).getTime() / 1000;
+
+          start.await();
+
+          for (int i = 0; i < iterations; i++) {
+            long result = shared.convertInputDateToUTC(input);
+
+            if (result != expected) {
+              failures.add("convertInputDateToUTC(" + input + ") returned <"
+                      + result + "> instead of <" + expected + ">");
+              return;
+            }
+          }
+        } catch (Throwable ex) {
+          failures.add("month " + month + " threw " + ex);
+        }
+      });
+    }
+
+    start.countDown();
+    pool.shutdown();
+
+    Assert.assertTrue("worker threads did not finish", pool.awaitTermination(60, TimeUnit.SECONDS));
+    Assert.assertEquals("concurrent parsing disagreed", Collections.emptyList(), failures);
+  }
+
+  /**
+   * Build a date without touching the calendar shared by the other tests in
+   * this class, so that it can be called from several threads at once.
+   */
+  private static Date dateFor(int year, int month, int day, int hour, int min, int sec) {
+    Calendar workingCalendar = Calendar.getInstance();
+    workingCalendar.clear();
+    workingCalendar.set(year, month - 1, day, hour, min, sec);
+    workingCalendar.set(Calendar.MILLISECOND, 0);
+
+    return workingCalendar.getTime();
+  }
+
   /**
    * Get the UTC date using the calendar. We expect 
    */

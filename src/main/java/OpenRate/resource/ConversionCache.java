@@ -86,18 +86,12 @@ public class ConversionCache implements IResource
    */
   public ConversionUtils getConversionObject(String type)
   {
-    if (ConversionManagers.containsKey(type))
-    {
-      // just return it
-      return ConversionManagers.get(type);
-    }
-    else
-    {
-      // create it and return it
-      ConversionUtils tmpConv = new ConversionUtils();
-      ConversionManagers.put(type, tmpConv);
-      return tmpConv;
-    }
+    // computeIfAbsent rather than containsKey/get/put: two threads asking for
+    // the same type at the same time both passed the containsKey check, both
+    // created a converter and both put it, so one of them went on using an
+    // object that no longer was the one in the map. Any format set on it was
+    // then invisible to everybody else.
+    return ConversionManagers.computeIfAbsent(type, key -> new ConversionUtils());
   }
 
  /**
