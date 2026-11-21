@@ -125,12 +125,12 @@ public class DuplicateCheckCache
   /**
    * the statement that will be used to try to purge from the DB
    */
-  protected static PreparedStatement StmtPurgeQuery;
+  protected PreparedStatement StmtPurgeQuery;
 
   /**
    * the statement that will be used to try to see if a record exists in the DB
    */
-  protected static PreparedStatement StmtSelectQuery;
+  protected PreparedStatement StmtSelectQuery;
 
  /**
   * The number of days we buffer

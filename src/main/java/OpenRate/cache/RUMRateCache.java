@@ -145,33 +145,33 @@ public class RUMRateCache
    * these are the statements that we have to prepare to be able to get records
    * once and only once
    */
-  protected static String PriceModelDataSelectQuery;
+  protected String PriceModelDataSelectQuery;
 
   /**
    * these are the prepared statements
    */
-  protected static PreparedStatement StmtPriceModelDataSelectQuery;
+  protected PreparedStatement StmtPriceModelDataSelectQuery;
 
   /**
    * these are the statements that we have to prepare to be able to get records
    * once and only once
    */
-  protected static String RUMMapDataSelectQuery;
+  protected String RUMMapDataSelectQuery;
 
   /**
    * these are the prepared statements
    */
-  protected static PreparedStatement StmtRUMMapDataSelectQuery;
+  protected PreparedStatement StmtRUMMapDataSelectQuery;
 
   /**
    * this is the name of the file that holds the RUM Map
    */
-  protected static String RUMMapDataFile;
+  protected String RUMMapDataFile;
 
   /**
    * this is the name of the file that holds price models
    */
-  protected static String PriceModelDataFile;
+  protected String PriceModelDataFile;
 
 // -----------------------------------------------------------------------------
 // ------------------ Start of inherited Plug In functions ---------------------
@@ -820,7 +820,7 @@ public class RUMRateCache
 
     // Close down stuff
     DBUtil.close(mrs);
-    DBUtil.close(StmtPriceModelDataSelectQuery);
+    DBUtil.close(StmtRUMMapDataSelectQuery);
     DBUtil.close(JDBCcon);
 
     OpenRate.getOpenRateFrameworkLog().info(

@@ -82,19 +82,19 @@ public class TimeModelCache
    * this is the name of the method we are to use in the case that the method
    * data source has been defined for loading the day map
    */
-  protected static String DayCacheMethodName = null;
+  protected String DayCacheMethodName = null;
 
   /**
    * this is the name of the method we are to use in the case that the method
    * data source has been defined for loading the time model map
    */
-  protected static String MapCacheMethodName = null;
+  protected String MapCacheMethodName = null;
 
   /**
    * this is the name of the method we are to use in the case that the method
    * data source has been defined for loading the time model map
    */
-  protected static String ModelCacheMethodName = null;
+  protected String ModelCacheMethodName = null;
 
   /**
    * A TimeInterval is a part of a time model. A model is made up of a list of

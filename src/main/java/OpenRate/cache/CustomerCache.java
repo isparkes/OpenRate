@@ -151,45 +151,45 @@ public class CustomerCache
    * database. Aliases are the keys used to locate the customer account to use
    * for rating the traffic
    */
-  protected static String aliasSelectQuery;
+  protected String aliasSelectQuery;
 
   /**
    * prepared statement for the alias query
    */
-  protected static PreparedStatement stmtAliasSelectQuery;
+  protected PreparedStatement stmtAliasSelectQuery;
 
   /**
    * The customer data select query is used to recover customer information
    * from the database
    */
-  protected static String customerSelectQuery;
+  protected String customerSelectQuery;
 
   /**
    * prepared statement for the customer data query
    */
-  protected static PreparedStatement stmtCustomerSelectQuery;
+  protected PreparedStatement stmtCustomerSelectQuery;
 
  /**
   * The product data select query is used to recover the product infromation
   * from the database and associate it to the account
   */
-  protected static String productSelectQuery;
+  protected String productSelectQuery;
 
   /**
    * prepared statement for the product query
    */
-  protected static PreparedStatement stmtProductSelectQuery;
+  protected PreparedStatement stmtProductSelectQuery;
 
  /**
   * The ERA data select query is used to recover the "Extended Rating
   * Attribute" information from the database and associate it to the account
   */
-  protected static String eraSelectQuery;
+  protected String eraSelectQuery;
 
   /**
    * prepared statement for the ERA query
    */
-  protected static PreparedStatement stmtERASelectQuery;
+  protected PreparedStatement stmtERASelectQuery;
 
  /**
   * The internal date format is the format that by default will be used when

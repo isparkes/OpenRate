@@ -18,7 +18,6 @@ package OpenRate.cache;
 
 import OpenRate.CommonConfig;
 import OpenRate.OpenRate;
-import static OpenRate.cache.RUMRateCache.PriceModelDataFile;
 import OpenRate.db.DBUtil;
 import OpenRate.exception.InitializationException;
 import OpenRate.record.RateMapEntry;
@@ -334,7 +333,7 @@ public class RateCache
               + "> in record <" + RatesLoaded + ">. IO Error.");
     } catch (ParseException pe) {
       message
-              = "Error converting date from <" + PriceModelDataFile
+              = "Error converting date from <" + cacheDataFile
               + "> in record <" + RatesLoaded + ">. Unexpected date value <" + tmpStringStartTime + ">";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
       throw new InitializationException(message, getSymbolicName());

@@ -93,17 +93,17 @@ public class RUMCPRateCache
    * these are the statements that we have to prepare to be able to get records
    * once and only once
    */
-  protected static String PriceModelDataSelectQuery;
+  protected String PriceModelDataSelectQuery;
 
   /**
    * these are the prepared statements
    */
-  protected static PreparedStatement StmtPriceModelDataSelectQuery;
+  protected PreparedStatement StmtPriceModelDataSelectQuery;
 
   /**
    * this is the name of the file that holds price models
    */
-  protected static String PriceModelDataFile;
+  protected String PriceModelDataFile;
 
  /** Constructor
   * Creates a new instance of the Plan Cache. The plan cache

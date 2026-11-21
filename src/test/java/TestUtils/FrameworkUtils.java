@@ -27,6 +27,7 @@ import OpenRate.resource.DataSourceFactory;
 import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
 import OpenRate.transaction.TransactionManagerFactory;
+import OpenRate.utils.ClassUtils;
 import OpenRate.utils.PropertyUtils;
 import java.net.URL;
 import java.sql.Connection;
@@ -73,7 +74,7 @@ public class FrameworkUtils {
    * @throws InstantiationException
    * @throws IllegalAccessException 
    */
-  public static void startupLoggers() throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  public static void startupLoggers() throws InitializationException, ReflectiveOperationException
   {
     String resourceName;
     String tmpResourceClassName;
@@ -86,7 +87,7 @@ public class FrameworkUtils {
     resourceName         = "LogFactory";
     tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(AbstractLogFactory.RESOURCE_KEY,"ClassName");
     ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
+    Resource             = (IResource)ClassUtils.newInstance(ResourceClass);
     Resource.init(resourceName);
     ctx.register(resourceName, Resource);
     
@@ -108,7 +109,7 @@ public class FrameworkUtils {
     }
   }
 
-  public static void startupDataSources() throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  public static void startupDataSources() throws InitializationException, ReflectiveOperationException
   {
     String resourceName;
     String tmpResourceClassName;
@@ -121,7 +122,7 @@ public class FrameworkUtils {
     resourceName         = "DataSourceFactory";
     tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(DataSourceFactory.RESOURCE_KEY,"ClassName");
     ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
+    Resource             = (IResource)ClassUtils.newInstance(ResourceClass);
     Resource.init(resourceName);
     ctx.register(resourceName, Resource);
     
@@ -137,7 +138,7 @@ public class FrameworkUtils {
     }
   }  
   
-  public static void startupCaches() throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  public static void startupCaches() throws InitializationException, ReflectiveOperationException
   {
     String resourceName;
     String tmpResourceClassName;
@@ -153,7 +154,7 @@ public class FrameworkUtils {
       resourceName         = "CacheFactory";
       tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(CacheFactory.RESOURCE_KEY,"ClassName");
       ResourceClass        = Class.forName(tmpResourceClassName);
-      Resource             = (IResource)ResourceClass.newInstance();
+      Resource             = (IResource)ClassUtils.newInstance(ResourceClass);
       Resource.init(resourceName);
       ctx.register(resourceName, Resource);
     } catch (InitializationException ex) {
@@ -170,7 +171,7 @@ public class FrameworkUtils {
     }
   }
   
-  public static void startupTransactionManager() throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  public static void startupTransactionManager() throws InitializationException, ReflectiveOperationException
   {
     String resourceName;
     String tmpResourceClassName;
@@ -183,7 +184,7 @@ public class FrameworkUtils {
     resourceName         = "TransactionManagerFactory";
     tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(TransactionManagerFactory.RESOURCE_KEY,"ClassName");
     ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
+    Resource             = (IResource)ClassUtils.newInstance(ResourceClass);
     Resource.init(resourceName);
     ctx.register(resourceName, Resource);
     // Check for exceptions
@@ -193,7 +194,7 @@ public class FrameworkUtils {
     }    
   }
   
-  public static void startupConversionCache() throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  public static void startupConversionCache() throws InitializationException, ReflectiveOperationException
   {
     String resourceName;
     String tmpResourceClassName;
@@ -206,7 +207,7 @@ public class FrameworkUtils {
     resourceName         = "ConversionCache";
     tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(ConversionCache.RESOURCE_KEY,"ClassName");
     ResourceClass        = Class.forName(tmpResourceClassName);
-    Resource             = (IResource)ResourceClass.newInstance();
+    Resource             = (IResource)ClassUtils.newInstance(ResourceClass);
     Resource.init(resourceName);
     ctx.register(resourceName, Resource);
   }
@@ -221,7 +222,7 @@ public class FrameworkUtils {
   * @throws InstantiationException
   * @throws IllegalAccessException 
   */
-  public static Connection getDBConnection(String cacheName) throws InitializationException, ClassNotFoundException, InstantiationException, IllegalAccessException
+  public static Connection getDBConnection(String cacheName) throws InitializationException, ReflectiveOperationException
   {
     // Get the data source name
     String connectionName = PropertyUtils.getPropertyUtils().getDataCachePropertyValueDef("CacheFactory",

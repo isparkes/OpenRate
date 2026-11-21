@@ -820,7 +820,7 @@ public class AbstractDuplicateCheckTest
       result.next();
       rowCount = result.getInt(1);
       DBUtil.close(JDBCChcon);
-    } catch (InitializationException | SQLException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    } catch (InitializationException | SQLException | ReflectiveOperationException ex) {
       // Not OK, Assert.fail the case
       message = "Error counting rows in test <AbstractDuplicateCheckTest>, message <"+ex.getMessage()+">";
       Assert.fail(message);
@@ -863,7 +863,7 @@ public class AbstractDuplicateCheckTest
       result.next();
       rowCount = result.getInt(1);
       DBUtil.close(JDBCChcon);
-    } catch (InitializationException | SQLException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    } catch (InitializationException | SQLException | ReflectiveOperationException ex) {
       // Not OK, Assert.fail the case
       message = "Error counting rows in test <AbstractDuplicateCheckTest>, message <"+ex.getMessage()+">";
       Assert.fail(message);

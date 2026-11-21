@@ -105,11 +105,6 @@ public class RUMMapCache
    */
   protected HashMap<String, ArrayList<RUMMapEntry>> RUMMapCache;
 
-  /**
-   * this is the name of the file that holds the RUM Map
-   */
-  protected static String RUMMapDataFile;
-
 // -----------------------------------------------------------------------------
 // ------------------ Start of inherited Plug In functions ---------------------
 // -----------------------------------------------------------------------------

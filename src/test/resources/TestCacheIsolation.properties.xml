@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!-- Properties file for supporting unit tests. This is not a typical properties
+     file and should not be taken as a general example because it won't work
+     outside of the context of unit tests!!!
+
+     Two instances of the same cache class, each configured against its own
+     table, so that a test can check they do not share configuration. -->
+<config>
+  <Application>
+    CacheIsolationTest
+  </Application>
+
+  <PipelineList>
+  </PipelineList>
+
+  <Resource>
+    <LogFactory>
+      <ClassName>OpenRate.logging.LogFactory</ClassName>
+      <Properties>logUnitTest.xml</Properties>
+      <DefaultCategory>CacheIsolationTest</DefaultCategory>
+    </LogFactory>
+
+    <DataSourceFactory>
+      <ClassName>OpenRate.resource.DataSourceFactory</ClassName>
+      <DataSourceBuilder>
+        <ClassName>OpenRate.db.C3P0DataSource</ClassName>
+      </DataSourceBuilder>
+      <DataSource>
+        <TestDB>
+          <db_url>jdbc:hsqldb:mem://localhost/testdb</db_url>
+          <driver>org.hsqldb.jdbc.JDBCDriver</driver>
+          <username>SA</username>
+          <password></password>
+          <ValidationQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</ValidationQuery>
+          <InitQuery>SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS</InitQuery>
+          <TestConnectionPeriod>60</TestConnectionPeriod>
+        </TestDB>
+      </DataSource>
+    </DataSourceFactory>
+
+    <CacheFactory>
+      <ClassName>OpenRate.resource.CacheFactory</ClassName>
+      <CacheableClass>
+        <RetailRateCache>
+          <ClassName>OpenRate.cache.RUMRateCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TestDB</DataSource>
+          <DateFormat>yyyy-MM-dd</DateFormat>
+          <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM from ISO_RETAIL_PRICE_MODEL</PriceModelStatement>
+          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,CONSUME_FLAG from ISO_RETAIL_RUM_MAP</RUMMapStatement>
+        </RetailRateCache>
+
+        <WholesaleRateCache>
+          <ClassName>OpenRate.cache.RUMRateCache</ClassName>
+          <DataSourceType>DB</DataSourceType>
+          <DataSource>TestDB</DataSource>
+          <DateFormat>yyyy-MM-dd</DateFormat>
+          <PriceModelStatement>select PRICE_MODEL,STEP,TIER_FROM,TIER_TO,BEAT,FACTOR,CHARGE_BASE,VALID_FROM from ISO_WHOLESALE_PRICE_MODEL</PriceModelStatement>
+          <RUMMapStatement>select PRICE_GROUP,PRICE_MODEL,RUM,RESOURCE,RUM_TYPE,CONSUME_FLAG from ISO_WHOLESALE_RUM_MAP</RUMMapStatement>
+        </WholesaleRateCache>
+      </CacheableClass>
+    </CacheFactory>
+  </Resource>
+</config>

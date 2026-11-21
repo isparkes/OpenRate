@@ -85,12 +85,12 @@ public class BalanceCache extends AbstractCache
 
   // these are the statements that we have to prepare to be able to get
   // records once and only once
-  private static String cacheDataSelectQuery;
+  private String cacheDataSelectQuery;
 
   /**
    * these are the prepared statements
    */
-  protected static PreparedStatement stmtCacheDataSelectQuery;
+  protected PreparedStatement stmtCacheDataSelectQuery;
 
    /**
     * The internal cache is very simply a huge array. No black magic here
@@ -98,7 +98,7 @@ public class BalanceCache extends AbstractCache
    protected Map<Long, BalanceGroup> balanceCache;
 
    // used for handling date conversions
-   private static ConversionUtils conv;
+   private ConversionUtils conv;
    
    // if we have to save a snapshot even when in DB mode
    private boolean saveSnapshot = false;
