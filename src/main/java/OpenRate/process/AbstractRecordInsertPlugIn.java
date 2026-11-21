@@ -96,6 +96,10 @@ public abstract class AbstractRecordInsertPlugIn extends AbstractPlugIn
       // each thread wake up
       startTime = System.currentTimeMillis();
 
+      // Arm before we look, so that a push or a shutdown arriving while we
+      // are looking is not lost
+      getRecordWaiter().arm();
+
       // get the batch records to process
       in = (ArrayList<IRecord>) getBatchInbound().pull(getBatchSize());
 
@@ -200,18 +204,8 @@ public abstract class AbstractRecordInsertPlugIn extends AbstractPlugIn
         }
 
         // If not marked for shutdown, wait for notification from the
-        // suppler that new records are available for processing.
-        try
-        {
-          synchronized (this)
-          {
-            wait();
-          }
-        }
-        catch (InterruptedException e)
-        {
-          // ignore interrupt exceptions
-        }
+        // supplier that new records are available for processing.
+        getRecordWaiter().await();
       } // else
     } // while loop
   }

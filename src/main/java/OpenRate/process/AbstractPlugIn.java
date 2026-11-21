@@ -34,6 +34,7 @@ import OpenRate.logging.LogUtil;
 import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
+import OpenRate.threads.WakeupLatch;
 import OpenRate.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.HashMap;
@@ -76,6 +77,9 @@ public abstract class AbstractPlugIn
    * the correct value. The flag is used to trigger a thread exit.
    */
   private volatile boolean shutdownFlag = false;
+
+  // Used to wait for more work without losing a wakeup. See WakeupLatch.
+  private final WakeupLatch recordWaiter = new WakeupLatch();
 
   // This is the pipeline that we are in, used for logging  
   private IPipeline pipeline;
@@ -210,6 +214,10 @@ public abstract class AbstractPlugIn
       // get the timestamp of the start of the processing. This will happen on
       // each thread wake up
       startTime = System.currentTimeMillis();
+
+      // Arm before we look, so that a push or a shutdown arriving while we
+      // are looking is not lost
+      recordWaiter.arm();
 
       // get the batch records to process
       in = getBatchInbound().pull(getBatchSize());
@@ -373,15 +381,9 @@ public abstract class AbstractPlugIn
           break;
         }
 
-          // If not marked for shutdown, wait for notification from the
-        // suppler that new records are available for processing.
-        try {
-          synchronized (this) {
-            wait();
-          }
-        } catch (InterruptedException e) {
-          // ignore interrupt exceptions
-        }
+        // If not marked for shutdown, wait for notification from the
+        // supplier that new records are available for processing.
+        recordWaiter.await();
       } // else
     } // while loop
   }
@@ -405,10 +407,8 @@ public abstract class AbstractPlugIn
     //log.debug("PlugIn <" + getSymbolicName() + "> marked for exit....");
     this.shutdownFlag = true;
 
-    // notify any listeners that are waiting that we are flushing
-    synchronized (this) {
-      notifyAll();
-    }
+    // wake the worker up so that it sees the flag
+    recordWaiter.signal();
   }
 
   /**
@@ -514,9 +514,17 @@ public abstract class AbstractPlugIn
    */
   @Override
   public void notify(IEvent e) {
-    synchronized (this) {
-      notifyAll();
-    }
+    recordWaiter.signal();
+  }
+
+ /**
+  * The latch this module waits on, for subclasses that write their own
+  * processing loop.
+  *
+  * @return The wakeup latch
+  */
+  protected WakeupLatch getRecordWaiter() {
+    return recordWaiter;
   }
 
 // -----------------------------------------------------------------------------

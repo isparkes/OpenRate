@@ -26,6 +26,7 @@ import OpenRate.logging.ILogger;
 import OpenRate.process.IPlugIn;
 import OpenRate.record.FlatRecord;
 import OpenRate.record.IRecord;
+import OpenRate.threads.WakeupLatch;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -50,6 +51,9 @@ public abstract class AbstractRTAdapter implements IRTAdapter
    * Flag that marks adapters shutdown
    */
   private volatile boolean shutdown = false;
+
+  // Used to wait for the shutdown signal without losing it. See WakeupLatch.
+  private final WakeupLatch shutdownWaiter = new WakeupLatch();
 
  /**
   * This is the pipeline that we are in, used for logging and property retrieval
@@ -176,22 +180,21 @@ public abstract class AbstractRTAdapter implements IRTAdapter
    */
   public void write() throws ProcessingException
   {
-    while (!shutdown)
+    while (true)
     {
-      // If not marked for shutdown, wait for notification from the
-      // suppler that new records are available for processing.
-      try
+      // Arm before we look at the flag, so that a closedown arriving in
+      // between is not lost. Without this, a markForClosedown() landing
+      // between the test and the wait() left this thread waiting for a
+      // notify that had already been and gone, and the pipeline never
+      // finished shutting down.
+      shutdownWaiter.arm();
+
+      if (shutdown)
       {
-        synchronized (this)
-        {
-          //log.info("Output adapter <" + getSymbolicName() + "> waiting" );
-          wait();
-        }
+        break;
       }
-      catch (InterruptedException e)
-      {
-        // ignore
-      }
+
+      shutdownWaiter.await();
     } // while
   }
 
@@ -220,11 +223,8 @@ public abstract class AbstractRTAdapter implements IRTAdapter
     // Shutdown the listener
     shutdownInputListener();
 
-    // notify any listeners that are waiting that we are flushing
-    synchronized (this)
-    {
-      notifyAll();
-    }
+    // wake the write loop up so that it sees the flag
+    shutdownWaiter.signal();
   }
 
  /**

@@ -31,6 +31,7 @@ import OpenRate.logging.ILogger;
 import OpenRate.logging.LogUtil;
 import OpenRate.record.HeaderRecord;
 import OpenRate.record.IRecord;
+import OpenRate.threads.WakeupLatch;
 import OpenRate.record.TrailerRecord;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
@@ -59,6 +60,9 @@ public abstract class AbstractOutputAdapter
 
   // Whether we are to shut down or not
   private volatile boolean shutdownFlag = false;
+
+  // Used to wait for more work without losing a wakeup. See WakeupLatch.
+  private final WakeupLatch recordWaiter = new WakeupLatch();
 
   // Used to store the name of this output, for deciding if records should be
   // written to this output or not
@@ -181,6 +185,10 @@ public abstract class AbstractOutputAdapter
     while (true) {
       // Start the timing for the statistics
       startTime = System.currentTimeMillis();
+
+      // Arm before we look, so that a push or a closedown arriving while we
+      // are looking is not lost
+      recordWaiter.arm();
 
       in = getBatchInboundValidBuffer().pull(batchSize);
       ThisBatchRecordCount = in.size();
@@ -378,13 +386,7 @@ public abstract class AbstractOutputAdapter
 
         // If not marked for shutdown, wait for notification from the
         // supplier that new records are available for processing.
-        try {
-          synchronized (this) {
-            wait();
-          }
-        } catch (InterruptedException e) {
-          // ignore
-        }
+        recordWaiter.await();
       }
     } // while loop
   }
@@ -458,10 +460,8 @@ public abstract class AbstractOutputAdapter
   public void markForClosedown() {
     this.shutdownFlag = true;
 
-    // notify any listeners that are waiting that we are flushing
-    synchronized (this) {
-      notifyAll();
-    }
+    // wake the worker up so that it sees the flag
+    recordWaiter.signal();
   }
 
   /**
@@ -541,9 +541,7 @@ public abstract class AbstractOutputAdapter
    */
   @Override
   public void notify(IEvent e) {
-    synchronized (this) {
-      notifyAll();
-    }
+    recordWaiter.signal();
   }
 
   // -----------------------------------------------------------------------------
