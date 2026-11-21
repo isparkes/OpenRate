@@ -17,8 +17,8 @@
 
 package OpenRate.buffer;
 
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 
 /**
@@ -39,9 +39,17 @@ import java.util.Iterator;
 public abstract class AbstractBuffer
   implements IBuffer
 {
-  // this hash set contains all of the monitors to this buffer. These will
+  // this set contains all of the monitors to this buffer. These will
   // be notified when new records are ready.
-  private final HashSet<IMonitor> monitors = new HashSet<>();
+  //
+  // Copy on write, so that notifyMonitors() does not have to hold a lock
+  // while it calls into the monitors. Each monitor takes its own lock to do
+  // its notifyAll(), so holding ours across that call meant every push in
+  // the pipeline queued behind one monitor, and it set up a lock ordering
+  // (buffer then monitor) that nothing else may ever take the other way
+  // round. Monitors register during initialisation and never after, so the
+  // copy on write costs nothing at run time.
+  private final Set<IMonitor> monitors = new CopyOnWriteArraySet<>();
 
   private String Supplier;
   private String Consumer;
@@ -59,15 +67,9 @@ public abstract class AbstractBuffer
   */
   protected void notifyMonitors()
   {
-    synchronized (monitors)
+    for (IMonitor m : monitors)
     {
-      Iterator<IMonitor> iter = monitors.iterator();
-
-      while (iter.hasNext())
-      {
-        IMonitor m = iter.next();
-        m.notify(BufferEvent.NEW_RECORDS);
-      }
+      m.notify(BufferEvent.NEW_RECORDS);
     }
   }
 
@@ -80,10 +82,7 @@ public abstract class AbstractBuffer
   @Override
   public void registerMonitor(IMonitor m)
   {
-    synchronized (monitors)
-    {
-      monitors.add(m);
-    }
+    monitors.add(m);
   }
 
  /**

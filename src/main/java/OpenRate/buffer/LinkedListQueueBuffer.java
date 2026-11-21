@@ -18,10 +18,10 @@
 package OpenRate.buffer;
 
 import OpenRate.record.IRecord;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Buffer implementation using an LinkedListQueue as the buffering element.
@@ -36,13 +36,24 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class LinkedListQueueBuffer
   extends AbstractBuffer
 {
-  //The main storage object of the buffer
-  private final ConcurrentLinkedDeque<IRecord> queueHelperBatch;
+  // The main storage object of the buffer.
+  //
+  // LinkedBlockingQueue and not ConcurrentLinkedDeque: size() on a
+  // ConcurrentLinkedDeque walks the whole queue, and the pipeline scheduler
+  // asks every buffer in the pipe for its count on every cycle, so a deep
+  // buffer made the scheduler itself the bottleneck. LinkedBlockingQueue
+  // keeps a count, so size() is constant time, and drainTo() takes a batch
+  // off in one go.
+  //
+  // Unlike ArrayListQueueBuffer this does not hold a lock across push(), so
+  // a consumer can see part of a batch before the rest of it arrives. Order
+  // within what each producer pushes is still kept.
+  private final BlockingQueue<IRecord> queueHelperBatch;
 
 
   public LinkedListQueueBuffer()
   {
-    queueHelperBatch = new ConcurrentLinkedDeque<>();
+    queueHelperBatch = new LinkedBlockingQueue<>();
   }
 
  /**
@@ -77,17 +88,11 @@ public class LinkedListQueueBuffer
   @Override
   public Collection<IRecord> pull(int max)
   {
-    LinkedList<IRecord> list = new LinkedList<>();
+    ArrayList<IRecord> list = new ArrayList<>();
 
-    for (int i = 0; i < max; i++) {
-
-      IRecord record = queueHelperBatch.poll();
-      if (record != null) {
-        list.add(record);
-      }
-      else {
-        break;
-      }
+    if (max > 0)
+    {
+      queueHelperBatch.drainTo(list, max);
     }
 
     return list;

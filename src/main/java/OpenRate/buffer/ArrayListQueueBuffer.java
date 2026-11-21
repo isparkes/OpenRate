@@ -18,9 +18,10 @@
 package OpenRate.buffer;
 
 import OpenRate.record.IRecord;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Deque;
 
 
 /**
@@ -35,7 +36,13 @@ public class ArrayListQueueBuffer
   extends AbstractBuffer
 {
   // implementation all deferred to this class.
-  private List<IRecord>   queueHelperBatch;
+  //
+  // ArrayDeque and not ArrayList: pull() takes records from the head, and
+  // ArrayList.remove(0) copies the whole backing array down a place each
+  // time, so draining a deep buffer was quadratic on the hottest path in the
+  // framework. ArrayDeque.removeFirst() is constant time and keeps the same
+  // FIFO ordering.
+  private final Deque<IRecord> queueHelperBatch;
   private final Object lock;
 
  /**
@@ -45,8 +52,7 @@ public class ArrayListQueueBuffer
   {
     super();
 
-    //queueHelper = Collections.synchronizedList(new ArrayList());
-    queueHelperBatch = new ArrayList<>();
+    queueHelperBatch = new ArrayDeque<>();
 
     // the locking object so that we make sure that the multi-threadedness of
     // the object is guaranteed
@@ -89,22 +95,23 @@ public class ArrayListQueueBuffer
   @Override
   public Collection<IRecord> pull(int max)
   {
-    ArrayList<IRecord> list = new ArrayList<>();
+    ArrayList<IRecord> list;
 
     synchronized (lock)
     {
-      int size = queueHelperBatch.size();
+      int count = Math.min(max, queueHelperBatch.size());
 
-      for (int i = 0; (i < max) && (size > 0); ++i)
+      if (count < 0)
       {
-        // It would be faster to pull from the end of the array instead
-        // of the beginning, but if order matters (and mostly it will) we have
-        // to work from the head of the queue.
-        // In cases where order really does not matter, we could use:
-        // Object o = queueHelper.remove(--size);
-        IRecord o = queueHelperBatch.remove(0);
-        --size;
-        list.add(o);
+        count = 0;
+      }
+
+      list = new ArrayList<>(count);
+
+      for (int i = 0; i < count; i++)
+      {
+        // Records come off the head, because order matters almost everywhere.
+        list.add(queueHelperBatch.removeFirst());
       }
     }
 
@@ -119,6 +126,13 @@ public class ArrayListQueueBuffer
   @Override
   public int getEventCount()
   {
-    return queueHelperBatch.size();
+    // Under the lock, like every other access to the queue. Reading the size
+    // outside it was a data race on a structure that is not thread safe, with
+    // no happens-before edge to the pushes, and the pipeline scheduler uses
+    // this value to decide whether the pipe is idle and should sleep.
+    synchronized (lock)
+    {
+      return queueHelperBatch.size();
+    }
   }
 }
