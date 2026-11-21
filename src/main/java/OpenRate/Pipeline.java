@@ -32,9 +32,11 @@ import OpenRate.transaction.ISyncPoint;
 import OpenRate.transaction.TransactionManager;
 import OpenRate.transaction.TransactionManagerFactory;
 import OpenRate.utils.ConversionUtils;
+import OpenRate.utils.ClassUtils;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -118,8 +120,18 @@ public class Pipeline
   private ArrayList<IOutputAdapter> batchOutputAdapterList = new ArrayList<>();
 
   // list of plug ins threads to be run by this pipeline (there can be more than
-  // one thread per logical plug in)
-  private ArrayList<ThreadGroup> thGrpsPlugIn = new ArrayList<>();
+  // one thread per logical plug in), in the same order as plugInList
+  //
+  // We hold the threads themselves rather than their ThreadGroups. The groups
+  // are still used to name and nest the threads, which is what makes a thread
+  // dump readable, but waiting on a group means polling activeCount(), which
+  // is only an estimate, and tidying one up means ThreadGroup.destroy(),
+  // which is deprecated for removal and is already degraded on current JDKs.
+  // Holding the threads lets us simply join them.
+  private ArrayList<List<Thread>> thrdsPlugIn = new ArrayList<>();
+
+  // the output adapter threads launched by this pipeline
+  private final List<Thread> thrdsOutputAdapter = new ArrayList<>();
 
   // These are used for configuring the pipe
   private int sleepTime;
@@ -385,17 +397,12 @@ public class Pipeline
       }
 
       try {
-        batchInputAdapter = (IInputAdapter) PluginClass.newInstance();
-      } catch (InstantiationException ex) {
+        batchInputAdapter = (IInputAdapter) ClassUtils.newInstance(PluginClass);
+      } catch (ReflectiveOperationException ex) {
         message = "Input adapter class  <" + PluginClassName
-                + "> instantiation error in pipeline <" + symbolicName
-                + ">. <" + ex.getMessage() + ">";
-        throw new InitializationException(message, getSymbolicName());
-      } catch (IllegalAccessException ex) {
-        message = "Input adapter class  <" + PluginClassName
-                + "> access error in pipeline <" + symbolicName + ">. <"
-                + ex.getMessage() + ">";
-        throw new InitializationException(message, getSymbolicName());
+                + "> could not be created in pipeline <" + symbolicName
+                + ">. <" + ClassUtils.describeFailure(ex) + ">";
+        throw new InitializationException(message, ex, getSymbolicName());
       }
 
       // Now that we have the input adapter, initialise it using the index 0 (we
@@ -452,17 +459,12 @@ public class Pipeline
       }
 
       try {
-        rtAdapter = (IRTAdapter) PluginClass.newInstance();
-      } catch (InstantiationException ex) {
+        rtAdapter = (IRTAdapter) ClassUtils.newInstance(PluginClass);
+      } catch (ReflectiveOperationException ex) {
         message = "Input adapter class  <" + PluginClassName
-                + "> instantiation error in pipeline <"
-                + symbolicName + ">. <" + ex.getMessage() + ">";
-        throw new InitializationException(message, getSymbolicName());
-      } catch (IllegalAccessException ex) {
-        message = "Input adapter class  <" + PluginClassName
-                + "> access error in pipeline <" + symbolicName + ">. <"
-                + ex.getMessage() + ">";
-        throw new InitializationException(message, getSymbolicName());
+                + "> could not be created in pipeline <"
+                + symbolicName + ">. <" + ClassUtils.describeFailure(ex) + ">";
+        throw new InitializationException(message, ex, getSymbolicName());
       }
 
       // Now that we have the input adapter, initialise it using the index 0 (we
@@ -512,7 +514,7 @@ public class Pipeline
           PluginClass = Class.forName(PluginClassName);
 
           // Find what type of output adapter
-          tmpBatchOutputAdapter = (IOutputAdapter) PluginClass.newInstance();
+          tmpBatchOutputAdapter = (IOutputAdapter) ClassUtils.newInstance(PluginClass);
 
           // set the terminator tag on the last adapter, which has the effect of
           // logging records as errors if they have not been consumed by the
@@ -534,11 +536,9 @@ public class Pipeline
       } catch (ClassCastException ex) {
         message = "Error creating plugin class (cast exception) <" + PluginClassName + ">";
         throw new InitializationException(message, ex, getSymbolicName());
-      } catch (InstantiationException ex) {
-        message = "Error instantiating plugin class <" + PluginClassName + ">";
-        throw new InitializationException(message, ex, getSymbolicName());
-      } catch (IllegalAccessException ex) {
-        message = "Error accessing plugin class <" + PluginClassName + ">";
+      } catch (ReflectiveOperationException ex) {
+        message = "Error creating plugin class <" + PluginClassName + ">. <"
+                + ClassUtils.describeFailure(ex) + ">";
         throw new InitializationException(message, ex, getSymbolicName());
       }
     }
@@ -591,7 +591,7 @@ public class Pipeline
         OpenRate.getOpenRateFrameworkLog().debug("Process " + Index + " = " + pluginClassName);
 
         PluginClass = Class.forName(pluginClassName);
-        Plugin = (IPlugIn) PluginClass.newInstance();
+        Plugin = (IPlugIn) ClassUtils.newInstance(PluginClass);
 
         // Create the new Plugin
         Plugin.init(symbolicName, PluginName);
@@ -606,11 +606,9 @@ public class Pipeline
     } catch (ClassCastException ex) {
       message = "Error creating plugin class (cast exception) <" + pluginClassName + ">";
       throw new InitializationException(message, ex, getSymbolicName());
-    } catch (InstantiationException ex) {
-      message = "Error instantiating plugin class <" + pluginClassName + ">";
-      throw new InitializationException(message, ex, getSymbolicName());
-    } catch (IllegalAccessException ex) {
-      message = "Error accessing plugin class <" + pluginClassName + ">";
+    } catch (ReflectiveOperationException ex) {
+      message = "Error creating plugin class <" + pluginClassName + ">. <"
+              + ClassUtils.describeFailure(ex) + ">";
       throw new InitializationException(message, ex, getSymbolicName());
     }
 
@@ -638,7 +636,7 @@ public class Pipeline
       // Hookup the input buffers - there can only be one input adapter of each
       // type (realtime / batch) at the moment, so we can create these
       // statically
-      tmpBuffer = (IBuffer) BufferClass.newInstance();
+      tmpBuffer = (IBuffer) ClassUtils.newInstance(BufferClass);
       bufferList.add(tmpBuffer);
 
       batchInputAdapter.setBatchOutboundValidBuffer(tmpBuffer);
@@ -660,7 +658,7 @@ public class Pipeline
 
         for (Index = 1; Index < plugInList.size(); Index++) {
           // create a new buffer
-          tmpBuffer = (IBuffer) BufferClass.newInstance();
+          tmpBuffer = (IBuffer) ClassUtils.newInstance(BufferClass);
           bufferList.add(tmpBuffer);
 
           // hook the buffer up to the next processing module for batch
@@ -673,11 +671,11 @@ public class Pipeline
         }
 
         // Last processing module, hook it up to the first output adapter
-        tmpBuffer = (IBuffer) BufferClass.newInstance();
+        tmpBuffer = (IBuffer) ClassUtils.newInstance(BufferClass);
         bufferList.add(tmpBuffer);
 
         // Last processing module, hook it up to the first output adapter
-        tmpBuffer = (IBuffer) BufferClass.newInstance();
+        tmpBuffer = (IBuffer) ClassUtils.newInstance(BufferClass);
         tmpPlugIn = plugInList.get(plugInList.size() - 1);
         tmpPlugIn.setOutbound(tmpBuffer);
         tmpBuffer.setSupplier(tmpPlugIn.getSymbolicName());
@@ -706,7 +704,7 @@ public class Pipeline
       // do the rest of the chain.
       for (Index = 1; Index < batchOutputAdapterList.size(); Index++) {
         // create a new buffer for the valid and error records
-        tmpBuffer = (IBuffer) BufferClass.newInstance();
+        tmpBuffer = (IBuffer) ClassUtils.newInstance(BufferClass);
         bufferList.add(tmpBuffer);
 
         // hook the valid and error buffers up to the next processing module
@@ -718,14 +716,10 @@ public class Pipeline
         tmpBatchOutputAdapter.setBatchInboundValidBuffer(tmpBuffer);
         tmpBuffer.setConsumer(tmpBatchOutputAdapter.getSymbolicName());
       }
-    } catch (InstantiationException ie) {
-      message = "Error instantiating buffer class in pipeline <"
-              + symbolicName + ">. <" + ie.getMessage() + ">";
-      throw new InitializationException(message, getSymbolicName());
-    } catch (IllegalAccessException iae) {
-      message = "Error accessing buffer class in pipeline <"
-              + symbolicName + ">. <" + iae.getMessage() + ">";
-      throw new InitializationException(message, getSymbolicName());
+    } catch (ReflectiveOperationException ex) {
+      message = "Error creating buffer class in pipeline <"
+              + symbolicName + ">. <" + ClassUtils.describeFailure(ex) + ">";
+      throw new InitializationException(message, ex, getSymbolicName());
     }
   }
 
@@ -968,7 +962,7 @@ public class Pipeline
       // Don't use ThreadGroup.enumerate( ThreadGroup[] ) because there is no
       // guarantee that it will enforce the ordering of the thread groups.
       // They MUST be in creation order for the pipe to work as we expect.
-      thGrpsPlugIn = new ArrayList<>();
+      thrdsPlugIn = new ArrayList<>();
 
       // for each PlugIn, launch a set of threads. These are created in a
       // thread group for each plug in, hierachically subordinate to the
@@ -981,7 +975,9 @@ public class Pipeline
 
         // thread group name = PlugIn name
         tmpGrpPlugIn = new ThreadGroup(pluginRoot, tmpPlugIn.getSymbolicName());
-        thGrpsPlugIn.add(tmpGrpPlugIn);
+
+        List<Thread> plugInThreads = new ArrayList<>();
+        thrdsPlugIn.add(plugInThreads);
 
         int thread_count = (tmpPlugIn.numThreads() > 0)
                 ? tmpPlugIn.numThreads() : 1;
@@ -996,11 +992,13 @@ public class Pipeline
           //PlugInTh.setPriority( Thread.NORM_PRIORITY );
           PlugInTh.setDaemon(true); // for fatal error handling.
           PlugInTh.start();
+          plugInThreads.add(PlugInTh);
         }
       }
 
       // Create the root thread group for the output adapters
       outputAdapterRoot = new ThreadGroup("Output");
+      thrdsOutputAdapter.clear();
 
       // Launch the batch output adapters
       for (int i = 0; i < batchOutputAdapterList.size(); ++i) {
@@ -1018,6 +1016,7 @@ public class Pipeline
         //ThrOutAdapter.setPriority( Thread.NORM_PRIORITY );
         ThrOutAdapter.setDaemon(true); // for fatal error handling.
         ThrOutAdapter.start();
+        thrdsOutputAdapter.add(ThrOutAdapter);
       }
     } else {
       // Create the thread group for the real time adapter
@@ -1070,14 +1069,15 @@ public class Pipeline
     IOutputAdapter tmpOutputAdapter;
     IPlugIn tmpPlugIn;
     ListIterator<IPlugIn> pluginIterator;
-    ListIterator<ThreadGroup> threadGroupIterator;
+    ListIterator<List<Thread>> threadListIterator;
     int RecordsInPipe = 0;
 
     pluginIterator = plugInList.listIterator();
-    threadGroupIterator = thGrpsPlugIn.listIterator();
+    threadListIterator = thrdsPlugIn.listIterator();
 
-    while (pluginIterator.hasNext() && threadGroupIterator.hasNext()) {
+    while (pluginIterator.hasNext() && threadListIterator.hasNext()) {
       tmpPlugIn = pluginIterator.next();
+      threadListIterator.next();
       RecordsInPipe += tmpPlugIn.getOutboundRecordCount();
     }
 
@@ -1145,26 +1145,10 @@ public class Pipeline
 
     // Wait until all the output adapters have finished
     if (outputAdapterRoot != null) {
-      while (outputAdapterRoot.activeCount() > 0) //&& (Handler.hasError() == false))
-      {
-        OpenRate.getOpenRateFrameworkLog().debug("Waiting for output thread groups to finish.");
+      OpenRate.getOpenRateFrameworkLog().debug("Waiting for output adapter threads to finish.");
 
-        try {
-          // There are two possibilities here that we could use:
-          //   Yield() will just let others take over
-          //   Sleep(x) makes the PlugIn stop and wait for x ms.
-          // I'm not really sure which has the best advantages, but I
-          // tend towards a simple yield at the moment because we want
-          // to avoid dead time
-          //Thread.yield();
-          Thread.sleep(100);
-        } catch (InterruptedException ie) {
-          OpenRate.getOpenRateFrameworkLog().debug("Interrupted!");
-        }
-      }
-
-      // Clean up the output adapter thread groups
-      outputAdapterRoot.destroy();
+      joinThreads(thrdsOutputAdapter);
+      thrdsOutputAdapter.clear();
       outputAdapterRoot = null;
     }
 
@@ -1191,50 +1175,50 @@ public class Pipeline
   protected void stopPlugIns() throws ProcessingException {
     IPlugIn tmpPlugIn;
     ListIterator<IPlugIn> pluginIterator;
-    ListIterator<ThreadGroup> threadGroupIterator;
-    ThreadGroup tmpGrpPlugIn;
+    ListIterator<List<Thread>> threadListIterator;
 
     pluginIterator = plugInList.listIterator();
-    threadGroupIterator = thGrpsPlugIn.listIterator();
+    threadListIterator = thrdsPlugIn.listIterator();
 
-    while (pluginIterator.hasNext() && threadGroupIterator.hasNext()) {
+    while (pluginIterator.hasNext() && threadListIterator.hasNext()) {
       tmpPlugIn = pluginIterator.next();
       tmpPlugIn.markForShutdown();
-      tmpGrpPlugIn = threadGroupIterator.next();
 
-      // wait for all Threads in this group to shutdown.
-      while (tmpGrpPlugIn.activeCount() > 0) //&& (Handler.hasError() == false))
-      {
-        OpenRate.getOpenRateFrameworkLog().debug(
-                "Waiting for plugin thread group <" + tmpGrpPlugIn.getName()
-                + "> to finish.");
+      OpenRate.getOpenRateFrameworkLog().debug(
+              "Waiting for plugin threads of <" + tmpPlugIn.getSymbolicName()
+              + "> to finish.");
 
-        try {
-            // There are two possibilities here that we could use:
-          //   Yield() will just let others take over
-          //   Sleep(x) makes the PlugIn stop and wait for x ms.
-          // I'm not really sure which has the best advantages, but I
-          // tend towards a simple yield at the moment because we want
-          // to avoid dead time
-          //Thread.yield();
-          Thread.sleep(100);
-        } catch (InterruptedException ie) {
-          OpenRate.getOpenRateFrameworkLog().debug("Interrupted!");
-        }
-      }
+      joinThreads(threadListIterator.next());
 
-      OpenRate.getOpenRateFrameworkLog().debug("ThreadGroup <" + tmpGrpPlugIn.getName() + "> dead, next... ");
-
-      // Destroy the group
-      if (tmpGrpPlugIn.isDestroyed() == false) {
-        tmpGrpPlugIn.destroy();
-      }
+      OpenRate.getOpenRateFrameworkLog().debug("Plug in <" + tmpPlugIn.getSymbolicName() + "> dead, next... ");
     }
 
-    // Clean up the Plugin thread groups
-    if (pluginRoot != null) {
-      pluginRoot.destroy();
-      pluginRoot = null;
+    thrdsPlugIn.clear();
+    pluginRoot = null;
+  }
+
+ /**
+  * Wait for every thread in the list to finish.
+  *
+  * This replaces the old "poll ThreadGroup.activeCount() every 100ms and then
+  * destroy the group" idiom. activeCount() is documented as an estimate, and
+  * ThreadGroup.destroy() is deprecated for removal and already degraded on
+  * current JDKs, so this is both more accurate and the way forward.
+  *
+  * @param threads The threads to wait for
+  */
+  private static void joinThreads(List<Thread> threads) {
+    for (Thread thread : threads) {
+      try {
+        thread.join();
+      } catch (InterruptedException ie) {
+        OpenRate.getOpenRateFrameworkLog().debug("Interrupted waiting for <" + thread.getName() + ">");
+
+        // Put the flag back for whoever is above us and stop waiting
+        Thread.currentThread().interrupt();
+
+        return;
+      }
     }
   }
 

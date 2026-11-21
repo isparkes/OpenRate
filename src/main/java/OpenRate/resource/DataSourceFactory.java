@@ -22,6 +22,7 @@ import OpenRate.configurationmanager.IEventInterface;
 import OpenRate.db.IDBDataSource;
 import OpenRate.exception.InitializationException;
 import OpenRate.logging.LogUtil;
+import OpenRate.utils.ClassUtils;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,13 +112,11 @@ public class DataSourceFactory implements IResource, IEventInterface {
       }
 
       builderClass = Class.forName(builderClassName);
-      this.builder = (IDBDataSource) builderClass.newInstance();
+      this.builder = (IDBDataSource) ClassUtils.newInstance(builderClass);
     } catch (ClassNotFoundException ex) {
       OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Data source builder class not found <" + builderClassName + ">", ex, getSymbolicName()));
-    } catch (InstantiationException ex) {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not instantiate data source builder class <" + builderClassName + ">", ex, getSymbolicName()));
-    } catch (IllegalAccessException ex) {
-      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Error accessing data source builder class <" + builderClassName + ">", ex, getSymbolicName()));
+    } catch (ReflectiveOperationException ex) {
+      OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not create data source builder class <" + builderClassName + ">. <" + ClassUtils.describeFailure(ex) + ">", ex, getSymbolicName()));
     } catch (NoClassDefFoundError ex) {
       OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException("Could not find data source builder class <" + builderClassName + ">", getSymbolicName(), false, true, ex));
     }

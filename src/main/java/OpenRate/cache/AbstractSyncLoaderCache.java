@@ -25,6 +25,7 @@ import OpenRate.exception.InitializationException;
 import OpenRate.logging.LogUtil;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.ConversionUtils;
+import OpenRate.utils.ClassUtils;
 import OpenRate.utils.PropertyUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -456,23 +457,16 @@ public abstract class AbstractSyncLoaderCache
     // Now try to get the instance
     try
     {
-      DataMethod = (ICacheDataMethod)MethodClass.newInstance();
+      DataMethod = (ICacheDataMethod)ClassUtils.newInstance(MethodClass);
     }
-    catch (InstantiationException ex)
+    catch (ReflectiveOperationException ex)
     {
       message = "Data method class <" + MethodClassName +
-                                        "> instantiation error in cache <" +
-                                        getSymbolicName() + ">";
+                                        "> could not be created in cache <" +
+                                        getSymbolicName() + ">. <" +
+                                        ClassUtils.describeFailure(ex) + ">";
       OpenRate.getOpenRateFrameworkLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
-    }
-    catch (IllegalAccessException ex)
-    {
-      message = "Data method class  <" + MethodClassName +
-                                        "> access error in pipeline <" +
-                                        getSymbolicName() + ">";
-      OpenRate.getOpenRateFrameworkLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
+      throw new InitializationException(message,ex,getSymbolicName());
     }
 
     // Now we can get the data from the method

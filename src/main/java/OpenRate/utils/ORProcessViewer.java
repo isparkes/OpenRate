@@ -48,7 +48,7 @@ public class ORProcessViewer implements Runnable
       " Trying to Connect to Server....", " Connected"
    };
    public final static ORProcessViewer tcpObj = new ORProcessViewer();
-   private final static String END_CHAT_SESSION = new Character((char)0).toString();
+   private final static String END_CHAT_SESSION = Character.toString((char)0);
 
    private static String hostIP = "localhost";
    private static int port = 8208;
@@ -77,7 +77,14 @@ public class ORProcessViewer implements Runnable
    public static DataInputStream in = null;
    public static PrintWriter out = null;
    private static final String TEXT_LINE_TERMINATOR = "\n\n";
-   private static Boolean toggledColor = false;
+   // The lock for toggledColor. It used to synchronise on toggledColor
+   // itself, which is a Boolean: the field was reassigned inside the
+   // synchronized block, so two threads could end up holding two different
+   // locks (the interned Boolean.TRUE and Boolean.FALSE), and those two are
+   // shared with every other piece of code in the JVM that makes the same
+   // mistake.
+   private final static Object colorLock = new Object();
+   private static boolean toggledColor = false;
    public static final String[] initStyles =  { "regular_blue", "italic_blue",
                                                 "bold_blue", "regular_black",
                                                 "italic_black", "bold_black"   };
@@ -114,7 +121,7 @@ public class ORProcessViewer implements Runnable
 //      pane = new JPanel(new FlowLayout(FlowLayout.LEFT));
       pane.add(new JLabel("Port:"));
       portField = new JTextField(10); portField.setEditable(true);
-      portField.setText((new Integer(port)).toString());
+      portField.setText(Integer.toString(port));
       portField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -128,7 +135,7 @@ public class ORProcessViewer implements Runnable
                      port = temp;
                   }
                   catch (NumberFormatException nfe) {
-                     portField.setText((new Integer(port)).toString());
+                     portField.setText(Integer.toString(port));
                      mainFrame.repaint();
                   }
                }
@@ -296,13 +303,11 @@ public class ORProcessViewer implements Runnable
    }
 
    private static boolean toggleColor() {
-      synchronized (toggledColor) {
-          if(toggledColor.booleanValue())
-            toggledColor = Boolean.FALSE;
-          else
-            toggledColor = Boolean.TRUE;
+      synchronized (colorLock) {
+         toggledColor = !toggledColor;
+
+         return toggledColor;
       }
-      return toggledColor.booleanValue();
    }
 
    private static void cleanUp() {
@@ -399,7 +404,7 @@ public class ORProcessViewer implements Runnable
       }
 
       ipField.setText(hostIP);
-      portField.setText((new Integer(port)).toString());
+      portField.setText(Integer.toString(port));
       hostOption.setSelected(isHost);
       guestOption.setSelected(!isHost);
       statusField.setText(statusString);

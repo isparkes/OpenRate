@@ -26,11 +26,13 @@ import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.transaction.ISyncPoint;
 import OpenRate.utils.ConversionUtils;
+import OpenRate.utils.ClassUtils;
 import OpenRate.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * CacheFactory class manages caching creation/retrieval of specific cache
@@ -148,8 +150,15 @@ public class CacheFactory
     cacheableClassIter = cacheableClassList.iterator();
 
     // Create a thread group for holding the cache objects while they are
-    // being created
+    // being created. The group names and nests the threads, which is what
+    // makes a thread dump readable; the list below is what we wait on.
     ThreadGroup tmpGrpCaches = new ThreadGroup("Caches");
+
+    // The loader threads we launch. We keep our own list rather than polling
+    // ThreadGroup.activeCount(), which is only an estimate, and so that we do
+    // not need ThreadGroup.destroy(), which is deprecated for removal and is
+    // already degraded on current JDKs.
+    List<Thread> cacheLoaderThreads = new ArrayList<>();
 
     // Iterate for the loading
     while (cacheableClassIter.hasNext())
@@ -182,7 +191,7 @@ public class CacheFactory
 
           // Instantiate the object
           cacheableClass = Class.forName(tmpCacheableClass);
-          cacheableObject = (ICacheable) cacheableClass.newInstance();
+          cacheableObject = (ICacheable) ClassUtils.newInstance(cacheableClass);
           cacheManager.put(tmpCacheableClassName, cacheableObject);
 
           /*
@@ -213,6 +222,7 @@ public class CacheFactory
 
               // Launch the thread
               cacheLoaderThread.start();
+              cacheLoaderThreads.add(cacheLoaderThread);
             }
           }
         }
@@ -222,14 +232,9 @@ public class CacheFactory
         message = "ClassNotFoundException creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">";
         OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
-      catch (InstantiationException ex)
+      catch (ReflectiveOperationException ex)
       {
-        message = "InstantiationException creating <" + tmpCacheableClassName + ">. Message = <" + ex.getMessage() + ">. Perhaps you are trying to use an abstract class.";
-        OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
-      }
-      catch (IllegalAccessException ex)
-      {
-        message = "IllegalAccessException creating <" + tmpCacheableClassName + ">. Message = <" +  ex.getMessage() + ">";
+        message = "Could not create <" + tmpCacheableClassName + ">. Message = <" + ClassUtils.describeFailure(ex) + ">. Perhaps you are trying to use an abstract class.";
         OpenRate.getFrameworkExceptionHandler().reportException(new InitializationException(message,ex,getSymbolicName()));
       }
       catch (NullPointerException ex)
@@ -299,15 +304,18 @@ public class CacheFactory
     }
 
     // Join the loading threads we launched
-    while (tmpGrpCaches.activeCount() > 0)
+    for (Thread cacheLoaderThread : cacheLoaderThreads)
     {
       try
       {
-        Thread.sleep(1000);
+        cacheLoaderThread.join();
       }
       catch (InterruptedException ex)
       {
-        // Nothing
+        // Put the flag back for whoever is above us and stop waiting
+        Thread.currentThread().interrupt();
+
+        return;
       }
 
       // Check for errors
@@ -317,9 +325,6 @@ public class CacheFactory
         return;
       }
     }
-
-    // destroy the thread group
-    tmpGrpCaches.destroy();
 
     // reset the iterator
     cacheableClassIter = cacheableClassList.iterator();

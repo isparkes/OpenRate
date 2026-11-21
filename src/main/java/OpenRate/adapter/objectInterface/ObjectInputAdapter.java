@@ -25,6 +25,7 @@ import OpenRate.exception.InitializationException;
 import OpenRate.exception.ProcessingException;
 import OpenRate.logging.LogUtil;
 import OpenRate.record.HeaderRecord;
+import OpenRate.utils.ClassUtils;
 import OpenRate.record.IRecord;
 import OpenRate.record.TrailerRecord;
 import java.util.ArrayList;
@@ -130,19 +131,16 @@ public abstract class ObjectInputAdapter
     try
     {
       BufferClass = Class.forName(CommonConfig.DEFAULT_BUFFER_TYPE);
-      LocalBuffer = (IBuffer) BufferClass.newInstance();
+      LocalBuffer = (IBuffer) ClassUtils.newInstance(BufferClass);
     }
     catch (ClassNotFoundException ex)
     {
       getPipeLog().error("Unable to find buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
     }
-    catch (InstantiationException ex)
+    catch (ReflectiveOperationException ex)
     {
-      getPipeLog().error("Unable to instantiate buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
-    }
-    catch (IllegalAccessException ex)
-    {
-      getPipeLog().error("Unable to access buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE + ">");
+      getPipeLog().error("Unable to create buffer class <" + CommonConfig.DEFAULT_BUFFER_TYPE
+              + ">. <" + ClassUtils.describeFailure(ex) + ">");
     }
   }
 

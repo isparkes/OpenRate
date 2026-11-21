@@ -16,6 +16,7 @@
 package OpenRate.logging;
 
 import OpenRate.exception.InitializationException;
+import OpenRate.utils.ClassUtils;
 import OpenRate.resource.IResource;
 
 /**
@@ -70,7 +71,7 @@ public abstract class AbstractLogFactory implements IResource
       }
 
       Class<?> type = Class.forName(factoryImpl);
-      Object   obj  = type.newInstance();
+      Object   obj  = ClassUtils.newInstance(type);
       factory     = (AbstractLogFactory) obj;
     }
     catch (ClassCastException ex)
@@ -83,16 +84,12 @@ public abstract class AbstractLogFactory implements IResource
       throw new InitializationException("LogFactory.getFactory(): " +
         "LogFactory implementation class not found in classpath.",ex,RESOURCE_KEY);
     }
-    catch (InstantiationException ex)
+    catch (ReflectiveOperationException ex)
     {
       throw new InitializationException("LogFactory.getFactory(): " +
-        "No default constructor for LogFactory",ex,RESOURCE_KEY);
-    }
-    catch (IllegalAccessException ex)
-    {
-      throw new InitializationException("LogFactory.getFactory(): " +
-        "Cannot invoke default constructor on LogFactory. " +
-        "Check that it's visibility is public.",ex,RESOURCE_KEY);
+        "Could not create the LogFactory. Check that it has a public " +
+        "no-argument constructor. <" + ClassUtils.describeFailure(ex) + ">",
+        ex,RESOURCE_KEY);
     }
 
     return factory;

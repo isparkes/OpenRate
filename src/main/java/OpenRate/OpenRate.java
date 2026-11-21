@@ -30,6 +30,7 @@ import OpenRate.resource.IResource;
 import OpenRate.resource.ResourceContext;
 import OpenRate.resource.ResourceLoaderThread;
 import OpenRate.transaction.ISyncPoint;
+import OpenRate.utils.ClassUtils;
 import OpenRate.utils.PropertyUtils;
 import java.io.InputStream;
 import java.net.URL;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The OpenRate Daemon application is the main class that is responsible for
@@ -179,6 +181,9 @@ public class OpenRate
   private Collection<String> pipelineSet = null;
   private Iterator<String> pipelineIter = null;
   private ThreadGroup pipelineThreadGroup;
+
+  // The pipeline threads we launched, so that we can count and join them
+  private final List<Thread> pipelineThreads = new ArrayList<>();
 
   // Context for managing the framework resources
   private ResourceContext resourceContext = new ResourceContext();
@@ -753,6 +758,7 @@ public class OpenRate
       pipelineIter = pipelineSet.iterator();
       tmpPipeList = new IPipeline[pipelineSet.size()];
       pipelineThreadGroup = new ThreadGroup("Pipelines");
+      pipelineThreads.clear();
 
       // initialise the variables for managing the sync point status for recources
       resourceSet = syncPointResourceMap.keySet();
@@ -781,6 +787,7 @@ public class OpenRate
 
           // Start the thread - the pipeline threads are free running
           tmpPipeThread.start();
+          pipelineThreads.add(tmpPipeThread);
           Index++;
         }
 
@@ -851,9 +858,16 @@ public class OpenRate
             }
           }
 
-          // Count the number of pipes active right now
-          pipesActive = pipelineThreadGroup.activeCount();
-          //pipelineThreadGroup.list();
+          // Count the number of pipes active right now. We count our own
+          // threads rather than asking the thread group, whose activeCount()
+          // is documented as an estimate.
+          pipesActive = 0;
+
+          for (Thread pipelineThread : pipelineThreads) {
+            if (pipelineThread.isAlive()) {
+              pipesActive++;
+            }
+          }
 
           // Update the framework active flag
           pipelinesActive = (pipesActive > 0);
@@ -963,8 +977,12 @@ public class OpenRate
           }
         }
 
-        // Destroy the threadgroup that held the pipes
-        pipelineThreadGroup.destroy();
+        // All the pipes have reported themselves finished, so collect them
+        for (Thread pipelineThread : pipelineThreads) {
+          pipelineThread.join();
+        }
+
+        pipelineThreads.clear();
         pipelineThreadGroup = null;
 
         // Log that we have finished with the pipes
@@ -1113,8 +1131,16 @@ public class OpenRate
       // Iterate through the resources and create them
       resourceIter = tmpResourceNameList.iterator();
 
-      // The thread group for holding the resources if we use multi-threaded loading
+      // The thread group for holding the resources if we use multi-threaded
+      // loading. The group names and nests the threads, which is what makes a
+      // thread dump readable; the list below is what we wait on.
       tmpGrpResource = new ThreadGroup("Resources");
+
+      // The loader threads we launch. We keep our own list rather than polling
+      // ThreadGroup.activeCount(), which is only an estimate, and so that we
+      // do not need ThreadGroup.destroy(), which is deprecated for removal and
+      // is already degraded on current JDKs.
+      List<Thread> resourceLoaderThreads = new ArrayList<>();
 
       while (resourceIter.hasNext() && (getHandler().hasError() == false)) {
         // Get the next resource
@@ -1127,7 +1153,7 @@ public class OpenRate
           // necessary
           tmpResourceClassName = PropertyUtils.getPropertyUtils().getResourcePropertyValue(tmpResourceName, "ClassName");
           resourceClass = Class.forName(tmpResourceClassName);
-          resource = (IResource) resourceClass.newInstance();
+          resource = (IResource) ClassUtils.newInstance(resourceClass);
 
           System.out.println("  Initialising Resource <" + tmpResourceName + ">...");
 
@@ -1162,30 +1188,24 @@ public class OpenRate
 
             // Launch it
             resourceLoaderThread.start();
+            resourceLoaderThreads.add(resourceLoaderThread);
           }
         }
       }
 
-      // Close down the thread group if we have finished using it (all threads finished)
-      while (tmpGrpResource.activeCount() > 0) {
-        Thread.sleep(1000);
+      // Wait for the loader threads to finish before we go on
+      for (Thread resourceLoaderThread : resourceLoaderThreads) {
+        resourceLoaderThread.join();
       }
-
-      // Destroy the thread group
-      tmpGrpResource.destroy();
     } catch (ClassNotFoundException ex) {
       frameworkExceptionHandler.reportException(new InitializationException("ClassNotFoundException: "
               + "Class not found for Resource <"
               + tmpResourceName + ">", ex, getSymbolicName()));
-    } catch (InstantiationException ex) {
-      frameworkExceptionHandler.reportException(new InitializationException("InstantiationException: "
-              + "No default constructor found for for Resource <"
-              + tmpResourceName + ">", ex, getSymbolicName()));
-    } catch (IllegalAccessException ex) {
-      frameworkExceptionHandler.reportException(new InitializationException("IllegalAccessException: "
-              + "Check that the Resource <"
+    } catch (ReflectiveOperationException ex) {
+      frameworkExceptionHandler.reportException(new InitializationException("Could not create Resource <"
               + tmpResourceName
-              + "> has a public default constructor.",
+              + ">. Check that it has a public no-argument constructor. <"
+              + ClassUtils.describeFailure(ex) + ">",
               ex, getSymbolicName()));
     } catch (ClassCastException ex) {
       frameworkExceptionHandler.reportException(new InitializationException("ClassCastException: "
