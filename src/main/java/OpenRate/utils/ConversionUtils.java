@@ -630,10 +630,10 @@ public class ConversionUtils
 	}
   
  /**
-  * Gets the rounded start date of the month the given event date is in
+  * Gets the UTC start of the day the given event date is in
   *
   * @param EventStartDate The date of the event
-  * @return The UTC month start date
+  * @return The UTC day start date, in seconds
   */
   public long getUTCDayStart(Date EventStartDate)
   {
@@ -645,15 +645,16 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded start date of the month the given event date is in
+  * Gets the UTC start of the day the given number of days after (before) the
+  * day the given event date is in
   *
   * @param EventStartDate The date of the event
   * @param offset The number of days to offset by
-  * @return The UTC month start date
+  * @return The UTC day start date, in seconds
   */
   public long getUTCDayStart(Date EventStartDate, int offset)
   {
-    Date roundedDate = getDayEnd(EventStartDate,offset);
+    Date roundedDate = getDayStart(EventStartDate,offset);
     getCal().setTime(roundedDate);
     long validityDayStart = getCal().getTimeInMillis() / 1000;
 
@@ -690,10 +691,10 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded end date of the month the given event date is in
+  * Gets the UTC end of the day the given event date is in
   *
   * @param EventStartDate The date of the event
-  * @return The UTC month end date
+  * @return The UTC day end date, in seconds
   */
   public long getUTCDayEnd(Date EventStartDate)
   {
@@ -706,11 +707,12 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded end date of the month the given event date is in
+  * Gets the UTC end of the day the given number of days after (before) the
+  * day the given event date is in
   *
   * @param EventStartDate The date of the event
   * @param offset The number of days in the future (past) to get the end date for
-  * @return The UTC month end date
+  * @return The UTC day end date, in seconds
   */
   public long getUTCDayEnd(Date EventStartDate, int offset)
   {
@@ -723,11 +725,12 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded start date of the month the given event date is in
+  * Gets the start of the day the given number of days after (before) the day
+  * the given event date is in
   *
   * @param EventStartDate The date of the event
   * @param offset The number of days to offset by
-  * @return The UTC month start date
+  * @return The day start date
   */
   public Date getDayStart(Date EventStartDate , int offset)
   {
@@ -743,11 +746,12 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded end date of the month the given event date is in
+  * Gets the end of the day the given number of days after (before) the day
+  * the given event date is in
   *
   * @param EventStartDate The date of the event
   * @param offset The number of days in the future (past) to get the end date for
-  * @return The UTC month end date
+  * @return The day end date
   */
   public Date getDayEnd(Date EventStartDate, int offset)
   {
@@ -765,10 +769,10 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded start date of the month the given event date is in
+  * Gets the start of the day the given event date is in
   *
   * @param EventStartDate The date of the event
-  * @return The UTC month start date
+  * @return The day start date
   */
   public Date getDayStart(Date EventStartDate )
   {
@@ -783,10 +787,10 @@ public class ConversionUtils
   }
 
  /**
-  * Gets the rounded end date of the month the given event date is in
+  * Gets the end of the day the given event date is in
   *
   * @param EventStartDate The date of the event
-  * @return The UTC month end date
+  * @return The day end date
   */
   public Date getDayEnd(Date EventStartDate)
   {

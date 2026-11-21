@@ -551,6 +551,38 @@ public class ConversionUtilsTest {
   }
 
   /**
+   * Test of the offset form of getUTCDayStart, of class ConversionUtils.
+   *
+   * The offset form used to delegate to getDayEnd, so it returned the last
+   * second of the offset day instead of the first. Check the whole family
+   * against each other: day start plus a day, minus a second, is day end.
+   */
+  @Test
+  public void testGetUTCDayStartWithOffset() {
+    System.out.println("getUTCDayStartWithOffset");
+
+    // Three and a bit hours into the first of January 2012
+    Date eventDate = instance.getDateFromUTC(getUTCDateExpected(2012,1,1,0,0,0) + 12134);
+
+    // No offset must agree with the no-argument form
+    Assert.assertEquals(instance.getUTCDayStart(eventDate),
+                        instance.getUTCDayStart(eventDate, 0));
+
+    // The start of the day itself, and of the days either side of it
+    Assert.assertEquals(getUTCDateExpected(2012,1,1,0,0,0),  instance.getUTCDayStart(eventDate, 0));
+    Assert.assertEquals(getUTCDateExpected(2012,1,2,0,0,0),  instance.getUTCDayStart(eventDate, 1));
+    Assert.assertEquals(getUTCDateExpected(2011,12,31,0,0,0), instance.getUTCDayStart(eventDate, -1));
+
+    // A day start is never a day end: they are a whole day apart, less a second
+    Assert.assertEquals(instance.getUTCDayEnd(eventDate, 0),
+                        instance.getUTCDayStart(eventDate, 1) - 1);
+
+    // Crossing a month boundary in a leap year, where an off by one day shows up
+    Date lastOfFebruary = instance.getDateFromUTC(getUTCDateExpected(2012,2,29,13,0,0));
+    Assert.assertEquals(getUTCDateExpected(2012,3,1,0,0,0), instance.getUTCDayStart(lastOfFebruary, 1));
+  }
+
+  /**
    * Test of getUTCDate method, of class ConversionUtils.
    */
   @Test
