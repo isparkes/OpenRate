@@ -721,7 +721,7 @@ public class DuplicateCheckCache
     int               recordsDiscarded = 0;
     int               RecordsProcessed = 0;
     ResultSetMetaData Rsmd;
-    ResultSet         mrs;
+    ResultSet         mrs = null;
     long              CDRDate;
     String            CDRKey;
 
@@ -730,90 +730,101 @@ public class DuplicateCheckCache
 
     // Try to open the DS for lookup
     JDBCcon = DBUtil.getConnection(cacheDataSourceName);
-
-    // Now prepare the statements
-    prepareSelectStatement();
-
-    // get our cutoff date
-    OpenRate.getOpenRateFrameworkLog().info("Duplicate check retrieve cutoff date is <" + new Date(bufferLimit) + ">");
-
-    // Execute the query
-    Timestamp storeLimitTimestamp = new Timestamp(storeLimit*1000);
     try
     {
-      StmtSelectQuery.setTimestamp(1, storeLimitTimestamp);
-      mrs = StmtSelectQuery.executeQuery();
-    }
-    catch (SQLException ex)
-    {
-      message = "Error performing SQL for retieving Duplicate Check data in module <"+getSymbolicName()+">. message <" + ex.getMessage() + ">";
-      OpenRate.getOpenRateFrameworkLog().fatal(message);
-      throw new InitializationException(message,getSymbolicName());
-    }
 
-    // loop through the results for the duplicate check cache
-    try
-    {
-      Rsmd = mrs.getMetaData();
-      ColumnCount = Rsmd.getColumnCount();
+      // Now prepare the statements
+      prepareSelectStatement();
 
-      if (ColumnCount != 2)
+      // get our cutoff date
+      OpenRate.getOpenRateFrameworkLog().info("Duplicate check retrieve cutoff date is <" + new Date(bufferLimit) + ">");
+
+      // Execute the query
+      Timestamp storeLimitTimestamp = new Timestamp(storeLimit*1000);
+      try
       {
-        // we're not going to be able to use this
-        message = "You must define 2 entries in the record, you have defined  <" +
-              ColumnCount + ">";
+        StmtSelectQuery.setTimestamp(1, storeLimitTimestamp);
+        mrs = StmtSelectQuery.executeQuery();
+      }
+      catch (SQLException ex)
+      {
+        message = "Error performing SQL for retieving Duplicate Check data in module <"+getSymbolicName()+">. message <" + ex.getMessage() + ">";
         OpenRate.getOpenRateFrameworkLog().fatal(message);
         throw new InitializationException(message,getSymbolicName());
       }
 
-      // Start the loading
-      mrs.beforeFirst();
-      while (mrs.next())
+      // loop through the results for the duplicate check cache
+      try
       {
-        CDRKey = mrs.getString(1);
-        CDRDate = mrs.getDate(2).getTime() / 1000;
+        Rsmd = mrs.getMetaData();
+        ColumnCount = Rsmd.getColumnCount();
 
-        // Overall counter for logging
-        RecordsProcessed++;
-
-        if (CDRDate > bufferLimit)
+        if (ColumnCount != 2)
         {
-          recordList.put(CDRKey, CDRDate);
-          recordsLoaded++;
-        }
-        else
-        {
-          recordsDiscarded++;
+          // we're not going to be able to use this
+          message = "You must define 2 entries in the record, you have defined  <" +
+                ColumnCount + ">";
+          OpenRate.getOpenRateFrameworkLog().fatal(message);
+          throw new InitializationException(message,getSymbolicName());
         }
 
-        // Update to the log file
-        if ((RecordsProcessed % loadingLogNotificationStep) == 0)
+        // Start the loading
+        mrs.beforeFirst();
+        while (mrs.next())
         {
-          message = "Duplicate Check Data Loading: <" + recordsLoaded +
-                "> records buffered and <" + recordsDiscarded + "> records in duplicate data table for <" +
-                getSymbolicName() + ">";
-          OpenRate.getOpenRateFrameworkLog().info(message);
+          CDRKey = mrs.getString(1);
+          CDRDate = mrs.getDate(2).getTime() / 1000;
+
+          // Overall counter for logging
+          RecordsProcessed++;
+
+          if (CDRDate > bufferLimit)
+          {
+            recordList.put(CDRKey, CDRDate);
+            recordsLoaded++;
+          }
+          else
+          {
+            recordsDiscarded++;
+          }
+
+          // Update to the log file
+          if ((RecordsProcessed % loadingLogNotificationStep) == 0)
+          {
+            message = "Duplicate Check Data Loading: <" + recordsLoaded +
+                  "> records buffered and <" + recordsDiscarded + "> records in duplicate data table for <" +
+                  getSymbolicName() + ">";
+            OpenRate.getOpenRateFrameworkLog().info(message);
+          }
         }
       }
+      catch (SQLException ex)
+      {
+        message = "Error opening Data for <" + getSymbolicName() + ">";
+        OpenRate.getOpenRateFrameworkLog().fatal(message);
+        throw new InitializationException(message,ex,getSymbolicName());
+      }
     }
-    catch (SQLException ex)
+    finally
     {
-      message = "Error opening Data for <" + getSymbolicName() + ">";
-      OpenRate.getOpenRateFrameworkLog().fatal(message);
-      throw new InitializationException(message,ex,getSymbolicName());
+      // Closing here and not at the end of the method: the load has
+      // several paths that throw InitializationException, and each of
+      // them used to leave the connection checked out of the pool. This
+      // runs on a live framework whenever the cache is reloaded, so a
+      // reference data problem that failed the reload cost a connection
+      // every time it was retried.
+      DBUtil.close(mrs);
+      DBUtil.close(StmtSelectQuery);
+      DBUtil.close(JDBCcon);
+
+      // Drop the reference once the connection has gone back to the pool.
+      // Leaving it set allows a later close() of the same object to check
+      // the connection in a second time, which hands one physical
+      // connection to two callers and leads to "connection exception:
+      // closed" in whichever of them is unlucky.
+      JDBCcon = null;
     }
 
-    // Close down stuff
-    DBUtil.close(mrs);
-    DBUtil.close(StmtSelectQuery);
-    DBUtil.close(JDBCcon);
-
-    // Drop the reference once the connection has gone back to the pool.
-    // Leaving it set allows a later close() of the same object to check the
-    // connection in a second time, which hands one physical connection to two
-    // callers and leads to "connection exception: closed" in whichever of
-    // them is unlucky.
-    JDBCcon = null;
 
     message = "Duplicate Check Data Loading completed. <" + recordsLoaded +
           "> records buffered and <" + recordsDiscarded +

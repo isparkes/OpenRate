@@ -2157,4 +2157,26 @@ public class CustomerCacheAudited
       return super.processControlEvent(Command, Init, Parameter);
     }
   }
+
+ /**
+  * Close this cache's own statements as well as the inherited ones, so that
+  * an error part way through the load does not leave them open.
+  */
+  @Override
+  protected void closeDownDBObjects()
+  {
+    DBUtil.close(stmtAliasSelectQuery);
+    stmtAliasSelectQuery = null;
+
+    DBUtil.close(stmtAuditSelectQuery);
+    stmtAuditSelectQuery = null;
+
+    DBUtil.close(stmtProductSelectQuery);
+    stmtProductSelectQuery = null;
+
+    DBUtil.close(stmtERASelectQuery);
+    stmtERASelectQuery = null;
+
+    super.closeDownDBObjects();
+  }
 }

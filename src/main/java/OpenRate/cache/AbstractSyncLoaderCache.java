@@ -261,7 +261,14 @@ public abstract class AbstractSyncLoaderCache
         throw new InitializationException(message,getSymbolicName());
       }
 
-      loadDataFromDB();
+      try
+      {
+        loadDataFromDB();
+      }
+      finally
+      {
+        closeDownDBObjects();
+      }
     }
     else if (CacheDataSourceType.equalsIgnoreCase("Method"))
     {
@@ -393,7 +400,14 @@ public abstract class AbstractSyncLoaderCache
       if (CacheDataSourceType.equalsIgnoreCase("DB"))
       {
         // Reload
-        loadDataFromDB();
+        try
+        {
+          loadDataFromDB();
+        }
+        finally
+        {
+          closeDownDBObjects();
+        }
       }
 
       if (CacheDataSourceType.equalsIgnoreCase("Method"))
@@ -492,6 +506,40 @@ public abstract class AbstractSyncLoaderCache
   * Clear down the internal cache objects
   */
   public abstract void clearCacheObjects();
+
+ /**
+  * Close the database objects that loadDataFromDB() works with.
+  *
+  * Every loader closes these on the way out of a successful load, but each
+  * of them also has a set of error paths that throw InitializationException
+  * in between, and those used to leak the connection and the statement.
+  *
+  * That costs little at startup, where the process is about to die anyway.
+  * It matters for ReloadData(), which runs in a live framework - it is what
+  * the admin console's CacheFactory:Reload does - because a reference data
+  * problem that fails the reload then costs a pooled connection on every
+  * retry until the pool is empty.
+  *
+  * This is called from a finally around both load paths. Closing an object
+  * twice is a no-op, so loaders can keep the close calls they already have,
+  * and the references are cleared so that a second close cannot reach a
+  * connection that has gone back to the pool and been handed to somebody
+  * else.
+  *
+  * A cache that prepares statements of its own overrides this, closes them,
+  * and calls super.
+  */
+  protected void closeDownDBObjects()
+  {
+    DBUtil.close(mrs);
+    mrs = null;
+
+    DBUtil.close(StmtCacheDataSelectQuery);
+    StmtCacheDataSelectQuery = null;
+
+    DBUtil.close(JDBCcon);
+    JDBCcon = null;
+  }
 
   // -----------------------------------------------------------------------------
   // ---------------- Start of inherited ISyncPoint functions --------------------

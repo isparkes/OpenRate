@@ -477,45 +477,50 @@ public abstract class MySQLDirectLoadOutputAdapter
     catch (InitializationException ex)
     {
       getExceptionHandler().reportException(ex);
+
+      // There is nothing more to do without a connection. Carrying on used to
+      // reach prepareStatement() with a null connection and fail there with a
+      // NullPointerException instead of a reported error.
+      return false;
     }
 
     try
     {
-      prepareStatement(FQFileName);
-    }
-    catch (SQLException Sex)
-    {
-      // Not good. Abort the transaction
-      message = "Error preparing statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
-      getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
-      this.setTransactionAbort(getTransactionNumber());
-    }
-    try
-    {
+      try
+      {
+        prepareStatement(FQFileName);
+      }
+      catch (SQLException Sex)
+      {
+        // Not good. Abort the transaction
+        message = "Error preparing statement. message <" + Sex.getMessage() + ">. Aborting transaction.";
+        getExceptionHandler().reportException(new ProcessingException(message,Sex,getSymbolicName()));
+        this.setTransactionAbort(getTransactionNumber());
+
+        return false;
+      }
+
       // Really do the load
       OpenRate.getOpenRateStatsLog().info("Output <" + getSymbolicName() + "> start load of file for transaction <" + transactionNumber + ">");
       stmtLoadQuery.executeUpdate();
       OpenRate.getOpenRateStatsLog().info("Output <" + getSymbolicName() + "> end load of file for transaction <" + transactionNumber + ">");
-
-      // Clean up
-      stmtLoadQuery.close();
-      jdbcCon.close();
     }
     catch (SQLException ex)
     {
       getPipeLog().error("Load for transaction <" + transactionNumber + "> failed. message = <" + ex.getMessage() + ">");
-      try
-      {
-        // Clean up
-        stmtLoadQuery.close();
-        jdbcCon.close();
-      }
-      catch (SQLException ex1)
-      {
-        // Sliently drop it
-      }
 
       return false;
+    }
+    finally
+    {
+      // Closing here rather than on each path out. This runs once per
+      // transaction, and a statement that failed to prepare used to leave the
+      // connection checked out of the pool for good.
+      DBUtil.close(stmtLoadQuery);
+      stmtLoadQuery = null;
+
+      DBUtil.close(jdbcCon);
+      jdbcCon = null;
     }
 
     // Everything went well

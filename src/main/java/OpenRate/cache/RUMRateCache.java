@@ -979,4 +979,20 @@ public class RUMRateCache
 
     return newList;
   }
+
+ /**
+  * Close this cache's own statements as well as the inherited ones, so that
+  * an error part way through the load does not leave them open.
+  */
+  @Override
+  protected void closeDownDBObjects()
+  {
+    DBUtil.close(StmtPriceModelDataSelectQuery);
+    StmtPriceModelDataSelectQuery = null;
+
+    DBUtil.close(StmtRUMMapDataSelectQuery);
+    StmtRUMMapDataSelectQuery = null;
+
+    super.closeDownDBObjects();
+  }
 }

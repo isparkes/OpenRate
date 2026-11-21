@@ -445,9 +445,36 @@ public class BalanceCache extends AbstractCache
               "SaveSnapshotToFile",
               "false"));
 
-      loadDataFromDB();
+      try
+      {
+        loadDataFromDB();
+      }
+      finally
+      {
+        closeDownDBObjects();
+      }
     }
     
+  }
+
+ /**
+  * Close the database objects that loadDataFromDB() works with.
+  *
+  * The load closes these on the way out, but it has a set of error paths
+  * that throw InitializationException in between, and those used to leave
+  * the connection checked out of the pool. Closing twice is a no-op, so the
+  * closes at the end of the load can stay.
+  */
+  protected void closeDownDBObjects()
+  {
+    DBUtil.close(mrs);
+    mrs = null;
+
+    DBUtil.close(stmtCacheDataSelectQuery);
+    stmtCacheDataSelectQuery = null;
+
+    DBUtil.close(JDBCcon);
+    JDBCcon = null;
   }
 
  /**

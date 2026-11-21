@@ -1142,4 +1142,33 @@ public class TimeModelCache
       return super.processControlEvent(Command, Init, Parameter);
     }
   }
+
+ /**
+  * Close this cache's own statements and result sets as well as the
+  * inherited ones, so that an error part way through the load does not leave
+  * them open.
+  */
+  @Override
+  protected void closeDownDBObjects()
+  {
+    DBUtil.close(mrsa);
+    mrsa = null;
+
+    DBUtil.close(mrsb);
+    mrsb = null;
+
+    DBUtil.close(mrsc);
+    mrsc = null;
+
+    DBUtil.close(StmtModelSelectQuery);
+    StmtModelSelectQuery = null;
+
+    DBUtil.close(StmtMappingSelectQuery);
+    StmtMappingSelectQuery = null;
+
+    DBUtil.close(StmtDayMappingSelectQuery);
+    StmtDayMappingSelectQuery = null;
+
+    super.closeDownDBObjects();
+  }
 }

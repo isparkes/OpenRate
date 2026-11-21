@@ -896,4 +896,17 @@ public abstract class JBCustomerCache
       return super.processControlEvent(Command,Init,Parameter);
     }
   }
+
+ /**
+  * Close this cache's own statement as well as the inherited ones, so that
+  * an error part way through the load does not leave them open.
+  */
+  @Override
+  protected void closeDownDBObjects()
+  {
+    DBUtil.close(StmtCustomerDataSelectQuery);
+    StmtCustomerDataSelectQuery = null;
+
+    super.closeDownDBObjects();
+  }
 }

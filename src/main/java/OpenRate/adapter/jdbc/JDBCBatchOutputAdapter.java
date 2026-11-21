@@ -72,13 +72,16 @@ public abstract class JDBCBatchOutputAdapter
         getPipeLog().fatal(message);
         throw new InitializationException(message, getSymbolicName());
       }
-
-      // Done the check, close it
-      JDBCcon.close();
     } catch (SQLException Sex) {
       message = "Output <" + getSymbolicName() + "> error setting manual commit in adapter <" + getSymbolicName() + ">. message <" + Sex.getMessage() + ">";
       getPipeLog().fatal(message);
       throw new InitializationException(message, getSymbolicName());
+    } finally {
+      // The connection is only borrowed to ask the driver whether it can do
+      // batch updates. It used to be closed on the way out of the try, which
+      // the "does not support batch commits" throw above skipped.
+      DBUtil.close(JDBCcon);
+      JDBCcon = null;
     }
   }
 
